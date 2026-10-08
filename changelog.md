@@ -16,6 +16,8 @@ ___
 * Improve Mobile GUI
 * Now You can send badges as emotes
 * Initial Warning
+* Tank Vehicle Controll Setting
+* Save And Load Settings
 ___
 ### Items
 * Baseball Bat

@@ -1,4 +1,5 @@
 import { type FileManager } from "../../core/definition/file.ts";
+import { Path } from "../../core/math/utils.ts";
 import { DynamicStream, StaticStream } from "../../core/net/stream.ts";
 import { InputAction, InputManager } from "../misc/keys.ts";
 
@@ -197,9 +198,14 @@ export class SettingsSaveManager{
             version:this.version
         }
         switch(save.type){
-            case "file":
+            case "file":{
+                const dir=Path.dirname(save.path)
+                if(!await save.fs.exist(dir)){
+                    await save.fs.make_dir(dir)
+                }
                 await save.fs.write_file(save.path,JSON.stringify(s, null, 4))
                 break
+            }
             case "localstorage":
                 self.localStorage.setItem(save.key,JSON.stringify(s))
                 break
@@ -240,20 +246,9 @@ export class SettingsSaveManager{
 export class SaveManager{
     input_manager?:InputManager
     settings:SettingsSaveManager
+    fs?:FileManager
 
     constructor(){
         this.settings=new SettingsSaveManager(this)
     }
-    /*async save_fileb(path:string,bytes:Uint8Array):Promise<boolean>{
-        if(!this.allow_saving_file||!this.fs)return false
-        await this.fs.write_fileb(path,bytes)
-        return true
-    }
-    async load_fileb(path:string):Promise<Uint8Array|undefined>{
-        if(!this.allow_saving_file||!this.fs)return undefined
-        return await this.fs.read_fileb(path)
-    }
-    async list_fileb(path:string):Promise<string[]|undefined>{
-        return await.fs
-    }*/
 }

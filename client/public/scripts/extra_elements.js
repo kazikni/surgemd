@@ -274,6 +274,7 @@ class SMDEWindow extends HTMLElement{
         this.content=null
         this._movable=true
         this.moving=false
+        this.initialized=false
         this.dragOffset={x:0,y:0}
     }
     appendChild(n){
@@ -284,6 +285,8 @@ class SMDEWindow extends HTMLElement{
         this.content.appendChild(n)
     }
     connectedCallback(){
+        if(this.initialized)return
+        this.initialized=true
         const content=document.createElement("div")
         content.innerHTML=this.innerHTML
         content.className="smde-window-content"

@@ -4,6 +4,7 @@ declare global{
     interface Window{
         electronAPI:{
             isBinary:()=>Promise<boolean>
+            make_dir:(path:string)=>Promise<void>
             readFile:(path:string)=>Promise<string>
             writeFile:(path:string,content:string)=>Promise<void>
             readFileB:(path:string)=>Promise<string>
@@ -22,6 +23,9 @@ export class BinFileManager extends FileManager{
     }
     override is_directory(path: string): boolean {
       throw new Error("Method not implemented.");
+    }
+    override make_dir(path: string): Promise<void> {
+        return window.electronAPI.make_dir(path)
     }
     async read_file(path:string):Promise<string>{
         return await window.electronAPI.readFile(path)

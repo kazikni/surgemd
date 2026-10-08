@@ -394,6 +394,7 @@
                 "region": "Region",
                 "interpolation": "Interpolation",
                 "client_rot": "Client Side Rotation",
+                "tank_vehicle_control":"Tank Vehicle Control",
                 "friendly_fire": "Friendly Fire",
                 "ammo_outline": "Guns Outline As Ammo Type"
             },

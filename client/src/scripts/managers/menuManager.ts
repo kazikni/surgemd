@@ -11,7 +11,7 @@ import { CutsceneManager } from "common/engine/web/misc/cutscene.ts";
 import { backgrounds, default_cutscene_theme } from "common/scripts/config/background_effect.ts";
 import { BackgroundManager } from "common/engine/web/misc/background.ts";
 import { type DebugConsole } from "./debugConsole.ts";
-import { set_full_screen } from "../defs/go_files.ts";
+import { set_full_screen } from "../defs/bin_files.ts";
 export type PopupFunction=(ctx:GamePopupCTX)=>void
 interface Partner{name:string,url:string,class?:string}
 export class MenuManager{
@@ -99,8 +99,8 @@ export class MenuManager{
     game_version_clicks=0
     game_version_click_last:number=0
 
-    debug_console_container:HTMLDivElement=document.querySelector("#debug-console-container") as HTMLDivElement
-    debug_console:any
+    debug_console_container?:SMDEWindow=new SMDEWindow()
+    debug_console?:any
     console?:DebugConsole
 
     constructor(definitions:GameDefinition){
@@ -391,10 +391,28 @@ export class MenuManager{
 
         if(save.settings.get_var("sv_graphics_fullscreen"))set_full_screen(true)
 
+        if(debug_mode){
+            this.debug_console_container=new SMDEWindow()
+            this.debug_console_container.className="editor-window debug-console-container"
+            this.debug_console_container.innerHTML='<smde-console id="debug-console"></smde-console>'
+            document.addEventListener("keydown",(ev)=>{
+                if(ev.target&&ev.target instanceof HTMLInputElement)return
+                if(ev.key==="p"||ev.key==="`"||ev.key==="o"){
+                    if(this.debug_console_container!.parentNode){
+                        this.debug_console_container!.remove()
+                    }else{
+                        document.body.appendChild(this.debug_console_container!)
+                        this.debug_console=this.debug_console_container!.querySelector("#debug-console") as SMDEConsole
+                        this.debug_console.clear()
+                        this.debug_console.log("Welcome To Surgemd Console. Type \"/help\" ")
+                    }
+                }
+            })
+        }
         /*this.console=debug_console
         this.debug_console_container.content.innerHTML='<smde-console id="debug-console"></smde-console>'
         this.debug_console=document.querySelector("#debug-console") as any
-        if(this.console)this.console.ctx.logger=this.debug_console  
+        if(this.console)this.console.ctx.logger=this.debug_console
         document.addEventListener("keydown",(ev)=>{
             if(ev.target&&ev.target instanceof HTMLInputElement)return
             if(ev.key==="p"||ev.key==="`"||ev.key==="o"){

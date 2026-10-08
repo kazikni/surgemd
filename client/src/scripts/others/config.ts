@@ -71,6 +71,7 @@ export const ConfigCasters=Object.freeze({
 
     sv_game_region:Casters.toString,
     sv_game_friendly_fire:Casters.toBoolean,
+    sv_game_tank_vehicle_control:Casters.toBoolean,
     sv_game_interpolation:Casters.toBoolean,
     sv_game_client_rot:Casters.toBoolean,
     sv_game_ammo_outline:Casters.toBoolean,
@@ -125,11 +126,12 @@ export const ConfigDefaultValues={
     sv_game_region:"na",
     sv_game_friendly_fire:false,
     sv_game_interpolation:true,
+    sv_game_tank_vehicle_control:!mobile,
     sv_game_client_rot:true,
     sv_game_ammo_outline:true,
     sv_game_ping:5,
 
-    sv_mobile_auto_pickup:mobile,
+    sv_mobile_auto_pickup:false,
 
     sv_sounds_master_volume:1,
     sv_sounds_music_volume:1,
@@ -276,8 +278,8 @@ export const ConfigDefaultActions={
         keys:[Key.Escape]
     },
 
-    "toggle_cursor":{
+    /*"toggle_cursor":{
         keys:[],
         buttons:[GamepadButtonID.L3],
-    },
+    },*/
 }

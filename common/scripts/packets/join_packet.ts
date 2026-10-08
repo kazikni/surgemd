@@ -23,13 +23,15 @@ export class JoinPacket extends Packet{
     badge:number=0
     victory_emote:number=0
     death_emote:number=0
+
+    tank_vehicle_control:boolean=true
     constructor(){
         super()
     }
     encode(stream: Stream): void {
         stream.write_string_sized(this.player_name,GameConstants.player.max_name_size)
         stream.write_string_sized(this.group_token,20)
-        stream.write_boolean_group(this.skin!==undefined,this.skin?.female)
+        stream.write_boolean_group(this.tank_vehicle_control,this.skin!==undefined,this.skin?.female)
         if(this.skin!==undefined){
             stream.write_uint16(this.skin.shirt)
             stream.write_uint16(this.skin.hair)
@@ -44,11 +46,12 @@ export class JoinPacket extends Packet{
     decode(stream: Stream): void {
         this.player_name=stream.read_string_sized(GameConstants.player.max_name_size)
         this.group_token=stream.read_string_sized(20)
-        const bg=stream.read_boolean_group()
-        if(bg[0]){
+        const [tank_vehicle_control,has_skin,female_skin]=stream.read_boolean_group()
+        this.tank_vehicle_control=tank_vehicle_control
+        if(has_skin){
             this.skin={
                 body_tint:0,
-                female:bg[2],
+                female:female_skin,
                 hair:0,
                 hair_tint:0,
                 shirt:0
@@ -57,7 +60,7 @@ export class JoinPacket extends Packet{
             this.skin.hair=stream.read_uint16()
             this.skin.body_tint=stream.read_uint32()
             this.skin.hair_tint=stream.read_uint32()
-            this.skin.female=bg[1]
+            this.skin.female=female_skin
         }
         this.wrapping=stream.read_uint16()
         this.badge=stream.read_uint16()

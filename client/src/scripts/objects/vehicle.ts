@@ -6,6 +6,7 @@ import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { ClientDecal } from "./client_decal.ts";
 import { ColorM, HitboxType2D, Numeric, RectHitbox2D, Stream, v2, v2m } from "common/engine/core.ts";
 import { Debug } from "../others/config.ts";
+import { Human } from "./human.ts";
 export class Vehicle extends MovingBody {
     string_type = "vehicle"
     number_type = GameObjectType.Vehicle
@@ -29,6 +30,9 @@ export class Vehicle extends MovingBody {
     }
     override on_layer_set(): void {
         this.main_sprite.layer=this.layer
+    }
+    override can_interact(human: Human): boolean {
+        return !human.dead&&this.hitbox.colliding_with(human.hitbox)
     }
 
     set_def(def: VehicleDef) {

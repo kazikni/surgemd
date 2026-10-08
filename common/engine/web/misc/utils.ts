@@ -25,13 +25,13 @@ declare global{
         active:boolean
         center:Vec2
         value:Vec2
-        pointerId:number|null
+        pointerId:number
     }
     class SMDEWindow extends HTMLElement{
         movable:boolean
         moving:boolean
         dragOffset:Vec2
-        content:HTMLElement|null
+        content:HTMLElement
         add_close_button():HTMLButtonElement
         add_title():HTMLSpanElement
         set_size(width:number,height:number):void

@@ -321,24 +321,30 @@ export class DumbBotAI extends BotAi {
 
         return Intent.Wander
     }
-    AI(dt:number){
-        this.reset_inputs()
-        //this.update_target()
-        this.update_loot_target()
-        const intent = this.choose_intent(dt)
 
-        switch(intent){
-            case Intent.EscapeGas:
-                this.do_deadzone(dt)
-                break
-            /*case Intent.Fight:
-                //this.do_fight()
-                break*/
-            case Intent.Loot:
-                this.do_loot(dt)
-                break
-            default:
-                this.do_wander(dt)
+    tick_timer=0
+    AI(dt:number){
+        this.tick_timer+=dt
+        if(this.tick_timer>=0.07){
+            this.reset_inputs()
+            //this.update_target()
+            this.update_loot_target()
+            const intent = this.choose_intent(this.tick_timer)
+
+            switch(intent){
+                case Intent.EscapeGas:
+                    this.do_deadzone(this.tick_timer)
+                    break
+                /*case Intent.Fight:
+                    //this.do_fight()
+                    break*/
+                case Intent.Loot:
+                    this.do_loot(this.tick_timer)
+                    break
+                default:
+                    this.do_wander(this.tick_timer)
+            }
+            this.tick_timer-=0.07
         }
     }
     override net_update(_general_update: Stream): void {

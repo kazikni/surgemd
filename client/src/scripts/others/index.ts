@@ -1,7 +1,7 @@
 import { Game} from "./game.ts"
 import "../../scss/main.scss"
 import { MenuManager } from "../managers/menuManager.ts";
-import { BinFileManager, is_binary } from "../defs/go_files.ts";
+import { BinFileManager, is_binary } from "../defs/bin_files.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
@@ -43,6 +43,7 @@ import { FetchFileManager, FileManager, TranslationManager } from "common/engine
             this.menu_manager.play_callback=this.game.play_game.bind(this.game)
             this.menu_manager.play_callback_hard=this.game.play_game_hard.bind(this.game)
             await this.game.bind(fs)
+            if(is_binary)this.game.save.fs=fs
             await this.menu_manager.init(this.game.input_manager,this.game.save,this.file,this.game.resources,this.game.sounds,this.game.scene_2d.camera,this.game.definitions,this.game.language)
             await this.game.load_resources([],{})
             await this.menu_manager.reload(this.game.definitions,this.file)

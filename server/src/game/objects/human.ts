@@ -1032,7 +1032,7 @@ export class Human extends Humanoid{
         }
         if(this.seat){
             if(this.seat.rotation!==undefined)this.physical_data.rotation=this.seat.rotation
-            if(this.seat.pillot)this.seat.vehicle.move(this.input.movement,this.input.reload)
+            if(this.seat.pillot)this.seat.vehicle.move(this.input.movement,this.input.reload,this.human_data.alternative_vehicle_control)
             if(this.seat.scope_change)this.scope_change(this.seat.scope_change)
         }else{
             this.tick_physics(current_floor,speed,dt)

@@ -304,6 +304,7 @@ export class Player extends Human{
                 this.visual.accessorys=[this.game.definitions.loadout.getFromString("white_hair_bow") as LoadoutAccessoryDef]
             }
         }
+        this.human_data.alternative_vehicle_control=jp.tank_vehicle_control
         this.visual.wrapping=this.game.definitions.wrapping.getFromNumberSafe(jp.wrapping)
         this.visual.badge=this.game.definitions.badges.getFromNumberSafe(jp.badge)
         this.visual.emotes.victory=this.game.definitions.game_objects.valueNumber[jp.victory_emote] as EmoteDef|BadgeDef

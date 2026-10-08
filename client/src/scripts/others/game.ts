@@ -26,7 +26,7 @@ import { MinimapManager } from "../managers/miniMapManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { LocalGameServer } from "./offline_game.ts";
-import { is_binary } from "../defs/go_files.ts";
+import { is_binary } from "../defs/bin_files.ts";
 import { Creature } from "../objects/creature.ts";
 import { Parachute } from "../objects/parachute.ts";
 import { SyncedParticle } from "../objects/synced_particle.ts";
@@ -696,6 +696,7 @@ export class Game extends ClientGame<GameObject>{
         packet.death_emote=this.definitions.game_objects.keysString[this.save.settings.get_var("sv_loadout_emote_death")]??0
         packet.wrapping=this.definitions.wrapping.getFromStringSafe(this.save.settings.get_var("sv_loadout_wrapping_weapons"))?.idNumber??0
         packet.badge=this.definitions.badges.getFromStringSafe(this.save.settings.get_var("sv_loadout_badge"))?.idNumber??0
+        packet.tank_vehicle_control=this.save.settings.get_var("sv_game_tank_vehicle_control")
         this.client.emit_packet(packet)
     }
 

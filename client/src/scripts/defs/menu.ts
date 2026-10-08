@@ -3,7 +3,7 @@ import { deleteDeep, FileManager, getDeep, Numeric, parseJSONC, setDeep, Transla
 import { PopupFunction, type MenuManager } from "../managers/menuManager.ts";
 import { BrowserFileManager, formatToHtml, Frame, SaveManager, ResourcesManager, is_mobile } from "common/engine/web.ts";
 import { Debug, socials } from "../others/config.ts";
-import { set_full_screen } from "./go_files.ts";
+import { set_full_screen } from "./bin_files.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { LoadoutItemKind } from "common/scripts/definitions/loadout/skins.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
@@ -945,10 +945,14 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                             tname:"settings.game.client_rot",
                             var:"sv_game_client_rot",
                         },
-                        {
+                        /*{
                             type:"toggle",
                             tname:"settings.game.friendly_fire",
                             var:"sv_game_friendly_fire",
+                        },*/{
+                            type:"toggle",
+                            tname:"settings.game.tank_vehicle_control",
+                            var:"sv_game_tank_vehicle_control",
                         },
                         {
                             type:"toggle",

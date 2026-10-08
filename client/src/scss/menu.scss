@@ -232,8 +232,9 @@
 }
 .social-links {
     display: flex;
-    gap: 0.5vw;
+    gap: 0.3vw;
     padding: 0.75vw;
+    justify-items: center;
 
     .social-link {
         @extend .btn-blue;
@@ -294,8 +295,9 @@
 }
 #featured-links{
     display: flex;
-    background-color: #0004;
+    flex-wrap: wrap;
     flex-direction: column;
+    background-color: #0004;
     position: absolute;
     left: 0;
     top: 0;
@@ -317,7 +319,7 @@
         background-image: url("/assets/img/menu/socials/youtube-icon.svg");
         background-repeat: no-repeat;
         background-position: 5% 50%;
-        background-size: 15%;
+        background-size: 10%;
     }
 }
 .background-menu-md{

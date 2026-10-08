@@ -8,6 +8,7 @@ export abstract class FileHandle {
 }
 export abstract class FileManager{
     abstract is_directory(path:string):boolean
+    abstract make_dir(path:string):Promise<void>
 
     abstract read_file(path:string):Promise<string>
     abstract write_file(path:string,content:string):Promise<void>
@@ -71,6 +72,9 @@ export class FetchFileManager extends FileManager {
         if (!res.ok) throw new Error(`write_fileb failed: ${res.status}`)
     }
     async list_dir(_path: string): Promise<string[]> {
+        throw new Error("list_dir not supported over HTTP")
+    }
+    async make_dir(_path: string): Promise<void> {
         throw new Error("list_dir not supported over HTTP")
     }
     async open(path: string, mode: "r" | "w" | "rw"): Promise<FileHandle> {

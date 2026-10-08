@@ -91,6 +91,13 @@ export const Path={
         }
         return val[val.length-1]??""
     },
+    dirname(path:string):string{
+        const val=this.split(path)
+        if(val.length>1){
+            val.pop()
+        }
+        return val.join("/")
+    }
 }
 export type Tags=string[]
 export function hasTag(tags:Tags,tag:string):boolean{

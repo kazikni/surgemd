@@ -1,4 +1,4 @@
-import { Graphics2D, HideElement, Key, ShowElement, type SMDEMenu, type SMDEWindow } from "common/engine/web.ts";
+import { Graphics2D, HideElement, Key, ShowElement } from "common/engine/web.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { CircleHitbox2D, ColorM, DynamicStream, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, random, RectHitbox2D, split_strings_array, StaticStream, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { CircleHitboxEditorObject, EditorObject, FloorImageEditorObject, ObstacleEditorObject, RectHitboxEditorObject, WallEditorObject, WallPoint, WallSegment } from "../defs/editor_objects.ts";
@@ -82,9 +82,9 @@ export class ObjectsEditorWindow extends EditorWindow{
             this.editor.menu=menu
         }
 
-        this.elem.content.appendChild(this.create_btn)
-        this.elem.content.appendChild(document.createElement("hr"))
-        this.elem.content.appendChild(this.objects)
+        this.elem.content!.appendChild(this.create_btn)
+        this.elem.content!.appendChild(document.createElement("hr"))
+        this.elem.content!.appendChild(this.objects)
 
         this.objects.innerHTML=""
         this.tree=new SMDETree()
@@ -257,7 +257,8 @@ export class EditorManager extends GComponent{
 
     settings:Record<string,any>={}
     settings_default:Record<string,any>={
-        "textures":'"/assets/kspr/common"',
+        name:"map",
+        textures:'"/assets/kspr/common"',
 
         "m.size":v2(100,100),
     }
@@ -351,7 +352,8 @@ export class EditorManager extends GComponent{
     }
     create_settings_defs():SettingDef[]{
         return [
-            {type:"h1",name:"Assets"},
+            {type:"h1",name:"Initial"},
+            {type:"input",name:"Name",var:"name"},
             {type:"input",name:"Textures",var:"textures"},
             {type:"button",on_click:this.reload_sources.bind(this),name:"Reload"},
             {type:"h1",name:"Map"},
@@ -513,25 +515,34 @@ export class EditorManager extends GComponent{
         }
         return ret
     }
-    async save_file(name: string = "map") {
+    async save_file(name:string=this.get_setting("name"),path:string="save/maps") {
         const stream = new DynamicStream()
         this.encode(stream)
-        const blob = new Blob(
-            [stream.buffer.slice(0, stream.length) as BlobPart],
-            {
-                type: "application/octet-stream"
+        stream.lock()
+
+        if(this.game.save.fs){
+            if(!await this.game.save.fs.exist(path)){
+                await this.game.save.fs.make_dir(path)
             }
-        )
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement("a")
-        a.href = url
-        a.download = `${name}.smde`
-        document.body.appendChild(a)
-        a.click()
-        setTimeout(() => {
-            URL.revokeObjectURL(url)
-            a.remove()
-        }, 1000)
+            await this.game.save.fs.write_fileb(path+"/"+name+".smde",stream.data)
+        }else{
+            const blob = new Blob(
+                [stream.buffer.slice(0, stream.length) as BlobPart],
+                {
+                    type: "application/octet-stream"
+                }
+            )
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = `${name}.smde`
+            document.body.appendChild(a)
+            a.click()
+            setTimeout(() => {
+                URL.revokeObjectURL(url)
+                a.remove()
+            }, 1000)
+        }
     }
     async load_file() {
         const input = document.createElement("input")

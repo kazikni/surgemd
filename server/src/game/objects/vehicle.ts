@@ -176,15 +176,38 @@ export class Vehicle extends MovingBody {
     override on_create(args?: { position: Vec2; def: VehicleDef }) {
         if(args)this.set_configuration(args.position,args.def)
     }
-    move(input: PolarMovement, backWalk: boolean, _alt = false) {
-        const dir = v2.from_PolarMovement(input)
+    move(input:PolarMovement,backWalk:boolean,alt=false){
+        const dir=v2.from_PolarMovement(input)
 
-        this.physical_data.throttle = Numeric.clamp(-dir.y, -1, 1)
-        this.physical_data.steer_input = Numeric.clamp(dir.x, -1, 1)
+        if(alt){
+            this.physical_data.throttle=Numeric.clamp(-dir.y,-1,1)
+            this.physical_data.steer_input=Numeric.clamp(dir.x,-1,1)
+        }else{
+            const len=v2.len(dir)
 
-        this.back_walk = backWalk
+            if(len>0.001){
+                const target=Math.atan2(dir.y,dir.x)
+                const current=this.physical_data.rotation
+                let delta=Numeric.normalize_rad(target-current)
 
-        this.is_moving=Math.abs(this.physical_data.throttle) > 0.001 ||Math.abs(this.physical_data.steer_input) > 0.001
+                const forward=v2.from_RadAngle(current)
+                const forwardDot=v2.dot(forward,dir)/len
+
+                this.physical_data.steer_input=Numeric.clamp(delta/0.7,-1,1)
+
+                if(forwardDot>0){
+                    this.physical_data.throttle=Numeric.clamp(forwardDot,-1,1)
+                }else{
+                    this.physical_data.throttle=Numeric.clamp(forwardDot,-1,1)
+                }
+            }else{
+                this.physical_data.throttle=0
+                this.physical_data.steer_input=0
+            }
+        }
+
+        this.back_walk=backWalk
+        this.is_moving=Math.abs(this.physical_data.throttle)>0.001||Math.abs(this.physical_data.steer_input)>0.001
     }
 
     private update_surface() {

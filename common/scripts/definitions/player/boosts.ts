@@ -25,7 +25,7 @@ export function Boosts_Default_Init():BoostDef[]{
         {
             idString:"adrenaline",
             color:"#ff0",
-            animation_color:"#ff05",
+            animation_color:"#ff07",
             particle:"boost_adrenaline_particle",
             se:{
                 tick(dt,h){
@@ -38,7 +38,7 @@ export function Boosts_Default_Init():BoostDef[]{
         {
             idString:"shield",
             color:"#08f",
-            animation_color:"#08f5",
+            animation_color:"#08f7",
             shield:{
                 multiplier:1.2,
                 penetrate:2.2,
@@ -49,13 +49,13 @@ export function Boosts_Default_Init():BoostDef[]{
         {
             idString:"mana",
             color:"#92a",
-            animation_color:"#92a5",
+            animation_color:"#92a7",
             particle:"boost_mana_particle"
         },
         {
             idString:"addiction",
             color:"#e13",
-            animation_color:"#e135",
+            animation_color:"#e137",
             particle:"boost_addiction_particle",
             se:{
                 tick(dt,h){
@@ -87,7 +87,7 @@ export function Boosts_Default_Init():BoostDef[]{
         {
             idString:"green_bless",
             color:"#1f3",
-            animation_color:"#1f35",
+            animation_color:"#1f37",
             particle:"boost_green_bless_particle",
             shield:{
                 multiplier:4,
@@ -111,7 +111,7 @@ export function Boosts_Default_Init():BoostDef[]{
         {
             idString:"death",
             color:"#001",
-            animation_color:"#0015",
+            animation_color:"#0017",
             particle:"boost_death_particle",
             se:{
                 can_apply(s,h){

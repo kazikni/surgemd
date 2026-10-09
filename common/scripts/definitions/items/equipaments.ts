@@ -8,7 +8,7 @@ export const equipment_factorys={
             idString:id+"_vest",
             defence:0,
             level:1,
-            reduction:0.2,
+            reduction:0.15,
             rank:ItemRank.E,
 
             tint:0xffffff
@@ -19,7 +19,7 @@ export const equipment_factorys={
             idString:id+"_vest",
             defence:0,
             level:2,
-            reduction:0.25,
+            reduction:0.225, // 7.5 
             rank:ItemRank.E,
 
             tint:0x556655
@@ -42,7 +42,7 @@ export const equipment_factorys={
             idString:id+"_vest",
             defence:0,
             level:4,
-            reduction:0.35,
+            reduction:0.375,
             rank:ItemRank.E,
 
             special:true,

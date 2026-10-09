@@ -27,6 +27,7 @@ export class BottomLeftModule extends UIModule<Game>{
 
     boost_bar_container!:HTMLDivElement
     boost_bar_interior!:HTMLDivElement
+    boost_bar_animation!:HTMLDivElement
     boost_bar_amount!:HTMLSpanElement
 
     downed:boolean=false
@@ -90,6 +91,7 @@ export class BottomLeftModule extends UIModule<Game>{
 
         this.boost_bar_container=document.querySelector("#boost-bar-container") as HTMLDivElement
         this.boost_bar_interior=document.querySelector("#boost-bar") as HTMLDivElement
+        this.boost_bar_animation=document.querySelector("#boost-bar-animation") as HTMLDivElement
         this.boost_bar_amount=document.querySelector("#boost-bar-amount") as HTMLSpanElement
 
         this.clear()
@@ -144,8 +146,10 @@ export class BottomLeftModule extends UIModule<Game>{
         }else{
             ShowElement(this.boost_bar_container)
             this.boost_bar_interior.style.width =`${p*100}%`
+            this.boost_bar_animation.style.width =`${p*100}%`
             this.boost_bar_amount.innerText=`${this.boost}/${this.max_boost}`
             this.boost_bar_interior.style.backgroundColor=this.boost_def.color
+            this.boost_bar_animation.style.backgroundColor=this.boost_def.animation_color
         }
     }
     override on_clear(): void {
@@ -173,7 +177,8 @@ export class BottomLeftModule extends UIModule<Game>{
         this.health_bar_amount.innerText = "100/100"
         this.health_bar_interior.style.background="linear-gradient(90deg, #fff,#dfdfdf)"
 
-        this.boost_bar_interior.style.width = "0%"
+        this.boost_bar_interior.style.width="0%"
+        this.boost_bar_animation.style.width="0%"
         this.boost_bar_interior.style.backgroundColor = this.boost_def.color
         this.boost_bar_amount.innerText = "0/100"
     }

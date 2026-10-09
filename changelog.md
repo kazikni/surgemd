@@ -18,6 +18,8 @@ ___
 * Initial Warning
 * Tank Vehicle Controll Setting
 * Save And Load Settings
+* Boost Bar Animation
+* Kill SFX
 ___
 ### Items
 * Baseball Bat

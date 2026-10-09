@@ -41,7 +41,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
                 "gun_shoot":(e)=>{
                     if(e.bullet.on_hit_explosion)return
                     e.bullet.damage*=0.6
-                    e.bullet.tracer_height*=0.6
+                    e.bullet.tracer_height*=1
 
                     const spread=Numeric.clamp(e.spread*0.005,0.01,0.045)
 

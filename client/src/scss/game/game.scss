@@ -71,10 +71,11 @@
 
     #health-bar {
         background: linear-gradient(90deg, #fff,#dfdfdf);
+        transition: width ease-out 0.2s;
     }
     #health-bar-animation {
         background: #ff000066;
-        transition: width ease-out 2s;
+        transition: width ease-out 1.5s;
     }
     #health-bar-amount {
         position: absolute;
@@ -86,14 +87,17 @@
 }
 #boost-bar-container {
     height: 2vh;
+    #boost-bar-animation,
     #boost-bar {
         position: absolute;
         top: 0;
         left: 0;
         height: 100%;
         width: 0%;
-        transition: width ease-in-out 0.2s;
         border-radius: var(--ui-panel-border-radius);
+    }
+    #boost-bar-animation{
+        transition: width ease-out 0.2s;
     }
     #boost-bar-amount {
         position: absolute;
@@ -102,6 +106,10 @@
         left: 103%;
         transform: translateY(-50%);
         border-radius: var(--ui-panel-border-radius);
+    }
+    #boost-bar-animation {
+        background: #ff000066;
+        transition: width ease-out 1s;
     }
 }
 #bottom-left-container{

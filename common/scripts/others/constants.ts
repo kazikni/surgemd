@@ -111,6 +111,7 @@ export enum zIndexes{
     DeadCreatures,
     PlayersBody,
 
+    BuildingsWalls1,
     Loots,
     DownedHumans,
     Bullets,
@@ -123,7 +124,6 @@ export enum zIndexes{
     Creatures,
     CaseParticles,
     Humans,
-    BuildingsWalls1,
     Particles,
     GrenadeAir1,
     DamageSplashs,

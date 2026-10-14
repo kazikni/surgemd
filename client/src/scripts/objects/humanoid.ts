@@ -172,7 +172,8 @@ export class Humanoid extends MovingBody{
             this.sprites.shadow.model=model2d.hitbox(this.base_hitbox)
             this.sprites.shadow.color=this.game.world_shadow.color
             this.sprites.shadow.matrix=this.game.world_shadow.matrix
-            this.sprites.shadow.zIndex=this.container.zIndex-0.5
+            this.sprites.shadow.zIndex=zIndexes.Humans
+            this.sprites.shadow.layer=this.layer
             this.scene.camera.add_object(this.sprites.shadow)
         }
     }

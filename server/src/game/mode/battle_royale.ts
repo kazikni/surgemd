@@ -28,6 +28,7 @@ export interface BattleRoyaleSettings{
         disable_minimap?:boolean
     }
     spawn_mode?:SpawnMode
+    spawn_mode_deadzone?:SpawnMode
     deadzone?:DeadZoneConfig
     events?:GamemodeEvent[]
     teams?:number
@@ -47,6 +48,7 @@ export class BattleRoyale extends ModeManager{
             disable_minimap?:boolean
         }
         spawn_mode:SpawnMode
+        spawn_mode_deadzone:SpawnMode
         events:GamemodeEvent[]
         deadzone:DeadZoneConfig
     }
@@ -69,6 +71,10 @@ export class BattleRoyale extends ModeManager{
                 disable_minimap:settings.map?.disable_minimap
             },
             spawn_mode:settings.spawn_mode??Spawn.grass,
+            spawn_mode_deadzone:settings.spawn_mode??{
+                ...Spawn.grass,
+                position_generator:"deadzone"
+            },
             deadzone:settings.deadzone??DefaultDeadzone,
             events:settings.events??[
                 {
@@ -336,6 +342,7 @@ export class BattleRoyale extends ModeManager{
             const c=h.team_data.group.choose_human(h)
             if(c?.position)return c.position
         }
+        if(this.game.scene_2d.deadzone.stageIndex>2)return this.scene.map.getRandomPosition(h.base_hitbox,h.id,h.layer,this.settings.spawn_mode_deadzone,this.scene.map.random)
         return this.scene.map.getRandomPosition(h.base_hitbox,h.id,h.layer,this.settings.spawn_mode,this.scene.map.random)
     }
 }

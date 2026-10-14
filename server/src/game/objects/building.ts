@@ -297,7 +297,7 @@ export class Building extends StaticBody {
         super.update_hitbox()
         if(this.physical_data.interaction_hitbox)this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(this.position)
         else this.interaction_hitbox=undefined
-        if(this.physical_data.spawn_hitbox)this.interaction_hitbox=this.physical_data.spawn_hitbox.transform(this.position)
+        if(this.physical_data.spawn_hitbox)this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(this.position)
         else this.spawn_hitbox=undefined
     }
     override tick(dt:number):void{

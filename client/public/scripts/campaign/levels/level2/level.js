@@ -9,32 +9,6 @@ return (class extends LevelPlayerScript{
                         loot_tables:{...LootTables,...SimpleLootTables}
                     }
                 },
-                deadzone:{
-                    mode:DeadZoneMode.staged,
-                    stages:MakeDeadZoneStages({
-                        count:7,
-                        radius:{
-                            decay:0.61,
-                            initial:30
-                        },
-                        damage:{
-                            advancing_scale:2,
-                            waiting_scale:1,
-                            limit:10,
-                            initial:2
-                        },
-                        wait_time:{
-                            initial:40,
-                            decay:0.97,
-                            min:30,
-                        },
-                        advancing_time:{
-                            initial:30,
-                            decay:0.95,
-                            min:20,
-                        },
-                    }),
-                },
                 events:[]
             }
         })

@@ -3,7 +3,7 @@ import { Human } from "../objects/human.ts";
 import { type Game } from "../others/game.ts";
 import { type BotAi } from "../human/ai/simple_bot_ai.ts";
 import { DamageParams } from "../others/utils.ts";
-import { CheckpointContext, DefaultObjectEvents, Stream } from "common/engine/core.ts";
+import { CheckpointContext, DefaultGELvents, Stream } from "common/engine/core.ts";
 export class NPC extends Human{
     ai?:BotAi
     override is_npc: boolean=true
@@ -55,12 +55,12 @@ export class HumansManager{
     encode_human(human:Human,stream:Stream,ctx:CheckpointContext){
         stream.write_uint8(human.layer)
         human.on_encode_checkpoint(stream,ctx)
-        human.emit_event(DefaultObjectEvents.checkpoint_encode,stream,ctx)
+        human.emit_event(DefaultGELvents.checkpoint_encode,stream,ctx)
     }
     decode_human(human:Human,stream:Stream,ctx:CheckpointContext){
         const layer=stream.read_uint8()
         human.manager.set_layer(human,layer)
         human.on_decode_checkpoint(stream,{coid:{},idco:{}})
-        human.emit_event(DefaultObjectEvents.checkpoint_decode,stream,ctx)
+        human.emit_event(DefaultGELvents.checkpoint_decode,stream,ctx)
     }
 }

@@ -12,8 +12,9 @@ import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
 import { Vehicle } from "../objects/vehicle.ts";
 import { ServerGameObject } from "./gameObject.ts";
 import { GameADefinitions } from "common/scripts/definitions/game_defs.ts";
-import { BaseGameMap, map_gen_position, map_gen_valid } from "common/scripts/objects/scene.ts";
+import { map_gen_position, map_gen_valid } from "common/scripts/objects/scene.ts";
 import { ServerGameScene2D } from "./scene.ts";
+import { SMapGEL } from "common/scripts/game/gel/map.ts";
 export type map_gen_algorithm=(map:GameMap,random:SeededRandom)=>void
 export interface MapStructure{
     def:MapStructureDef
@@ -23,7 +24,7 @@ export interface MapStructure{
     position:Vec2
 }
 
-export class GameMap extends BaseGameMap{
+export class GameMap extends SMapGEL{
     declare scene:ServerGameScene2D
     constructor(scene:ServerGameScene2D){
         super(scene)

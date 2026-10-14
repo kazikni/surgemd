@@ -8,7 +8,7 @@ import { FloorDef, Floors} from "common/scripts/others/terrain.ts"
 import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts"
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
-import { ActionsManager, CircleHitbox2D, Hitbox2D, Stream, Numeric, random, Slot, v2, v2m, Vec2, ColorM, cloneDeep, create_script, ObjectComponent, DefaultObjectEvents } from "common/engine/core.ts";
+import { ActionsManager, CircleHitbox2D, Hitbox2D, Stream, Numeric, random, Slot, v2, v2m, Vec2, ColorM, cloneDeep, create_script, ObjectComponent, DefaultGELvents } from "common/engine/core.ts";
 import { type VehicleSeat } from "./vehicle.ts";
 import { DamageParams } from "../others/utils.ts";
 import { type HumansManager } from "../managers/humans_manager.ts";
@@ -50,7 +50,7 @@ export const humanoid:ObjectComponent<Human>={
     number_name:0,
 
     event_validate:{
-        [DefaultObjectEvents.tick]:(obj)=>{
+        [DefaultGELvents.tick]:(obj)=>{
             return !obj.dead
         }
     }
@@ -60,7 +60,7 @@ export const human_equipments:ObjectComponent<Human>={
     number_name:0,
 
     events:{
-        [DefaultObjectEvents.create]:[
+        [DefaultGELvents.create]:[
             (obj,args)=>{
                 const default_scope=obj.game.definitions.scopes.getFromNumber(1)
                 obj.equipment_data={
@@ -71,25 +71,25 @@ export const human_equipments:ObjectComponent<Human>={
                 }
             }
         ],
-        [DefaultObjectEvents.tick]:[
+        [DefaultGELvents.tick]:[
             (obj)=>{
                 obj.scope_zoom=obj.equipment_data.scope.scope_view
                 if(obj.knocked)obj.scope_zoom=obj.equipment_data.default_scope.scope_view
             }
         ],
-        [DefaultObjectEvents.net_update]:[
+        [DefaultGELvents.net_update]:[
             (o)=>{
                 o.equipment_data.dirty=false
             }
         ],
-        [DefaultObjectEvents.checkpoint_encode]:[
+        [DefaultGELvents.checkpoint_encode]:[
             (o,stream:Stream)=>{
                 stream.write_uint16(o.equipment_data.scope.idNumber!)
                 stream.write_uint16(o.equipment_data.helmet?.idNumber??0)
                 stream.write_uint16(o.equipment_data.vest?.idNumber??0)
             }
         ],
-        [DefaultObjectEvents.checkpoint_decode]:[
+        [DefaultGELvents.checkpoint_decode]:[
             (o,stream:Stream)=>{
                 o.equipment_data.scope=o.game.definitions.scopes.getFromNumber(stream.read_uint16())
                 o.equipment_data.helmet=o.game.definitions.helmets.getFromNumberSafe(stream.read_uint16())
@@ -109,12 +109,12 @@ export const human_inventory:ObjectComponent<Human>={
     number_name:0,
 
     events:{
-        [DefaultObjectEvents.bind]:[
+        [DefaultGELvents.bind]:[
             (obj)=>{
                 obj.inventory=new GInventory(obj)
             }
         ],
-        [DefaultObjectEvents.create]:[
+        [DefaultGELvents.create]:[
             (obj)=>{
                 obj.inventory.initialize(obj.game.definitions,{
                     0:MeleeItem as (new(inventory:GInventoryBase,item:GameItem)=>LItem),
@@ -123,13 +123,13 @@ export const human_inventory:ObjectComponent<Human>={
                 })
             }
         ],
-        [DefaultObjectEvents.tick]:[
+        [DefaultGELvents.tick]:[
             (obj,dt)=>{
                 obj.inventory.accessorys.call_event("tick",dt)
                 obj.inventory.update(dt)
             }
         ],
-        [DefaultObjectEvents.net_update]:[
+        [DefaultGELvents.net_update]:[
             (obj)=>{
                 obj.inventory.net_update()
             }
@@ -228,12 +228,12 @@ export const human_inventory:ObjectComponent<Human>={
                 }
             }
         ],
-        [DefaultObjectEvents.checkpoint_encode]:[
+        [DefaultGELvents.checkpoint_encode]:[
             (obj,stream:Stream,_ctx:CheckpointContext)=>{
                 obj.inventory.encode_checkpoint(stream)
             }
         ],
-        [DefaultObjectEvents.checkpoint_decode]:[
+        [DefaultGELvents.checkpoint_decode]:[
             (obj,stream:Stream,_ctx:CheckpointContext)=>{
                 obj.inventory.decode_checkpoint(stream)
             }

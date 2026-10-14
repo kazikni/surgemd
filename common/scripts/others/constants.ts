@@ -1,4 +1,4 @@
-import { DefaultObjectEvents, LootTable as LootTableBase, Vec2 } from "../../engine/core.ts";
+import { DefaultGELvents, LootTable as LootTableBase, Vec2 } from "../../engine/core.ts";
 import { type GameItem } from "../definitions/game_defs.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
 import { WrappingDef } from "../definitions/loadout/wrapping.ts"
@@ -29,13 +29,13 @@ export const GameConstants={
     }
 }
 export const ObjectsComponentEvent={
-    damage:                DefaultObjectEvents.last+1,
-    collided:              DefaultObjectEvents.last+2,
-    interact:              DefaultObjectEvents.last+3,
-    human_clear:           DefaultObjectEvents.last+4,
-    human_load_preset:     DefaultObjectEvents.last+5,
-    human_apply_modifiers: DefaultObjectEvents.last+6,
-    human_tick_input:      DefaultObjectEvents.last+7
+    damage:                DefaultGELvents.last+1,
+    collided:              DefaultGELvents.last+2,
+    interact:              DefaultGELvents.last+3,
+    human_clear:           DefaultGELvents.last+4,
+    human_load_preset:     DefaultGELvents.last+5,
+    human_apply_modifiers: DefaultGELvents.last+6,
+    human_tick_input:      DefaultGELvents.last+7
 }
 export enum GameObjectType{
     StaticBody,

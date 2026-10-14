@@ -2,7 +2,7 @@ import { api, API_BASE, api_server, game_version, socials } from "../others/conf
 import { ApiSettings, FindGameResult } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { AudioEngine, Camera2D, SaveManager, HideElement,InputManager, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, ToggleElement } from "common/engine/web.ts";
+import { AudioEngine, Camera2D, SaveManager, HideElement,InputManager, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, ToggleElement, is_mobile } from "common/engine/web.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption, warning_popup } from "../defs/menu.ts";
 import { OnlineMessageCharacter } from "common/scripts/packets/messages.ts";
@@ -11,7 +11,7 @@ import { CutsceneManager } from "common/engine/web/misc/cutscene.ts";
 import { backgrounds, default_cutscene_theme } from "common/scripts/config/background_effect.ts";
 import { BackgroundManager } from "common/engine/web/misc/background.ts";
 import { type DebugConsole } from "./debugConsole.ts";
-import { set_full_screen } from "../defs/bin_files.ts";
+import { is_binary, set_full_screen } from "../defs/bin_files.ts";
 export type PopupFunction=(ctx:GamePopupCTX)=>void
 interface Partner{name:string,url:string,class?:string}
 export class MenuManager{
@@ -113,7 +113,7 @@ export class MenuManager{
 
         this.set_loading_current=this.set_loading_current.bind(this)
 
-        this.content.main_social.innerHTML=`
+        let social_links=`
 <a href="${socials.discord}" target="_blank" class="social-link">
     <i class="social-icon discord"></i>
 </a>
@@ -122,17 +122,26 @@ export class MenuManager{
 </a>
 <a href="${socials.github}" target="_blank" class="social-link">
     <i class="social-icon github"></i>
-</a>
+</a>`
+        if(!is_binary){
+            if(is_mobile()){
+                social_links+=`
 <a href="${socials.android}" target="_blank" class="social-link">
     <i class="social-icon android"></i>
-</a>
-<a href="${socials.windows}" target="_blank" class="social-link">
-    <i class="social-icon windows"></i>
-</a>
+</a>`
+            }else if(navigator.userAgent.match(/linux/i)){
+                social_links+=`
 <a href="${socials.linux}" target="_blank" class="social-link">
     <i class="social-icon linux"></i>
-</a>
-`
+</a>`
+            }else{
+                social_links+=`
+<a href="${socials.windows}" target="_blank" class="social-link">
+    <i class="social-icon windows"></i>
+</a>`
+            }
+        }
+        this.content.main_social.innerHTML=social_links
         this.update_featured_links([
             {
                 name:"Content Creators",

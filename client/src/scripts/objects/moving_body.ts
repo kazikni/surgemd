@@ -1,16 +1,16 @@
-import { DefaultObjectEvents, Numeric, ObjectComponent, v2, v2m, Vec2, type Stream } from "common/engine/core.ts";
+import { DefaultGELvents, Numeric, ObjectComponent, v2, v2m, Vec2, type Stream } from "common/engine/core.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { MovingBodyBase } from "common/scripts/objects/moving_body.ts"
 export const MovingBodyNetwork:ObjectComponent<MovingBody>={
     number_name:1,
     string_name:"moving_body_network",
     events:{
-        [DefaultObjectEvents.bind]:[
+        [DefaultGELvents.bind]:[
             (obj)=>{
                 obj.allow_tick=true
             }
         ],
-        [DefaultObjectEvents.create]:[
+        [DefaultGELvents.create]:[
             (obj,args)=>{
                 obj.dest_pos=v2.zero()
                 obj.dest_rot=0
@@ -19,7 +19,7 @@ export const MovingBodyNetwork:ObjectComponent<MovingBody>={
                 obj._velocity=v2.zero()
             }
         ],
-        [DefaultObjectEvents.tick]:[
+        [DefaultGELvents.tick]:[
             (obj,dt:number)=>{
                 obj.distance_walked=0
                 if(!obj.old_pos){
@@ -37,7 +37,7 @@ export const MovingBodyNetwork:ObjectComponent<MovingBody>={
                 if(obj.enable_auto_rot)obj.rotation=Numeric.lerp_rad(obj.rotation,obj.dest_rot!,obj.game.global_interpolation)
             }
         ],
-        [DefaultObjectEvents.net_encode]:[
+        [DefaultGELvents.net_encode]:[
             (obj,stream:Stream,full:boolean)=>{
             }
         ]

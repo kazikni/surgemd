@@ -1,99 +1,64 @@
 import { GameConstants, GameObjectType, LootData } from "common/scripts/others/constants.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { GameItemType } from "common/scripts/definitions/utils.ts";
-import { Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { CircleHitbox2D, DefaultObjectEvents, ObjectComponent, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { FloorType } from "common/scripts/others/terrain.ts";
+import { CircleHitbox2D, DefaultGELvents, ObjectComponent, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { Human } from "./human.ts";
-import { decode_loot_data, encode_loot_data } from "common/scripts/others/functions.ts";
-import { LootBase } from "common/scripts/objects/moving_body.ts";
-
-export interface LootBasePhysics extends LootBase{
-    old_position:Vec2
-    velocity:Vec2
-    current_floor:FloorType
-}
-export const loot_physics:ObjectComponent<Loot>={
-    number_name:1,
-    string_name:"loot_physics", // Loot Network Client
+import { c_loot_entity, Loot_CData, LootEntity_CData } from "common/scripts/game/objects/loot.ts"
+import { SimulatedObject } from "common/scripts/game/objects/base.ts";
+import { encode_loot_data } from "common/scripts/others/functions.ts";
+export const c_loot_ns:ObjectComponent<Loot_CData&SimulatedObject>={
+    number_name:0,
+    string_name:"loot_ns",
     events:{
-        [DefaultObjectEvents.bind]:[
-            (obj)=>{
-                obj.allow_tick=true
-
-                obj.old_position=v2(-1,-1)
-                obj.velocity=v2.zero()
-                obj.current_floor=FloorType.Water
-            }
-        ],
-        [DefaultObjectEvents.create]:[
-            (obj,args)=>{
-            }
-        ],
-        [DefaultObjectEvents.tick]:[
-            (obj,dt:number)=>{
-                const cf=Floors[obj.current_floor]
-                const speed=1*(cf.speed_mult??1)
-                if(obj.current_floor === FloorType.Water){
-                    for(const river of obj.scene.map.rivers){
-                        const col=river.get_point_inside(obj.position)
-                        if(!col?.push){
-                            continue
-                        }
-                        const point=river.get_closest_point(obj.position)
-                        if(point){
-                            v2m.add(obj.velocity,obj.velocity,v2.scale(point.direction,point.push_force*dt))
-                        }
-                        break
-                    }
-                }
-                const others=obj.manager.cells.get_objects(obj.hitbox,obj.layer)
-                for(const other of others){
-                    switch(other.number_type){
-                        case GameObjectType.Loot:{
-                            if(other.id===obj.id)continue
-                            const col=obj.hitbox.overlap_collision(other.hitbox)
-                            if(col){
-                                const vel=v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,3*dt)
-                                v2m.sub(obj.velocity,obj.velocity,vel)
-                                obj.position=v2.sub(obj.position,v2.scale(col.dir,col.pen*dt*2.5))
-                            }
-                            break
-                        }
-                        // deno-lint-ignore no-fallthrough
-                        case GameObjectType.Obstacle:
-                        case GameObjectType.StaticBody:
-                        case GameObjectType.Building:
-                        case GameObjectType.Walls:{
-                            if(other.physical_data.stairs.length>0){
-                                for(const s of other.physical_data.stairs){
-                                    if(s.hitbox.colliding_with(obj.hitbox))obj.manager.set_layer(obj,other.layer+s.dest_layer)
-                                }
-                            }
-                            if(other.physical_data.no_collision)break
-                            const collisions=obj.hitbox.overlap_collisions(other.hitbox)
-                            for(const col of collisions){
-                                obj.position=v2.sub(obj.position,v2.scale(col.dir,col.pen))
-                            }
-                            break
-                        }
-                    }
-                }
-                if(obj.velocity.x!=0||obj.velocity.y!=0){
-                    v2m.scale(obj.velocity,obj.velocity,1/(1+dt*2.5))
-                    const pos=v2.add(obj.position,v2.scale(obj.velocity,speed*dt))
-                    obj.position=obj.scene.map.clamp_hitbox(pos,obj.base_hitbox)
-                }
-                if(!v2.is(obj.position,obj.old_position)){
-                    obj.old_position=v2.clone(obj.position)
-                    obj.current_floor=obj.scene.map.terrain.get_floor_type(obj.position,obj.layer,obj.scene.map.default_floor)
-                    obj.set_dirty_part()
+        [DefaultGELvents.net_encode]:[
+            (obj,stream:Stream,full:boolean)=>{
+                stream.write_pos2(  obj.position)
+                if(full){
+                    encode_loot_data(obj.game.definitions,obj.loot_data,stream)
                 }
             }
-        ],
+        ]
     },
-    methods:{}
+    methods:{
+        set_loot_data(ctx,loot:LootData){
+            ctx.object.loot_data={
+                ...loot
+            }
+            let radius=1
+            switch(loot.item.item_type){
+                case GameItemType.gun:
+                case GameItemType.melee:
+                    radius=GameConstants.loot.radius.weapon
+                    break
+                case GameItemType.ammo:
+                    radius=GameConstants.loot.radius.ammo
+                    break
+                case GameItemType.consumible:
+                    radius=GameConstants.loot.radius.consumible
+                    break
+                case GameItemType.helmet:
+                    radius=GameConstants.loot.radius.equipament
+                    break
+                case GameItemType.backpack:
+                case GameItemType.vest:
+                    radius=GameConstants.loot.radius.equipament
+                    break
+                case GameItemType.grenade:
+                    radius=GameConstants.loot.radius.grenade
+                    break
+                case GameItemType.accessory:
+                    radius=GameConstants.loot.radius.accessory
+                    break
+                case GameItemType.scope:
+                    radius=GameConstants.loot.radius.scopes
+                    break
+            }
+            ;(ctx.object.base_hitbox as CircleHitbox2D).radius=radius
+        }
+    }
 }
-export class Loot extends ServerGameObject implements LootBasePhysics{
+export class Loot extends ServerGameObject implements LootEntity_CData{
     string_type:string="loot"
     number_type: number=GameObjectType.Loot
 
@@ -104,10 +69,14 @@ export class Loot extends ServerGameObject implements LootBasePhysics{
     velocity!:Vec2
     current_floor!:FloorType
 
+    push!:(speed:number,angle:number)=>void
+    set_loot_data!:(loot: LootData)=>void
+
     constructor(){
         super()
 
-        this.add_component(loot_physics)
+        this.add_component(c_loot_entity)
+        this.add_component(c_loot_ns)
     }
     reduce_count(count:number){
         this.loot_data.count-=count
@@ -130,68 +99,9 @@ export class Loot extends ServerGameObject implements LootBasePhysics{
         }
         return
     }
-    set_loot(position:Vec2,loot:LootData){
-        this.position=position
-        this.loot_data={
-            item:loot.item,
-            count:loot.count,
-            aditional:loot.aditional,
-            ammo:loot.ammo,
-            skin:loot.skin
-        }
-        switch(loot.item.item_type){
-            case GameItemType.gun:
-            case GameItemType.melee:
-                this.real_radius=GameConstants.loot.radius.weapon
-                break
-            case GameItemType.ammo:
-                this.real_radius=GameConstants.loot.radius.ammo
-                break
-            case GameItemType.consumible:
-                this.real_radius=GameConstants.loot.radius.consumible
-                break
-            case GameItemType.helmet:
-                this.real_radius=GameConstants.loot.radius.equipament
-                break
-            case GameItemType.backpack:
-            case GameItemType.vest:
-                this.real_radius=GameConstants.loot.radius.equipament
-                break
-            case GameItemType.grenade:
-                this.real_radius=GameConstants.loot.radius.grenade
-                break
-            case GameItemType.accessory:
-                this.real_radius=GameConstants.loot.radius.accessory
-                break
-            case GameItemType.scope:
-                this.real_radius=GameConstants.loot.radius.scopes
-                break
-        }
-        (this.base_hitbox as CircleHitbox2D).radius=this.real_radius
-    }
     override on_create(args?: {position:Vec2,loot:LootData,pre_proccess?:number}): void {
         this.base_hitbox=new CircleHitbox2D(v2(0,0),1)
-        if(args)this.set_loot(args.position,args.loot)
-    }
-    push(speed:number,angle:number){
-        const a=v2.from_RadAngle(angle)
-        v2m.add_component(this.velocity,a.x*speed,a.y*speed)
-    }
-
-    override on_encode_net(stream: Stream, full: boolean): void {
-        stream.write_pos2(this.position)
-        if(full){
-            encode_loot_data(this.game.definitions,this.loot_data,stream)
-        }
-    }
-    override on_encode_checkpoint(stream: Stream): void {
-        stream.write_pos2(this.position)
-        .write_pos2(this.velocity)
-        encode_loot_data(this.game.definitions,this.loot_data,stream)
-    }
-    override on_decode_checkpoint(stream: Stream): void {
-        const position=stream.read_pos2()
-        this.velocity=stream.read_pos2()
-        this.set_loot(position,decode_loot_data(this.game.definitions,stream))
+        if(args?.position)this.position=args.position
+        if(args)this.set_loot_data(args.loot)
     }
 }

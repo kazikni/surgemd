@@ -3,20 +3,20 @@ import { GameObjectType, ObjectsComponentEvent, zIndexes } from "common/scripts/
 import { GameObject } from "../others/gameObject.ts";
 import { type Human } from "./human.ts";
 import { type StaticBody } from "./static_body.ts";
-import { CircleHitbox2D, ColorM, DefaultObjectEvents, ObjectComponent, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, ColorM, DefaultGELvents, ObjectComponent, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 export const bullet_nc={
     number_name:1,
     string_name:"bullet_nc", // Bullet Network Client
     events:{
-        [DefaultObjectEvents.create]:[
+        [DefaultGELvents.create]:[
             (obj,args)=>{
             }
         ],
-        [DefaultObjectEvents.tick]:[
+        [DefaultGELvents.tick]:[
             (obj,_dt:number)=>{
             }
         ],
-        [DefaultObjectEvents.net_encode]:[
+        [DefaultGELvents.net_encode]:[
             (obj,stream,full)=>{
                 obj.position=stream.read_pos2()
                 obj.old_position=v2.clone(obj.position)
@@ -52,7 +52,7 @@ export const bullet_c={
     number_name:1,
     string_name:"bullet_c", // Bullet Client
     events:{
-        [DefaultObjectEvents.bind]:[
+        [DefaultGELvents.bind]:[
             (obj)=>{
                 obj.allow_tick=true
                 obj.sprite_trail=new Sprite2D()
@@ -64,7 +64,7 @@ export const bullet_c={
                 obj.sprite_trail.zIndex=zIndexes.Bullets
             }
         ],
-        [DefaultObjectEvents.create]:[
+        [DefaultGELvents.create]:[
             (obj,_args)=>{
                 obj.sprite_trail.frame=obj.game.resources.get_frame("base_trail")
                 obj.sprite_trail.size=v2(200,17) // Metter Size * 2
@@ -72,17 +72,17 @@ export const bullet_c={
                 obj.base_hitbox=new CircleHitbox2D(v2(0,0),0.2)
             }
         ],
-        [DefaultObjectEvents.layer_set]:[
+        [DefaultGELvents.layer_set]:[
             (obj,_dt:number)=>{
                 obj.sprite_trail.layer=obj.layer
             }
         ],
-        [DefaultObjectEvents.destroy]:[
+        [DefaultGELvents.destroy]:[
             (obj,_dt:number)=>{
                 obj.sprite_trail.destroy()
             }
         ],
-        [DefaultObjectEvents.net_encode]:[
+        [DefaultGELvents.net_encode]:[
             (obj,stream,full)=>{
                 obj.position=stream.read_pos2()
                 obj.old_position=v2.clone(obj.position)

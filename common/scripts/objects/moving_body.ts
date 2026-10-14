@@ -5,9 +5,6 @@ import { type ObstacleDef } from "../definitions/objects/obstacles.ts";
 export interface MovingBodyBase{
     rotation:number
 }
-export interface LootBase{
-    loot_data:LootData
-}
 
 export type StaticBodyPhysicalData={
     hitbox:Hitbox2D

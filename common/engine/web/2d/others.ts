@@ -31,6 +31,7 @@ export class Grid2D extends Container2DObject{
         return this._begin as Vec2
     }
     set begin(val:Vec2){
+        if(val.x===this._begin.x&&val.y===this._begin.y)return
         this._begin.set(val.x,val.y)
         this.dirty_reals=true
     }
@@ -40,6 +41,7 @@ export class Grid2D extends Container2DObject{
         return this._end as Vec2
     }
     set end(val:Vec2){
+        if(val.x===this._end.x&&val.y===this._end.y)return
         this._end.set(val.x,val.y)
         this.dirty_reals=true
     }

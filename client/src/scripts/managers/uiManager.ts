@@ -780,7 +780,7 @@ export class UiManager{
     hide_game_over(){
         ShowElement(this.content.game_gui)
         HideElement(this.content.normal_gameOver)
-        this.content.restart_gameOver.classList.add("hidden")
+        this.content.restart_gameOver.classList.toggle("hidden",true)
     }
     async apply_game_over(g:GameOverPacket){
         switch(this.game_over_screen.type){
@@ -794,9 +794,9 @@ export class UiManager{
                     this.game.sounds.play(this.game.resources.get_sound("ui_death"),{
                         bus:"ui"
                     })
-                    this.content.restart_gameOver.classList.remove("hidden")
                     this.game.scope_zoom*=0.75
                     this.game.zoom_speed*=0.05
+                    this.content.restart_gameOver.classList.toggle("hidden",false)
                     await this.game.input_manager.wait_for_key(Key.R)
                 }
                 this.game.finish_game_over(g.status.win)

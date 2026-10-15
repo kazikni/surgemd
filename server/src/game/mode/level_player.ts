@@ -4,6 +4,7 @@ import { FileManager, mergeDeep, DynamicStream, Stream, parseJSONC, create_scrip
 import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
 import { type Player } from "../objects/player.ts";
 import { ServerGameScene2D } from "../others/scene.ts";
+import { Layers } from "common/scripts/others/constants.ts";
 export class LevelPlayerScript{
     level!:LevelPlayer
     game!:Game
@@ -193,6 +194,7 @@ export class LevelPlayer extends GameComponent {
             let p=conn.real_human as Player
             if(p?.dead){
                 conn.revive()
+                p.manager.set_layer(p,Layers.Normal)
             }else{
                 p=conn.add_player() as Player
             }

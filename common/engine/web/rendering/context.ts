@@ -365,7 +365,6 @@ export abstract class Context2D{
                 if(cmd.stroke_width!==undefined)this.line_width=cmd.stroke_width
                 break
             case RenderCMDType.Fill:
-                console.log(cmd)
                 this.fill(matrix)
                 break
             case RenderCMDType.Stroke:

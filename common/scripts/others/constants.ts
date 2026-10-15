@@ -15,8 +15,8 @@ export const GameConstants={
     loot:{
         radius:{
             ammo:0.5,
-            weapon:0.5,
-            accessory:0.5,
+            weapon:0.59,
+            accessory:0.6,
             consumible:0.5,
             equipament:0.5,
             grenade:0.5,
@@ -48,7 +48,7 @@ export enum GameObjectType{
     Walls,
     Bullet,
     Decal,
-    TilemapVisual,
+    GraphicVisual,
     Explosion,
     Grenade,
     Vehicle,

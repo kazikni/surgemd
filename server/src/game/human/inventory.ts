@@ -1093,11 +1093,6 @@ export class GInventory extends GInventoryBase<LItem>{
         }
         this.accessorys.clear()
 
-        for(let i=0;i<5;i++){
-            for(const loot of l){
-                loot.tick(1/30)
-            }
-        }
         this.set_weapon_index(0)
 
         this.net_sync.weapons=true

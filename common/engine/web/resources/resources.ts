@@ -1,5 +1,6 @@
 import { AKeyFrame } from "../../core/definition/definitions.ts";
 import { audios, AudioSheet } from "../../core/lang/audiosheet.ts";
+import { RenderCMD } from "../../core/lang/context_command.ts";
 import { FrameData, kspr, KSPR } from "../../core/lang/kspr.ts"
 import { Rect } from "../../core/math/geometry.ts";
 import { v2, Vec2 } from "../../core/math/vec2.ts"
@@ -27,12 +28,58 @@ export interface Sound extends SourceBase{
 export interface Animation extends SourceBase{
     keyframes:AKeyFrame[]
 }
+/*export abstract class Frame implements SourceBase{
+    id:string=""
+    src:string=""
+    url:string=""
+    blob?:Blob
+    blob_created?:boolean
+
+    resource_type=0
+    frame_type=0
+    
+    frame_size!:Vec2
+    frame_rect?:Rect
+
+    abstract free():void
+}
+export class TextureFrame extends Frame{
+    image?:HTMLImageElement
+    texture?:Texture
+
+    texcoords:Float32Array
+
+    constructor(texture:Texture,texcoords:number[]){
+        super()
+        this.texture=texture
+        this.frame_size=this.texture.size
+        this.texcoords=new Float32Array(texcoords)
+    }
+    free(){
+        if(this.texture){
+            this.texture.free()
+            this.texture=undefined
+        }
+        if(this.blob&&this.blob_created)URL.revokeObjectURL(this.url)
+    }
+}
+export class VectorFrame extends Frame{
+    command:RenderCMD[]=[]
+
+    constructor(){
+        super()
+    }
+    override free(): void {
+        this.command.length=0
+    }
+}*/
 export class Frame implements SourceBase{
     id:string=""
     src:string=""
     url:string=""
     blob?:Blob
     blob_created?:boolean
+    group:string=""
 
     image?:HTMLImageElement
     texture?:Texture
@@ -55,7 +102,7 @@ export class Frame implements SourceBase{
         if(this.blob&&this.blob_created)URL.revokeObjectURL(this.url)
     }
 }
-
+export const TextureFrame=Frame
 export type Source=Frame|Sound|Animation
 export class ResourcesManager {
     // Sources
@@ -101,7 +148,7 @@ export class ResourcesManager {
         const image=new Image()
 
         image.onload=()=>{
-            const frame=new Frame(this.renderer.load_texture(image),[
+            const frame=new TextureFrame(this.renderer.load_texture(image),[
                 0,1,
                 1,1,
                 0,0,
@@ -144,7 +191,7 @@ export class ResourcesManager {
     }
 
     create_frame(texture:Texture,rect:Rect,src:string=""){
-        const frame=new Frame(texture,[
+        const frame=new TextureFrame(texture,[
             rect.min.x,rect.max.y,
             rect.max.x,rect.max.y,
             rect.min.x,rect.min.y,

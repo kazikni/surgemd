@@ -16,6 +16,7 @@ export * from "./game/gameObject.ts"
 export * from "./game/terrain.ts"
 export * from "./game/particles.ts"
 
+export * from "./lang/context_command.ts"
 export * from "./lang/newfunc.ts"
 export * from "./lang/td.ts"
 

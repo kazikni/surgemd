@@ -1,12 +1,11 @@
-import { BuildingCeilingDef, BuildingDef, BuildingObstacles, BuildingPuzzleDef, PuzzleAction, PuzzleCondition } from "common/scripts/definitions/objects/buildings_base.ts";
+import { BuildingCeilingDef, BuildingDef, BuildingObjectObstacle, BuildingPuzzleDef, PuzzleAction, PuzzleCondition } from "common/scripts/definitions/objects/buildings_base.ts";
 import { Angle, Hitbox2D, Stream, NullHitbox2D, Orientation, random, RotationMode, v2, Vec2, CheckpointContext, cloneDeep } from "common/engine/core.ts";
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ScopeChange } from "common/scripts/definitions/utils.ts";
 import { Walls } from "./walls.ts";
-import { TilemapVisual } from "./tilemap.ts";
-export type BuildingObstacleChild={type:0,obj:Obstacle,def:BuildingObstacles}
+export type BuildingObstacleChild={type:0,obj:Obstacle,def:BuildingObjectObstacle}
 export class BuildingCeiling{
     def:BuildingCeilingDef
     hitbox:Hitbox2D
@@ -392,18 +391,6 @@ export class Building extends StaticBody {
             this.scene.add_object(obj,this.layer)
             obj.set_walls(wall,false)
             obj.set_position(p,Angle.add_orientation(this.physical_data.side,(wall.side??0) as Orientation))
-        }
-        for(const tmv of this.def.generate.tilemapv??[]) {
-            const p = v2.add_with_orientation(this.position, tmv.position??v2.zero, this.physical_data.side)
-            const obj=new TilemapVisual()
-            obj.position=p
-            obj.rotation=srotation
-            this.scene.add_object(obj,this.layer)
-
-            const def=this.game.definitions.tilemapv.getFromStringSafe(tmv.def??"")
-            if(def)obj.set_def(def)
-            if(tmv.content)obj.set_tiles(tmv.content.rect,tmv.content.layer,tmv.content.tileset)
-            if(tmv.rotation!==undefined)obj.rotation+=tmv.rotation
         }
         for (const d of this.def.generate.decals ?? []) {
             const def=this.game.definitions.decals.getFromString(d.def)

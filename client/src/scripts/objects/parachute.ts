@@ -23,6 +23,7 @@ export class Parachute extends GameObject{
         super()
 
         this.allow_tick=true
+        this.sprite.layer=1000
     }
     override on_create(_args: void): void {
         this.base_hitbox=new CircleHitbox2D(v2.zero(),3)
@@ -32,10 +33,8 @@ export class Parachute extends GameObject{
             hotspot:v2.half_one,
             zIndex:zIndexes.Parachute
         },this.game.resources)
+        this.sprite.propertys={no_layer_parallax:true,all_layers:true}
         this.scene.camera.add_object(this.sprite)
-    }
-    override on_layer_set(): void {
-        this.sprite.layer=this.layer
     }
     override on_destroy(): void {
         this.sprite.destroy()
@@ -87,7 +86,7 @@ export class Parachute extends GameObject{
         this.sprite.position=this.position
 
         this.sprite.zIndex=zIndexes.Airbodys+time
-        this.sprite.matrix=matrix4.parallax_2d(this.scene.camera.position,1.1+(1*time))
+        this.sprite.matrix=matrix4.parallax_2d(this.scene.camera.position,1.03+(1*time))
     }
     override on_decode_net(stream:Stream,full:boolean):void{
         this.time=stream.read_float(0,30,2)

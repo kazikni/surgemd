@@ -13,13 +13,12 @@ import { Emotes_Default_Init } from "./loadout/emotes.ts";
 import { Pings_Default_Init } from "./loadout/pings.ts";
 import { Loadout_Default_Init } from "./loadout/skins.ts";
 import { Wrapping_Default_Init } from "./loadout/wrapping.ts";
-import { Buildings_Default_Init } from "./objects/buildings_base.ts";
+import { Buildings_Default_Init } from "./objects/buildings.ts";
 import { Creatures_Default_Init } from "./objects/creatures.ts";
 import { Decals_Default_Init } from "./objects/decals.ts";
 import { Explosions_Default_Init } from "./objects/explosions.ts";
 import { Obstacles_Default_Init, obstacles_factory } from "./objects/obstacles.ts";
 import { SyncedParticles_Default_Init } from "./objects/synced_particles.ts";
-import { TilemapV_Default_Init } from "./objects/tilemap.ts";
 import { Vehicles_Default_Init } from "./objects/vehicles.ts";
 import { Boosts_Default_Init } from "./player/boosts.ts";
 
@@ -45,7 +44,6 @@ export const DefaultDefinitions:GameADefinitions={
     },
     objects:{
         buildings:Buildings_Default_Init(),
-        tilemapv:TilemapV_Default_Init(),
         creatures:Creatures_Default_Init(),
         decals:Decals_Default_Init(),
         explosions:Explosions_Default_Init(),

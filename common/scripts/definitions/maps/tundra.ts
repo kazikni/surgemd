@@ -1,16 +1,17 @@
 import { DeepPartial, mergeDeep, RectHitbox2D, v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
-import { BuildingDef, BuildingObstacles, buildings_factory } from "../objects/buildings_base.ts";
+import { buildings_factory } from "../objects/buildings.ts";
+import { BuildingDef, BuildingObjectObstacle } from "../objects/buildings_base.ts";
 import { obstacles_factory } from "../objects/obstacles.ts";
 import { hit_sounds } from "../utils.ts";
 import { type MapBiomeDef, type MapDef } from "./base.ts";
 import { map_spawns, river_layers } from "./normal.ts";
 export function create_hunt_house(id:string,settings:{
-        walls_tint?:number
-        doors_tint?:number
-        b?:DeepPartial<BuildingDef>
-        content?:BuildingObstacles[]
+    walls_tint?:number
+    doors_tint?:number
+    b?:DeepPartial<BuildingDef>
+    content?:BuildingObjectObstacle[]
 }={}){
     const walls_tint=settings.walls_tint??1
     const doors_tint=settings.doors_tint??walls_tint

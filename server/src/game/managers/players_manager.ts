@@ -6,7 +6,7 @@ import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { GameConstants, HumanStatus, PlayerStatus, ScoreApplyerType } from "common/scripts/others/constants.ts";
+import { GameConstants, HumanStatus, Layers, PlayerStatus, ScoreApplyerType } from "common/scripts/others/constants.ts";
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
 import { BotAi } from "../human/ai/simple_bot_ai.ts";
 import { StartPacket} from "common/scripts/packets/start_packet.ts";
@@ -81,6 +81,7 @@ export class PlayerClient extends PlayerConnManager{
             const scope_view:number=this.human.scope_zoom
             const size=v2(12/scope_view,10/scope_view)
             v2m.max1(size,110)
+            if(this.human.layer>=Layers.Top)v2m.scale(size,size,1+(this.human.layer-Layers.Normal)*0.2)
 
             const camera_hb=new RectHitbox2D(v2.sub(this.human.position,size),v2.add(this.human.position,size))
 

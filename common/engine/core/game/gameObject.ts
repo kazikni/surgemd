@@ -69,15 +69,16 @@ export const DefaultGELvents={
     create:3,
     registry:4,
     layer_set:5,
-    destroy:6,
-    tick:7,
-    render:8,
-    net_encode:9,
-    net_decode:10,
-    net_update:11,
-    checkpoint_encode:12,
-    checkpoint_decode:13,
-    last:14,
+    update_hitbox:6,
+    destroy:7,
+    tick:8,
+    render:9,
+    net_encode:10,
+    net_decode:11,
+    net_update:12,
+    checkpoint_encode:13,
+    checkpoint_decode:14,
+    last:15,
 } satisfies Record<string,number>
 export type ObjectEvent<Object>=(obj:Object,...ev:any)=>any
 export type ObjectMethod<Object>=(ctx:{object:Object,super?:(...args:any)=>any},...ev:any)=>any
@@ -165,7 +166,7 @@ export abstract class BaseObject2D extends BaseGEL2D{
 
     update_hitbox():void{
         this.hitbox=this.base_hitbox.transform(this._position)
-
+        this.emit_event(DefaultGELvents.update_hitbox)
         if(this.manager?.cells){
             this.cell_rect=this.to_rect()
             this.manager.cells.cell_pos(this.cell_rect.min)

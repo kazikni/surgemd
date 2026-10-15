@@ -81,6 +81,8 @@ export abstract class Container2DObject {
         this._tint.set(Math.floor(val.r),Math.floor(val.g),Math.floor(val.b),Math.floor(val.a))
     }
 
+    propertys?:Record<string,any>
+
     _real_position: Vec2 = v2(0, 0)
     _real_scale: Vec2 = v2(1, 1)
     _real_rotation: number = 0;

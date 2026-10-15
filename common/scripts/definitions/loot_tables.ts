@@ -58,8 +58,8 @@ export const LootTables={
         {item:"katana",weight:3},
         {item:"sledgehammer",weight:3},
         {item:"pan",weight:2},
-        {item:"bonesaw",weight:2},
-        {item:"bonesaw_bloody",weight:2},
+        {item:"bonesaw",weight:1},
+        {item:"bonesaw_bloody",weight:1},
     ],
     advanced_melees:[
         {item:"sledgehammer",weight:3},
@@ -269,10 +269,10 @@ export const LootTables={
         [{weight:1,count:4,table:"scopes"}],
     ],
     military_chest:{
-        max:5,
+        max:4,
         min:2,
         content:[
-            {weight:10,table:"guns"},
+            {weight:20,table:"guns"},
             {weight:1,table:"mythic_guns"},
             {weight:0.1,table:"legendary_guns"},
         ]

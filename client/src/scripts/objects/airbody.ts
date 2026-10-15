@@ -11,17 +11,16 @@ export abstract class AirBody extends MovingBody {
 
     constructor() {
         super()
-        this.container.zIndex = zIndexes.Airbodys
+        this.container.zIndex=zIndexes.Airbodys
+        this.container.layer=1000
     }
 
     override on_create(args: Record<string, any>): void {
         this.shadow=new Sprite2D()
         this.container.add_child(this.shadow)
 
+        this.container.propertys={no_layer_parallax:true,all_layers:true}
         this.scene.camera.add_object(this.container)
-    }
-    override on_layer_set(){
-        this.container.layer = this.layer
     }
     override on_tick(dt: number) {
         super.on_tick(dt)

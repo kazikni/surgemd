@@ -49,8 +49,6 @@ import { GameState, PlayArgs } from "./constants.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned.ts";
 import { PingWorld } from "../objects/ping_world.ts";
 import { Walls } from "../objects/walls.ts";
-import { TilemapVisual } from "../objects/tilemapvisual.ts";
-import { Tilesets } from "common/scripts/definitions/objects/tilemap.ts";
 import { EditorManager } from "../managers/editorManager.ts";
 export class Game extends ClientGame<GameObject>{
     state:GameState=GameState.Idle
@@ -120,7 +118,6 @@ export class Game extends ClientGame<GameObject>{
     aim_line:boolean=false
 
     theme_colors:Record<string,string>={}
-    tilesets_instance:Record<number,Tileset>={}
 
     ntps:number=30
 
@@ -128,10 +125,10 @@ export class Game extends ClientGame<GameObject>{
         super(
             new WebglRenderer(canvas),
             translation,
-            [...objects,TilemapVisual,Human,Loot,Building,Obstacle,Walls,TilemapVisual,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane,HumanBody,Drone],
+            [...objects,Human,Loot,Building,Obstacle,Walls,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane,HumanBody,Drone],
         )
         this.scene_2d=new ClientScene2D(this)
-        this.scene_2d.camera.visible_callback=(o)=>o.layer<=this.scene_2d.camera.layer
+        this.scene_2d.camera.visible_callback=(o)=>(o.propertys?.["all_layers"]||o.layer<=this.scene_2d.camera.layer)
         this.scene_2d.camera.aspect_lock=true
 
         this.local_server=new LocalGameServer(this)
@@ -475,9 +472,6 @@ export class Game extends ClientGame<GameObject>{
         }
         this.call_event("load",agro)
         this.loaded=true
-        this.tilesets_instance={
-            1:Graphics2D.make_tileset(Tilesets[1],this.scene_2d.camera.meter_size,this.resources)
-        }
     }
     async start(settings:StartSettings){
         this.definitions.reset()
@@ -631,6 +625,7 @@ export class Game extends ClientGame<GameObject>{
         this.ui_gfx.layer=cam_layer
         this.hitboxes_gfx.layer=cam_layer
         for(const obj of this.scene_2d.camera.container.children){
+            if(obj.propertys?.["no_layer_parallax"])continue
             const parallax=1-(cam_layer-obj.layer)*0.14
             obj.matrix=matrix4.identity()
             matrix4.m.topdown_perspective_2d(obj.matrix,this.scene_2d.camera.position,parallax,this.scene_2d.camera.layer-obj.layer)

@@ -1,4 +1,4 @@
-import { Container2DObject, Sprite2D, Tween } from "common/engine/web.ts"
+import { Container2DObject, Graphics2D, Sprite2D, Tween } from "common/engine/web.ts"
 import { BuildingCeilingDef, BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
@@ -159,6 +159,30 @@ export class Building extends StaticBody{
                 this.scene.camera.add_object(shadow_sprite)
                 this.objects.push(shadow_sprite)
             }
+
+            this.scene.camera.add_object(sprite)
+            this.objects.push(sprite)
+        }
+        for(const f of def.floor_smrf??[]){
+            const sprite=new Graphics2D()
+            sprite.initialize(this.game.scene_2d.camera.ctx)
+
+            sprite.zIndex=zIndexes.BuildingsFloor3
+            sprite.transform_frame({
+                position:f.position?v2.add_with_orientation(this.position,f.position,this.physical_data.side as Orientation):this.position,
+                rotation:rot+(f.rotation??0),
+                layer:this.layer+(f.layer??0),
+
+                alpha:f.alpha,
+                scale:f.scale,
+                scale2:f.scale2,
+                zIndex:f.zIndex,
+                tint:f.tint,
+            })
+
+            sprite.ctx.clear()
+            for(const cmd of f.content.commands)sprite.ctx.execute_command(cmd)
+            sprite.ctx.lock()
 
             this.scene.camera.add_object(sprite)
             this.objects.push(sprite)

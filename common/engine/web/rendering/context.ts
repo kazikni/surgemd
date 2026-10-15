@@ -7,6 +7,7 @@ import { Frame } from "../resources/resources.ts"
 import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Hitbox2D, HitboxType2D } from "../../core/math/hitbox.ts";
 import { Stream } from "../../core/net/stream.ts";
+import { RenderCMD, RenderCMDType } from "../../core/lang/context_command.ts";
 
 export type VertexAddCallback=(cmd:BatcherMaterialCommand,vertex:number)=>void
 export type ContextGradient = {
@@ -353,6 +354,67 @@ export abstract class Context2D{
                 if (vertexCount < 2) return
                 this.draw_model(line,color,matrix,this.state.current_material,on_vertex)
             }
+        }
+    }
+
+    execute_command(cmd: RenderCMD, matrix?: Matrix) {
+        switch (cmd.type) {
+            case RenderCMDType.SetStyle:
+                if(cmd.fill_color)this.fill_color=cmd.fill_color
+                if(cmd.stroke_color)this.stroke_color=cmd.stroke_color
+                if(cmd.stroke_width!==undefined)this.line_width=cmd.stroke_width
+                break
+            case RenderCMDType.Fill:
+                console.log(cmd)
+                this.fill(matrix)
+                break
+            case RenderCMDType.Stroke:
+                this.stroke(matrix)
+                break
+            case RenderCMDType.FillModel:
+                this.fill_model(cmd.model, matrix)
+                break
+            case RenderCMDType.StrokeModel:
+                this.stroke(matrix)
+                break
+            case RenderCMDType.BeginPath:
+                this.begin_path()
+                break
+            case RenderCMDType.Rect:
+                this.begin_path()
+                this.rect(cmd.min,cmd.max)
+                break
+            case RenderCMDType.Circle:
+                this.begin_path()
+                this.circle(cmd.center,cmd.radius,cmd.segments)
+                break
+            case RenderCMDType.MoveTo:
+                this.move_to(cmd.position.x, cmd.position.y)
+                break
+            case RenderCMDType.LineTo:
+                this.line_to(cmd.position.x, cmd.position.y)
+                break
+            case RenderCMDType.ClosePath:
+                if(this.path.length){
+                    const path = this.path[this.path.length - 1]
+                    if (path.length) path.push(v2.clone(path[0]))
+                }
+                break
+            case RenderCMDType.Save:
+                this.save()
+                break
+            case RenderCMDType.Restore:
+                this.restore()
+                break
+            case RenderCMDType.Translate:
+                this.translate(cmd.x, cmd.y)
+                break
+            case RenderCMDType.Rotate:
+                this.rotate(cmd.rad)
+                break
+            case RenderCMDType.Scale:
+                this.scale(cmd.x, cmd.y)
+                break
         }
     }
 

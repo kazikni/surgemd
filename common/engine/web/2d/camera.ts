@@ -71,15 +71,10 @@ export class Camera2D{
         parallax:1
     }
 
-    get_topdown_perspective_2d(matrix:Matrix,object_position: Vec2,parallax: number,z_distance: number,max_distance:number=13):void{
-        const distance=v2.distance(object_position,this.position)
+    get_topdown_perspective_2d(matrix:Matrix,object_position: Vec2,parallax: number,z_distance: number):void{
         const baseParallax=parallax*this.topdown.parallax
 
-        let effectiveParallax=1-(1-baseParallax)
-        if (distance>max_distance){
-            const t=max_distance/distance
-            effectiveParallax=1-(1-effectiveParallax)*t
-        }
+        const effectiveParallax=1-(1-baseParallax)
 
         matrix4.m.topdown_perspective_2d(matrix,this.position,effectiveParallax,z_distance)
     }

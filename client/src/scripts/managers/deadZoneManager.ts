@@ -37,6 +37,7 @@ export class DeadZoneManager extends GComponent{
         this.ambience_sound=this.game.resources.get_sound("deadzone_ambience")
     }
     override on_tick(dt:number){
+        this.sprite.layer=this.game.scene_2d.camera.layer
         if(this.game.state!==GameState.Playing||this.hitbox.point_inside(this.game.scene_2d.camera.position)){
             if(this.ambience_controller.running){
                 this.deadzone_sound_offset=this.ambience_controller.offset
@@ -44,7 +45,7 @@ export class DeadZoneManager extends GComponent{
             this.ambience_controller.set(null)
         }else{
             if(!this.ambience_controller.running){
-                    this.ambience_controller.set(this.ambience_sound,{
+                this.ambience_controller.set(this.ambience_sound,{
                     loop:true,
                     offset:this.deadzone_sound_offset
                 })
@@ -89,7 +90,6 @@ export class DeadZoneManager extends GComponent{
         this.sprite.ctx.clear()
         this.sprite.ctx.fill_color=col
         this.sprite.ctx.fill_model(model)
-        this.sprite.layer=this.game.scene_2d.camera.layer
         if(radius>0){
             const model2=model2d.outlineCircle(radius,0.2,200)
             this.sprite.ctx.fill_color=col

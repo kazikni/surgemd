@@ -11,7 +11,6 @@ export class TerrainM extends TerrainManager{
     last_layer?:number
 
     terrain_gfx=new Graphics2D()
-    grid_gfx=new Grid2D()
 
     cosmic!:Material
     constructor(game:Game){
@@ -21,15 +20,9 @@ export class TerrainM extends TerrainManager{
     append(){
         this.terrain_gfx.initialize(this.game.scene_2d.camera.ctx)
 
-        this.grid_gfx.size=0.05
-        this.grid_gfx.size=5
-        this.grid_gfx.stroke=ColorM.rgba(0,0,0,25)
-
         this.game.scene_2d.camera.add_object(this.terrain_gfx)
-        this.game.scene_2d.camera.add_object(this.grid_gfx)
 
         this.terrain_gfx.zIndex=zIndexes.Terrain
-        this.grid_gfx.zIndex=zIndexes.Grid
 
         this.cosmic=(this.game.renderer as WebglRenderer).factorys2D.cosmic_batch.create({
             speed:2,
@@ -100,29 +93,6 @@ export class TerrainM extends TerrainManager{
             ]
         })
     }
-    update_grid(grid:Grid2D,camera_position:Vec2,camera_size:Vec2){
-        grid.layer=this.terrain_gfx.layer
-        this.game.dead_zone.sprite.layer=grid.layer
-        this.game.ui_gfx.layer=grid.layer
-        this.game.hitboxes_gfx.layer=grid.layer
-        if(this.game.scene_2d.camera.layer<Layers.Normal){
-            this.grid_gfx.visible=false
-            return
-        }
-        this.grid_gfx.visible=true
-
-        const begin=v2(camera_size.x/2,camera_size.y/2)
-        v2m.sub(begin,camera_position,begin)
-        v2m.dscale(begin,begin,grid.size)
-        v2m.floor(begin)
-        v2m.sub_component(begin,1,1)
-
-        const end=v2(camera_size.x/grid.size+2,camera_size.y/grid.size+2)
-        v2m.ceil(end)
-        v2m.add(end,end,begin)
-        grid.begin=begin
-        grid.end=end
-    }
     override clear(): void {
         super.clear()
         this.last_layer=undefined
@@ -140,7 +110,6 @@ export class TerrainM extends TerrainManager{
         })
     }
     tick(){
-        this.update_grid(this.grid_gfx,this.game.scene_2d.camera.position,this.game.scene_2d.camera.size)
         this.draw(this.terrain_gfx,this.game.scene_2d.camera.layer)
     }
     draw(graphic:Graphics2D,layer:number=Layers.Normal){
@@ -156,6 +125,14 @@ export class TerrainM extends TerrainManager{
                 graphic.ctx.hitbox(f.hb)
                 graphic.ctx.fill_color=ColorM.number(f.tint??((flb!==undefined)?flb:Floors[f.type as FloorType].default_color))
                 graphic.ctx.fill()
+            }
+
+            if(layer>=Layers.Normal){
+                graphic.ctx.line_width=0.05
+                graphic.ctx.stroke_color=ColorM.rgba(0,0,0,25)
+                graphic.ctx.begin_path()
+                graphic.ctx.grid(0,0,this.map?.size?.x,this.map?.size?.y,5)
+                graphic.ctx.stroke()
             }
 
             /*graphic.ctx.save()

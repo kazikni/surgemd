@@ -452,6 +452,10 @@ export class Building extends StaticBody {
             if(o.puzzle_piece){
                 this.puzzles[o.puzzle_piece.id??"main"].add_object(obj,o.puzzle_piece.value)
             }
+            if(o.scale!==undefined){
+                obj.max_scale=o.scale
+                obj.reset_scale()
+            }
 
             this.children.push({obj,def:o,type:0})
         }

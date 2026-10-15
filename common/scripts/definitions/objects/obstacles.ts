@@ -432,7 +432,7 @@ export const obstacles_factory={
             health:110,
             hitbox:new RectHitbox2D(v2(-0.52,-0.83),v2(0.52,0.83)),
             scale:{
-                destroy:0.75,
+                destroy:0.85,
             },
             rotation_mode:RotationMode.limited,
             loot_table:id,
@@ -991,6 +991,13 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         obstacles_factory.chest("military_chest",{
             o:{
                 assets:{
+                    frame:{
+                        dead:"wood_residue_1x2",
+                        dead_transform:{
+                            tint:0x628254,
+                            scale:1.5
+                        },
+                    },
                     particles:{
                         particle:"plank_particle",
                         tint:0x628254
@@ -1059,6 +1066,9 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             hitbox:new RectHitbox2D(v2(-0.15,-0.5),v2(0.15,0.5)),
             imortal:true,
             assets:{
+                frame:{
+                    base:"iron_ladder",
+                },
                 sounds:hit_sounds.heavy_metal,
                 particles:{
                     particle:"metal_particle",
@@ -1083,8 +1093,10 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             idString:"iron_ladder_top",
             imortal:true,
             hitbox:new RectHitbox2D(v2(-0.15,-0.5),v2(0.15,0.5)),
-
             assets:{
+                frame:{
+                    base:"iron_ladder",
+                },
                 sounds:hit_sounds.heavy_metal,
                 particles:{
                     particle:"metal_particle",

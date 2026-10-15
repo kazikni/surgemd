@@ -175,7 +175,6 @@ export abstract class Container2DObject {
             this.update_real()
             this.dirty_reals=false
         }
-        if(cam.draw_function)cam.draw_function(this)
     }
     get_rect():Rect{
         return {min:v2.zero,max:v2.zero}

@@ -22,6 +22,7 @@ export class Grid2D extends Container2DObject{
     fill?:Color
     stroke?:Color
     matrix_index:number=0
+    _temp_matrix: Matrix=matrix4.identity()
 
     _rect:Rect={min:v2.zero(),max:v2.zero}
 
@@ -53,6 +54,10 @@ export class Grid2D extends Container2DObject{
             min:min,
             max:max
         }
+
+        this._temp_matrix=matrix4.identity()
+        if(this._real_matrix)matrix4.m.mul(this._temp_matrix,this._real_matrix,this._temp_matrix)
+        matrix4.m.mul(this._temp_matrix,this._temp_matrix,matrix4.transform_2d(this._real_position,this._real_scale,this._real_rotation))
     }
     draw(cam:CamA){
         this.draw_super(cam)
@@ -62,7 +67,7 @@ export class Grid2D extends Container2DObject{
 
         cam.ctx.begin_path()
         cam.ctx.grid(this.begin.x,this.begin.y,this.end.x,this.end.y,this.size,this._position)
-        cam.ctx.stroke(cam.matrix[this.matrix_index])
+        cam.ctx.stroke(matrix4.mul(cam.matrix[this.matrix_index],this._temp_matrix))
     }
     override get_rect():Rect{
         return this._rect
@@ -79,8 +84,9 @@ export class Shape2D extends Container2DObject {
 
     override update_real(): void {
         super.update_real()
-        matrix4.m.transform_2d(this._temp_matrix,this._real_position,this._real_scale,this._real_rotation)
-        if(this._real_matrix)matrix4.m.mul(this._temp_matrix,this._temp_matrix,this._real_matrix)
+        this._temp_matrix=matrix4.identity()
+        if(this._real_matrix)matrix4.m.mul(this._temp_matrix,this._real_matrix,this._temp_matrix)
+        matrix4.m.mul(this._temp_matrix,this._temp_matrix,matrix4.transform_2d(this._real_position,this._real_scale,this._real_rotation))
     }
 
     override draw(cam: CamA): void {
@@ -122,10 +128,9 @@ export class WallShape2D extends Container2DObject {
     }
     override update_real(): void {
         super.update_real()
-        matrix4.m.transform_2d(this._temp_matrix,this._real_position,this._real_scale,this._real_rotation)
-        if(this._real_matrix){
-            matrix4.m.mul(this._temp_matrix,this._temp_matrix,this._real_matrix)
-        }
+        this._temp_matrix=matrix4.identity()
+        if(this._real_matrix)matrix4.m.mul(this._temp_matrix,this._real_matrix,this._temp_matrix)
+        matrix4.m.mul(this._temp_matrix,this._temp_matrix,matrix4.transform_2d(this._real_position,this._real_scale,this._real_rotation))
     }
     override draw(cam: CamA): void {
         this.draw_super(cam)

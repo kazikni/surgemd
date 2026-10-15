@@ -7,6 +7,7 @@ ___
 * Guns Reload Animation
 * Guns Cycle Animation
 * Meat Bunker/Bunker 2
+* Watchtower
 ___
 ### Menu
 * New Loading Screen

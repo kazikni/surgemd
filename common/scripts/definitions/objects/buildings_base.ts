@@ -1371,6 +1371,182 @@ export function Buildings_Default_Init():BuildingDef[]{
             walls_tint:7,
             doors_tint:2,
         }),
+        //Watchtower
+        {
+            idString: "watchtower_top",
+            hitbox: new RectHitbox2D(v2(-7,-7),v2(7,7)),
+            is_ghost:true,
+            floor_image:[{
+                image:"tile_rect",
+                scale:28.5,
+                tint: 0x656877,
+            }],
+            ceiling:[
+                {
+                    frame:{
+                        image:"small_bunker_ceiling_1",
+                        position:v2(0,0),
+                        scale:3.12,
+                        rotation:Math.PI
+                    },
+                    hitbox: new RectHitbox2D(v2(-3.85,-3.85),v2(3.85,3.85)),
+                    scope_change:{}
+                }
+            ],
+            generate: {
+                obstacles: [{
+                    def: "iron_ladder_top",
+                    position: v2(-7.2,-4)
+                },{
+                    def: "iron_ladder_top",
+                    position: v2(7.2,4),
+                    rotation: 2
+                },{
+                    def: "metal_door",
+                    position: v2(-4,-3.01),
+                    rotation: 1,
+                    variation: 7
+                },{
+                    def: "small_bed",
+                    position: v2(2.9,2.5),
+                    rotation: 0
+                },{
+                    def: "large_drawer",
+                    position: v2(3.378,-0.3),
+                    rotation: 2
+                },{
+                    def: "military_chest",
+                    position: v2(2.8,-3.2),
+                    rotation: 1
+                },{
+                    def: "military_chest",
+                    position: v2(1,-3.2),
+                    rotation: 1
+                },{
+                    def: "wood_table",
+                    position: v2(0.5,2.95),
+                    rotation: 1,
+                    connections:[1]
+                },{
+                    def: "wood_chair",
+                    position: v2(0.5,2.2),
+                    rotation: 1
+                },{
+                    def: "computer",
+                    position: v2(0.5,3.25),
+                    rotation: 3,
+                    id:1
+                },{
+                    def: "small_stove",
+                    position: v2(-3.2,1.95),
+                    rotation: 0,
+                    variation: 1
+                },{
+                    def: "sink",
+                    position: v2(-3.2,3.2),
+                    rotation: 0,
+                    variation: 1
+                },{
+                    def: "wood_crate",
+                    position: v2(-4.85,3.2),
+                    rotation: 0,
+                    scale: 0.93,
+                    variation: 1
+                },{
+                    def: "wood_crate",
+                    position: v2(-6.2,3.2),
+                    rotation: 0,
+                    scale: 0.93,
+                    variation: 1
+                },{
+                    def: "barrel",
+                    position: v2(6.2,-6.2),
+                    rotation: 0,
+                    variation: 1
+                },{
+                    def: "large_kitchen_drawer",
+                    position: v2(-3.25,0.25),
+                    rotation: 0,
+                    variation: 1
+                }],
+                walls: [{
+                    positions: [
+                        [
+                            v2(-7,-4.53),
+                            v2(-7,-7),
+                            v2(7,-7),
+                            v2(7,3.48)
+                        ],
+                        [
+                            v2(-7,-3.48),
+                            v2(-7,7),
+                            v2(7,7),
+                            v2(7,4.53)
+                        ],
+                        [
+                            v2(-4,-3),
+                            v2(-4,-4),
+                            v2(4,-4),
+                            v2(4,4),
+                            v2(-4,4),
+                            v2(-4,-1.545)
+                        ]
+                    ],
+                    tint: 0x656877,
+                    width: 0.3,
+                    stroke_width: 0.15,
+                    reflect_bullets:true,
+                    assets:{
+                        particles:{
+                            particle:"metal_particle",
+                            tint:0x656877,
+                        },
+                        sounds:hit_sounds.heavy_metal
+                    }
+                }],
+                floors: [{
+                    hitbox: new RectHitbox2D(v2(-7,-7),v2(7,7)),
+                    type:FloorType.Metal,
+                    visible:true,
+                }]
+            }
+        },
+        {
+            idString:"watchtower",
+            hitbox: new RectHitbox2D(v2(-5,-5),v2(5,5)),
+            reflect_bullets:true,
+            generate:{
+                obstacles: [{
+                    def: "iron_ladder_bottom",
+                    position: v2(-7.2,-4)
+                },{
+                    def: "iron_ladder_bottom",
+                    position: v2(7.2,4),
+                    rotation: 2
+                }],
+                sub_building:[
+                    {def:"watchtower_top",position:v2.zero,layer:1}
+                ],
+                walls: [{
+                    positions: [
+                        [v2(-5,-4),v2(4,-4),v2(4,4),v2(-4,4),v2(-4,-5)],
+                        []
+                    ],
+                    tint: 0x656877,
+                    width: 2,
+                    stroke_width: 0.15,
+                    no_collisions:true,
+                    no_bullet_collision:true,
+                }],
+            },
+            assets:{
+                particles:{
+                    particle:"metal_particle",
+                    tint:0x656877,
+                },
+                sounds:hit_sounds.heavy_metal
+            }
+        },
         {
             idString:"puzzle_test",
             generate:{

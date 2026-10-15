@@ -490,7 +490,8 @@ export const TundraMap:MapDef={
         spawn:[
             {def:[{def:"bush_group_1",weight:1},{def:"bush_group_2",weight:1}],count:20},
 
-            {def:"storehouse_1",count:5},
+            {def:"storehouse_1",count:4},
+            {def:"watchtower",count:4},
             {def:map_spawns.containers,count:20},
 
             {def:"bunker_1",count:2},

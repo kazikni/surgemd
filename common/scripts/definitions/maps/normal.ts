@@ -125,9 +125,9 @@ export const NormalMap:MapDef={
     generation:{
         base:FloorType.Water,
         spawn:[
-            //{def:"gas_pump",count:1000},
             {def:"small_house_1",count:4},
             {def:"storehouse_1",count:4},
+            {def:"watchtower",count:4},
             {def:"bunker_1",count:2},
             {def:"shed",count:20},
             {def:map_spawns.containers,count:20},

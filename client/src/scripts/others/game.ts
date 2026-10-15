@@ -624,11 +624,13 @@ export class Game extends ClientGame<GameObject>{
         const cam_layer=this.scene_2d.camera.layer
         this.ui_gfx.layer=cam_layer
         this.hitboxes_gfx.layer=cam_layer
-        for(const obj of this.scene_2d.camera.container.children){
-            if(obj.propertys?.["no_layer_parallax"])continue
-            const parallax=1-(cam_layer-obj.layer)*0.14
-            obj.matrix=matrix4.identity()
-            matrix4.m.topdown_perspective_2d(obj.matrix,this.scene_2d.camera.position,parallax,this.scene_2d.camera.layer-obj.layer)
+        if(this.save.settings.get_var("sv_graphics_perspective")){
+            for(const obj of this.scene_2d.camera.container.children){
+                if(obj.propertys?.["no_layer_parallax"])continue
+                const parallax=1-(cam_layer-obj.layer)*0.14
+                obj.matrix=matrix4.identity()
+                matrix4.m.topdown_perspective_2d(obj.matrix,this.scene_2d.camera.position,parallax,this.scene_2d.camera.layer-obj.layer)
+            }
         }
         this.scene_2d.draw(dt)
     }

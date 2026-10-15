@@ -70,7 +70,7 @@ export class Grenade extends MovingBody{
             this.sprite.matrix=undefined
         }else{
             this.sprite.zIndex=(this.def.z_index_air??zIndexes.GrenadeAir1)
-            if(this.def.parralax!==undefined){
+            if(this.game.save.settings.get_var("sv_graphics_perspective")&&this.def.parralax!==undefined){
                 this.sprite.matrix=matrix4.parallax_2d(this.scene.camera.position,1+(this.def.parralax*this.zpos))
             }
         }

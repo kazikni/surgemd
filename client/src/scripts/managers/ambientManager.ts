@@ -125,7 +125,7 @@ export class AmbientManager extends GComponent{
                 const ret=new ABParticle2D({
                     frame:{
                         image:random.choose(this.game.minimap.biome!.particles),
-                        layer:this.game.scene_2d.camera.layer,
+                        layer:Layers.Normal,
                     },
                     tint:ColorM.number(this.game.minimap.biome.particles_tint??0),
                     zIndex:zIndexes.Particles,

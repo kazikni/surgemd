@@ -86,7 +86,9 @@ export class Parachute extends GameObject{
         this.sprite.position=this.position
 
         this.sprite.zIndex=zIndexes.Airbodys+time
-        this.sprite.matrix=matrix4.parallax_2d(this.scene.camera.position,1.03+(1*time))
+        if(this.game.save.settings.get_var("sv_graphics_perspective")){
+            this.sprite.matrix=matrix4.parallax_2d(this.scene.camera.position,1.03+(1*time))
+        }
     }
     override on_decode_net(stream:Stream,full:boolean):void{
         this.time=stream.read_float(0,30,2)

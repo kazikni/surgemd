@@ -39,6 +39,8 @@ export class UiManager{
         gameD:document.querySelector("#game") as HTMLDivElement,
         game_gui:document.querySelector("#game-gui") as HTMLDivElement,
 
+        //hints:document.querySelector("#information-hints") as HTMLImageElement,
+    
         action_info_delay:document.querySelector("#action-info-delay") as HTMLSpanElement,
         action_info:document.querySelector("#action-info") as HTMLDivElement,
 

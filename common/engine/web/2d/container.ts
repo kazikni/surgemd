@@ -67,7 +67,7 @@ export class Container2D extends Container2DObject{
         }
     }
     draw(cam:CamA):void{
-        this.draw_super()
+        this.draw_super(cam)
         if(this.dirty_zindex){
             this.update_zindex(cam)
             this.dirty_zindex=false

@@ -1162,8 +1162,8 @@ export function Buildings_Default_Init():BuildingDef[]{
                     hitbox:new RectHitbox2D(v2(2.6,-2.83),v2(8.25,2.83)),
                     frame:{
                         position:v2(5.3,0),
-                        image: "small_bunker_floor_bg",
-                        scale: 4,
+                        image: "small_bunker_ceiling_1",
+                        scale:2.15,
                         zIndex: zIndexes.BuildingsCeiling,
                     },
                 }

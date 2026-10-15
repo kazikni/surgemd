@@ -55,7 +55,7 @@ export class Grid2D extends Container2DObject{
         }
     }
     draw(cam:CamA){
-        this.draw_super()
+        this.draw_super(cam)
         cam.ctx.line_width=this.line_width
         if(this.fill)cam.ctx.stroke_color=this.fill
         if(this.stroke)cam.ctx.stroke_color=this.stroke
@@ -84,7 +84,7 @@ export class Shape2D extends Container2DObject {
     }
 
     override draw(cam: CamA): void {
-        this.draw_super()
+        this.draw_super(cam)
         if (!this.model) {
             return
         }
@@ -128,7 +128,7 @@ export class WallShape2D extends Container2DObject {
         }
     }
     override draw(cam: CamA): void {
-        this.draw_super()
+        this.draw_super(cam)
         const matrix = matrix4.mul(cam.matrix[this.matrix_index],this._temp_matrix)
 
         cam.ctx.fill_color=this.stroke_color

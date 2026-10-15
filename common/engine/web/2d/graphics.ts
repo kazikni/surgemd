@@ -71,7 +71,7 @@ export class Graphics2D extends Container2DObject {
         return {min:v2.infinity_neg,max:v2.infinity}
     }
     draw(cam:CamA){
-        this.draw_super()
+        this.draw_super(cam)
         if(!this.ctx)return
         cam.ctx.draw_batcher(this.ctx.batcher,matrix4.mul(cam.matrix[this.matrix_index],this._main_matrix))
     }

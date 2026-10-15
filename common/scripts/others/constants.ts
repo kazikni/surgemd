@@ -90,7 +90,9 @@ export type HumanAnimation={
     type:HumanAnimationType.Reset
 })
 export enum Layers{
-    Normal=10
+    Underground=9,
+    Normal=10,
+    Top=11
 }
 export const LayersL=[
     Layers.Normal

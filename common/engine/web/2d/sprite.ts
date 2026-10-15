@@ -109,7 +109,7 @@ export class Sprite2D extends Container2DObject{
             this.meter_size=cam.meter_size
             this.dirty_reals=true
         }
-        this.draw_super()
+        this.draw_super(cam)
         let matrix:Matrix=matrix4.clone(cam.matrix[this.matrix_index])
         if(this._real_matrix)matrix=matrix4.mul(matrix,this._real_matrix)
         cam.ctx.draw_frame2d(this.frame,this.model,this._real_tint,matrix)

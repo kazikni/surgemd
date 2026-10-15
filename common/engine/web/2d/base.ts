@@ -17,6 +17,7 @@ export interface CamA{
 
     visible_function?:(obj:Container2DObject)=>boolean
     sort_function:(a:Container2DObject,b:Container2DObject)=>number
+    draw_function?:(obj:Container2DObject)=>void
 }
 export abstract class Container2DObject {
     abstract object_type: string
@@ -169,11 +170,12 @@ export abstract class Container2DObject {
     }
     update(_dt:number,_resources:ResourcesManager): void {
     }
-    draw_super(){
+    draw_super(cam:CamA){
         if(this.dirty_reals){
             this.update_real()
             this.dirty_reals=false
         }
+        if(cam.draw_function)cam.draw_function(this)
     }
     get_rect():Rect{
         return {min:v2.zero,max:v2.zero}

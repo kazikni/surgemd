@@ -145,6 +145,7 @@ export class TerrainM extends TerrainManager{
     }
     draw(graphic:Graphics2D,layer:number=Layers.Normal){
         if(this.last_layer!==layer){
+            if(layer>=Layers.Top)layer=Layers.Normal
             this.last_layer=layer
             graphic.layer=layer
             graphic.ctx.clear()

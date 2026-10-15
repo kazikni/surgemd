@@ -37,7 +37,7 @@ import { FetchFileManager, FileManager, TranslationManager } from "common/engine
             await this.menu_manager.preload_loading_screens([
                 "/assets/img/menu/loading_screens/normal.png",
                 "/assets/img/menu/loading_screens/tundra.png",
-                "/assets/img/menu/loading_screens/guns.svg",
+                "/assets/img/menu/loading_screens/paper.png",
             ])
             this.menu_manager.change_loading_screen()
             this.menu_manager.play_callback=this.game.play_game.bind(this.game)

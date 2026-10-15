@@ -119,7 +119,7 @@ export class CutsceneManager {
     async preload_frames(commands: CutsceneCommand[],max = 6){
         let count = 0
         for (const command of commands) {
-            if(command.type!==CutsceneCommandType.SetFrame){
+            if(command.type!==CutsceneCommandType.SetFrame||!command.frame){
                 continue
             }
             this.set_loading_current?.(command.frame)
@@ -168,17 +168,20 @@ export class CutsceneManager {
             case CutsceneCommandType.SetFrame:{
                 for(let i = 1; i <= 3; i++){
                     const next=commands[index + i]
-                    if(next?.type===CutsceneCommandType.SetFrame){
+                    if(next?.type===CutsceneCommandType.SetFrame&&next.frame){
                         this.historyBuffer.preload(next.frame)
                     }
                 }
-                this.frame.style.opacity="0"
-                await this.wait(0.4)
-                const image=await this.historyBuffer.load(command.frame)
-                this.frame.src=image.src
-                requestAnimationFrame(()=>{
-                    this.frame.style.opacity="1"
-                })
+                if(command.frame){
+                    this.frame.style.opacity="0"
+                    const image=await this.historyBuffer.load(command.frame)
+                    this.frame.src=image.src
+                    requestAnimationFrame(()=>{
+                        this.frame.style.opacity="1"
+                    })
+                }else{
+                    this.frame.style.opacity="0"
+                }
 
                 break
             }

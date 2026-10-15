@@ -192,11 +192,11 @@ export class AmbientManager extends GComponent{
         if(this.game.match_started)this.date.second+=dt
         if(this.date.second>=1){
             this.date.second=0
-            this.date.minute++
+            /*this.date.minute++
             if(this.date.minute>=60){
                 this.date.minute=0
                 this.date.hour+=1
-            }
+            }*/
             if(this.thunders>0&&this.rain_value){
                 if(Math.random()<=this.thunders*0.5){
                     this.bolt()

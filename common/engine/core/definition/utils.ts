@@ -84,7 +84,7 @@ export type CutsceneCommand={
     action?:string
 }|{
     type:CutsceneCommandType.SetFrame
-    frame:string
+    frame?:string
 }|({
     type:CutsceneCommandType.SetDialog
     text?:string // HTML Text

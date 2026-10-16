@@ -255,8 +255,8 @@ export class BattleRoyale extends ModeManager{
                 if(this.is_leader(e.human)){
                     kill_reward*=rules.score.leader_kill
                 }
-                this.assign_leader(killer)
                 killer.on_kill(kill_reward,e.params)
+                this.assign_leader(killer)
             }
         }
         if(this.is_leader(e.human)){

@@ -47,6 +47,7 @@ ___
 * Gas Pump Can
 * Wood Table Bonesaw
 * Computer
+* Window
 ___
 ### Others
 * Parachute Perspective

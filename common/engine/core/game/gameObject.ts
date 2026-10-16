@@ -171,7 +171,7 @@ export abstract class BaseObject2D extends BaseGEL2D{
             this.cell_rect=this.to_rect()
             this.manager.cells.cell_pos(this.cell_rect.min)
             this.manager.cells.cell_pos(this.cell_rect.max)
-            if(!this.old_cell_rect||this.cell_rect.min.x!==this.old_cell_rect.min.x||this.cell_rect.min.x!==this.old_cell_rect.min.y||this.cell_rect.max.x!==this.old_cell_rect.max.x||this.cell_rect.max.y!==this.old_cell_rect.max.y){
+            if(!this.old_cell_rect||this.cell_rect.min.x!==this.old_cell_rect.min.x||this.cell_rect.min.y!==this.old_cell_rect.min.y||this.cell_rect.max.x!==this.old_cell_rect.max.x||this.cell_rect.max.y!==this.old_cell_rect.max.y){
                 this.manager.cells.dirty_objects.add(this)
                 this.old_cell_rect=this.cell_rect
             }

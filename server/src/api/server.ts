@@ -1,10 +1,9 @@
 import { ApiServerConfig, ApiSettings, GameConfig } from "common/scripts/config/config.ts";
 import { GroupManager } from "./game/groups.ts";
-import { default_handlers, DenoServer } from "common/engine/deno.ts";
 import { RegionManager } from "./game/regions.ts";
-import { error } from "node:console";
+import { Server, server_factory } from "common/engine/server/server.ts";
 export class ApiServer {
-    server: DenoServer
+    server: Server
     groups = new GroupManager(this)
     regions = new RegionManager(this)
 
@@ -18,8 +17,8 @@ export class ApiServer {
         day:number
         hour:number
     }
-    constructor(public config: ApiServerConfig){
-        this.server = new DenoServer(
+    constructor(server:server_factory,public config: ApiServerConfig){
+        this.server = new server(
             config.host.port,
             config.host.ssl,
             config.host.cert,
@@ -65,7 +64,7 @@ export class ApiServer {
     }
     routes(){
         this.server.route("/get-settings", () => {
-            return this.server.default_handlers.cors(default_handlers.no_cache(Response.json(this.api_settings)))
+            return this.server.default_handlers.cors(this.server.default_handlers.no_cache(Response.json(this.api_settings)))
         })
         this.server.route("/find-game", async (req) => {
             if(req.method !== "POST"){
@@ -74,7 +73,7 @@ export class ApiServer {
             if(!this.can_play())return new Response("You Cant Play Now",{status:204})
             const body = await req.json()
             const game=await this.regions.find_game(body)
-            return this.server.default_handlers.cors(default_handlers.no_cache(Response.json(game??{})))
+            return this.server.default_handlers.cors(this.server.default_handlers.no_cache(Response.json(game??{})))
         })
         this.groups.routes(this.server.router("group"))
         this.regions.routes(this.server.router("regions"))
@@ -128,8 +127,8 @@ ${stack}
 ============================================================
 `
 
-        try {
-            await Deno.writeTextFile(
+        /*try {
+            await this.(
                 this.config.debug?.error_file??"database/error.log",
                 content,
                 {
@@ -140,7 +139,7 @@ ${stack}
         } catch (logError) {
             console.error("[SERVER] Failed to write error.log:", logError)
             console.error("[SERVER] Original error:", error)
-        }
+        }*/
 
         console.error(`[SERVER] ${context ?? "Error"}:`, error)
     }
@@ -149,7 +148,7 @@ ${stack}
             this.server.run()
             setInterval(this.tick.bind(this),1000)
         }catch(e){
-            this.log_server_error(error,"Error Catch")
+            this.log_server_error(e,"Error Catch")
         }
     }
 }

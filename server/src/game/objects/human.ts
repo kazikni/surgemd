@@ -6,7 +6,6 @@ import { ServerGameObject } from "../others/gameObject.ts"
 import { type Group, type Team } from "../mode/teams.ts"
 import { FloorDef, Floors} from "common/scripts/others/terrain.ts"
 import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts"
-import { GunDef } from "common/scripts/definitions/items/guns.ts"
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
 import { ActionsManager, CircleHitbox2D, Hitbox2D, Stream, Numeric, random, Slot, v2, v2m, Vec2, ColorM, cloneDeep, create_script, ObjectComponent, DefaultGELvents } from "common/engine/core.ts";
 import { type VehicleSeat } from "./vehicle.ts";

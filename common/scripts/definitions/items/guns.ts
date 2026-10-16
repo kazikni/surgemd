@@ -158,7 +158,7 @@ export const bullets_factory={
     },
     birdshot(power:number,tracer=tracers.tiny):BulletDef{
         return {
-            damage:3.55*power,
+            damage:3.6*power,
             speed:24*(1+(power-1)*0.4),
             range:32*(1+(power-1)*0.4),
 
@@ -1331,8 +1331,8 @@ export function Guns_Default_Init():GunDef[]{
             name:"HP-18",
             rank:ItemRank.D,
 
-            fire_delay:0.3,
-            spread:6.75,
+            fire_delay:0.5,
+            spread:7,
             jitter_radius:0.25,
 
             fire_mode:FireMode.Auto,

@@ -1,8 +1,8 @@
 import { ID } from "../math/utils.ts";
 import { BaseGameObject2D, AbstractGame } from "../game/game.ts";
 import { Client, ClientsManager } from "./client.ts";
-export type HandlerFunc = (req: Request, url_path: string[], info: Deno.ServeHandlerInfo) => Response | null;
-export type HandlerFuncAsync = (req: Request, url_path: string[], info: Deno.ServeHandlerInfo) => Promise<Response | null>;
+export type HandlerFunc = (req: Request, url_path: string[], info: any) => Response | null;
+export type HandlerFuncAsync = (req: Request, url_path: string[], info: any) => Promise<Response | null>;
 //Definitions
 export interface HostConfig {
     port: number

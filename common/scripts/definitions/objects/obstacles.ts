@@ -32,6 +32,7 @@ export const ObstacleTD:TD={
         { name: "no_pathfinding_collision", content: tdm.boolean },
         { name: "no_spawn_collision", content: tdm.boolean },
         { name: "no_bullets_collision", content: tdm.boolean },
+        { name: "keep_collision_on_die", content: tdm.boolean },
         { name: "passable_by_bullets", content: tdm.boolean },
 
         { name: "invisible_on_map", content: tdm.boolean },
@@ -191,6 +192,7 @@ export interface ObstacleDef extends Definition{
     no_collision?:boolean
     no_spawn_collision?:boolean
     no_pathfinding_collision?:boolean
+    keep_collision_on_die?:boolean
     passable_by_bullets?:boolean
     no_bullets_collision?:boolean
 
@@ -1062,6 +1064,37 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             health:80,
         }),
         {
+            idString:"window",
+            health:20,
+
+            passable_by_bullets:true,
+            keep_collision_on_die:true,
+            hitbox:new RectHitbox2D(v2(-0.16,-0.74),v2(0.16,0.74)),
+            assets:{
+                frame:{
+                    transform:{
+                        alpha:200
+                    },
+                    dead:"glass_residue_1x4",
+                    dead_transform:{
+                        tint:0x7ca0bc,
+                        scale2:v2(0.5,0.7)
+                    }
+                },
+                particles:{
+                    particle:"glass_particle",
+                    variations:3,
+                    tint:0x7ca0bc
+                },
+                sounds:hit_sounds.glass,
+            },
+            zIndex:{
+                base:zIndexes.Obstacles1
+            },
+            rotation_mode:RotationMode.limited,
+            parallax:PerspetiveSizes.medium,
+        },
+        {
             idString:"iron_ladder_bottom",
             hitbox:new RectHitbox2D(v2(-0.15,-0.5),v2(0.15,0.5)),
             imortal:true,
@@ -1362,11 +1395,19 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             },
             assets:{
                 frame:{
+                    base:"wood_table",
                     dead:"wood_residue_1x2",
                     dead_transform:{
                         tint:0x5f3d07,
                     }
                 },
+                aditional_sprites:[{
+                    image:"bonesaw",
+                    hotspot:v2.half_one,
+                    position:v2(-0.2,0.5),
+                    rotation:2,
+                    scale:2
+                }],
                 particles:{
                     particle:"plank_particle",
                     tint:0x583b08

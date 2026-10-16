@@ -1,4 +1,4 @@
-import { Server, AbstractGameContainer, AbstractGameServer, AbstractWorkerGameContainer, AbstractSelfGameContainer, DenoFileManager} from "common/engine/deno.ts"
+import { Server, AbstractGameContainer, AbstractGameServer, AbstractWorkerGameContainer, AbstractSelfGameContainer} from "common/engine/server/server.ts"
 import { GameConfig, GameServerConfig } from "common/scripts/config/config.ts";
 import { Game, GameData } from "./game.ts";
 import { WorkerMessage } from "./game_worker.ts";
@@ -77,7 +77,7 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
     constructor(factory:server_factory,clients_factory:new(packet:PacketsManager)=>ClientsManager,server: Server,config:GameServerConfig,worker_path:string,fs:FileManager){
         super(factory,server,config,fs)
         this.clients_factory=clients_factory
-        this.fs=new DenoFileManager()
+        this.fs=fs
         if(config.authentication&&config.region){
             this.api_conn=new ApiConnection(this,config)
             this.api_conn.connect()

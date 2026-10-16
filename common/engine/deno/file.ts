@@ -26,6 +26,9 @@ export class DenoFileHandle extends FileHandle {
     }
 }
 export class DenoFileManager extends FileManager {
+    override exist(path: string): Promise<boolean> {
+      throw new Error("Method not implemented.");
+    }
     override is_directory(path: string): boolean {
         return false
     }
@@ -47,6 +50,12 @@ export class DenoFileManager extends FileManager {
             out.push(entry.name)
         }
         return out
+    }
+    override make_dir(path: string,args?:{recursive?:boolean}): Promise<void> {
+        return Deno.mkdir(path,{
+            recursive:args?.recursive??true,
+            mode:0o700
+        })
     }
     async open(path: string, mode: "r" | "w" | "rw"): Promise<FileHandle> {
         const file = await Deno.open(path, {

@@ -190,7 +190,6 @@ export class MessagePacket extends Packet {
         this.bytes1 = ((header & 0b11) + 1)
         this.bytes2 = (((header >> 2) & 0b11) + 1)
         this.msg=stream.read_any(this.bytes1 as 1|2|3|4,this.bytes2 as 1|2|3|4)
-        console.log(this.msg,"decode")
     }
 }
 export class SignalMessagePacket extends Packet {

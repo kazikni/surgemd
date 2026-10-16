@@ -2,7 +2,7 @@ import { join, extname } from "https://deno.land/std/path/mod.ts";
 import { existsSync } from "https://deno.land/std/fs/mod.ts";
 import { serveFile } from "https://deno.land/std/http/file_server.ts";
 import { Path } from "../core/math/utils.ts";
-import { Server } from "../server/server.ts";
+import { Router, Server } from "../server/server.ts";
 import { HandlerFunc, HandlerFuncAsync } from "../core/net/server_base.ts";
 
 export interface RequestLimitConfig {
@@ -154,9 +154,9 @@ const FilesResponse: Record<string, (name: string) => Promise<Response | null>> 
     },
 };
 
-export class Router {
+export class DenoRouter implements Router{
     private routes: Map<string, (HandlerFunc | HandlerFuncAsync)[]> = new Map();
-    private sub_routers: Map<string, Router> = new Map();
+    private sub_routers: Map<string, DenoRouter> = new Map();
     failCallback: HandlerFunc | HandlerFuncAsync;
 
     constructor(failCallback: HandlerFunc | HandlerFuncAsync = (_req) => new Response("Not Found :(", { status: 404 })) {
@@ -169,9 +169,9 @@ export class Router {
         }
         this.routes.get(url)!.push(handler);
     }
-    private _route(url: string[], handler: HandlerFunc | HandlerFuncAsync | Router) {
+    private _route(url: string[], handler: HandlerFunc | HandlerFuncAsync | DenoRouter) {
         if (url.length == 1) {
-            if (handler instanceof Router) {
+            if (handler instanceof DenoRouter) {
                 this.sub_routers.set(url[0], handler);
                 this.add_route(url[0], handler._handler());
             } else {
@@ -183,7 +183,7 @@ export class Router {
             if (this.sub_routers.has(name)) {
                 this.sub_routers.get(name)!._route(url, handler);
             } else {
-                this.sub_routers.set(name, new Router(this.failCallback));
+                this.sub_routers.set(name, new DenoRouter(this.failCallback));
                 this.sub_routers.get(name)!._route(url, handler);
                 this.add_route(name, this.sub_routers.get(name)!._handler());
             }
@@ -206,23 +206,23 @@ export class Router {
         this._remove_route(Path.split(url));
     }
 
-    route(url: string, ...handlers: (HandlerFunc | HandlerFuncAsync | Router)[]) {
+    route(url: string, ...handlers: (HandlerFunc|HandlerFuncAsync|Router)[]) {
         handlers.forEach(handler => {
-            this._route(Path.split(url), handler);
+            this._route(Path.split(url), handler as (HandlerFunc|HandlerFuncAsync|DenoRouter));
         });
     }
     router(url: string): Router {
         const path = Path.split(url)
-        let current: Router = this
+        let current: DenoRouter = this
         for (const part of path) {
             if (!current.sub_routers.has(part)) {
-                const router = new Router(this.failCallback)
+                const router = new DenoRouter(this.failCallback)
                 current.sub_routers.set(part, router)
                 current.add_route(part, router._handler())
             }
             current = current.sub_routers.get(part)!
         }
-        return current
+        return current as Router
     }
 
     folder(url: string, path: string) {
@@ -258,7 +258,7 @@ export class Router {
     }
 }
 
-export class DenoServer extends Router implements Server {
+export class DenoServer extends DenoRouter implements Server {
     port: number;
     ssl: boolean = false;
     certFile: string;

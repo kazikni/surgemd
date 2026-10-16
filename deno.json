@@ -8,12 +8,14 @@
         ]
     },
     "tasks": {
-        "dev:game": "cd server && deno run --watch -A ./src/game/main.ts",
-        "dev:api": "cd server && deno run --watch -A ./src/api/main.ts",
+        "dev:game": "cd server && deno task dev:game",
+        "dev:api": "cd server && deno task dev:api",
         "dev:client": "cd client && deno task dev",
         "dev":"deno task dev:game & deno task dev:api & deno task dev:client",
 
         "optmise:svg":"npx svgo client/public/assets/img -r --multipass",
-        "build:client": "cd client && npx vite build"
+        "build:client": "cd client && npx vite build",
+
+        "install":"npm install --save-dev nodemon ts-node"
     }
 }

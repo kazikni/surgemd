@@ -222,7 +222,6 @@ export const buildings_factory={
                             image:"small_bunker_ceiling_1",
                             position:v2(0,0),
                             scale:2.15,
-                            rotation:Math.PI
                         },
                         hitbox:new RectHitbox2D(v2(-2.65,-2.65),v2(2.65,2.65)),
                         scope_change:{}
@@ -628,7 +627,6 @@ export function Buildings_Default_Init():BuildingDef[]{
                     frame:{
                         image:"small_iron_stairs_ceiling_1",
                         position:v2(0,0),
-                        rotation:Math.PI
                     },
                     hitbox:new RectHitbox2D(v2(-0.83,-0.83),v2(0.83,0.83)),
                     scope_change:{}

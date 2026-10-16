@@ -282,6 +282,11 @@ export const hit_sounds:Record<string,HitSoundsDef>={
         hit:"tissue_hit",
         hit_variations:2,
         break:"tissue_break",
+    },
+    glass:{
+        hit:"glass_hit",
+        hit_variations:2,
+        break:"glass_break"
     }
 }
 export const PerspetiveSizes={

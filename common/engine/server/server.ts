@@ -52,14 +52,25 @@ export class ConnectionLimiter {
         }, intervalMs)
     }
 }
-export interface Server{
+export interface Router{
+    route(path:string,...handlers: (HandlerFunc | HandlerFuncAsync | Router)[]):void
+    router(path:string):Router
+    remove_route(url: string):void
+    folder(url:string,path:string):void
+}
+export interface Server extends Router{
     port:number
     ssl:boolean
     certFile?:string
     keyFile?:string
-    route(path:string,handler:HandlerFunc|HandlerFuncAsync):void
     stop():void|Promise<void>
     run():void|Promise<void>
+    default_handlers:{
+        websocket(req:Request):{response:Response,socket?:WebSocket}
+        cors(res: Response): Response
+        no_cache(res: Response): Response
+        json_request(req:Request,method?:string):Promise<{response?:Response,content:any}>
+    }
 }
 export type WorkerMessageBase<GameConfig, GameData, MainConfig>={
     type:0 // Begin

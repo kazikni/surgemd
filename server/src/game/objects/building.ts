@@ -459,7 +459,7 @@ export class Building extends StaticBody {
             if(child.type!==0)continue
             for(const conn of child.def.connections??[]){
                 const connection=this.objects_ids[conn]
-                if(conn)child.obj.connections.push(connection)
+                if(conn)child.obj.connections.push({type:0,obj:connection})
             }
         }
         this.after_generate()

@@ -19,7 +19,7 @@ export class Obstacle extends StaticBody{
     parent?:Building
     puzzle?:BuildingPuzzle
     puzzle_value?:string
-    connections:Obstacle[]=[]
+    connections:{obj:Obstacle,type:number}[]=[]
 
     max_scale:number=1
 
@@ -411,8 +411,13 @@ export class Obstacle extends StaticBody{
                 break
         }
     }
-    override damage(params:DamageParams){
-        if(this.health_data.dead||this.def.imortal||(this.def.resistence??0)>(params.resistence??0))return
+    override damage(params:DamageParams,force:boolean=false){
+        if(this.health_data.dead||this.def.imortal||((this.def.resistence??0)>(params.resistence??0)||force))return
+        for(const c of this.connections){
+            if(c.type===1)continue
+            c.obj.damage(params)
+        }
+    
 
         this.health_data.health=Math.max(this.health_data.health-params.amount,0)
         if(this.health_data.health===0){
@@ -440,19 +445,13 @@ export class Obstacle extends StaticBody{
         this.set_dirty_part()
         this.health_data.dead=true
         this.health_data.dirty=true
-        this.physical_data.no_collision=true
-        this.physical_data.no_bullets_collision=true
-
-        for(let i=0;i<10;i++){
-            for(const loot of loots){
-                loot.tick(1/30)
-            }
-        }
+        this.physical_data.no_collision=this.def.keep_collision_on_die?(this.def.no_collision):true
+        this.physical_data.no_bullets_collision=this.def.keep_collision_on_die?(this.def.no_bullets_collision):true
 
         if(params.owner)params.owner.inventory.accessorys.call_event("obstacle_destroy",{obstacle:this,human:params.owner})
         for(const c of this.connections){
-            if(c.def.imortal)continue
-            c.die({
+            if(c.obj.def.imortal||!(c.type===0||c.type===1))continue
+            c.obj.die({
                 amount:9999,
                 critical:false,
                 direction:0,
@@ -548,13 +547,14 @@ export class Obstacle extends StaticBody{
         .write_uint8(this.visual_data.skin)
 
         for(let i=0;i<this.connections.length;i++){
-            if(!this.connections[i]){
+            if(!this.connections[i]?.obj){
                 this.connections.splice(i,1)
                 i--
             }
         }
         stream.write_array(this.connections,(i)=>{
-            stream.write_id(ctx.idco[i.id])
+            stream.write_uint8(i.type)
+            stream.write_id(ctx.idco[i.obj.id])
         },1)
         .write_array(this.physical_data.stairs,(i)=>{
             stream.write_uint8(i.index)
@@ -590,10 +590,10 @@ export class Obstacle extends StaticBody{
         this.visual_data.skin=stream.read_uint8()
         this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(position,undefined,undefined,undefined)
         const connections=stream.read_array(()=>{
-            return stream.read_id()
+            return {type:stream.read_uint8(),id:stream.read_id()}
         },1)
         for(const c of connections){
-            this.connections.push(this.manager.objects[ctx.coid[c]])
+            this.connections.push({type:c.type,obj:this.manager.objects[ctx.coid[c.id]]})
         }
         stream.read_array(()=>{
             const idx=stream.read_uint8()

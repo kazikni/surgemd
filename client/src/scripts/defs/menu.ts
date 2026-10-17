@@ -299,7 +299,7 @@ export function make_emotes_settings(save: SaveManager,resources:ResourcesManage
             const def=definitions.game_objects.valueString[t.dataset.idString as string] as EmoteDef|BadgeDef
             if(!def)return
 
-            save.settings.set_var("sv_loadout_emote_"+selected_elem_out.dataset.slot,def.idString)
+            save.settings.set_var("loadout_emote_"+selected_elem_out.dataset.slot,def.idString)
 
             let frame:Frame|undefined
             if(def.def_type===GameObjectDefinitionType.badge){
@@ -353,7 +353,7 @@ export function make_emotes_settings(save: SaveManager,resources:ResourcesManage
             "death"
         ]
         for(const slot of slots){
-            const cur_emote=definitions.game_objects.valueString[save.settings.get_var("sv_loadout_emote_"+slot)] as EmoteDef|BadgeDef|undefined
+            const cur_emote=definitions.game_objects.valueString[save.settings.get_var("loadout_emote_"+slot)] as EmoteDef|BadgeDef|undefined
             
             const container=document.createElement("div")
             container.className="litem emote-slot-"+slot
@@ -390,7 +390,7 @@ export function make_emotes_settings(save: SaveManager,resources:ResourcesManage
                     selected_elem_out=t
                     t.classList.add("selected")
 
-                    const sv=save.settings.get_var("sv_loadout_emote_"+container.dataset.slot!)
+                    const sv=save.settings.get_var("loadout_emote_"+container.dataset.slot!)
                     if(selected_elem)selected_elem.classList.remove("selected")
                     selected_elem=vv[sv]
                     selected_elem.classList.add("selected")
@@ -403,7 +403,7 @@ export function make_emotes_settings(save: SaveManager,resources:ResourcesManage
 }
 export function make_badges_settings(save: SaveManager,resources: ResourcesManager,badges:BadgeDef[],translation: TranslationManager) {
     return (parent: HTMLDivElement) => {
-        let selected: string=save.settings.get_var("sv_loadout_badge")
+        let selected: string=save.settings.get_var("loadout_badge")
 
         parent.innerHTML = `
 <div class="loadout-icons-group items">
@@ -417,7 +417,7 @@ export function make_badges_settings(save: SaveManager,resources: ResourcesManag
             selected=null_elem.dataset.idString!
             selectedElem=null_elem
             null_elem.classList.add("selected")
-            save.settings.set_var("sv_loadout_badge",selected)
+            save.settings.set_var("loadout_badge",selected)
         }
         let selectedElem: HTMLDivElement|null
         if(!selected){
@@ -443,7 +443,7 @@ export function make_badges_settings(save: SaveManager,resources: ResourcesManag
                 selected=div.dataset.idString!
                 selectedElem=div
                 div.classList.add("selected")
-                save.settings.set_var("sv_loadout_badge",selected)
+                save.settings.set_var("loadout_badge",selected)
             }
 
             inventory.appendChild(div)
@@ -622,7 +622,7 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
 export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinition,fs:FileManager,translation:TranslationManager,resources:ResourcesManager){
     const campaign_path="scripts/campaign"
     const campaign=parseJSONC(await fs.read_file(campaign_path+"/main.jsonc"))
-    const debug_mode=menu.save.settings.get_var("sv_debug_enabled")
+    const debug_mode=menu.save.settings.get_var("debug_enabled")
     const mobile=is_mobile()
     for(const c in campaign.charpters){
         for(const l in campaign.charpters[c].levels){
@@ -921,24 +921,24 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                         {
                             type:"input",
                             tname:"loadout.character.name",
-                            var:"sv_loadout_name",
+                            var:"loadout_name",
                             limit:GameConstants.player.max_name_size
                         },
                         {
                             type:"color",
                             tname:"loadout.character.hair_tint",
-                            var:"sv_loadout_hair_tint",
+                            var:"loadout_hair_tint",
                         },
                         {
                             type:"enum",
                             tname:"loadout.character.hair_type",
-                            var:"sv_loadout_hair",
+                            var:"loadout_hair",
                             options:hairs_types,
                         },
                         {
                             type:"enum",
                             tname:"loadout.character.body_tint",
-                            var:"sv_loadout_body_tint",
+                            var:"loadout_body_tint",
                             options:[
                                 {
                                     name:"1",
@@ -969,24 +969,24 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                         {
                             type:"toggle",
                             tname:"loadout.character.female",
-                            var:"sv_loadout_female",
+                            var:"loadout_female",
                         },
                         {
                             type:"enum",
                             tname:"loadout.character.shirt",
-                            var:"sv_loadout_shirt",
+                            var:"loadout_shirt",
                             options:shirts_types,
                         },
                         {
                             type:"enum",
                             tname:"loadout.character.legs",
-                            var:"sv_loadout_legs",
+                            var:"loadout_legs",
                             options:legs_types,
                         },
                         {
                             type:"enum",
                             tname:"loadout.character.shoes",
-                            var:"sv_loadout_shoes",
+                            var:"loadout_shoes",
                             options:foot_types,
                         },
                     ],translation)
@@ -1002,7 +1002,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                 "wrapping":{
                     generate:(()=>{
                         const wrapping=Object.values(definitions.wrapping.value)
-                        return select_loadout_item(menu.save,resources,["",...wrapping.map((w)=>w.idString)],["weapons"],"/assets/img/menu/loadout/wrapping/wr_","sv_loadout_wrapping_","wrapping.","loadout.wrapping.",translation)
+                        return select_loadout_item(menu.save,resources,["",...wrapping.map((w)=>w.idString)],["weapons"],"/assets/img/menu/loadout/wrapping/wr_","loadout_wrapping_","wrapping.","loadout.wrapping.",translation)
                     })()
                 },
                 "badges":{
@@ -1066,7 +1066,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                         menu.api_settings?{
                             type:"enum",
                             tname:"settings.game.region",
-                            var:"sv_game_region",
+                            var:"game_region",
                             options:menu.api_settings.regions.map((v)=>{
                                 return {
                                     name:menu.translation.get("region."+v),
@@ -1077,26 +1077,26 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                         {
                             type:"toggle",
                             tname:"settings.game.interpolation",
-                            var:"sv_game_interpolation",
+                            var:"game_interpolation",
                         },
                         {
                             type:"toggle",
                             tname:"settings.game.client_rot",
-                            var:"sv_game_client_rot",
+                            var:"game_client_rot",
                         },
                         /*{
                             type:"toggle",
                             tname:"settings.game.friendly_fire",
-                            var:"sv_game_friendly_fire",
+                            var:"game_friendly_fire",
                         },*/{
                             type:"toggle",
                             tname:"settings.game.tank_vehicle_control",
-                            var:"sv_game_tank_vehicle_control",
+                            var:"game_tank_vehicle_control",
                         },
                         {
                             type:"toggle",
                             tname:"settings.game.ammo_outline",
-                            var:"sv_game_ammo_outline",
+                            var:"game_ammo_outline",
                         },
                     ],translation)
                 },
@@ -1105,7 +1105,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                         {
                             type:"enum",
                             tname:"settings.graphics.resolution",
-                            var:"sv_graphics_resolution",
+                            var:"graphics_resolution",
                             options:[
                                 {name:"Low",value:"low"},
                                 {name:"Medium",value:"medium"},
@@ -1114,7 +1114,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                         {
                             type:"enum",
                             tname:"settings.graphics.particles",
-                            var:"sv_graphics_particles",
+                            var:"graphics_particles",
                             options:[
                                 {name:"No",value:"0"},
                                 {name:"Minimum",value:"1"},
@@ -1124,17 +1124,17 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                         {
                             type:"toggle",
                             tname:"settings.graphics.shadows",
-                            var:"sv_graphics_shadows",
+                            var:"graphics_shadows",
                         },
                         {
                             type:"toggle",
                             tname:"settings.graphics.perspective",
-                            var:"sv_graphics_perspective",
+                            var:"graphics_perspective",
                         },
                         /*{
                             type:"enum",
                             tname:"settings.graphics.lights",
-                            var:"sv_graphics_lights",
+                            var:"graphics_lights",
                             options:[
                                 {tname:"No",value:"0"},
                                 {tname:"Minimum",value:"1"},
@@ -1144,7 +1144,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                         {
                             type:"enum",
                             tname:"settings.graphics.post_proccess",
-                            var:"sv_graphics_post_proccess",
+                            var:"graphics_post_proccess",
                             options:[
                                 {name:"No",value:"0"},
                                 {name:"Minimum",value:"1"},
@@ -1154,12 +1154,12 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                         {
                             type:"toggle",
                             tname:"settings.graphics.climate",
-                            var:"sv_graphics_climate",
+                            var:"graphics_climate",
                         },
                         {
                             type:"toggle",
                             tname:"settings.graphics.fullscreen",
-                            var:"sv_graphics_fullscreen",
+                            var:"graphics_fullscreen",
                             on_set(enable:boolean){
                                 set_full_screen(enable)
                             }
@@ -1171,7 +1171,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                         {
                             type:"range",
                             tname:"settings.sounds.master_volume",
-                            var:"sv_sounds_master_volume",
+                            var:"sounds_master_volume",
                             on_set:(v:number)=>{
                                 menu.sounds.master_bus.set_volume(Numeric.clamp(v,0,1))
                             },
@@ -1182,7 +1182,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                         {
                             type:"range",
                             tname:"settings.sounds.music_volume",
-                            var:"sv_sounds_music_volume",
+                            var:"sounds_music_volume",
                             on_set:(v:number)=>{
                                 menu.sounds.get_bus("music").set_volume(Numeric.clamp(v,0,1))
                             },
@@ -1193,7 +1193,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                         {
                             type:"range",
                             tname:"settings.sounds.ambient_volume",
-                            var:"sv_sounds_ambient_volume",
+                            var:"sounds_ambient_volume",
                             on_set:(v:number)=>{
                                 menu.sounds.get_bus("ambience").set_volume(Numeric.clamp(v,0,1))
                             },
@@ -1204,7 +1204,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                         {
                             type:"toggle",
                             tname:"settings.sounds.gameplay_music",
-                            var:"sv_sounds_gameplay_music",
+                            var:"sounds_gameplay_music",
                         },
                     ],translation),
                 },
@@ -1213,37 +1213,37 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                         {
                             type:"color",
                             tname:"settings.ui.primary_color",
-                            var:"sv_ui_primary_color",
+                            var:"ui_primary_color",
                         },
                         {
                             type:"color",
                             tname:"settings.ui.secondary_color",
-                            var:"sv_ui_secondary_color",
+                            var:"ui_secondary_color",
                         },
                         {
                             type:"color",
                             tname:"settings.ui.tertiary_color",
-                            var:"sv_ui_tertiary_color",
+                            var:"ui_tertiary_color",
                         },
                         {
                             type:"color",
                             tname:"settings.ui.positive_color",
-                            var:"sv_ui_positive_color",
+                            var:"ui_positive_color",
                         },
                         {
                             type:"color",
                             tname:"settings.ui.negative_color",
-                            var:"sv_ui_negative_color",
+                            var:"ui_negative_color",
                         },
                         {
                             type:"color",
                             tname:"settings.ui.special_color",
-                            var:"sv_ui_special_color",
+                            var:"ui_special_color",
                         },
                         {
                             type:"enum",
                             tname:"settings.ui.translation",
-                            var:"sv_ui_translation",
+                            var:"ui_translation",
                             options:[
                                 {name:"English",value:"en"},
                                 //{name:"Espanhol",value:"es"},
@@ -1255,12 +1255,12 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                         (mobile)?undefined:{
                             type:"toggle",
                             tname:"settings.ui.interactive",
-                            var:"sv_ui_interactive",
+                            var:"ui_interactive",
                         },
                         {
                             type:"toggle",
                             tname:"settings.ui.show_intro",
-                            var:"sv_ui_show_intro",
+                            var:"ui_show_intro",
                         }
                     ],translation),
                 },
@@ -1322,7 +1322,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                             max:300,
                             step:1,
                             tname:"settings.debug.ping_emulation",
-                            var:"sv_debug_ping_emulation",
+                            var:"debug_ping_emulation",
                         }
                     ],translation),
                 },

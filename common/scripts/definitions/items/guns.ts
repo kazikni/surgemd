@@ -1173,8 +1173,8 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.6
             },
         }),
-        guns_factory.sniper("empr641","c22",{
-            name:"EMPR-641",
+        guns_factory.sniper("super_conqueror","c22",{
+            name:"SUPER Conqueror",
             rank:ItemRank.B,
 
             fire_delay:1,

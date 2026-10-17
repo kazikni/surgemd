@@ -87,7 +87,7 @@ export const c_loot_visual:ObjectComponent<LootVisual_CData&GameObject>={
                     ctx.object.sprite_main.rotation=Angle.deg2rad(-30)
                     ctx.object.sprite_main.visible=true
                     ctx.object.sprite_main.scale=v2(2,2)
-                    if(ctx.object.game.save.settings.get_var("sv_game_ammo_outline")){
+                    if(ctx.object.game.save.settings.get_var("game_ammo_outline")){
                         ctx.object.sprite_outline.frame=ctx.object.game.resources.get_frame(`${(data.item as unknown as GunDef).ammo_type}_outline`)
                     }else{
                         ctx.object.sprite_outline.frame=ctx.object.game.resources.get_frame("rarity_outline")
@@ -242,7 +242,7 @@ export const c_loot_nc={
                     }
                     obj.position=position
                 }else{
-                    if(obj.game.save.settings.get_var("sv_game_interpolation")){
+                    if(obj.game.save.settings.get_var("game_interpolation")){
                         obj.dest_pos=position
                     }else{
                         obj.position=position

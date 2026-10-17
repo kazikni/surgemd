@@ -32,7 +32,7 @@ ___
 * Effective Bullet Range
 * Reload Case Particle
 * New Ak47 Sounds
-* Replace Model94 by EMPR-641
+* Replace Model94 by 
 * Replace SR25 by M110 A2
 ___
 ### Loadout

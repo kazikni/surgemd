@@ -1,4 +1,4 @@
-import { ApiServerConfig, ApiSettings, GameConfig } from "common/scripts/config/config.ts";
+import { ApiServerConfig, ApiSettings, game_version, GameConfig } from "common/scripts/config/config.ts";
 import { GroupManager } from "./game/groups.ts";
 import { RegionManager } from "./game/regions.ts";
 import { Server, server_factory } from "common/engine/server/server.ts";
@@ -10,6 +10,7 @@ export class ApiServer {
     modes:GameConfig[]=[]
 
     api_settings!:ApiSettings
+    api_settings_s:string="{}"
 
     play_time?:{
         last_playtime?:number
@@ -47,6 +48,7 @@ export class ApiServer {
             }
         }
         this.api_settings={
+            game_version:game_version,
             database:{
                 enabled:this.config.database?.enabled!==undefined?this.config.database.enabled:false,
             },
@@ -61,10 +63,11 @@ export class ApiServer {
                 }
             }:undefined
         }
+        this.api_settings_s=JSON.stringify(this.api_settings)
     }
     routes(){
         this.server.route("/get-settings", () => {
-            return this.server.default_handlers.cors(this.server.default_handlers.no_cache(Response.json(this.api_settings)))
+            return this.server.default_handlers.cors(this.server.default_handlers.no_cache(new Response(this.api_settings_s)))
         })
         this.server.route("/find-game", async (req) => {
             if(req.method !== "POST"){

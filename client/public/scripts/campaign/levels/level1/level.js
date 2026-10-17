@@ -28,7 +28,7 @@ return (class extends LevelPlayerScript{
                     {item:"vector",weight: 0.5},
                     {item:"p90",weight: 0.5},
                     {item:"kar98k",weight: 0.5},
-                    {item:"empr641",weight: 0.5},
+                    {item:"super_conqueror",weight: 0.5},
                     {item:"blr81",weight: 0.5},
                     {item:"rifle_cbc",weight: 0.5},
                     {item:"m1_garand",weight: 0.4},

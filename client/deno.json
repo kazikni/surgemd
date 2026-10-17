@@ -1,11 +1,15 @@
 {
-  "nodeModulesDir": "manual",
+  "nodeModulesDir": "auto",
   "importMap": "../common/deps.json",
   "compilerOptions": {
     "lib": ["dom", "deno.ns"]
   },
   "tasks": {
-    "dev":"deno -A npm:vite dev",
+    "dev":" deno -A npm:vite .",
     "build":"deno -A npm:vite build"
+  },
+  "allowScripts": {
+    "allow": ["npm:canvas@3.2.3","npm:@sveltejs/vite-plugin-svelte@^7.3.1","npm:sass-embedded@^1.105.2"],
+    "deny": []
   }
 }

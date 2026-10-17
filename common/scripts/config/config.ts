@@ -30,6 +30,7 @@ export interface PlayTimeConfig{
     duration:number
 }
 export interface ApiSettings{
+    game_version:string
     regions:string[]
     play_options:GamePlayOption[]
     database:{
@@ -174,3 +175,5 @@ export function ZeroConfig():ConfigType{
         }
     }
 }
+
+export const game_version="Pre-Beta-10"

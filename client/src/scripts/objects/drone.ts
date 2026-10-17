@@ -64,7 +64,7 @@ export class Drone extends AirBody {
             s.rotation+=6*dt
         }
 
-        if(this.game.save.settings.get_var("sv_graphics_perspective")){
+        if(this.game.save.settings.get_var("graphics_perspective")){
             v2m.single(this.shadow.scale,1/Math.max(this.z*2,0.1))
             this.visual.matrix=matrix4.parallax_2d(this.scene.camera.position,1+(this.z*0.5))
             this.set_hidden(this.can_hide(this.game.scope_zoom))

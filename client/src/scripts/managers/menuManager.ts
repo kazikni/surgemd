@@ -1,5 +1,5 @@
-import { api, API_BASE, api_server, game_version, socials } from "../others/config.ts";
-import { ApiSettings, FindGameResult } from "common/scripts/config/config.ts";
+import { api, API_BASE, api_server, socials } from "../others/config.ts";
+import { ApiSettings, FindGameResult, game_version } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
 import { AudioEngine, Camera2D, SaveManager, HideElement,InputManager, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, ToggleElement, is_mobile } from "common/engine/web.ts";
@@ -205,7 +205,7 @@ export class MenuManager{
             const screen = this.content.initial_screen
             const video = document.getElementById("intro-video") as HTMLVideoElement
 
-            if(!this.save.settings.get_var("sv_ui_show_intro")){
+            if(!this.save.settings.get_var("ui_show_intro")){
                 screen.style.opacity = "0"
                 finish()
                 return
@@ -360,7 +360,7 @@ export class MenuManager{
         }
     }
     async init(input:InputManager,save:SaveManager,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,cam2d:Camera2D,definitions:GameDefinition,transition:TranslationManager){
-        const debug_mode=save.settings.get_var("sv_debug_enabled")
+        const debug_mode=save.settings.get_var("debug_enabled")
         this.save=save
         this.resources=resources
         this.sounds=sounds
@@ -393,12 +393,12 @@ export class MenuManager{
 
             this.game_version_clicks++
             if(this.game_version_clicks>10){
-                this.save.settings.set_var("sv_debug_enabled",!debug_mode)
+                this.save.settings.set_var("debug_enabled",!debug_mode)
                 self.location.reload()
             }
         })
 
-        if(save.settings.get_var("sv_graphics_fullscreen"))set_full_screen(true)
+        if(save.settings.get_var("graphics_fullscreen"))set_full_screen(true)
 
         if(debug_mode){
             this.debug_console_container=new SMDEWindow()

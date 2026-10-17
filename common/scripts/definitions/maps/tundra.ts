@@ -179,7 +179,7 @@ export const TundraMap:MapDef={
             {item:"m110a2",weight:83},
             {item:"vss",weight:83},
             {item:"rifle_cbc",weight:80},
-            {item:"empr641",weight:80},
+            {item:"super_conqueror",weight:80},
             {item:"blr81",weight:75},
 
             // Unrelated Weapons

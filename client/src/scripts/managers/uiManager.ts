@@ -185,7 +185,7 @@ export class UiManager{
         color=ColorM.mult_rgba(color,1,1,1,0.4)
         this.content.game_gui.style.setProperty("--ui-panel-background",ColorM.rgba2hex(color))
         this.content.game_gui.style.setProperty("--ui-panel-border",`0.2vh solid ${primary}`)
-        this.content.game_gui.style.setProperty("--ui-panel-box-shadow",this.game.save.settings.get_var("sv_ui_simple_mode")?"":`0 0 0.5vh ${primary}`)
+        this.content.game_gui.style.setProperty("--ui-panel-box-shadow",this.game.save.settings.get_var("ui_simple_mode")?"":`0 0 0.5vh ${primary}`)
 
         this.game.ui_manager.signal("update_theme",{})
     }
@@ -296,10 +296,10 @@ export class UiManager{
                 ]
             }else{
                 emotes=[
-                    this.game.definitions.game_objects.valueString[this.game.save.settings.get_var("sv_loadout_emote_right")] as (EmoteDef|BadgeDef|PingDef|undefined),  // Right
-                    this.game.definitions.game_objects.valueString[this.game.save.settings.get_var("sv_loadout_emote_bottom")] as (EmoteDef|BadgeDef|PingDef|undefined), // Bottom
-                    this.game.definitions.game_objects.valueString[this.game.save.settings.get_var("sv_loadout_emote_left")] as (EmoteDef|BadgeDef|PingDef|undefined),   // Left
-                    this.game.definitions.game_objects.valueString[this.game.save.settings.get_var("sv_loadout_emote_top")] as (EmoteDef|BadgeDef|PingDef|undefined),    // Top
+                    this.game.definitions.game_objects.valueString[this.game.save.settings.get_var("loadout_emote_right")] as (EmoteDef|BadgeDef|PingDef|undefined),  // Right
+                    this.game.definitions.game_objects.valueString[this.game.save.settings.get_var("loadout_emote_bottom")] as (EmoteDef|BadgeDef|PingDef|undefined), // Bottom
+                    this.game.definitions.game_objects.valueString[this.game.save.settings.get_var("loadout_emote_left")] as (EmoteDef|BadgeDef|PingDef|undefined),   // Left
+                    this.game.definitions.game_objects.valueString[this.game.save.settings.get_var("loadout_emote_top")] as (EmoteDef|BadgeDef|PingDef|undefined),    // Top
                 ]
             }
             
@@ -416,10 +416,10 @@ export class UiManager{
     start(){
         HideElement(this.content.post_proccess.tiltshift)
         HideElement(this.content.post_proccess.vignetting)
-        if(this.game.save.settings.get_var("sv_graphics_post_proccess")>=GraphicsDConfig.Advanced){
+        if(this.game.save.settings.get_var("graphics_post_proccess")>=GraphicsDConfig.Advanced){
             ShowElement(this.content.post_proccess.tiltshift)
         }
-        if(this.game.save.settings.get_var("sv_graphics_post_proccess")>=GraphicsDConfig.Normal){
+        if(this.game.save.settings.get_var("graphics_post_proccess")>=GraphicsDConfig.Normal){
             ShowElement(this.content.post_proccess.vignetting)
         }
         this.game.renderer.canvas.focus()
@@ -721,7 +721,7 @@ export class UiManager{
                     break
             }
         }else if(e.button===0){
-            if(!this.game.save.settings.get_var("sv_ui_interactive"))return
+            if(!this.game.save.settings.get_var("ui_interactive"))return
             switch(item_kind){
                 case 1:
                     if(this.game.comunication_mode){
@@ -918,7 +918,7 @@ export class UiManager{
             if(!o.can_interact(player)) continue
             this.current_interaction = o
             if(this.current_interaction!==old_inter){
-                if(this.game.save.settings.get_var("sv_mobile_auto_pickup")&&this.current_interaction.auto_interact(player)){
+                if(this.game.save.settings.get_var("mobile_auto_pickup")&&this.current_interaction.auto_interact(player)){
                     this.game.input_manager.listener.emit("actiondown",{action:"interact"})
                 }
                 const hint = o.get_interact_hint(player)

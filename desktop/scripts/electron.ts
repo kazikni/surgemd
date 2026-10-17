@@ -4,7 +4,7 @@ import { emptyDir, exists } from "https://deno.land/std@0.204.0/fs/mod.ts";
 const root_path=join(import.meta.dirname!,"../../")
 const base_path=join(import.meta.dirname!,"../")
 const client_path=join(root_path,"client")
-const dist_path=join(base_path,"dist")
+const dist_path=join(base_path,"../dist")
 
 Deno.chdir(base_path)
 
@@ -21,7 +21,7 @@ if (!viteResult.success) {
 
 const tmpPkg = {
   name: "surgemd",
-  version: "1.0.0",
+  version: "0.0.1",
   main: "electron/main.js",
   author: {
     name: "kazikni",

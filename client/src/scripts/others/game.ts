@@ -179,17 +179,17 @@ export class Game extends ClientGame<GameObject>{
         if(this.theme_colors[name])return this.theme_colors[name]
         switch(name){
             case "primary":
-                return this.save.settings.get_var("sv_ui_primary_color")
+                return this.save.settings.get_var("ui_primary_color")
             case "secondary":
-                return this.save.settings.get_var("sv_ui_secondary_color")
+                return this.save.settings.get_var("ui_secondary_color")
             case "tertiary":
-                return this.save.settings.get_var("sv_ui_tertiary_color")
+                return this.save.settings.get_var("ui_tertiary_color")
             case "positive":
-                return this.save.settings.get_var("sv_ui_positive_color")
+                return this.save.settings.get_var("ui_positive_color")
             case "negative":
-                return this.save.settings.get_var("sv_ui_negative_color")
+                return this.save.settings.get_var("ui_negative_color")
             case "special":
-                return this.save.settings.get_var("sv_ui_special_color")
+                return this.save.settings.get_var("ui_special_color")
         }
         return "#ffffff"
     }
@@ -400,7 +400,7 @@ export class Game extends ClientGame<GameObject>{
         })
 
         this.language.load_default_language(await(await fetch("/scripts/languages/en.json")).json() as Language,"main")
-        this.language.load_language(await(await fetch(`/scripts/languages/${this.save.settings.get_var("sv_ui_translation")}.json`)).json() as Language,"main")
+        this.language.load_language(await(await fetch(`/scripts/languages/${this.save.settings.get_var("ui_translation")}.json`)).json() as Language,"main")
 
         this.fs=fs
         await this.ui.init()
@@ -411,7 +411,7 @@ export class Game extends ClientGame<GameObject>{
         this.input.angle=angle
         if(dist>1)dist=1
         this.input.distance_to_aim=dist
-        if(!this.spectating&&!this.fineshed&&!this.active_entity.downed&&!this.active_entity.swimming&&!this.active_entity.seat&&this.save.settings.get_var("sv_game_client_rot")){
+        if(!this.spectating&&!this.fineshed&&!this.active_entity.downed&&!this.active_entity.swimming&&!this.active_entity.seat&&this.save.settings.get_var("game_client_rot")){
             this.active_entity.enable_auto_rot=false
             this.active_entity.rotation=this.input.angle
         }else{
@@ -442,7 +442,7 @@ export class Game extends ClientGame<GameObject>{
             if(agro.includes(p))continue
             this.resources.unload_imported(p)
         }
-        let resolution = this.save.settings.get_var("sv_graphics_resolution")
+        let resolution = this.save.settings.get_var("graphics_resolution")
         for(const tt of agro){
             if(this.resources.imported[tt])continue
             const v=await this.resources.load_json(`${tt}/settings.json`,this.menu.set_loading_current)
@@ -461,7 +461,7 @@ export class Game extends ClientGame<GameObject>{
         if(languages_path!=""){
             try{
                 this.language.load_default_language(await this.resources.load_json(`${languages_path}/en.json`),"ingame")
-                this.language.load_language(await this.resources.load_json(`${languages_path}/${this.save.settings.get_var("sv_ui_translation")}.json`),"ingame")
+                this.language.load_language(await this.resources.load_json(`${languages_path}/${this.save.settings.get_var("ui_translation")}.json`),"ingame")
             }catch(e){
                 console.log(e)
             }
@@ -555,7 +555,7 @@ export class Game extends ClientGame<GameObject>{
                 this.ui.content.mouse.style.top=this.input_manager.virtual_mouse.y+"px"
             }
         }
-        if(this.save.settings.get_var("sv_game_interpolation")){
+        if(this.save.settings.get_var("game_interpolation")){
             this.global_interpolation=Numeric.get_interpolation_t(this.ntps,dt)
         }else{
             this.global_interpolation=1
@@ -624,7 +624,7 @@ export class Game extends ClientGame<GameObject>{
         const cam_layer=this.scene_2d.camera.layer
         this.ui_gfx.layer=cam_layer
         this.hitboxes_gfx.layer=cam_layer
-        if(this.save.settings.get_var("sv_graphics_perspective")){
+        if(this.save.settings.get_var("graphics_perspective")){
             for(const obj of this.scene_2d.camera.container.children){
                 if(obj.propertys?.["no_layer_parallax"])continue
                 const parallax=1-(cam_layer-obj.layer)*0.14
@@ -688,22 +688,22 @@ export class Game extends ClientGame<GameObject>{
     join(){
         if(!this.client)return
         const packet=new JoinPacket()
-        packet.player_name=this.save.settings.get_var("sv_loadout_name")
+        packet.player_name=this.save.settings.get_var("loadout_name")
         packet.skin={
-            female:this.save.settings.get_var("sv_loadout_female"),
-            body_tint:ColorM.hex2number(this.save.settings.get_var("sv_loadout_body_tint")),
-            hair:(this.definitions.loadout.getFromStringSafe(this.save.settings.get_var("sv_loadout_hair")))?.idNumber??0,
-            hair_tint:ColorM.hex2number(this.save.settings.get_var("sv_loadout_hair_tint")),
-            shirt:(this.definitions.loadout.getFromString(this.save.settings.get_var("sv_loadout_shirt")) as LoadoutShirtDef).idNumber!,
-            legs:(this.definitions.loadout.getFromString(this.save.settings.get_var("sv_loadout_legs")) as LoadoutLegDef).idNumber!,
-            foot:(this.definitions.loadout.getFromString(this.save.settings.get_var("sv_loadout_foot")) as LoadoutFootDef).idNumber!,
+            female:this.save.settings.get_var("loadout_female"),
+            body_tint:ColorM.hex2number(this.save.settings.get_var("loadout_body_tint")),
+            hair:(this.definitions.loadout.getFromStringSafe(this.save.settings.get_var("loadout_hair")))?.idNumber??0,
+            hair_tint:ColorM.hex2number(this.save.settings.get_var("loadout_hair_tint")),
+            shirt:(this.definitions.loadout.getFromString(this.save.settings.get_var("loadout_shirt")) as LoadoutShirtDef).idNumber!,
+            legs:(this.definitions.loadout.getFromString(this.save.settings.get_var("loadout_legs")) as LoadoutLegDef).idNumber!,
+            foot:(this.definitions.loadout.getFromString(this.save.settings.get_var("loadout_foot")) as LoadoutFootDef).idNumber!,
         }
         packet.group_token=this.group_token
-        packet.victory_emote=this.definitions.game_objects.keysString[this.save.settings.get_var("sv_loadout_emote_victory")]??0
-        packet.death_emote=this.definitions.game_objects.keysString[this.save.settings.get_var("sv_loadout_emote_death")]??0
-        packet.wrapping=this.definitions.wrapping.getFromStringSafe(this.save.settings.get_var("sv_loadout_wrapping_weapons"))?.idNumber??0
-        packet.badge=this.definitions.badges.getFromStringSafe(this.save.settings.get_var("sv_loadout_badge"))?.idNumber??0
-        packet.tank_vehicle_control=this.save.settings.get_var("sv_game_tank_vehicle_control")
+        packet.victory_emote=this.definitions.game_objects.keysString[this.save.settings.get_var("loadout_emote_victory")]??0
+        packet.death_emote=this.definitions.game_objects.keysString[this.save.settings.get_var("loadout_emote_death")]??0
+        packet.wrapping=this.definitions.wrapping.getFromStringSafe(this.save.settings.get_var("loadout_wrapping_weapons"))?.idNumber??0
+        packet.badge=this.definitions.badges.getFromStringSafe(this.save.settings.get_var("loadout_badge"))?.idNumber??0
+        packet.tank_vehicle_control=this.save.settings.get_var("game_tank_vehicle_control")
         this.client.emit_packet(packet)
     }
 
@@ -723,7 +723,7 @@ export class Game extends ClientGame<GameObject>{
                 this.offline=false
                 const args={
                     ...play,
-                    region:this.save.settings.get_var("sv_game_region"),
+                    region:this.save.settings.get_var("game_region"),
                 }
                 try{
                     if(this.menu.group_state){
@@ -817,10 +817,10 @@ export class Game extends ClientGame<GameObject>{
         if(this.client===client)return
         if(this.client&&this.client.opened)this.client.disconnect()
         this.client=client
-        client.send_ping_emulation=this.save.settings.get_var("sv_debug_ping_emulation")
-        client.recev_ping_emulation=this.save.settings.get_var("sv_debug_ping_emulation")
+        client.send_ping_emulation=this.save.settings.get_var("debug_ping_emulation")
+        client.recev_ping_emulation=this.save.settings.get_var("debug_ping_emulation")
 
-        this.world_shadow.enabled=this.save.settings.get_var("sv_graphics_shadows")
+        this.world_shadow.enabled=this.save.settings.get_var("graphics_shadows")
 
         client.on("general_update",(p:GeneralUpdatePacket)=>{
             this.process_general_update(p.content)

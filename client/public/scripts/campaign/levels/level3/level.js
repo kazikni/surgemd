@@ -96,7 +96,7 @@ return (class extends LevelPlayerScript{
                         ],
                         "gun1": [
                             {
-                                "item": "empr641",
+                                "item": "super_conqueror",
                                 "weight": 6
                             },
                             {
@@ -118,7 +118,7 @@ return (class extends LevelPlayerScript{
                         ],
                         "gun2": [
                             {
-                                "item": "empr641",
+                                "item": "super_conqueror",
                                 "weight": 6
                             },
                             {

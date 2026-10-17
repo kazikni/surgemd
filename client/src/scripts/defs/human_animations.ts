@@ -303,6 +303,7 @@ export const DefaultHumanModes={
 
         h.sprites.weapon.visible=false
         h.sprites.weapon2.visible=false
+        h.sprites.item3.visible=false
         if(h.sprites.shadow)h.sprites.shadow.zIndex=h.container.zIndex-0.5
         if(h.melee)h.container.callmode("update_melee",h.melee)
     },
@@ -381,6 +382,12 @@ export const DefaultHumanModes={
                     if(replace)h.sprites.weapon2.set_frame(replace,h.game.resources)
                 }else{
                     frame=weapon.assets?.world??weapon.idString+"_world"
+                    if(weapon.rig_image2)h.sprites.weapon2.transform_frame({
+                        rotation:0,
+                        hotspot:v2.half_one,
+                        zIndex:1.9,
+                        scale:2,
+                    })
                 }
                 if(weapon.assets?.use_last)h.assets.weapon_fire_last_sound=h.game.resources.get_sound(typeof weapon.assets?.use_last==="string"?weapon.assets.use_last:weapon.idString+"_fire_last")
                     if(weapon.assets?.use_alt_func)h.assets.weapon_fire_last_sound=h.game.resources.get_sound(weapon.assets.use_alt_func)

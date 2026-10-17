@@ -32,7 +32,7 @@ ___
 * Effective Bullet Range
 * Reload Case Particle
 * New Ak47 Sounds
-* Replace Model94 by 
+* Replace Model94 by SUPER Conqueror
 * Replace SR25 by M110 A2
 ___
 ### Loadout
@@ -65,6 +65,7 @@ ___
 * Some Sprites Changes
 * Some Hitboxes Changes
 * Send item emote now show the rarity of the item
+* PKP and M2-2 now support wrapping
 ___
 ### Menu
 

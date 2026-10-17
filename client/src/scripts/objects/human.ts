@@ -311,6 +311,10 @@ export class Human extends Humanoid{
             }
             if(replace)this.sprites.weapon.transform_frame(replace)
         }
+        if(def?.item_type===GameItemType.gun&&!(def as GunDef).dual_from&&def!.rig_image2){
+            this.sprites.weapon2.visible=true
+            this.sprites.weapon2.set_frame(def.rig_image2,this.game.resources)
+        }
     }
 
     override on_render(_dt: number): void {
@@ -443,6 +447,7 @@ export class Human extends Humanoid{
                 switch(this.animation.recoil_type){
                     case 0:
                         this.sprites.weapon.matrix=matrix
+                        this.sprites.weapon2.matrix=matrix
                         this.sprites.left_arm.matrix=matrix
                         this.sprites.right_arm.matrix=matrix
                         break

@@ -1,4 +1,4 @@
-import { AKeyFrame, DeepPartial, Definition, ease, FrameTransform, mergeDeep, v2 } from "../../../engine/core.ts";
+import { AKeyFrame, DeepPartial, Definition, ease, FrameDef, FrameTransform, mergeDeep, v2 } from "../../../engine/core.ts";
 import { default_animations, default_animations_factory } from "../../others/animations.ts";
 import { WeaponsArmRig,WeaponsRig, ItemRank, tracers, FistRig, WeaponAssets, FireMode} from "../../others/item.ts";
 import { ItemFireDefinition, MuzzleFlash, type BulletDef, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
@@ -31,6 +31,7 @@ export type GunDef={
 
     rig_arms?:FistRig
     rig_image?:FrameTransform
+    rig_image2?:FrameDef
     reload?:{
         capacity:number
         delay:number
@@ -1480,6 +1481,11 @@ export function Guns_Default_Init():GunDef[]{
                 capacity:200,
                 extended_capacity:250,
             },
+            rig_image2:{
+                image:"pkp_world",
+                scale:1.5,
+                position:v2(0.65,0)
+            },
         }),
         guns_factory.lmg("m249","c45",{
             name:"M249",
@@ -1671,11 +1677,20 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.5
             },
             rig_arms:WeaponsArmRig[1],
-            rig_image:{
-                position:v2(0.28,0.075),
-                rotation:0,
+            rig_image:WeaponsRig[1],
+            rig_image2:{
+                image:"m2_2_world",
+                position:v2(0,0.1)
+            },
+            recoil_animation:{
+                time_scale:10,
+                walk:0.06
             },
             speed_mod:0.6,
+            assets:{
+                world:"weapon_medium_world",
+                world_tint:0xd8b818
+            }
         },
     ]
 }

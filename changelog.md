@@ -68,9 +68,6 @@ ___
 * Send item emote now show the rarity of the item
 * PKP and M2-2 now support wrapping
 ___
-### Menu
-
-___
 ### Others
 * Battle Royale Level now have a smaller map
 * Improve Ping

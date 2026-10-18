@@ -201,7 +201,7 @@ return (class extends LevelPlayerScript{
         if(start_with_intro){
             cutscene.push(
                 //...this.cutscene,
-                {type:CutsceneCommandType.SetFrame,frame:"/assets/img/menu/loading_screens/paper.png"},
+                {type:CutsceneCommandType.SetFrame,frame:"/assets/img/menu/loading_screens/normal.png"},
                 {type:CutsceneCommandType.WaitInput},
                 {type:CutsceneCommandType.SetFrame}
             )

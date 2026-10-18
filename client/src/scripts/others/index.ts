@@ -38,6 +38,7 @@ import { FetchFileManager, FileManager, TranslationManager } from "common/engine
                 "/assets/img/menu/loading_screens/normal.png",
                 "/assets/img/menu/loading_screens/tundra.png",
                 "/assets/img/menu/loading_screens/paper.png",
+                "/assets/img/menu/loading_screens/nick_florest.png"
             ])
             this.menu_manager.change_loading_screen()
             this.menu_manager.play_callback=this.game.play_game.bind(this.game)

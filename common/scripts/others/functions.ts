@@ -140,7 +140,7 @@ export function decode_loot_data(definitions:GameDefinition,stream:Stream):LootD
     }
 }
 
-export function make_credits_cutscene(credits:{role:string,users:string|string[]}[],background:BackgroundEDef,transition_duration:number=3):CutsceneCommand[]{
+export function make_credits_cutscene(credits:{role:string,users:string|string[]}[]):CutsceneCommand[]{
     const cred:CutsceneCommand[]=[]
     
     for(const c of credits){
@@ -163,16 +163,11 @@ export function make_credits_cutscene(credits:{role:string,users:string|string[]
         })
     }
     return [
-        {type:CutsceneCommandType.SetBackground, background:background,transition:{type:BackgroundTransitionType.Fade,duration:transition_duration}},
-        
         ...cred,
         {
             type: CutsceneCommandType.SetContentText,
             content:[]
         },
-
-        {type:CutsceneCommandType.SetBackground, background:undefined,transition:{type:BackgroundTransitionType.Fade,duration:transition_duration}},
-        {type:CutsceneCommandType.Wait, time:2},
     ]
 }
 export function make_credits_markdown(credits: { role: string, users: string | string[] }[]): string {

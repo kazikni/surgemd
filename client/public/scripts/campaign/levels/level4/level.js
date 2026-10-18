@@ -70,8 +70,15 @@ return (class extends LevelPlayerScript{
         })
         this.game.set_rain(1)
     }
-    async on_before(){
+    async on_before(start_with_intro){
         const cutscene=[]
+        if(start_with_intro){
+            cutscene.push(
+                {type:CutsceneCommandType.SetFrame,frame:"/assets/img/menu/loading_screens/paper.png"},
+                {type:CutsceneCommandType.WaitInput},
+                {type:CutsceneCommandType.SetFrame}
+            )
+        }
         cutscene.push({
             type:CutsceneCommandType.SetSoundController,
             controller:"music",
@@ -429,7 +436,34 @@ return (class extends LevelPlayerScript{
     async on_game_finish(e){
         if(e.win)await this.show_cutscene([
             {type:CutsceneCommandType.SetSoundController,controller:"music",source:"credits_music",path:"/assets/sounds/musics/credits_music_1.ogg"},
-            ...make_credits_cutscene(FinalCredits,backgrounds.smoke_2)
+            {type:CutsceneCommandType.Wait,time:2},
+
+
+            {type:CutsceneCommandType.SetFrame,frame:"/assets/img/menu/background/tundra_title.png"},
+            {type:CutsceneCommandType.Wait,time:4},
+            {type:CutsceneCommandType.SetFrame},
+
+            {type:CutsceneCommandType.Wait, time:1},
+            {type:CutsceneCommandType.SetBackground, background:backgrounds.smoke_2,transition:{type:BackgroundTransitionType.Fade,duration:3}},
+            {type:CutsceneCommandType.Wait,time:2},
+
+            {type:CutsceneCommandType.Wait, time:1},
+            ...make_credits_cutscene(FinalCredits),
+            {type:CutsceneCommandType.Wait, time:1},
+
+            {type:CutsceneCommandType.SetBackground, background:undefined,transition:{type:BackgroundTransitionType.Fade,duration:3}},
+            {type:CutsceneCommandType.Wait, time:1},
+            {
+                type: CutsceneCommandType.SetContentText,
+                content: [
+                    {value: "Thanks For Playing!",style: "credits"},
+                    {value: "This is just a early access version",style: "credits"},
+                ]
+            },
+            {type:CutsceneCommandType.Wait, time:3},
+            {type: CutsceneCommandType.SetContentText,content:[]},
+            {type:CutsceneCommandType.Wait, time:4},
+            
         ])
     }
 })

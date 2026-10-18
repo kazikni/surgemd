@@ -421,7 +421,7 @@ export const TundraMap:MapDef={
                                     def:[
                                         {def:"rifle_cbc_mount",weight:10},
                                         {def:"vss_mount",weight:10},
-                                        {def:"empr641_mount",weight:8},
+                                        {def:"super_conqueror_mount",weight:8},
                                         {def:"blr81_mount",weight:8},
                                         {def:"kar98k_mount",weight:4},
                                         {def:"awp_mount",weight:0.05},
@@ -445,7 +445,7 @@ export const TundraMap:MapDef={
                                 {weight:15},
                                 {def:"rifle_cbc_mount",weight:10},
                                 {def:"vss_mount",weight:10},
-                                {def:"empr641_mount",weight:8},
+                                {def:"super_conqueror_mount",weight:8},
                                 {def:"blr81_mount",weight:8},
                                 {def:"kar98k_mount",weight:4},
                                 {def:"awp_mount",weight:0.05},

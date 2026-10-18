@@ -4,7 +4,8 @@
     "dev:api": "deno run --watch -A src/deno.ts api start --config-file \"../config.jsonc\"",
     "dev": "deno task dev:game & deno task dev:api",
     "build": "deno compile ./src/main.ts",
-    "bundle:cli":"deno bundle -o dist/cli.js src/cli.ts",
+    "bundle:cli":"deno bundle -o ../dist/cli.js src/cli.ts",
+    "bundle:node":"deno bundle -o ../dist/node.js ../common/engine/nodejs/mod.ts",
     "test:stress": "deno run -A ./src/test/stress_test.ts"
   },
   "importMap": "../common/deps.json",

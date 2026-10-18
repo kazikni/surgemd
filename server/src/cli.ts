@@ -7,8 +7,6 @@ import { GameServer } from "./game/others/server.ts";
 import { ApiServer } from "./api/server.ts";
 import { server_factory } from "common/engine/server/server.ts";
 
-let default_worker_file
-
 async function saveAtlasPNG(image: Uint8Array,width: number,height: number,format: KSPRImageFormat,output: string,canvas:any,ctx:any,fs:FileManager) {
     canvas.width=width
     canvas.height=height

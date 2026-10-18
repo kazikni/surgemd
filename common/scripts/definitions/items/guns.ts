@@ -1040,11 +1040,11 @@ export function Guns_Default_Init():GunDef[]{
         guns_factory.smg("p90","c22",false,{
             name:"P90",
             rank:ItemRank.A,
-            fire_delay:0.04,
+            fire_delay:0.045,
             spread:6,
             fire_sequence:{
                 decay:0.55,
-                increse:0.05,
+                increse:0.04,
                 spread:{begin:0.2}
             },
 
@@ -1053,12 +1053,12 @@ export function Guns_Default_Init():GunDef[]{
             },
 
             bullet:{
-                def:bullets_factory.ac_smg(1.15)
+                def:bullets_factory.ac_smg(0.96)
             },
             reload:{
-                delay:2.6,
-                capacity:30,
-                extended_capacity:45,
+                delay:2.8,
+                capacity:50,
+                extended_capacity:60,
             },
         }),
         /////////////////////////////////////////////

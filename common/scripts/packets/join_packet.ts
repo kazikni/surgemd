@@ -28,13 +28,14 @@ export class JoinPacket extends Packet{
     death_emote:number=0
 
     tank_vehicle_control:boolean=true
+    auto_pickup:boolean=false
     constructor(){
         super()
     }
     encode(stream: Stream): void {
         stream.write_string_sized(this.player_name,GameConstants.player.max_name_size)
         stream.write_string_sized(this.group_token,20)
-        stream.write_boolean_group(this.tank_vehicle_control,this.skin!==undefined,this.skin?.female)
+        stream.write_boolean_group(this.tank_vehicle_control,this.auto_pickup,this.skin!==undefined,this.skin?.female)
         if(this.skin!==undefined){
             stream.write_uint16(this.skin.shirt)
             stream.write_uint16(this.skin.legs)
@@ -51,8 +52,9 @@ export class JoinPacket extends Packet{
     decode(stream: Stream): void {
         this.player_name=stream.read_string_sized(GameConstants.player.max_name_size)
         this.group_token=stream.read_string_sized(20)
-        const [tank_vehicle_control,has_skin,female_skin]=stream.read_boolean_group()
+        const [tank_vehicle_control,auto_pickup,has_skin,female_skin]=stream.read_boolean_group()
         this.tank_vehicle_control=tank_vehicle_control
+        this.auto_pickup=auto_pickup
         if(has_skin){
             this.skin={
                 body_tint:0,

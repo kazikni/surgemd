@@ -320,28 +320,6 @@ export class Loot extends GameObject implements LootNC_CDATA{
             bus:"loots"
         })
     }
-    override auto_interact(h: Human): boolean {
-        switch(this.loot_data.item.item_type!){
-            case GameItemType.melee:
-                return this.game.inventory.melee_free()
-            case GameItemType.gun:
-                return this.game.inventory.gun_free()
-            case GameItemType.ammo:
-                return (this.game.inventory.aitems[this.loot_data.item.idString]??0)<(h.backpack?.max[this.loot_data.item.idString]??9999)
-            case GameItemType.consumible:{
-                return false//return this.game.ui.free_slot(this.loot_data.item.idString,this.game.inventory.item_limit(this.loot_data.item))
-            }
-            case GameItemType.helmet:
-                return !h.helmet||h.helmet.level<(this.loot_data.item as HelmetDef).level
-            case GameItemType.vest:
-                return !h.vest||h.vest.level<(this.loot_data.item as VestDef).level
-            case GameItemType.backpack:
-                return !h.backpack||h.backpack.level<(this.loot_data.item as BackpackDef).level
-            case GameItemType.scope:
-                if(!h.game.inventory.iitems.includes(this.loot_data.item))return true
-        }
-        return false
-    }
     override get_interact_hint(player: Human) {
         return player.game.language.get("interact.loot", {
             source: player.game.language.get(this.loot_data.item.tname??("items."+this.loot_data.item.idString),undefined,this.loot_data.item.name),

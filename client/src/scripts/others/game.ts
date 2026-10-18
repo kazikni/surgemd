@@ -1,4 +1,4 @@
-import { ClientGame, Graphics2D, InputActionEvent, InputAxisEvent, InputControllerChanged, InputEventType, InputMouseMoveEvent, Key, ShowElement, Tileset, ToggleElement, WebglRenderer } from "common/engine/web.ts";
+import { ClientGame, Graphics2D, InputActionEvent, InputAxisEvent, InputControllerChanged, InputEventType, InputMouseMoveEvent, is_mobile, Key, ShowElement, Tileset, ToggleElement, WebglRenderer } from "common/engine/web.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { ClientScene2D, GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -704,6 +704,7 @@ export class Game extends ClientGame<GameObject>{
         packet.wrapping=this.definitions.wrapping.getFromStringSafe(this.save.settings.get_var("loadout_wrapping_weapons"))?.idNumber??0
         packet.badge=this.definitions.badges.getFromStringSafe(this.save.settings.get_var("loadout_badge"))?.idNumber??0
         packet.tank_vehicle_control=this.save.settings.get_var("game_tank_vehicle_control")
+        packet.auto_pickup=is_mobile()
         this.client.emit_packet(packet)
     }
 

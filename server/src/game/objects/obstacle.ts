@@ -100,8 +100,10 @@ export class Obstacle extends StaticBody{
 
     override update_hitbox(): void {
         super.update_hitbox()
-        if(this.physical_data.spawn_hitbox)this.interaction_hitbox=this.physical_data.spawn_hitbox.transform(this.position)
+        if(this.physical_data.spawn_hitbox)this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(this.position)
         else this.spawn_hitbox=undefined
+        if(this.physical_data.interaction_hitbox)this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(this.position)
+        else this.interaction_hitbox=undefined
     }
 
     choose_door_side(playerPos: Vec2): -1 | 1 {
@@ -114,6 +116,7 @@ export class Obstacle extends StaticBody{
         this.door_data!.open=val
         this.set_dirty_part()
         this.door_data!.dirty=true
+        this.physical_data.interaction_hitbox=this.door_data!.hitboxes[val].transform(undefined,1.1)
         this.base_hitbox=this.door_data!.hitboxes[val]
         this.door_data!.opening=false
     }
@@ -340,7 +343,6 @@ export class Obstacle extends StaticBody{
     decal?:Decal
     set_position(position:Vec2,allow_biome_skin:boolean=false){
         this.position=position
-        this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(position)
         this.reset_scale()
         if(this.decal)this.decal.destroy()
         if(this.def.decal){

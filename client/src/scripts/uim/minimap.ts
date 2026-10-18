@@ -60,7 +60,7 @@ export class MinimapModule extends UIModule<Game>{
  
         this.load_icons()
 
-        this.canvas.addEventListener("click",()=>{
+        this.canvas.addEventListener("pointerdown",()=>{
             if(!this.fullscreen)this.toggle_fullscreen()
         })
         this.canvas.addEventListener("mousedown",(e)=>{

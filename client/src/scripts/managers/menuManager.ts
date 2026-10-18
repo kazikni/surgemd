@@ -457,7 +457,7 @@ export class MenuManager{
             let js=this.api_settings
             try{
                 js=await(await fetch(`${API_BASE}/get-settings`)).json()
-                if(js?.game_version===game_version){
+                if(js?.game_version!==game_version){
                     js=undefined
                     await this.game_popup(warning_popup("Invalid Game Version. Please Update the game To play online"))
                 }

@@ -305,6 +305,7 @@ export class Player extends Human{
             }
         }
         this.human_data.alternative_vehicle_control=jp.tank_vehicle_control
+        this.human_data.auto_pickup=jp.auto_pickup
         this.visual.wrapping=this.game.definitions.wrapping.getFromNumberSafe(jp.wrapping)
         this.visual.badge=this.game.definitions.badges.getFromNumberSafe(jp.badge)
         this.visual.emotes.victory=this.game.definitions.game_objects.valueNumber[jp.victory_emote] as EmoteDef|BadgeDef

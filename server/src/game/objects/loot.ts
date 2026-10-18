@@ -88,6 +88,28 @@ export class Loot extends ServerGameObject implements LootEntity_CData{
     override can_interact(user: Human): boolean {
         return user.hitbox.colliding_with(this.hitbox)&&!this.destroyed&&this.loot_data.count>0
     }
+    auto_pickup(user:Human):boolean{
+        switch(this.loot_data.item.item_type){
+            case GameItemType.melee:
+                return user.inventory.weapon_is_free(0)
+            case GameItemType.gun:
+                return user.inventory.weapon_is_free(1)||user.inventory.weapon_is_free(2)
+            case GameItemType.ammo:
+                return (user.inventory.aitems[this.loot_data.item.idString]??0)<(user.inventory.backpack?.max[this.loot_data.item.idString]??9999)
+            case GameItemType.consumible:{
+                return false//return this.game.ui.free_slot(this.loot_data.item.idString,this.game.inventory.item_limit(this.loot_data.item))
+            }
+            case GameItemType.helmet:
+                return !user.equipment_data.helmet||user.equipment_data.helmet.level<this.loot_data.item.level
+            case GameItemType.vest:
+                return !user.equipment_data.vest||user.equipment_data.vest.level<this.loot_data.item.level
+            case GameItemType.backpack:
+                return !user.inventory.backpack||user.inventory.backpack.level<this.loot_data.item.level
+            case GameItemType.scope:
+                if(!user.inventory.iitems.includes(this.loot_data.item))return true
+        }
+        return false
+    }
     override on_interact(user: Human): void {
         const c=user.inventory.give_item(this.loot_data.item,this.loot_data.count,false,this.loot_data.ammo,this.loot_data.skin)
         for(const l of this.loot_data.aditional??[]){

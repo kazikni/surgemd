@@ -23,6 +23,8 @@ export class Obstacle extends StaticBody{
     override physical_data: StaticBodyPhysicalData&{
         scale:number
         rotation:number
+
+        interaction_hitbox?:Hitbox2D
     }={
         hitbox:new NullHitbox2D(v2.zero),
 
@@ -35,6 +37,7 @@ export class Obstacle extends StaticBody{
         rotation:0,
         side:0
     }
+    interaction_hitbox?:Hitbox2D
     door_data?:{
         open:-1|0|1
         hitboxes:Record<number,Hitbox2D>
@@ -104,6 +107,11 @@ export class Obstacle extends StaticBody{
         this.allow_tick=Debug.hitbox
         this.container.visible=false
         this.container.add_child(this.sprite)
+    }
+    override update_hitbox(): void {
+        super.update_hitbox()
+        if(this.physical_data.interaction_hitbox)this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(this.position)
+        else this.interaction_hitbox=undefined
     }
 
     override on_layer_set(): void {
@@ -305,6 +313,7 @@ export class Obstacle extends StaticBody{
     initialize_hitboxes(){
         if(this.def.hitbox)this.physical_data.hitbox=this.def.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
         this.base_hitbox=this.physical_data.hitbox
+        this.physical_data.interaction_hitbox=this.physical_data.hitbox.transform(undefined,1.1)
         if(this.def.expanded_behavior){
             switch(this.def.expanded_behavior.type){
                 case 0:
@@ -388,6 +397,7 @@ export class Obstacle extends StaticBody{
             if(ne===1)new_rot-=(Math.PI/2)
             if(ne===-1)new_rot+=(Math.PI/2)
             this.physical_data.hitbox=this.door_data!.hitboxes[this.door_data!.open]
+            this.physical_data.interaction_hitbox=this.physical_data.hitbox.transform(undefined,1.1)
             this.base_hitbox=this.physical_data.hitbox
             if(force){
                 this.container.rotation=new_rot
@@ -474,7 +484,7 @@ export class Obstacle extends StaticBody{
         return ""
     }
     override can_interact(h:Human): boolean {
-        return !this.health_data.dead&&this.hitbox.colliding_with(h.hitbox)&&(this.def.interactDestroy===true||this.def.expanded_behavior!==undefined)
+        return !this.health_data.dead&&h.hitbox.colliding_with(this.interaction_hitbox??this.hitbox)&&(this.def.interactDestroy===true||this.def.expanded_behavior!==undefined)
     }
     override auto_interact(h:Human): boolean {
         return (this.def.interactDestroy===true)

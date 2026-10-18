@@ -1,5 +1,5 @@
 import { InputAction, InputActionType} from "common/scripts/packets/input_packet.ts"
-import { GameObjectType, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType, LootData, HumanVisualData, ObjectsComponentEvent } from "common/scripts/others/constants.ts"
+import { GameObjectType, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType, HumanVisualData, ObjectsComponentEvent } from "common/scripts/others/constants.ts"
 import { DamageSplash, MapHumanData, PingData, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
 import { DamageReason, HumanAIDef, HumanDefinition, GameItemType, LoadoutPreset, ScopeChange, GameObjectDefinitionType } from "common/scripts/definitions/utils.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
@@ -36,6 +36,7 @@ import { type Bullet } from "./bullet.ts";
 import { CheckpointContext } from "common/engine/core/game/gameObject.ts";
 import { apply_modifiers } from "common/scripts/others/functions.ts";
 import { GInventoryBase } from "common/scripts/others/inventory.ts";
+import { type Loot } from "./loot.ts";
 export type HumanPhysicalData=HumanoidPhysicalData&{
     secondary_velocity_enabled:boolean
     secondary_velocity_take_control:boolean
@@ -365,6 +366,8 @@ export class Human extends Humanoid{
             pulse_time:number
             duration:number
         }
+
+        auto_pickup?:boolean
     }={
         movement_enabled:true,
         combat_enabled:true,
@@ -417,8 +420,6 @@ export class Human extends Humanoid{
         cancel:false
     }
 
-    _interact_object?:ServerGameObject
-    _interact_score:number=Infinity
     _interacted_objects:Set<number>=new Set()
 
     grenade_holding?:{
@@ -819,9 +820,10 @@ export class Human extends Humanoid{
         v2m.add(this.physical_data.secondary_velocity,this.physical_data.secondary_velocity,vel)
     }
     override on_collided(obj: ServerGameObject,dt:number): void {
+        let can_interact=this.human_data.movement_enabled&&obj.can_interact(this)&&!this._interacted_objects.has(obj.id)
         switch(obj.number_type){
             case GameObjectType.Obstacle:{
-                if(this.input.interaction&&obj.can_interact(this)&&!this._interacted_objects.has(obj.id)){
+                if(this.input.interaction&&can_interact){
                     obj.on_interact(this)
                     this._interacted_objects.add(obj.id)
                 }
@@ -833,20 +835,21 @@ export class Human extends Humanoid{
                         this.scope_change(c.scope_change)
                     }
                 }
-                if(this.input.interaction&&obj.can_interact(this)&&!this._interacted_objects.has(obj.id)){
+                if(this.input.interaction&&can_interact){
                     obj.on_interact(this)
                     this._interacted_objects.add(obj.id)
                 }
                 break
             }
-            case GameObjectType.Loot:
+            case GameObjectType.Loot:{
+                if(can_interact&&(this.input.interaction||(this.human_data.auto_pickup&&(obj as Loot).auto_pickup(this)))){
+                    obj.on_interact(this)
+                }
+                break
+            }
             case GameObjectType.Vehicle:{
-                if(this.input.interaction&&obj.can_interact(this)){
-                    const dist=v2.distance(this.position,obj.position)
-                    if(dist<this._interact_score){
-                        this._interact_object=obj
-                        this._interact_score=dist
-                    }
+                if(this.input.interaction&&can_interact){
+                    this._interacted_objects.add(obj.id)
                 }
                 break
             }
@@ -858,7 +861,7 @@ export class Human extends Humanoid{
             }
             case GameObjectType.Human:
                 if((obj as Human).dead)break
-                if(this.input.interaction&&obj.can_interact(this)&&!this._interacted_objects.has(obj.id)){
+                if(this.input.interaction&&can_interact){
                     obj.on_interact(this)
                     this._interacted_objects.add(obj.id)
                 }
@@ -873,8 +876,6 @@ export class Human extends Humanoid{
                 if(this.human_data.self_revive)this.on_interact(this)
             }else if(this.seat){
                 this.seat.vehicle.on_interact(this)
-            }else if(this.human_data.movement_enabled&&this._interact_object){
-                (this._interact_object as ServerGameObject).on_interact(this)
             }
         }
         if(this.input.cancel){
@@ -933,9 +934,7 @@ export class Human extends Humanoid{
         this.input.interaction=false
         this.input.reload=false
         this.input.actions.length=0
-        this._interact_object=undefined
         this._interacted_objects.clear()
-        this._interact_score=Infinity
 
         if(this.emote_time>=0){
             this.emote_time-=dt

@@ -1,8 +1,8 @@
-import { cloneDeep, ColorM, FrameDef, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { cloneDeep, ColorM, FrameDef, FrameTransform, smrf, SMRF, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type EditorManager } from "../managers/editorManager.ts";
-import { Sprite2D } from "common/engine/web.ts";
+import { Graphics2D, Sprite2D } from "common/engine/web.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
-import { FrameSettings, RGBAInput, SettingDef, Vec2Input } from "./settings.ts";
+import { FrameSettings, FrameTransformSettings, RGBAInput, SettingDef, Vec2Input } from "./settings.ts";
 import { Obstacle } from "../objects/obstacle.ts";
 import { WallsDef } from "common/scripts/definitions/objects/walls.ts";
 import { Walls } from "../objects/walls.ts";
@@ -780,5 +780,151 @@ export class WallPoint extends EditorObject{
     }
     override on_decode(stream: Stream): void {
         this.position=stream.read_bpos2()
+    }
+}
+export class FloorSMRF extends EditorObject{
+    override type: number=8
+    sprite!:Graphics2D
+
+    frame:(FrameTransform&{content:string})={content:"beginpath;ss f #fff;rect -1 -1 1 1;fill"}
+
+    override name="Floor SMRF"
+    constructor(){
+        super()
+    }
+    override on_create(): void{
+        this.sprite=new Graphics2D
+        this.sprite.initialize(this.editor.game.scene_2d.camera.ctx)
+        this.editor.game.scene_2d.camera.add_object(this.sprite)
+        this.render_sprite()
+    }
+    override on_destroy(): void{
+        this.sprite.destroy();
+    }
+    render_sprite(){
+        this.update_sprite()
+        try{
+            const val=smrf.parse(this.frame.content)
+            this.sprite.ctx.clear()
+            for(const cmd of val.commands)this.sprite.ctx.execute_command(cmd)
+            this.sprite.ctx.lock()
+        }catch{
+        }
+    }
+    update_sprite(){
+        this.sprite.zIndex=zIndexes.BuildingsFloor3
+        this.sprite.transform_frame({
+            position:this.frame.position ?? v2.zero(),
+            rotation:this.frame.rotation ?? 0,
+            layer:Layers.Normal+(this.frame.layer??0),
+            scale:this.frame.scale,
+            scale2:this.frame.scale2,
+            tint:this.frame.tint,
+            alpha:this.frame.alpha,
+            hotspot:this.frame.hotspot,
+            visible:this.frame.visible,
+            zIndex:this.frame.zIndex??zIndexes.BuildingsFloor3,
+        },)
+    }
+    override get_property(name:string){
+        return (this.frame as any)[name]
+    }
+    override set_property(name:string,value:any){
+        switch(name){
+            case "position":
+            case "scale2":
+                this.frame[name]=value
+                this.update_sprite()
+                break
+            case "tint":
+            case "alpha":
+            case "rotation":
+            case "layer":
+            case "scale":
+            case "zIndex":
+                this.frame[name]=value===undefined?undefined:parseFloat(value)
+                this.update_sprite()
+                break
+            case "content":
+                this.frame[name]=value
+                this.render_sprite()
+                break
+
+        }
+    }
+
+    override get_propertys(): SettingDef[]{
+        return [
+            {type:"input",can_disable:true,name:"Content",var:"content"},
+            ...FrameTransformSettings,
+        ];
+
+    }
+
+    override can_select(position:Vec2):boolean{
+        const p=this.frame.position ?? v2.zero()
+        return (position.x>=p.x-0.5&&position.x<=p.x+0.5&&position.y>=p.y-0.5&&position.y<=p.y+0.5)
+    }
+
+    override on_reload(): void {
+        this.update_sprite()
+    }
+
+    override clone(): EditorObject {
+        const ret=new FloorImageEditorObject()
+        ret.frame=cloneDeep(this.frame)
+        return ret
+    }
+    override on_encode(stream:Stream){
+        stream.write_boolean_group2(
+            this.frame.position!==undefined,
+            this.frame.rotation!==undefined,
+            this.frame.scale!==undefined,
+
+            this.frame.scale2!==undefined,
+            this.frame.layer!==undefined,
+            this.frame.tint!==undefined,
+            this.frame.alpha!==undefined,
+            this.frame.zIndex!==undefined,
+        )
+
+        stream.write_string(this.frame.content,2)
+        if(this.frame.position)stream.write_bpos2(this.frame.position)
+        if(this.frame.rotation!==undefined)stream.write_float64(this.frame.rotation)
+        if(this.frame.scale!==undefined)stream.write_float64(this.frame.scale)
+        if(this.frame.scale2)stream.write_bpos2(this.frame.scale2)
+        if(this.frame.layer!==undefined)stream.write_int16(this.frame.layer)
+        if(this.frame.tint!==undefined)stream.write_uint32(this.frame.tint)
+        if(this.frame.alpha!==undefined)stream.write_uint8(this.frame.alpha)
+        if(this.frame.zIndex!==undefined)stream.write_int16(this.frame.zIndex)
+    }
+    override on_decode(stream:Stream){
+        const [
+            position,
+            rotation,
+            scale,
+
+            scale2,
+            layer,
+            tint,
+            alpha,
+
+            zIndex,
+        ]=stream.read_boolean_group2();
+
+        this.frame.content=stream.read_string(2)
+        if(position)this.frame.position=stream.read_bpos2()
+        if(rotation)this.frame.rotation=stream.read_float64()
+        if(scale)this.frame.scale=stream.read_float64()
+        if(scale2)this.frame.scale2=stream.read_bpos2()
+        if(layer)this.frame.layer=stream.read_int16()
+        if(tint)this.frame.tint=stream.read_uint32()
+        if(alpha)this.frame.alpha=stream.read_uint8()
+        if(zIndex)this.frame.zIndex=stream.read_int16();
+
+        this.render_sprite()
+    }
+
+    override generate_building_object(o: BuildingDef): void {
     }
 }

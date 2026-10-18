@@ -40,18 +40,21 @@ export const RGBAInput:SettingDef={
         return ColorM.number2hex(b)
     }
 }
-export const FrameSettings:SettingDef[]=[
-    {type:"input",can_disable:true,name:"Image",var:"image"},
+export const FrameTransformSettings:SettingDef[]=[
     {...Vec2Input,can_disable:true,name:"Position",var:"position"},
     {type:"input",can_disable:true,name:"Rotation",var:"rotation"},
     {type:"input",can_disable:true,name:"Scale",var:"scale"},
     {...Vec2Input,can_disable:true,name:"Scale2",var:"scale2"},
-    {type:"input",can_disable:true,name:"Tint",var:"tint"},
     {type:"range",min:0,max:255,can_disable:true,name:"Alpha",var:"Alpha"},
-    {...Vec2Input,can_disable:true,name:"Hotspot",var:"hotspot"},
     {type:"input",can_disable:true,name:"zIndex",var:"zIndex"},
     {type:"input",can_disable:true,name:"Layer",var:"layer"},
     {type:"toggle",can_disable:true,name:"Visible",var:"visible"},
+]
+export const FrameSettings:SettingDef[]=[
+    {type:"input",can_disable:true,name:"Image",var:"image"},
+    {...Vec2Input,can_disable:true,name:"Hotspot",var:"hotspot"},
+    ...FrameTransformSettings,
+    {...RGBAInput,can_disable:true,name:"Tint",var:"tint"},
 ]
 export type SettingOption={
     name:string

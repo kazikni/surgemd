@@ -56,6 +56,7 @@ ___
 * Toxic Zone
 * Poison Side Effect
 * New Human Hit Effects
+* Editor Improvements and new objects
 ___
 ## Changes
 ___

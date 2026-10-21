@@ -1,4 +1,4 @@
-import { Definition, FrameDef, FrameTD, FrameTransform, Hitbox2D, Rect, tdm, TDObject, TDType, TilemapLayer, Vec2, Vec2TD, WeightDefinition } from "../../../engine/core.ts";
+import { Definition, FrameDef, FrameTD, FrameTransform, Hitbox2D, Random1, Rect, tdm, TDObject, TDType, TilemapLayer, Vec2, Vec2TD, WeightDefinition } from "../../../engine/core.ts";
 import { SMRF } from "../../../engine/core/lang/context_command.ts";
 import { SpawnMode } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
@@ -59,6 +59,7 @@ export const BuildingClientTD: TDObject = {
 
         { name: "no_collisions", content: tdm.boolean },
         { name: "no_bullet_collision", content: tdm.boolean },
+        { name: "is_ghost", content: tdm.boolean },
 
         { name: "hitbox", content: tdm.any },
         
@@ -103,7 +104,7 @@ export const BuildingClientTD: TDObject = {
                                     content: {
                                         type: TDType.object,
                                         content: [
-                                            { name: "frame", content: tdm.string1 },
+                                            { name: "frame", content: FrameTD },
                                             { name: "sound", content: tdm.string1_onu },
                                             { name: "count", content: tdm.uint8 },
                                             {
@@ -113,7 +114,10 @@ export const BuildingClientTD: TDObject = {
                                                     content: {
                                                         type: TDType.object,
                                                         content: [
-                                                            { name: "count", content: tdm.uint8 }
+                                                            ...FrameTD.content,
+                                                            { name: "count", content: tdm.uint8 },
+                                                            { name: "speed", content: tdm.any },
+                                                            { name: "scale_variation", content: tdm.any },
                                                         ]
                                                     }
                                                 }
@@ -181,7 +185,6 @@ export const BuildingTD: TDObject={
         { name: "spawnMode", content: tdm.any },
         { name: "reflect_bullets", content: tdm.boolean },
         { name: "no_spawn_collision", content: tdm.boolean },
-        { name: "is_ghost", content: tdm.boolean },
         {
             name: "generate",
             content: {
@@ -297,11 +300,13 @@ export type BuildingCeilingDef={
     connections?:number[]
     scope_change?:ScopeChange
     destroy?:{
-        frame:string
+        frame:FrameDef
         sound?:string
         count:number
-        particles?:{
+        particles?:FrameDef&{
             count:number
+            speed?:Random1
+            scale_variation?:Random1
         }
     }
 }

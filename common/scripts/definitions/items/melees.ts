@@ -707,7 +707,7 @@ export function Melees_Default_Init():MeleeDef[]{
             damage:37,
             resistence_damage:1,
             attack_delay:0.5,
-            switch_delay:0.6,
+            switch_delay:0.5,
             damage_delays:[0.3],
             rig_arms:{
                 left:{

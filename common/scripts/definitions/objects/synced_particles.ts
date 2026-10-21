@@ -240,7 +240,7 @@ export function SyncedParticles_Default_Init():SyncedParticleDef[]{
                 },
                 {
                     type:SideEffectType.Damage,
-                    amount:0.5,
+                    amount:1,
                     obstacle_mult:1
                 }
             ],

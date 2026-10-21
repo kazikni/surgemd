@@ -511,7 +511,6 @@ export const FinalCredits=[
             "Surviv.io",
             "Hotline Miami 1 & 2",
             "Suroi.io",
-            "Roblox Doors",
             "Pixel Gun 3D",
             "Fortnite"
         ]
@@ -522,6 +521,7 @@ export const FinalCredits=[
             "Surviv.io creators",
             "@hasanger",
             "@1092384",
+            "@sloistice",
             "@mamoun0",
             "@leia_uwu",
             "@guiz3rabrr2466._24385",

@@ -841,7 +841,6 @@ export class Game extends ClientGame<GameObject>{
             this.state=GameState.Playing
         })
         client.on("gameover",async(p:GameOverPacket)=>{
-            this.fineshed=true
             await this.ui.apply_game_over(p)
         })
         client.on("disconnect",(_p:DisconnectPacket)=>{

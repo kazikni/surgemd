@@ -266,6 +266,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     override on_stop():void{
         super.on_stop()
         this.update_data()
+        this.clients.clear()
         console.log(`Game ${this.id} Stopped`)
     }
     reset(){

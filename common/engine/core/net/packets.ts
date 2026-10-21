@@ -178,7 +178,6 @@ export class MessagePacket extends Packet {
     }
 
     encode(stream: Stream): void {
-        console.log(this.msg,"encode")
         let header = 0
         header |= (this.bytes1 - 1)       // bits 0-1
         header |= (this.bytes2 - 1) << 2  // bits 2-3

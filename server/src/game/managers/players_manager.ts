@@ -345,6 +345,10 @@ export class PlayersManager extends GameComponent{
     }
     async connection(client:Client,username:string){
         if(this.connected_players[client.ID])return
+        if(this.game.closed||!this.game.modeManager.can_join()){
+            client.disconnect()
+            return
+        }
         this.connected_players[client.ID]=new PlayerClient(this.game.scene_2d,client)
         if(!this.game.initialized)await this.game.signals.wait("game_initialized")
 
@@ -352,7 +356,10 @@ export class PlayersManager extends GameComponent{
         client.send_stream(this.game.scene_2d.map.map_stream)
         this.connected_players[client.ID].connected=true
         client.on("join",(packet:JoinPacket)=>{
-            if(this.game.closed)return
+            if(this.game.closed||!this.game.modeManager.can_join()){
+                client.disconnect()
+                return
+            }
             if(packet.group_token.length>0){
                 this.game.modeManager.proccess_group_token(client,packet.group_token)
             }
@@ -373,7 +380,7 @@ export class PlayersManager extends GameComponent{
         })
         client.on(DefaultSignals.DISCONNECT,()=>{
             if(!this.connected_players[client.ID])return
-            if(this.connected_players[client.ID].human)console.log(`${this.connected_players[client.ID].human!.name} Disconnected`)
+            if(this.connected_players[client.ID].human)console.log(`[GAME-${this.game.id}] ${this.connected_players[client.ID].human!.name} Disconnected`)
             this.connected_players[client.ID].connected=false
             delete this.connected_players[client.ID]
         })

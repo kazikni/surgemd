@@ -19,7 +19,7 @@ export class Obstacle extends StaticBody{
     parent?:Building
     puzzle?:BuildingPuzzle
     puzzle_value?:string
-    connections:{obj:Obstacle,type:number}[]=[]
+    connections:{obj?:Obstacle,type:number}[]=[]
 
     max_scale:number=1
 
@@ -416,7 +416,7 @@ export class Obstacle extends StaticBody{
     override damage(params:DamageParams,force:boolean=false){
         if(this.health_data.dead||this.def.imortal||((this.def.resistence??0)>(params.resistence??0)||force))return
         for(const c of this.connections){
-            if(c.type===1)continue
+            if(c.type!==1||!c.obj)continue
             c.obj.damage(params)
         }
     
@@ -452,7 +452,7 @@ export class Obstacle extends StaticBody{
 
         if(params.owner)params.owner.inventory.accessorys.call_event("obstacle_destroy",{obstacle:this,human:params.owner})
         for(const c of this.connections){
-            if(c.obj.def.imortal||!(c.type===0||c.type===1))continue
+            if(!c.obj||c.obj.def.imortal||!(c.type===0||c.type===1))continue
             c.obj.die({
                 amount:9999,
                 critical:false,
@@ -556,7 +556,7 @@ export class Obstacle extends StaticBody{
         }
         stream.write_array(this.connections,(i)=>{
             stream.write_uint8(i.type)
-            stream.write_id(ctx.idco[i.obj.id])
+            stream.write_id(ctx.idco[i.obj!.id])
         },1)
         .write_array(this.physical_data.stairs,(i)=>{
             stream.write_uint8(i.index)

@@ -542,7 +542,8 @@ export abstract class Stream{
             case TDType.object: {
                 const obj: Record<string, any>={}
                 for(const field of td.content){
-                    obj[field.name]=this.read_td(field.content)
+                    const val=this.read_td(field.content)
+                    if(val!==undefined)obj[field.name]=val
                 }
                 return obj
             }

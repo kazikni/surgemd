@@ -244,6 +244,18 @@ export class UiManager{
             rotating=false
             this.game.aim_line=false
         })
+        
+        self.addEventListener("mobile-back",()=>{
+            this.game.input_manager.emit({
+                type: InputEventType.ActionDown,
+                action: "escape"
+            })
+            this.game.input_manager.emit({
+                type: InputEventType.ActionUp,
+                action: "escape"
+            })
+        })
+
         this.mobile_content.btn_interact.innerHTML=await (await fetch("/assets/img/menu/gui/buttons/interaction_button.svg")).text()
         this.mobile_content.btn_interact.addEventListener("pointerdown",()=>{
             this.game.input_manager.listener.emit("actiondown",{action:"interact"})
@@ -806,6 +818,8 @@ export class UiManager{
         }
     }
     normal_game_over(g:GameOverPacket){
+        if(this.game.fineshed)return
+        this.game.fineshed=true
         HideElement(this.content.game_gui)
         this.disableCrosshair()
         disableContextMenuPrevent()

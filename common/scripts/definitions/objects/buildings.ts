@@ -14,7 +14,7 @@ export const buildings_factory={
     container:{
         type_1(id:string,tint:number=0xffffff,settings:{
             floor?:string,
-            ceiling?:string,
+            ceiling?:string,    
             b?:DeepPartial<BuildingDef>
         }={}){
             const min=v2(-2.24,-1)
@@ -272,12 +272,6 @@ export const buildings_factory={
             return mergeDeep({
                 idString:id,
                 is_ghost:true,
-                assets:{
-                    particles:{
-                        particle:"plank_particle",
-                        tint:0x656877,
-                    }
-                },
                 ceiling:[
                     {
                         frame:{
@@ -287,11 +281,17 @@ export const buildings_factory={
                         },
                         connections:[10,11,12,13,14],
                         destroy:{
-                            frame:"shed_ceiling_break",
+                            frame:{
+                                image:"wood_ceiling_break_1",
+                                tint:0x656877,
+                            },
                             sound:"ceiling_break_1",
                             count:3,
                             particles:{
-                                count:30
+                                image:"plank_particle",
+                                count:13,
+                                scale:2.2,
+                                tint:0x656877,
                             }
                         },
                         hitbox:new RectHitbox2D(v2(-1.75,-1.55),v2(1.75,1.55)),

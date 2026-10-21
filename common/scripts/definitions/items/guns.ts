@@ -214,7 +214,7 @@ export const guns_factory={
             barrel_length:0.85,
 
             fire_delay:1,
-            switch_delay:0.1,
+            switch_delay:0.4,
 
             muzzle_flash:MuzzleFlash.normal,
             case_particle:{
@@ -329,7 +329,7 @@ export const guns_factory={
 
             fire_mode:FireMode.Single,
             fire_delay:0.1,
-            switch_delay:0.1,
+            switch_delay:0.4,
             recoil:{
                 duration:0.5,
                 speed:0.55
@@ -440,7 +440,7 @@ export const guns_factory={
 
     shotgun_buckshot(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
         return this.shotgun(id,ammo,{
-            spread:4.7,
+            spread:5,
             jitter_radius:0.36,
             bullet:{
                 def:bullets_factory.buckshot(1),

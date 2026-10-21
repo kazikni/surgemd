@@ -820,7 +820,7 @@ export class Human extends Humanoid{
         v2m.add(this.physical_data.secondary_velocity,this.physical_data.secondary_velocity,vel)
     }
     override on_collided(obj: ServerGameObject,dt:number): void {
-        let can_interact=this.human_data.movement_enabled&&obj.can_interact(this)&&!this._interacted_objects.has(obj.id)
+        const can_interact=!this.downed&&this.human_data.movement_enabled&&obj.can_interact(this)&&!this._interacted_objects.has(obj.id)
         switch(obj.number_type){
             case GameObjectType.Obstacle:{
                 if(this.input.interaction&&can_interact){
@@ -849,6 +849,7 @@ export class Human extends Humanoid{
             }
             case GameObjectType.Vehicle:{
                 if(this.input.interaction&&can_interact){
+                    obj.on_interact(this)
                     this._interacted_objects.add(obj.id)
                 }
                 break

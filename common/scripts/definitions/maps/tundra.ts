@@ -18,12 +18,6 @@ export function create_hunt_house(id:string,settings:{
     return mergeDeep({
         idString:id,
         is_ghost:true,
-        assets:{
-            particles:{
-                particle:"plank_particle",
-                tint:0x656877,
-            }
-        },
         ceiling:[ 
             {
                 frame:{
@@ -33,11 +27,17 @@ export function create_hunt_house(id:string,settings:{
                 },
                 connections:[10,11,12,13,14,15],
                 destroy:{
-                    frame:"hunt_house_ceiling_break",
+                    frame:{
+                        image:"wood_ceiling_break_1",
+                        tint:0x42a64a,
+                    },
                     sound:"ceiling_break_1",
                     count:3,
                     particles:{
-                        count:30
+                        image:"plank_particle",
+                        count:13,
+                        scale:2.2,
+                        tint:0x42a64a,
                     }
                 },
                 hitbox:new RectHitbox2D(v2(-1.75,-1.55),v2(1.75,1.55)),

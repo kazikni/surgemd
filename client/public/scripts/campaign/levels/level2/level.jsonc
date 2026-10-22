@@ -11,7 +11,7 @@
         "background_music": "/assets/sounds/musics/single-player/music_1.mp3",
         "load": {
             "sounds": {
-                "history_music_1": "/assets/sounds/musics/history_music_1.mp3"
+                "history_music": "/assets/sounds/musics/history_music_2.mp3"
             }
         }
     },

@@ -2,6 +2,8 @@
     "tasks": {
         "dev:electron":"npx electron electron/dev.js",
         "build:electron": "deno -A scripts/electron.ts",
-        "build:android": "python3 scripts/capacitor.py build"
+        "build:android": "python3 scripts/capacitor.py build",
+        "build:android:playstore": "python3 scripts/capacitor.py build playstore",
+        "build":"deno task build:electron && deno task build:android && deno task build:android:playstore"
     }
 }

@@ -59,18 +59,9 @@ export class AmbientManager extends GComponent{
         this.game.sounds.signals.on("unlock",async()=>{
             await this.game.resources.load_sound("menu_music",{src:`/assets/sounds/musics/menu_music.mp3`,volume:1})
 
-            const video = document.getElementById("intro-video") as HTMLVideoElement
             const menu_music=this.game.resources.get_sound(`menu_music`)
             if(this.game.state===GameState.Idle)this.music.set(menu_music)
-            if(this.game.menu.intro_fineshed){
-                this.music.set(menu_music,{
-                    loop:true
-                })
-            }else{
-                video.addEventListener("ended",()=>{
-                    this.music.set(menu_music)
-                })
-            }
+            this.music.set(menu_music)
         })
         
         this.rain_particles_emitter=this.game.scene_2d.particles.add_emiter({

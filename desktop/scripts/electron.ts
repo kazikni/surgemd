@@ -1,10 +1,11 @@
 import { join } from "https://deno.land/std@0.204.0/path/mod.ts";
 import { emptyDir, exists } from "https://deno.land/std@0.204.0/fs/mod.ts";
+import { basename } from "https://deno.land/std@0.204.0/path/basename.ts";
 
 const root_path=join(import.meta.dirname!,"../../")
 const base_path=join(import.meta.dirname!,"../")
 const client_path=join(root_path,"client")
-const dist_path=join(base_path,"../dist")
+const dist_path=join(base_path,"./dist")
 
 Deno.chdir(base_path)
 
@@ -114,11 +115,11 @@ async function cleanElectron(dir:string){
             }
         }
     }
-
     const verify=["LICENSE","version","LICENSES.chromium.html","chrome_crashpad_handler","vk_swiftshader_icd.json"]
     for(const v of verify){
         if(await exists(join(dir,v)))Deno.remove(join(dir,v))
     }
+    await copyDir(dir, join(base_path,"../dist",basename(dir)));
 }
 await buildElectron("win32")
 await cleanElectron(join(dist_path,"surgemd-win32-x64"))

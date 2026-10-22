@@ -4,6 +4,7 @@ import subprocess
 import os
 import shutil
 from pathlib import Path
+from getpass import getpass
 
 ROOT=Path(__file__).resolve().parent.parent.parent
 CAPACITOR_DIR=ROOT/"desktop/capacitor"
@@ -12,6 +13,18 @@ CLIENT_DIR=ROOT/"client"
 DIST_DIR=ROOT/"dist"
 BUILD_DIR=CLIENT_DIR/"dist"
 IS_WINDOWS=os.name=="nt"
+
+KEYSTORE_DIR = CAPACITOR_ANDROID_DIR / "keystore"
+KEYSTORE_PATH = KEYSTORE_DIR / "surgemd-release.keystore"
+KEYSTORE_ALIAS = "surgemd"
+KEYSTORE_PASSWORD="KEYSTORE_PASSWORD"
+
+KEYSTORE_D_CN="Hugo Mendonca Santana"
+KEYSTORE_D_OU="Kazikni"
+KEYSTORE_D_O="Kazikni"
+KEYSTORE_D_L="Goiania"
+KEYSTORE_D_ST="Goias"
+KEYSTORE_D_C="BR"
 
 def run(cmd,cwd=None):
     print(">", " ".join(map(str,cmd)))
@@ -37,33 +50,65 @@ def generate_icons():
 
     run(["npx","@capacitor/assets","generate","--android"],cwd=CAPACITOR_DIR)
 
-def build_android(mode="debug"):
-    DIST_DIR.mkdir(parents=True,exist_ok=True)
+def sign_aab(aab_path):
+    if not KEYSTORE_PATH.is_file():
+        raise FileNotFoundError(
+            f"Keystore não encontrada: {KEYSTORE_PATH}"
+        )
 
-    if mode=="debug":
-        build_web()
-        generate_icons()
-
-    cap_sync()
-
-    task="assembleDebug" if mode=="debug" else "assembleRelease"
-    run(gradle(task),cwd=CAPACITOR_ANDROID_DIR)
-
-    apk_dir=CAPACITOR_ANDROID_DIR/"app/build/outputs/apk"
-
-    apks=[
-        apk_dir/"release/app-release.apk",
-        apk_dir/"debug/app-debug.apk",
-        apk_dir/"release/app-release-unsigned.apk"
+    command = [
+        "jarsigner",
+        "-keystore", str(KEYSTORE_PATH),
+        "-storepass", KEYSTORE_PASSWORD,
+        str(aab_path),
+        KEYSTORE_ALIAS,
     ]
 
-    for apk in apks:
-        if apk.exists():
-            shutil.copyfile(apk,DIST_DIR/"surgemd.apk")
-            print(f"APK: {apk}")
-            return
+    print(">", " ".join(map(str, command)))
+    subprocess.check_call(command)
 
-    raise FileNotFoundError("Nenhum APK encontrado")
+    verify_command = [
+        "jarsigner",
+        "-verify",
+        str(aab_path),
+    ]
+
+    print(">", " ".join(map(str, verify_command)))
+    subprocess.check_call(verify_command)
+
+    print("AAB assinado e verificado.")
+def build_android(mode="debug"):
+    DIST_DIR.mkdir(parents=True,exist_ok=True)
+    build_web()
+    generate_icons()
+    cap_sync()
+
+    if not KEYSTORE_PATH.exists():
+        run(["keytool", "-genkeypair","-alias",KEYSTORE_ALIAS,"-keyalg","RSA","-keysize","2048","-validity","10000","-keystore","capacitor/android/keystore/surgemd-release.keystore","-storepass",KEYSTORE_PASSWORD,"-dname" f"CN={KEYSTORE_D_CN}, OU={KEYSTORE_D_OU}, O={KEYSTORE_D_O}, L={KEYSTORE_D_L}, ST={KEYSTORE_D_ST}, C={KEYSTORE_D_C}"])
+
+    if mode=="playstore":
+        task="bundleRelease"
+        output=CAPACITOR_ANDROID_DIR/"app/build/outputs/bundle/release/app-release.aab"
+        destination=DIST_DIR/"surgemd.aab"
+    elif mode=="release":
+        task="assembleRelease"
+        output=CAPACITOR_ANDROID_DIR/"app/build/outputs/apk/release/app-release.apk"
+        destination=DIST_DIR/"surgemd.apk"
+    else:
+        task="assembleDebug"
+        output=CAPACITOR_ANDROID_DIR/"app/build/outputs/apk/debug/app-debug.apk"
+        destination=DIST_DIR/"surgemd.apk"
+
+    run(gradle(task),cwd=CAPACITOR_ANDROID_DIR)
+    if mode == "playstore":
+        sign_aab(output)
+
+    if not output.exists():
+        raise FileNotFoundError(f"Build não encontrada: {output}")
+
+    shutil.copy2(output,destination)
+    print(f"Build criada: {destination}")
+
 
 def run_android():
     build_web()

@@ -1151,12 +1151,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                                 {name:"Normal",value:"2"},
                             ],
                         },
-                        {
-                            type:"toggle",
-                            tname:"settings.graphics.climate",
-                            var:"graphics_climate",
-                        },
-                        {
+                        (mobile)?undefined:{
                             type:"toggle",
                             tname:"settings.graphics.fullscreen",
                             var:"graphics_fullscreen",

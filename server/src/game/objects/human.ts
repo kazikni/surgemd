@@ -420,8 +420,6 @@ export class Human extends Humanoid{
         cancel:false
     }
 
-    _interacted_objects:Set<number>=new Set()
-
     grenade_holding?:{
         def:GrenadeDef
         time:number
@@ -820,12 +818,11 @@ export class Human extends Humanoid{
         v2m.add(this.physical_data.secondary_velocity,this.physical_data.secondary_velocity,vel)
     }
     override on_collided(obj: ServerGameObject,dt:number): void {
-        const can_interact=!this.downed&&this.human_data.movement_enabled&&obj.can_interact(this)&&!this._interacted_objects.has(obj.id)
+        const can_interact=!this.downed&&this.human_data.movement_enabled&&obj.can_interact(this)
         switch(obj.number_type){
             case GameObjectType.Obstacle:{
                 if(this.input.interaction&&can_interact){
                     obj.on_interact(this)
-                    this._interacted_objects.add(obj.id)
                 }
                 break
             }
@@ -836,21 +833,21 @@ export class Human extends Humanoid{
                     }
                 }
                 if(this.input.interaction&&can_interact){
-                    obj.on_interact(this)
-                    this._interacted_objects.add(obj.id)
+                    obj.on_interact(this) 
                 }
                 break
             }
             case GameObjectType.Loot:{
                 if(can_interact&&(this.input.interaction||(this.human_data.auto_pickup&&(obj as Loot).auto_pickup(this)))){
                     obj.on_interact(this)
+                    this.input.interaction=false
                 }
                 break
             }
             case GameObjectType.Vehicle:{
                 if(this.input.interaction&&can_interact){
                     obj.on_interact(this)
-                    this._interacted_objects.add(obj.id)
+                    this.input.interaction=false
                 }
                 break
             }
@@ -864,7 +861,7 @@ export class Human extends Humanoid{
                 if((obj as Human).dead)break
                 if(this.input.interaction&&can_interact){
                     obj.on_interact(this)
-                    this._interacted_objects.add(obj.id)
+                    this.input.interaction=false
                 }
                 break
         }
@@ -935,7 +932,6 @@ export class Human extends Humanoid{
         this.input.interaction=false
         this.input.reload=false
         this.input.actions.length=0
-        this._interacted_objects.clear()
 
         if(this.emote_time>=0){
             this.emote_time-=dt

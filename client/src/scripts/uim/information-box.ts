@@ -88,7 +88,7 @@ export class InformationBoxModule extends UIModule<Game> {
             if (this.time <= 0) {
                 this.killbox.innerHTML = this.queue[0].msg
                 ShowElement(this.killbox)
-                this.game.sounds.play(this.queue[0].sound)
+                //this.game.sounds.play(this.queue[0].sound)
             }
             this.time += dt
             if (this.time >=(this.queue.length>1?1.5:4)) {

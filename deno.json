@@ -15,6 +15,9 @@
 
         "optmise:svg":"npx svgo client/public/assets/img -r --multipass",
         "build:client": "cd client && npx vite build",
+        "build:electron": "cd desktop && deno task build:electron",
+        "build:android": "cd desktop && deno task build:android",
+        "build:desktop": "cd desktop && deno task build",
 
         "install":"npm install --save-dev nodemon ts-node"
     }

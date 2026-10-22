@@ -13,11 +13,6 @@ PacketManager.pre_packet=(p)=>{
 }
 
 const SERVER_URL = "http://localhost:8000"
-const JOIN_ARGS=JSON.stringify({
-    region:"local",
-    mode:0,
-    token:undefined
-})
 const BOT_COUNT=400
 const TICK_RATE=60
 const CONNECTION_DELAY=0.01
@@ -36,7 +31,11 @@ class Bot {
         if(this.client)this.client.disconnect()
         const txt=await(await fetch(`${SERVER_URL}/find-game`,{
             method:"post",
-            body:JOIN_ARGS
+            body:JSON.stringify({
+                region:"local",
+                mode:random.choose([0,1]),
+                token:undefined
+            })
         })).text()
         let con:any
         try{

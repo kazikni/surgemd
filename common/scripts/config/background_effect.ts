@@ -468,6 +468,7 @@ export const FinalCredits=[
             "@showusmusic",
             "@rivals2444",
             "Wreckfest",
+            "Super Chicken Jumper",
             "I Wanna Be The Guy",
             "Various YouTube Music",
             "NoCopyrightSounds",
@@ -484,6 +485,7 @@ export const FinalCredits=[
     {
         role: "Additional Art",
         users: [
+            "@kazikni",
             "@sentido_ss",
             "@bien.star",
             "@paoagiota4740"

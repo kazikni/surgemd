@@ -1,5 +1,6 @@
 import { Casters, GamepadButtonID, is_mobile, Key } from "common/engine/web.ts";
 import { IPLocation } from "common/engine/core.ts";
+import { is_binary_computer, is_binary_mobile } from "../defs/bin_files.ts";
 
 /*
 * LOCAL
@@ -36,8 +37,8 @@ export enum GraphicsDConfig {
     Advanced,
 }
 
-force_mobile=false
-block_mobile=false
+force_mobile=is_binary_mobile
+block_mobile=is_binary_computer
 
 const mobile=is_mobile()
 const low_graphics=mobile
@@ -67,7 +68,6 @@ export const ConfigCasters=Object.freeze({
     graphics_particles:Casters.toInt,
     graphics_lights:Casters.toInt,
     graphics_post_proccess:Casters.toInt,
-    graphics_climate:Casters.toBoolean,
     graphics_fullscreen:Casters.toBoolean,
 
     game_region:Casters.toString,
@@ -123,7 +123,6 @@ export const ConfigDefaultValues={
     graphics_particles:GraphicsDConfig.Advanced,
     graphics_lights:GraphicsDConfig.Advanced,
     graphics_post_proccess:low_graphics?GraphicsDConfig.None:GraphicsDConfig.Advanced,
-    graphics_climate:true,
     graphics_fullscreen:false,
 
     game_region:"na",

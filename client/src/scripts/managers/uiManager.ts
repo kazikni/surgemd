@@ -117,6 +117,8 @@ export class UiManager{
 
     group_members:Record<number,GroupMemberState>={}
     map_humans:MapHumanData[]=[]
+
+    joystick_timer:number=0
     constructor(game:Game){
         this.game=game
 
@@ -210,13 +212,12 @@ export class UiManager{
         this.mobile_enabled=true
         this.mobile_open()
         document.body.classList.toggle("game-mobile-version",true)
-        let rotating=false
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
         this.mobile_content.left_joystick.addEventListener("joystickmove",(e:JoystickEvent)=>{
             this.game.input.movement.dir=Math.atan2(e.detail.y,e.detail.x)
             this.game.input.movement.scale=v2.len(e.detail)
-            if(!rotating){
+            if(this.joystick_timer<=0&&!this.mobile_content.right_joystick.active){
                 this.game.set_lookTo_angle(this.game.input.movement.dir,2)
             }
         })
@@ -226,7 +227,7 @@ export class UiManager{
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
         this.mobile_content.right_joystick.addEventListener("joystickmove",(e:JoystickEvent)=>{
-            rotating=true
+            this.joystick_timer=1
             this.game.aim_line=true
             const dist=Math.sqrt(e.detail.x*e.detail.x+e.detail.y*e.detail.y)
 
@@ -240,8 +241,8 @@ export class UiManager{
             this.game.set_lookTo_angle(Math.atan2(e.detail.y,e.detail.x),dist)
         })
         this.mobile_content.right_joystick.addEventListener("joystickend",()=>{
+            this.joystick_timer=1
             this.game.input.use_weapon=false
-            rotating=false
             this.game.aim_line=false
         })
         
@@ -875,6 +876,9 @@ export class UiManager{
             if(this.tooltip_element&&(this.tooltip_element.style.visibility==="hidden"||!this.tooltip_element.isConnected)){
                 this.tooltip_hide()
             }
+        }
+        if(this.joystick_timer>0){
+            this.joystick_timer-=dt
         }
         this.update_emote_wheel()
         this.update_crosshair(dt)

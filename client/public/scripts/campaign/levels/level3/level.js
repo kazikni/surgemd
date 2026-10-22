@@ -230,13 +230,16 @@ return (class extends LevelPlayerScript{
     }
     async on_begin(){
         this.cutscene=await this.load_json("cutscenes/begin.jsonc")
+        await this.send_message_event({type:OnlineMessageType.Load,assets:{"history_music":"/assets/sounds/musics/history_music_2.mp3"}})
     }
     async on_before(start_with_intro){
         const cutscene=[
         ]
         if(start_with_intro){
             cutscene.push(
+                {type:CutsceneCommandType.SetSoundController,controller:"music",source:"history_music"},
                 ...this.cutscene,
+                {type:CutsceneCommandType.SetSoundController,controller:"music",source:null},
                 {type:CutsceneCommandType.SetFrame,frame:"/assets/img/menu/loading_screens/tundra.png"},
                 {type:CutsceneCommandType.WaitInput},
                 {type:CutsceneCommandType.SetFrame}

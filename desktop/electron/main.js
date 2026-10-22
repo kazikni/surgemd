@@ -21,6 +21,7 @@ function createWindow(){
         height:720,
         webPreferences:{
             devTools:true,
+            autoplayPolicy: "no-user-gesture-required",
             preload:path.join(__dirname,"preload.js")
         }
     })

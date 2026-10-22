@@ -13,9 +13,15 @@ declare global{
             fullscreen:(enable:boolean)=>Promise<void>
             exist:(path:string)=>Promise<boolean>
         }
+        androidAPI?: {
+            isBinary: () => boolean;
+            fullscreen: (enable: boolean) => void;
+        };
     }
 }
-export const is_binary=typeof window.electronAPI==="undefined"?false:await window.electronAPI.isBinary()
+export const is_binary_computer=typeof window.electronAPI==="undefined"?false:await window.electronAPI.isBinary()
+export const is_binary_mobile = typeof window.androidAPI !== "undefined";
+export const is_binary=is_binary_computer||is_binary_mobile
 
 export class BinFileManager extends FileManager{
     override open(path: string, mode: "r" | "w" | "rw"): Promise<FileHandle> {

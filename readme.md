@@ -36,16 +36,10 @@ You have three options:
 * Download the source code directly from GitHub
 * Clone the repository using Git
 * (Recommended) Fork the repository on GitHub and clone your fork with Git
----
-### 3 - Install Dependencies
-Open the project folder in your terminal and run:
-```bash
-python3 setup.py
-```
 This will install all required dependencies.
 **Note: If you encounter errors, double-check your installation or the deno.json file.**
 ---
-### 4 - Run the Project
+### 3 - Run the Project
 Start the development server with:
 ```bash
 deno task dev

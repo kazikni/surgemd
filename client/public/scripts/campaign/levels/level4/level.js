@@ -438,7 +438,6 @@ return (class extends LevelPlayerScript{
             {type:CutsceneCommandType.SetSoundController,controller:"music",source:"credits_music",path:"/assets/sounds/musics/credits_music_1.ogg"},
             {type:CutsceneCommandType.Wait,time:2},
 
-
             {type:CutsceneCommandType.SetFrame,frame:"/assets/img/menu/background/tundra_title.png"},
             {type:CutsceneCommandType.Wait,time:4},
             {type:CutsceneCommandType.SetFrame},

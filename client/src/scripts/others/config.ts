@@ -37,7 +37,7 @@ export enum GraphicsDConfig {
     Advanced,
 }
 
-force_mobile=is_binary_mobile
+force_mobile=is_binary_mobile||false
 block_mobile=is_binary_computer
 
 const mobile=is_mobile()

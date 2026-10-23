@@ -1,6 +1,5 @@
 import { join } from "https://deno.land/std@0.204.0/path/mod.ts";
 import { emptyDir, exists } from "https://deno.land/std@0.204.0/fs/mod.ts";
-import { basename } from "https://deno.land/std@0.204.0/path/basename.ts";
 
 const root_path=join(import.meta.dirname!,"../../")
 const base_path=join(import.meta.dirname!,"../")
@@ -106,7 +105,7 @@ async function buildElectron(platform: string) {
     Deno.exit(outp.code);
   }
 }
-async function cleanElectron(dir:string){
+async function cleanElectron(dir:string,output:string){
     const locales=join(dir,"locales")
     if(await exists(locales)){
         for await(const entry of Deno.readDir(locales)){
@@ -119,11 +118,12 @@ async function cleanElectron(dir:string){
     for(const v of verify){
         if(await exists(join(dir,v)))Deno.remove(join(dir,v))
     }
-    await copyDir(dir, join(base_path,"../dist",basename(dir)));
+    await copyDir(dir, join(base_path,"../dist",output));
 }
+await copyDir("./dist/resources/main", join(base_path,"../dist","surgemd-web"));
 await buildElectron("win32")
-await cleanElectron(join(dist_path,"surgemd-win32-x64"))
+await cleanElectron(join(dist_path,"surgemd-win32-x64"),"surgemd-windows")
 await buildElectron("linux")
-await cleanElectron(join(dist_path,"surgemd-linux-x64"))
+await cleanElectron(join(dist_path,"surgemd-linux-x64"),"surgemd-linux")
 
 await Deno.remove(pkgPath1);

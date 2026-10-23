@@ -126,8 +126,8 @@ export const DefaultHumanModes={
         }else {
             const w=bullet_weights[weight]??bullet_weights[0]
             const tint=random.choose([ColorM.rgba(170,10,40),ColorM.rgba(255,10,40)])
-            const lifetime=0.5
-            const angle=v2.lookTo(h.position,position)-h.rotation
+            /*const lifetime=0.5
+            const angle=v2.lookTo(h.position,position)-h.rotation*/
             if(Math.random()<=w.blood_decal_chance){
                 const d=new ClientDecal()
                 d.sprite.set_frame({
@@ -140,7 +140,7 @@ export const DefaultHumanModes={
                 },h.game.resources)
                 h.game.scene_2d.objects.add_object(d,h.layer)
 
-                const p={lifetime:20,sprite:new Sprite2D()}
+                /*const p={lifetime:20,sprite:new Sprite2D()}
                 ;(p.sprite as Sprite2D).set_frame({
                     image:`blood_particle`,
                     hotspot:v2(0.8,0.5),
@@ -151,7 +151,7 @@ export const DefaultHumanModes={
                     position:v2.from_RadAngle(angle,(h.base_hitbox as CircleHitbox2D).radius*random.float(0.4,1))
                 },h.game.resources)
                 h.container.add_child(p.sprite)
-                h.animation.particles.push(p)
+                h.animation.particles.push(p)*/
             }
 
             /*

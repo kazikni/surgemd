@@ -736,7 +736,8 @@ export class Game extends ClientGame<GameObject>{
                     }else{
                         const ghost:FindGameResult=await(await fetch(API_BASE+"/find-game",{
                             method:"post",
-                            body:JSON.stringify(args)
+                            body:JSON.stringify(args),
+                            signal: AbortSignal.timeout(3000)
                         })).json()
                         if(ghost.success){
                             this.set_socket(new WebSocket(ghost.address))

@@ -455,8 +455,9 @@ export class MenuManager{
     async update_api(){
         if(api){
             let js=this.api_settings
+            this.set_loading_current("Loading API Settings")
             try{
-                js=await(await fetch(`${API_BASE}/get-settings`)).json()
+                js=await(await fetch(`${API_BASE}/get-settings`,{ signal: AbortSignal.timeout(1500) })).json()
                 if(js?.game_version!==game_version){
                     js=undefined
                     await this.game_popup(warning_popup("Invalid Game Version. Please Update the game To play online"))

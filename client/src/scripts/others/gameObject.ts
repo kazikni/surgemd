@@ -3,6 +3,7 @@ import { type Game } from "./game.ts";
 import { type Human } from "../objects/human.ts";
 import { Stream } from "common/engine/core.ts";
 import { PingWorld } from "../objects/ping_world.ts";
+import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 
 export abstract class GameObject extends ClientGameObject2D{
     declare game:Game
@@ -19,6 +20,8 @@ export class ClientScene2D extends ClientGameScene2D<GameObject>{
     objects_process_queue:Stream[]=[]
     pings:Record<number,PingWorld>={}
 
+    game_over?:GameOverPacket
+
     constructor(game:Game){
         super(game)
     }
@@ -34,6 +37,11 @@ export class ClientScene2D extends ClientGameScene2D<GameObject>{
                 this.objects.proccess_net(s,true)
             }
             this.objects_process_queue.length=0
+        }
+        if(this.game_over){
+            const g=this.game_over
+            this.game_over=undefined
+            this.game.ui.apply_game_over(g)
         }
     }
 }

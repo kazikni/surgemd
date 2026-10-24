@@ -737,7 +737,7 @@ export class Game extends ClientGame<GameObject>{
                         const ghost:FindGameResult=await(await fetch(API_BASE+"/find-game",{
                             method:"post",
                             body:JSON.stringify(args),
-                            signal: AbortSignal.timeout(3000)
+                            signal: AbortSignal.timeout(4000)
                         })).json()
                         if(ghost.success){
                             this.set_socket(new WebSocket(ghost.address))
@@ -841,8 +841,8 @@ export class Game extends ClientGame<GameObject>{
             this.proccess_general_main_state(jp.main_state)
             this.state=GameState.Playing
         })
-        client.on("gameover",async(p:GameOverPacket)=>{
-            await this.ui.apply_game_over(p)
+        client.on("gameover",(p:GameOverPacket)=>{
+            this.scene_2d.game_over=p
         })
         client.on("disconnect",(_p:DisconnectPacket)=>{
             if(this.state===GameState.Playing&&!this.fineshed)this.close_game()

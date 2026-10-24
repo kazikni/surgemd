@@ -26,7 +26,7 @@ export const socials={
     github:"https://github.com/kazikni/surgemd",
     android:"/files/surgemd-android.apk",
     windows:"/files/surgemd-windows.zip",
-    linux:"/files/surgemd-linux.zip"
+    linux:"/files/surgemd.zip"
 } satisfies Record<string,string>
 export const Debug={
     hitbox:false,
@@ -38,7 +38,7 @@ export enum GraphicsDConfig {
 }
 
 force_mobile=is_binary_mobile||false
-block_mobile=is_binary_computer
+block_mobile=is_binary_computer||false
 
 const mobile=is_mobile()
 const low_graphics=mobile

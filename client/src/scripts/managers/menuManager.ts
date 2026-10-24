@@ -370,8 +370,6 @@ export class MenuManager{
         this.cam2d.visible=false
         this.start_intro()
 
-        await this.update_api()
-
         this.game_end()
         ShowElement(this.content.menu_options,true)
         if(this.interval===undefined){
@@ -450,6 +448,7 @@ export class MenuManager{
         })*/
     }
     async reload(definitions:GameDefinition,fs:FileManager){
+        await this.update_api()
         await MenuInitDefault(this,definitions,fs,this.translation,this.resources)
     }
     async update_api(){
@@ -457,7 +456,7 @@ export class MenuManager{
             let js=this.api_settings
             this.set_loading_current("Loading API Settings")
             try{
-                js=await(await fetch(`${API_BASE}/get-settings`,{ signal: AbortSignal.timeout(1500) })).json()
+                js=await(await fetch(`${API_BASE}/get-settings`,{ signal: AbortSignal.timeout(4000) })).json()
                 if(js?.game_version!==game_version){
                     js=undefined
                     await this.game_popup(warning_popup("Invalid Game Version. Please Update the game To play online"))

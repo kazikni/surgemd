@@ -5,7 +5,7 @@
    viewBox="-26 -28 91.653442 91.653442"
    version="1.1"
    id="svg16"
-   sodipodi:docname="MD.svg"
+   sodipodi:docname="icon.svg"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    inkscape:export-filename="MD.png"
    inkscape:export-xdpi="1047.4238"
@@ -21,11 +21,15 @@
        inkscape:collect="always"
        id="linearGradient2716">
       <stop
-         style="stop-color:#090f23;stop-opacity:1;"
-         offset="0"
+         style="stop-color:#652249;stop-opacity:1;"
+         offset="0.02918267"
+         id="stop869" />
+      <stop
+         style="stop-color:#03040b;stop-opacity:1;"
+         offset="0.39656034"
          id="stop2712" />
       <stop
-         style="stop-color:#75197c;stop-opacity:1;"
+         style="stop-color:#19297c;stop-opacity:1;"
          offset="1"
          id="stop2714" />
     </linearGradient>
@@ -35,10 +39,10 @@
        id="linearGradient2718"
        x1="-28.711439"
        y1="61.981216"
-       x2="60.700741"
-       y2="-25.066023"
+       x2="61.539116"
+       y2="-29.413227"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.0208709,0,0,1.0079725,2.7206735,1.6085628)" />
+       gradientTransform="matrix(1.0208709,0,0,1.0079725,2.7206753,1.6085644)" />
   </defs>
   <sodipodi:namedview
      id="namedview18"
@@ -51,7 +55,7 @@
      inkscape:deskcolor="#d1d1d1"
      showgrid="false"
      inkscape:zoom="4.9880952"
-     inkscape:cx="-9.9236278"
+     inkscape:cx="-4.4105012"
      inkscape:cy="45.909308"
      inkscape:window-width="1920"
      inkscape:window-height="1008"
@@ -68,7 +72,7 @@
      y="-28" />
   <g
      id="g915"
-     transform="matrix(0.93738946,0,0,0.93738946,1.2413617,1.1152038)">
+     transform="matrix(0.85606724,0,0,0.85606724,2.8537147,2.5649936)">
     <circle
        cx="19.826721"
        cy="17.827721"

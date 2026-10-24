@@ -38,7 +38,8 @@ export class ApiConnection {
                 this.socket = undefined
             }
         }
-        ws.onerror = () => {
+        ws.onerror = (e) => {
+            console.log(e)
             ws.close()
         }
         this.socket = ws

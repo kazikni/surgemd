@@ -10,7 +10,7 @@
 
     border: 0.13vw solid var(--item-border);
     background: var(--item-bg);
-    backdrop-filter: blur(7px);
+    backdrop-filter: var(--ui-panel-backdrop-filter);
     color: white;
     outline: none;
 

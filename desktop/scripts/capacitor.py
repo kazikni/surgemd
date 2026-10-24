@@ -125,6 +125,10 @@ def main():
     if cmd=="build":
         mode=sys.argv[2] if len(sys.argv)>2 else "debug"
         build_android(mode)
+    if cmd=="sync":
+        build_web()
+        generate_icons()
+        cap_sync()
     elif cmd=="run":
         run_android()
     elif cmd=="install":

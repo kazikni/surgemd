@@ -1,7 +1,7 @@
 {
   "tasks": {
-    "dev:game": "deno run --watch -A src/deno.ts game start --config-file \"../config.jsonc\"",
-    "dev:api": "deno run --watch -A src/deno.ts api start --config-file \"../config.jsonc\"",
+    "dev:game": "deno run --watch -A --unsafely-ignore-certificate-errors=localhost src/deno.ts game start --config-file \"../config.jsonc\"",
+    "dev:api": "deno run --watch -A --unsafely-ignore-certificate-errors=localhost src/deno.ts api start --config-file \"../config.jsonc\"",
     "dev": "deno task dev:game & deno task dev:api",
     "build": "deno compile ./src/main.ts",
     "bundle:cli":"deno bundle -o ../dist/cli.js src/cli.ts",

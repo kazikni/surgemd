@@ -212,6 +212,8 @@ export class UiManager{
         this.mobile_enabled=true
         this.mobile_open()
         document.body.classList.toggle("game-mobile-version",true)
+        document.body.style.setProperty("--ui-panel-backdrop-filter","initial")
+       
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
         this.mobile_content.left_joystick.addEventListener("joystickmove",(e:JoystickEvent)=>{

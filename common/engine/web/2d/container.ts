@@ -80,7 +80,7 @@ export class Container2D extends Container2DObject{
 
         for (let o = 0; o < this.visible_children.length; o++) {
             const c=this.visible_children[o]
-            if(c.destroyed||!c._visible)continue
+            if(c.destroyed||!c._visible||c._real_tint.a===0)continue
             const rect=c.get_rect()
             if(c.full||!this.full_request||(rect.max.x>=cam.rect.min.x&&rect.min.x<=cam.rect.max.x&&rect.max.y>=cam.rect.min.y&&rect.min.y<=cam.rect.max.y))c.draw(cam)
         }

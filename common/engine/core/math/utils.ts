@@ -857,21 +857,21 @@ export const ValidString={
     }
 }
 export class IPLocation{
-    IP:string
-    Port:number
-    HTTP:boolean
+    ip:string
+    port?:number
+    safe:boolean
     has_prefix:boolean
     aditional:string=""
-    constructor(IP:string,Port:number,HTTP:boolean=false,has_prefix=true,aditional:string=""){
-        this.IP=IP
-        this.Port=Port
-        this.HTTP=HTTP
+    constructor(ip:string,port?:number,safe:boolean=false,has_prefix=true,aditional:string=""){
+        this.ip=ip
+        this.port=port
+        this.safe=safe
         this.has_prefix=has_prefix
         this.aditional=aditional
     }
     toString(prefix:string=""):string{
         return this.has_prefix?
-        `${prefix}${this.HTTP ? "s" : ""}://${this.IP}:${this.Port}${this.aditional}`
+        `${prefix}${this.safe ? "s" : ""}://${this.ip}${this.port===undefined?"":`:${this.port}`}${this.aditional}`
         :`${this.aditional}`
     }
 }

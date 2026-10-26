@@ -162,8 +162,8 @@ export const human_inventory:ObjectComponent<Human>={
                 if(obj.input.reload&&obj.inventory.hand_item&&obj.inventory.hand_item.item_type===GameItemType.gun){
                     (obj.inventory.hand_item as GunItem).reloading=true
                 }
-                if(obj.input.swamp_guns){
-                    obj.inventory.swamp_guns()
+                if(obj.input.swap_guns){
+                    obj.inventory.swap_guns()
                 }
 
                 for(let i=0;i<obj.input.actions.length;i++){
@@ -398,7 +398,7 @@ export class Human extends Humanoid{
 
         reload:boolean
         interaction:boolean
-        swamp_guns:boolean
+        swap_guns:boolean
         cancel:boolean
     }={
         movement:{
@@ -416,7 +416,7 @@ export class Human extends Humanoid{
         actions:[],
         reload:false,
         interaction:false,
-        swamp_guns:false,
+        swap_guns:false,
         cancel:false
     }
 
@@ -928,7 +928,7 @@ export class Human extends Humanoid{
                     break
             }
         }
-        this.input.swamp_guns=false
+        this.input.swap_guns=false
         this.input.interaction=false
         this.input.reload=false
         this.input.actions.length=0

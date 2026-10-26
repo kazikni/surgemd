@@ -1,6 +1,6 @@
 import { svelte } from "@sveltejs/vite-plugin-svelte";
-import path, { resolve } from "node:path";
-import fs from "node:fs"
+import path, { resolve } from "path";
+import fs from "fs"
 import { type UserConfig } from "vite";
 import { kspr_plugin } from "./plugins/kspr-plugin.ts";
 import { ConfigType } from "common/scripts/config/config.ts";
@@ -48,6 +48,11 @@ export const uconfig: UserConfig = {
     plugins: [
         svelte(),
         kspr_plugin(config.kspr.sheets,config.kspr.resolutions),
+        /*conditionalCompile({
+            defines: (
+                process.env.CONDITIONAL_COMPILE_DEFINES ?? ""
+            ).split(",").filter(Boolean)
+        }),*/
     ],
     css: {
         preprocessorOptions: {
@@ -62,6 +67,7 @@ export const uconfig: UserConfig = {
         }
     },
 };
+
 export default {
     uconfig,
     config

@@ -152,7 +152,7 @@ return (class extends LevelPlayerScript{
         })
     }
     async on_begin(){
-        await this.send_message_event({type:OnlineMessageType.Load,assets:{"gameplay_music":"/assets/sounds/musics/online/game_tundra_music_4.mp3"}})
+        await this.send_message_event({type:OnlineMessageType.Load,assets:{"gameplay_music":"/assets/sounds/musics/single_player/music_1.mp3"}})
         this.background=await this.load_json("../../backgrounds/city_river.json")
         this.cutscene=[
             {type:CutsceneCommandType.SetSoundController,controller:"music",source:"gameplay_music"},

@@ -29,15 +29,15 @@ export function Boosts_Default_Init():BoostDef[]{
             particle:"boost_adrenaline_particle",
             se:{
                 tick(dt,h){
-                    let regen=h.boost.max*0.01
-
                     const percent=h.boost.value/h.boost.max
-                    if(percent<0.25)regen*=0.5
-                    if(percent<0.5)regen*=0.65
-                    if(percent<0.8)regen*=0.8
-
-                    h.health.value=Math.min(h.health.value+(regen*dt),h.health.max)
-                    h.boost.value=Math.max(h.boost.value-0.23*dt,0)
+                    if(h.boost.value>0){
+                        let regen=h.boost.max*0.01
+                        if(percent<0.25)regen*=0.5
+                        if(percent<0.5)regen*=0.65
+                        if(percent<0.8)regen*=0.8
+                        h.health.value=Math.min(h.health.value+(regen*dt),h.health.max)
+                        h.boost.value=Math.max(h.boost.value-0.23*dt,0)
+                    }
                     return percent>=0.5/2?1.1:1
                 }
             }

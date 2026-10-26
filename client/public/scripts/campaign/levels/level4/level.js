@@ -94,7 +94,7 @@ return (class extends LevelPlayerScript{
     on_start(){
         this.scene.deadzone.jump_stages(5)
         this.game.modeManager.add_enemies([
-            {
+             {
                 "def": {
                     "ai": {
                         "kind": "dumb"
@@ -444,7 +444,7 @@ return (class extends LevelPlayerScript{
 
             {type:CutsceneCommandType.Wait, time:1},
             {type:CutsceneCommandType.SetBackground, background:backgrounds.smoke_2,transition:{type:BackgroundTransitionType.Fade,duration:3}},
-            {type:CutsceneCommandType.Wait,time:2},
+            {type:CutsceneCommandType.Wait,time:1},
 
             {type:CutsceneCommandType.Wait, time:1},
             ...make_credits_cutscene(FinalCredits),

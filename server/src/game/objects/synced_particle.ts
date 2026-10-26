@@ -65,7 +65,9 @@ export class SyncedParticle extends MovingBody {
 
     override on_collided(obj:ServerGameObject,dt:number){
         switch(obj.number_type){
+            case GameObjectType.StaticBody:
             case GameObjectType.Obstacle:
+            case GameObjectType.Walls:
             case GameObjectType.Building:{
                 if((obj as StaticBody).physical_data.stairs.length>0){
                     for(const s of (obj as StaticBody).physical_data.stairs){

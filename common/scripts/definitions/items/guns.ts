@@ -97,7 +97,7 @@ export const bullets_factory={
     },
     sniper(power:number,tracer=tracers.large):BulletDef{
         return {
-            damage: 50 * power,
+            damage: 53 * power,
             range: 200 * (1 + (power - 1) * 0.5),
             speed: 55 * (1 + (power - 1) * 0.6),
 
@@ -530,7 +530,7 @@ export function Guns_Default_Init():GunDef[]{
                 extended_capacity:25,
             },
             dual:{
-                dual_offset:0.2,
+                dual_offset:0.17,
 
                 fire_delay:0.1,
                 spread:7,
@@ -557,11 +557,11 @@ export function Guns_Default_Init():GunDef[]{
 
             bullet:{
                 def:{
-                    damage:9.6,
+                    damage:9,
                     critical_mult:1.3,
                     range:70,
-                    falloff:0.8,
-                    speed:20,
+                    falloff:0.6,
+                    speed:22,
                     tracer:tracers.tiny
                 }
             },
@@ -575,7 +575,7 @@ export function Guns_Default_Init():GunDef[]{
                 extended_capacity:40,
             },
             dual:{
-                dual_offset:0.2,
+                dual_offset:0.17,
 
                 fire_delay:0.2,
                 spread:7,
@@ -622,7 +622,7 @@ export function Guns_Default_Init():GunDef[]{
                 extended_capacity:35,
             },
             dual:{
-                dual_offset:0.2,
+                dual_offset:0.17,
 
                 fire_delay:0.03,
                 spread:12,
@@ -674,13 +674,16 @@ export function Guns_Default_Init():GunDef[]{
             },
             dual:{
                 spread:1,
-                dual_offset:0.2,
+                dual_offset:0.17,
                 fire_delay:0.2,
                 reload:{
                     capacity:12,
                     extended_capacity:20,
                     delay:5,
                 },
+                assets:{
+                    reload_animation:[]
+                }
             },
             assets:{
                 world_tint:0xb7c1c3,
@@ -723,7 +726,7 @@ export function Guns_Default_Init():GunDef[]{
             },
             dual:{
                 rank:ItemRank.S,
-                dual_offset:0.2,
+                dual_offset:0.17,
                 fire_delay:0.15,
                 spread:5,
                 reload:{
@@ -777,13 +780,16 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.2
             },
             dual:{
-                dual_offset:0.2,
+                dual_offset:0.17,
                 fire_delay:1,
                 spread:6,
                 reload:{
                     capacity:10,
                     extended_capacity:14,
                     delay:6
+                },
+                assets:{
+                    reload_animation:[]
                 }
             },
             assets:{
@@ -1108,7 +1114,7 @@ export function Guns_Default_Init():GunDef[]{
             },
 
             bullet:{
-                def:bullets_factory.sniper(1.1,tracers.xl)
+                def:bullets_factory.sniper(1.11,tracers.xl)
             },
             reload:{
                 delay:2.7,
@@ -1162,7 +1168,7 @@ export function Guns_Default_Init():GunDef[]{
             },
 
             bullet:{
-                def:bullets_factory.sniper(0.87)
+                def:bullets_factory.sniper(0.85)
             },
             reload:{
                 delay:2.5,
@@ -1187,7 +1193,7 @@ export function Guns_Default_Init():GunDef[]{
             },
 
             bullet:{
-                def:bullets_factory.sniper(0.72)
+                def:bullets_factory.sniper(0.7)
             },
             reload:{
                 delay:0.6,
@@ -1221,7 +1227,7 @@ export function Guns_Default_Init():GunDef[]{
 
             bullet:{
                 def:{
-                    ...bullets_factory.sniper(0.67,tracers.medium),
+                    ...bullets_factory.sniper(0.65,tracers.medium),
                     pass_through_humans:true,
                 }
             },
@@ -1363,17 +1369,17 @@ export function Guns_Default_Init():GunDef[]{
         guns_factory.dmr("m110a2","c51",{
             name:"M110 A2",
             fire_delay:0.25,
-            spread:2,
+            spread:2.5,
             ammo_spawn:{
                 amount:60
             },
             bullet:{
                 def:{
-                    damage:25,
+                    damage:24,
                     critical_mult:1.2,
                     falloff:0.75,
                     range:165,
-                    speed:50,
+                    speed:48,
                     tracer:tracers.large,
                     effective_range:0.17,
                 }
@@ -1425,7 +1431,7 @@ export function Guns_Default_Init():GunDef[]{
         }),
         guns_factory.dmr("m1_garand","c51",{
             name:"M1-Garand",
-            fire_delay:0.3,
+            fire_delay:0.31,
             spread:3,
 
             ammo_spawn:{
@@ -1433,7 +1439,7 @@ export function Guns_Default_Init():GunDef[]{
             },
 
             bullet:{
-                def:bullets_factory.sniper(0.72)
+                def:bullets_factory.sniper(0.7)
             },
 
             reload:{
@@ -1611,7 +1617,6 @@ export function Guns_Default_Init():GunDef[]{
             spread:1,
             idle_spread:0.33333,
             barrel_length:1,
-            barrel_offset:0.45,
 
             ammo_type:"explosive_ammo",
             fire_mode:FireMode.Single,

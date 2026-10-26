@@ -316,11 +316,11 @@ export const obstacles_factory={
         o?:DeepPartial<ObstacleDef>
     }={}):ObstacleDef{
         return mergeDeep({idString:id},{
-            health:190,
+            health:220,
             hitbox:settings.hitbox??new CircleHitbox2D(v2(0,0),0.84),
             spawnHitbox:settings.spawn_hitbox,
             scale:{
-                destroy:0.7,
+                destroy:0.6,
             },
             assets:{
                 particles:{
@@ -350,7 +350,7 @@ export const obstacles_factory={
         o?:DeepPartial<ObstacleDef>
     }={}):ObstacleDef{
         return mergeDeep({idString:id},{
-            health:70,
+            health:90,
             hitbox:settings.hitbox??new CircleHitbox2D(v2(0,0),0.8),
             no_collision:true,
             passable_by_bullets:true,
@@ -407,10 +407,10 @@ export const obstacles_factory={
         o?:DeepPartial<ObstacleDef>,
     }={}):ObstacleDef{
         return mergeDeep({idString:id},{
-            health:65,
+            health:70,
             hitbox:new RectHitbox2D(v2(-0.71,-0.71),v2(0.71,0.71)),
             scale:{
-                destroy:0.7,
+                destroy:0.6,
             },
             rotation_mode:RotationMode.null,
             loot_table:id,
@@ -672,7 +672,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         },
         {
             idString:"oak_tree",
-            health:110,
+            health:125,
             hitbox:new CircleHitbox2D(v2(0,0),0.4),
             spawnHitbox:new CircleHitbox2D(v2(0,0),1.5),
             scale:{
@@ -844,7 +844,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         }),
         obstacles_factory.crate("copper_crate",{
             o:{
-                health:130,
+                health:140,
                 assets:{
                     frame:{
                         dead:"metal_residue_1x1",
@@ -1225,7 +1225,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         },
         {
             idString:"couch_3x1",
-            health:100,
+            health:150,
             hitbox:new RectHitbox2D(v2(-0.55,-1.4),v2(0.55,1.4)),
             scale:{
                 destroy:0.8
@@ -1243,10 +1243,10 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         },
         {
             idString:"large_drawer",
-            health:120,
+            health:110,
             hitbox:new RectHitbox2D(v2(-0.475,-1.15),v2(0.475,1.15)),
             scale:{
-                destroy:0.75
+                destroy:0.8
             },
             assets:{
                 frame:{
@@ -1271,10 +1271,10 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         },
         {
             idString:"small_stove",
-            health:85,
+            health:100,
             hitbox:new RectHitbox2D(v2(-0.6,-0.6),v2(0.6,0.6)),
             scale:{
-                destroy:0.9
+                destroy:0.8
             },
             assets:{
                 frame:{
@@ -1291,7 +1291,10 @@ export function Obstacles_Default_Init():ObstacleDef[]{
                     particle:"metal_particle",
                     tint:0x484848
                 },
-                sounds:hit_sounds.heavy_metal,
+                sounds:{
+                    ...hit_sounds.heavy_metal,
+                    break:"heavy_metal_break_2"
+                },
             },
             rotation_mode:RotationMode.limited,
             onDestroyExplosion:"barrel_explosion",
@@ -1301,10 +1304,10 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         },
         {
             idString:"sink",
-            health:85,
+            health:100,
             hitbox:new RectHitbox2D(v2(-0.6,-0.6),v2(0.6,0.6)),
             scale:{
-                destroy:0.9
+                destroy:0.8
             },
             assets:{
                 frame:{
@@ -1327,10 +1330,10 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         },
         {
             idString:"large_kitchen_drawer",
-            health:130,
+            health:100,
             hitbox:new RectHitbox2D(v2(-0.55,-1.15),v2(0.55,1.15)),
             scale:{
-                destroy:0.9
+                destroy:0.8
             },
             assets:{
                 frame:{
@@ -1446,7 +1449,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         },
         {
             idString:"small_bed",
-            health:130,
+            health:140,
             hitbox:new RectHitbox2D(v2(-0.8,-1.28),v2(0.8,1.28)),
             scale:{
                 destroy:0.8

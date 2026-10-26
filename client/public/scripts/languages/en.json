@@ -140,7 +140,7 @@
             "angry_swearing":"Angry Swearing",
             "very_love":"Very Love",
             "demon":"Demon",
-            "peading":"Peading",
+            "pleading":"Pleading",
 
             "heart":"Heart",
             "skull":"Skull",
@@ -443,7 +443,7 @@
             "reload": "Reload",
             "interact": "Interact",
             "cancel": "Cancel",
-            "swamp_guns": "Swamp Guns Slot",
+            "swap_guns": "Swap Guns Slot",
             "toggle_full_device": "Minimap Toggle Full",
             "toggle_hide_device": "Hide/Show Minimap",
             "weapon1": "Melee",

@@ -9,11 +9,10 @@ import { LoadoutItemKind } from "common/scripts/definitions/loadout/skins.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 import { build_setting_input, SettingDef, SettingOption } from "./settings.ts";
-import { GamePlayOption } from "common/scripts/config/config.ts";
+import { FinalCredits, GamePlayOption } from "common/scripts/config/config.ts";
 import { PlayArgs } from "../others/constants.ts";
 import { GameConstants } from "common/scripts/others/constants.ts";
 import { make_credits_markdown } from "common/scripts/others/functions.ts";
-import { FinalCredits } from "common/scripts/config/background_effect.ts";
 import { GameObjectDefinitionType } from "common/scripts/definitions/utils.ts";
 
 export type GamePopupCTX={
@@ -832,6 +831,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             subtab:"campaign_level_selector"
         },
     )
+//#if defined(is_desktop_port)
     if(!mobile){
         play_options.push(
             {
@@ -852,6 +852,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             },
         )
     }
+//#endif
     const hairs_types:SettingOption[]=[]
     const shirts_types:SettingOption[]=[]
     const legs_types:SettingOption[]=[]
@@ -1041,12 +1042,15 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                     name:"menu.settings.ui",
                     subtab:"ui"
                 },
+
+//#if defined(is_desktop_port)
                 mobile?undefined:{
                     id:"keybinds",
                     type:"button",
                     name:"menu.settings.keybinds",
                     subtab:"keybinds"
                 },
+//#endif
                 {
                     id:"file",
                     type:"button",
@@ -1151,6 +1155,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                                 {name:"Normal",value:"2"},
                             ],
                         },
+//#if defined(is_desktop_port)
                         (mobile)?undefined:{
                             type:"toggle",
                             tname:"settings.graphics.fullscreen",
@@ -1159,6 +1164,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                                 set_full_screen(enable)
                             }
                         },
+//#endif
                     ],translation),
                 },
                 "sounds":{
@@ -1247,6 +1253,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                                 {name:"Ak-47",value:"ak47"},
                             ],
                         },
+//#if defined(is_desktop_port)
                         (mobile)?undefined:{
                             type:"toggle",
                             tname:"settings.ui.interactive",
@@ -1257,6 +1264,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                             tname:"settings.ui.show_intro",
                             var:"ui_show_intro",
                         }
+//#endif
                     ],translation),
                 },
                 "keybinds":{

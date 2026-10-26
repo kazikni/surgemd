@@ -4,6 +4,7 @@ import { type Human } from "../objects/human.ts";
 import { Stream } from "common/engine/core.ts";
 import { PingWorld } from "../objects/ping_world.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
+import { OnlineMessage } from "common/scripts/packets/messages.ts";
 
 export abstract class GameObject extends ClientGameObject2D{
     declare game:Game
@@ -21,6 +22,7 @@ export class ClientScene2D extends ClientGameScene2D<GameObject>{
     pings:Record<number,PingWorld>={}
 
     game_over?:GameOverPacket
+    online_messages:(OnlineMessage&{resolve?:(val:any)=>void})[]=[]
 
     constructor(game:Game){
         super(game)
@@ -43,5 +45,12 @@ export class ClientScene2D extends ClientGameScene2D<GameObject>{
             this.game_over=undefined
             this.game.ui.apply_game_over(g)
         }
+        for(const o of this.online_messages){
+            this.game.online_message(o).then((v)=>{
+                this.game.client?.emit?.("_end",v)
+                o.resolve?.(v)
+            })
+        }
+        this.online_messages.length=0
     }
 }

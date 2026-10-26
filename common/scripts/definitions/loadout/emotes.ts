@@ -18,7 +18,7 @@ export function Emotes_Default_Init():EmoteDef[]{
         {idString:"angry_swearing",rank:ItemRank.D},
         {idString:"very_love",rank:ItemRank.B},
         {idString:"demon",rank:ItemRank.B},
-        {idString:"peading",rank:ItemRank.B},
+        {idString:"pleading",rank:ItemRank.B},
 
         // Objects
         {idString:"heart",rank:ItemRank.D},

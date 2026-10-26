@@ -30,7 +30,7 @@ ___
 * Vests Visual In Game
 ___
 ### Keys And Controls
-* Swamp Guns Slot (Use F)
+* Swap Guns Slot (Use F)
 ___
 ## Changes
 ___

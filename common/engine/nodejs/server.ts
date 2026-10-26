@@ -1,9 +1,9 @@
-import {createServer as createHttpServer,IncomingMessage,Server as HttpServer} from "node:http";
-import {createServer as createHttpsServer} from "node:https";
-import {readFile,stat} from "node:fs/promises";
-import {existsSync} from "node:fs";
-import {join,extname,resolve,sep} from "node:path";
-import {Duplex} from "node:stream";
+import {createServer as createHttpServer,IncomingMessage,Server as HttpServer} from "http";
+import {createServer as createHttpsServer} from "https";
+import {readFile,stat} from "fs/promises";
+import {existsSync} from "fs";
+import {join,extname,resolve,sep} from "path";
+import {Duplex} from "stream";
 import {WebSocket,WebSocketServer} from "ws";
 import {Path} from "../core/math/utils.ts";
 import {Router,Server} from "../server/server.ts";
@@ -125,7 +125,7 @@ export class NodeServer extends NodeRouter implements Server {
         });
     }
 
-    private async handleRequest(req:IncomingMessage,res:import("node:http").ServerResponse){
+    private async handleRequest(req:IncomingMessage,res:import("http").ServerResponse){
         try{
             const request=await toRequest(req);
             const path=["",...Path.split(new URL(request.url).pathname)];

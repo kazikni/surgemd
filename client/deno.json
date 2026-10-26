@@ -6,7 +6,9 @@
   },
   "tasks": {
     "dev":" deno -A npm:vite .",
-    "build":"deno -A npm:vite build"
+    "build":"CONDITIONAL_COMPILE_DEFINES=is_desktop_port,is_mobile_port,is_web_port deno -A npm:vite build",
+    "build:mobile": "CONDITIONAL_COMPILE_DEFINES=is_mobile_port deno -A npm:vite build",
+    "build:computer": "CONDITIONAL_COMPILE_DEFINES=is_desktop_port deno -A npm:vite build"
   },
   "allowScripts": {
     "allow": ["npm:canvas@3.2.3","npm:@sveltejs/vite-plugin-svelte@^7.3.1","npm:sass-embedded@^1.105.2"],

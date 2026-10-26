@@ -262,8 +262,8 @@ export class Game extends ClientGame<GameObject>{
                 case "cancel":
                     this.input.cancel=true
                     break
-                case "swamp_guns":
-                    this.input.swamp_guns=true
+                case "swap_guns":
+                    this.input.swap_guns=true
                     break
                 case "weapon1":
                     this.input.actions.push({type:InputActionType.set_hand,hand:0})
@@ -368,15 +368,22 @@ export class Game extends ClientGame<GameObject>{
             }
             this.ui_manager.signal("actionup",a)
         })
+        //#if defined(is_desktop_port)
         this.input_manager.listener.on(InputEventType.MouseMove,(e:InputMouseMoveEvent)=>{
+            //#if defined(is_web_port)
             if(!this.ui.mobile_enabled){
-                const cam_c=v2.dscale(this.scene_2d.camera.size,2)
-                const mouse_p=e.position
+            //#endif
+                const canvas_rect=this.renderer.canvas.getBoundingClientRect()
+                const cam_c=v2(canvas_rect.width/2,canvas_rect.height/2)
+                const mouse_p=this.input_manager.real_mouse_position
                 const angle=v2.lookTo(cam_c,mouse_p)
                 const dist=v2.distance(cam_c,mouse_p)/Math.min(cam_c.x,cam_c.y)
                 this.set_lookTo_angle(angle,dist)
+            //#if defined(is_web_port)
             }
+            //#endif
         })
+        //#endif
         this.input_manager.listener.on(InputEventType.ControllerChanged,(e:InputControllerChanged)=>{
             if(e.connected){
                 this.input_manager.mouse_emulation=this.state!==GameState.Playing
@@ -567,6 +574,7 @@ export class Game extends ClientGame<GameObject>{
         }
 
         this.scene_2d.update(dt,false,true)
+        this.local_server?.tick?.(dt)
         if(this.cam_type===0){
             if(this.active_entity&&this.active_entity_id!==this.active_entity.id){
                 this.active_entity=this.scene_2d.objects.get_object(this.active_entity_id!) as Human
@@ -615,7 +623,9 @@ export class Game extends ClientGame<GameObject>{
         this.scene_2d.set_camera_position(this.scene_2d.camera.position)
         this.terrain.tick()
         if(this.client&&this.client.opened){
+            //#if defined(is_mobile_port)
             this.input.auto_fire=this.ui.mobile_enabled
+            //#endif
             this.client.emit_packet(this.input)
             this.reset_input()
         }
@@ -638,7 +648,7 @@ export class Game extends ClientGame<GameObject>{
         this.input.reload=false
         this.input.interact=false
         this.input.cancel=false
-        this.input.swamp_guns=false
+        this.input.swap_guns=false
         this.input.actions.length=0
     }
     process_general_update(up:GeneralUpdate){
@@ -847,8 +857,8 @@ export class Game extends ClientGame<GameObject>{
         client.on("disconnect",(_p:DisconnectPacket)=>{
             if(this.state===GameState.Playing&&!this.fineshed)this.close_game()
         })
-        client.on("message",async(msg:any)=>{
-            client.emit("_end",await this.online_message(msg))
+        client.on("message",(msg:any)=>{
+            this.scene_2d.online_messages.push(msg)
         })
     }
 }

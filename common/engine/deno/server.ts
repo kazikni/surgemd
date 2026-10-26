@@ -314,7 +314,7 @@ export class DenoServer extends DenoRouter implements Server {
         } else {
             this.server = Deno.serve({
                 port: this.port,
-                hostname:"0.0.0.0"
+                hostname:"0.0.0.0",
             },this.handle_request.bind(this));
         }
     }

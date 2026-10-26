@@ -374,8 +374,8 @@ export const melees_factorys={
         return mergeDeep({
             idString:id,
             rank:ItemRank.S,
-            offset:v2(0.5,0),
-            radius:0.35,
+            offset:v2(0.55,0),
+            radius:0.4,
             damage:25,
             attack_delay:0.65,
             switch_delay:0.5,

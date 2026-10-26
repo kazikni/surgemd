@@ -276,7 +276,7 @@ export class Player extends Human{
 
         this.input.interaction=i.interact||this.input.interaction
         this.input.reload=i.reload||this.input.reload
-        this.input.swamp_guns=i.swamp_guns||this.input.swamp_guns
+        this.input.swap_guns=i.swap_guns||this.input.swap_guns
         this.input.actions.push(...i.actions)
 
         this.input.cancel=i.cancel   

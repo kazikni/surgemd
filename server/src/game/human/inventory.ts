@@ -703,7 +703,7 @@ export class GInventory extends GInventoryBase<LItem>{
         super.set_weapon(slot,undefined)
         return loots
     }
-    swamp_guns(){
+    swap_guns(){
         const gun1=this.weapons[1]
         const gun2=this.weapons[2]
         this.weapons[1]=gun2

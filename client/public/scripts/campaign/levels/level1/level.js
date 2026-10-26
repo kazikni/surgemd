@@ -4,10 +4,10 @@ return (class extends LevelPlayerScript{
             mode:"normal",
             settings:{
                 map:{
-                    def:{
+                    def:NormalMap/*{
                         ...NormalMap,
                         loot_tables:{...LootTables,...SimpleLootTables}
-                    }
+                    }*/
                 },
                 events:[]
             }
@@ -72,7 +72,7 @@ return (class extends LevelPlayerScript{
                         "melee": [
                             {
                                 "item": "fist",
-                                "weight": 40
+                                "weight": 30
                             },
                             {
                                 "item": "survival_knife",
@@ -86,64 +86,170 @@ return (class extends LevelPlayerScript{
                                 "item": "axe",
                                 "weight": 5
                             },
+                            {
+                                "item": "crowbar",
+                                "weight": 4
+                            },
+                            {
+                                "item": "katana",
+                                "weight": 1
+                            },
+                            {
+                                "item": "sledgehammer",
+                                "weight": 0.75
+                            },
+                            {
+                                "item": "bonesaw",
+                                "weight": 0.75
+                            },
+                            {
+                                "item": "pan",
+                                "weight": 0.75
+                            }
                         ],
                         "gun1": [
                             {
-                                "item": "m9",
-                                "weight": 8
-                            },
-                            {
-                                "item": "m9_dual",
-                                "weight": 8
-                            },
-                            {
-                                "item": "mp5",
-                                "weight": 8
-                            },
-                            {
-                                "item": "micro_uzi",
-                                "weight": 7
+                                "item": "hp18",
+                                "weight": 1
                             },
                             {
                                 "item": "m870",
-                                "weight": 7
+                                "weight": 6
                             },
                             {
-                                "item": "ak47",
-                                "weight": 7
+                                "item": "aipc39",
+                                "weight": 6
                             },
-                            {item:"m110a2",weight:0.3},
+                            {
+                                "item": "spas12",
+                                "weight": 1
+                            },
+                            {
+                                "item": "super_conqueror",
+                                "weight": 1
+                            },
+                            {
+                                "item": "blr81",
+                                "weight": 1
+                            },
+                            {
+                                "item": "rifle_cbc",
+                                "weight": 1
+                            },
                             {
                                 "item": "kar98k",
-                                "weight": 0.2
+                                "weight": 1
                             },
+                            {
+                                "item": "awp",
+                                "weight": 0.15
+                            },
+                            {
+                                "item": "awm",
+                                "weight": 0.1
+                            }
                         ],
                         "gun2": [
                             {
+                                "item": "colt1873",
+                                "weight": 7
+                            },
+                            {
+                                "item": "colt1873_dual",
+                                "weight": 7
+                            },
+                            {
                                 "item": "m9",
-                                "weight": 8
+                                "weight": 7
                             },
                             {
                                 "item": "m9_dual",
-                                "weight": 8
+                                "weight": 7
+                            },
+                            {
+                                "item": "taurustx",
+                                "weight": 7
+                            },
+                            {
+                                "item": "taurustx_dual",
+                                "weight": 7
                             },
                             {
                                 "item": "mp5",
                                 "weight": 8
                             },
                             {
-                                "item": "micro_uzi",
-                                "weight": 7
+                                "item": "ak47",
+                                "weight": 8
                             },
                             {
-                                "item": "ak47",
-                                "weight": 7
+                                "item": "ar15",
+                                "weight": 8
                             },
-                            {item:"m110a2",weight:0.6},
+                            {
+                                "item": "famas",
+                                "weight": 6
+                            },
+                            {
+                                "item": "m1921",
+                                "weight": 5
+                            },
+                            {
+                                "item": "m4a1",
+                                "weight": 4
+                            },
+                            {
+                                "item": "vector",
+                                "weight": 4
+                            },
+                            {
+                                "item": "p90",
+                                "weight": 4
+                            },
+                            {
+                                "item": "super_conqueror",
+                                "weight": 2
+                            },
+                            {
+                                "item": "m110a2",
+                                "weight": 2
+                            },
+                            {
+                                "item": "vss",
+                                "weight": 2
+                            },
+                            {
+                                "item": "rifle_cbc",
+                                "weight": 2
+                            },
+                            {
+                                "item": "blr81",
+                                "weight": 2
+                            },
                             {
                                 "item": "kar98k",
+                                "weight": 1
+                            },
+                            {
+                                "item": "awp",
                                 "weight": 0.2
                             },
+                            {
+                                "item": "pkp",
+                                "weight": 0.1
+                            },
+                            {
+                                "item": "m249",
+                                "weight": 0.1
+                            },
+                            {
+                                "item": "xm556",
+                                "weight": 0.1
+                            },
+                            {
+                                "item": "awm",
+                                "weight": 0.1
+                            }
                         ],
                         "aitems": {
                             "p76":20,

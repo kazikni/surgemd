@@ -177,3 +177,121 @@ export function ZeroConfig():ConfigType{
 }
 
 export const game_version="Pre-Beta-10-Snapshot-2"
+
+
+export const FinalCredits=[
+    {
+        role: "Created By",
+        users: "Kazikni / Hugo Mendonça Santana"
+    },
+    {
+        role: "Programmed By",
+        users: "@kazikni"
+    },
+    {
+        role: "Game Designs / Graphics",
+        users: [
+            "@kazikni",
+            "@cheerfulbull_29688",
+            "@wowcps_01_37746",
+            "@endermanking",
+            "@littlethief69",
+            "Suroi.io",
+            "Surviv.io",
+            "Survev.io"
+        ]
+    },
+
+    {
+        role: "Menu Design",
+        users: [
+            "@kazikni",
+            "@namerio"
+        ]
+    },
+
+    {
+        role: "Sound Design",
+        users: [
+            "@kazikni",
+            "@teardwop",
+            "Surviv.io",
+            "Suroi.io",
+            "Free Sounds On Net",
+            "Half-Life",
+            "Postal 2",
+            "Fortnite"
+        ]
+    },
+
+    {
+        role: "Music",
+        users: [
+            "@showusmusic",
+            "@rivals2444",
+            "Wreckfest",
+            "Super Chicken Jumper",
+            "I Wanna Be The Guy",
+            "Various YouTube Music",
+            "NoCopyrightSounds",
+            "Hotline Miami 2",
+            "Five Nights at Freddy's",
+            "StickFight The Game"
+        ]
+    },
+
+    {
+        role: "Lore",
+        users: "@kazikni"
+    },
+
+    {
+        role: "Additional Art",
+        users: [
+            "@kazikni",
+            "@sentido_ss",
+            "@bien.star",
+            "@paoagiota4740"
+        ]
+    },
+
+    {
+        role: "Videos / Trailers",
+        users: [
+            "@kazikni",
+            "@rapxtor_yt"
+        ]
+    },
+
+    {
+        role: "Discord Server",
+        users: [
+            "@kazikni",
+            "@Zahirralt2"
+        ]
+    },
+    {
+        role: "Inspirations",
+        users: [
+            "Surviv.io",
+            "Hotline Miami 1 & 2",
+            "Suroi.io",
+            "Pixel Gun 3D",
+            "Fortnite"
+        ]
+    },
+    {
+        role: "Special Thanks",
+        users: [
+            "Surviv.io creators",
+            "@hasanger",
+            "@1092384",
+            "@sloistice",
+            "@mamoun0",
+            "@leia_uwu",
+            "@guiz3rabrr2466._24385",
+            "@jgpow",
+            "Everyone Who Played",
+        ]
+    }
+]

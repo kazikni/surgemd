@@ -64,7 +64,7 @@ export class InputPacket extends Packet{
     interact:boolean=false
     cancel:boolean=false
     reload:boolean=false
-    swamp_guns:boolean=false
+    swap_guns:boolean=false
 
     actions:InputAction[]=[]
 
@@ -75,7 +75,7 @@ export class InputPacket extends Packet{
         stream.write_polar_mov2(this.movement)
             .write_rad(this.angle)
             .write_float(this.distance_to_aim,0,1,1)
-            .write_boolean_group(this.auto_fire,this.use_weapon,this.alt_use_weapon,this.interact,this.cancel,this.reload,this.swamp_guns)
+            .write_boolean_group(this.auto_fire,this.use_weapon,this.alt_use_weapon,this.interact,this.cancel,this.reload,this.swap_guns)
             .write_array(this.actions,(i,_s)=>{
                 stream.write_uint8(i.type)
                 switch(i.type){
@@ -125,7 +125,7 @@ export class InputPacket extends Packet{
         this.interact=bg[3]
         this.cancel=bg[4]
         this.reload=bg[5]
-        this.swamp_guns=bg[6]
+        this.swap_guns=bg[6]
         this.actions=stream.read_array((_s)=>{
           const ret={
               type:stream.read_uint8()

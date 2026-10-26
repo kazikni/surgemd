@@ -6,6 +6,7 @@ export class LocalGameServer{
     running:boolean=false
     worker?:Worker
     game!:Game
+    messages:any[]=[]
     constructor(game:Game){
         this.game=game
     }
@@ -27,6 +28,16 @@ export class LocalGameServer{
             type: "begin",
             config:config??ZeroGameServerConfig(),
         })
+    }
+    tick(dt:number){
+        for(const msg of this.messages){
+            switch(msg.type){
+                case "start_level":
+                    this.game.play_game({type:"campaign",path:msg.path,start_with_intro:true})
+                    break
+            }
+        }
+        this.messages.length=0
     }
 
     start(){
@@ -60,7 +71,7 @@ export class LocalGameServer{
                 this.connect()
                 break
             case "start_level":
-                this.game.play_game({type:"campaign",path:msg.path,start_with_intro:true})
+                this.messages.push(msg)
                 break
             case "stop":{
                 this.stop()
@@ -68,8 +79,11 @@ export class LocalGameServer{
                 break
             }
             case "online_message":{
-                this.game.online_message(msg.message).then((ret)=>{
-                    if(this.worker)this.worker.postMessage({type:"online_message_resolve",ret})
+                this.game.scene_2d.online_messages.push({
+                    ...msg.message,
+                    resolve:(val)=>{
+                        if(this.worker)this.worker.postMessage({type:"online_message_resolve",ret:val})
+                    }
                 })
             }
         }

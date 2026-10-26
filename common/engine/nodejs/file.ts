@@ -1,6 +1,6 @@
 
-import * as fs from "node:fs";
-import { open, FileHandle as NodeFile,readFile,writeFile,readdir } from "node:fs/promises";
+import * as fs from "fs";
+import { open, FileHandle as NodeFile,readFile,writeFile,readdir,mkdir, } from "fs/promises";
 
 import {
     FileHandle,
@@ -40,10 +40,6 @@ export class NodeFileHandle extends FileHandle {
 }
 
 export class NodeFileManager extends FileManager {
-    override is_directory(path: string): boolean {
-        const stat = fs.statSync(path)
-        return stat.isDirectory()
-    }
     read_file(path: string): Promise<string> {
         return readFile(path, "utf8")
     }
@@ -54,12 +50,27 @@ export class NodeFileManager extends FileManager {
     async read_fileb(path:string):Promise<Uint8Array> {
         return new Uint8Array(await readFile(path))
     }
-    async write_fileb(path:string,content:Uint8Array): Promise<void> {
-        writeFile(path, content)
+    write_fileb(path:string,content:Uint8Array): Promise<void> {
+        return writeFile(path, content)
     }
 
     list_dir(path: string): Promise<string[]> {
         return readdir(path);
+    }
+    override make_dir(path: string): Promise<void> {
+        return mkdir(path)
+    }
+    override async exist(path: string): Promise<boolean> {
+        try{
+            await fs.promises.access(path)
+            return true
+        }catch{
+            return false
+        }
+    }
+    override is_directory(path: string): boolean {
+        const stat = fs.statSync(path)
+        return stat.isDirectory()
     }
 
     async open(path: string,mode: "r" | "w" | "rw"): Promise<FileHandle>{

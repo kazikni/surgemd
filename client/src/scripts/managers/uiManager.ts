@@ -140,9 +140,11 @@ export class UiManager{
     }
     async init(){
         this.content.restart_gameOver.innerHTML=`<div class="go-message">${this.game.language.get("gameover.restart.press")}</div>`
+//#if defined(is_mobile_port)
         if(is_mobile()){
             await this.mobile_init()
         }
+//#endif
     }
     clear_top_right(){
         this.content.feed.innerHTML=""
@@ -208,6 +210,8 @@ export class UiManager{
         loot: this._makeHint(["E - Take Loot"]),
         interact: this._makeHint(["E - Interact"]),
     }
+
+//#if defined(is_mobile_port)
     async mobile_init(){
         this.mobile_enabled=true
         this.mobile_open()
@@ -282,6 +286,7 @@ export class UiManager{
             this.game.input_manager.emit({type:InputEventType.KeyUp,key:Key.R})
         }
     }
+//#endif
     emote_wheel={
         positon:v2(0,0),
         world_position:undefined as Vec2|undefined,
@@ -418,6 +423,8 @@ export class UiManager{
         this.emote_wheel.emotes=emotes
     }
     mobile_enabled:boolean=false
+
+//#if defined(is_mobile_port)
     mobile_close(){
         HideElement(this.mobile_content.gui)
         ShowElement(this.content.help_gui)
@@ -428,6 +435,7 @@ export class UiManager{
         HideElement(this.content.help_gui)
         this.mobile_enabled=true
     }
+//#endif
     start(){
         HideElement(this.content.post_proccess.tiltshift)
         HideElement(this.content.post_proccess.vignetting)
@@ -686,17 +694,17 @@ export class UiManager{
         }
     }
     crosshair=false
-    crosshair_manager:CrosshairManager=new CrosshairManager(document.body)
+    crosshair_manager:CrosshairManager=new CrosshairManager()
     enableCrosshair() {
-        const v=new StaticCrosshair(document.body,random.choose([DefaultCrosshair,AimCrosshair]))
+        /*const v=new StaticCrosshair(random.choose([DefaultCrosshair,AimCrosshair]))
         v.rainbow=Math.random()<=0.01
         this.crosshair_manager.set(v)
-        this.crosshair=true
+        this.crosshair=true*/
     }
     disableCrosshair() {
-        document.body.style.cursor = this.game.cursors.default
+        /*this.game.renderer.canvas.style.cursor = this.game.cursors.default
         this.crosshair=false
-        this.crosshair_manager.clear("")
+        this.crosshair_manager.clear("")*/
     }
     update_crosshair(dt:number){
         if(!this.crosshair)return
@@ -795,6 +803,7 @@ export class UiManager{
     hide_game_over(){
         ShowElement(this.content.game_gui)
         HideElement(this.content.normal_gameOver)
+        this.disableCrosshair()
         this.content.restart_gameOver.classList.toggle("hidden",true)
     }
     async apply_game_over(g:GameOverPacket){

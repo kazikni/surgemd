@@ -1,7 +1,7 @@
 import {random} from "../core/math/random.ts";
 import {BasicSocket,ClientsManager} from "../core/net/client.ts";
-import type {IncomingMessage} from "node:http";
-import type {Duplex} from "node:stream";
+import type {IncomingMessage} from "http";
+import type {Duplex} from "stream";
 import type {WebSocket} from "ws";
 
 export interface NodeServeHandlerInfo {

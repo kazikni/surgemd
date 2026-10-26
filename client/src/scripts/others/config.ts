@@ -4,19 +4,19 @@ import { is_binary_computer, is_binary_mobile } from "../defs/bin_files.ts";
 
 /*
 * LOCAL
-export const api_server=new IPLocation("localhost",8000,false,true,"")
+export const api_server=new IPLocation("localhost",8000,false,false,"api")
 */
 /*
 * GLOBAL SERVER
-export const api_server=new IPLocation("api.surgemd.io",443,true,true,"")
+export const api_server=new IPLocation("api.surgemd.io",443,true)
 */
 /*
 * GLOBAL
-export const api_server=new IPLocation("testm.surgemd.io",8000,true,true,"")
+export const api_server=new IPLocation("testm.surgemd.io",8000,true)
 */
-//export const api_server=new IPLocation("api.surgemd.io",443,true,true,"")
-//export const api_server=new IPLocation("testm.surgemd.io",8000,true,true,"")
-export const api_server=new IPLocation("localhost",8000,false,true,"")
+//export const api_server=new IPLocation("api.surgemd.io",443,true)
+//export const api_server=new IPLocation("testm.surgemd.io",8000,true)
+export const api_server=new IPLocation("localhost",8000,false,false,"api")
 export const API_BASE=api_server.toString("http")
 export const api=true
 export const forum=false
@@ -203,7 +203,7 @@ export const ConfigDefaultActions={
         buttons:[GamepadButtonID.Y],
         keys:[Key.X]
     },
-    "swamp_guns":{
+    "swap_guns":{
         buttons:[GamepadButtonID.R3],
         keys:[Key.F]
     },

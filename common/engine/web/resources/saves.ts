@@ -194,7 +194,7 @@ export class SettingsSaveManager{
         this.save_kind=save
         const s={
             settings:this.content,
-            actions:this.manager.input_manager?.saveConfig?.(),
+            actions:this.manager.input_manager?.saveConfig?.()??{},
             version:this.version
         }
         switch(save.type){

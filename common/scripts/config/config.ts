@@ -176,8 +176,7 @@ export function ZeroConfig():ConfigType{
     }
 }
 
-export const game_version="Pre-Beta-10-Snapshot-2"
-
+export const game_version="Pre-Beta-10"
 
 export const FinalCredits=[
     {

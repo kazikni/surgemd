@@ -23,6 +23,7 @@ return (class extends LevelPlayerScript{
                     "boosts": [
                         {"weight": 7,"def": "adrenaline","value": 0},
                         {"weight": 1,"def": "adrenaline","value": 1},
+                        {"weight": 1,"def": "shield","value": 1},
                     ],
                     "inventory": {
                         "infinity_ammo": true,
@@ -254,7 +255,9 @@ return (class extends LevelPlayerScript{
                         "aitems": {
                             "p76":20,
                             "c51": 140,
-                            "l19": 20,
+                            "c22": 140,
+                            "l19": 150,
+                            "l15": 150,
                         },
                         "items": [
                             [

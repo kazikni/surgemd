@@ -1,6 +1,10 @@
 {
     "order": [
         {
+            "id": "pre-beta-10",
+            "title": "Pre-Beta-10 Patch Notes"
+        },
+        {
             "id": "pre-beta-9",
             "title": "Pre-Beta-9 Patch Notes"
         },

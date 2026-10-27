@@ -409,6 +409,10 @@ export class Game extends ClientGame<GameObject>{
         this.language.load_default_language(await(await fetch("/scripts/languages/en.json")).json() as Language,"main")
         this.language.load_language(await(await fetch(`/scripts/languages/${this.save.settings.get_var("ui_translation")}.json`)).json() as Language,"main")
 
+        this.sounds.set_master_volume(Numeric.clamp(this.save.settings.get_var("sounds_master_volume"),0,1))
+        this.sounds.get_bus("music").set_volume(Numeric.clamp(this.save.settings.get_var("sounds_music_volume"),0,1))
+        this.sounds.get_bus("ambience").set_volume(Numeric.clamp(this.save.settings.get_var("sounds_music_volume"),0,1))
+
         this.fs=fs
         await this.ui.init()
     }

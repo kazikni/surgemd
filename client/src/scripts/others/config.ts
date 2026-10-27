@@ -24,9 +24,9 @@ export const socials={
     discord:"https://discord.gg/7czkBvtmSU",
     youtube:"https://youtube.com/@kazikni",
     github:"https://github.com/kazikni/surgemd",
-    android:"/files/surgemd-android.apk",
+    android:"/files/surgemd.apk",
     windows:"/files/surgemd-windows.zip",
-    linux:"/files/surgemd.zip"
+    linux:"/files/surgemd-linux.zip"
 } satisfies Record<string,string>
 export const Debug={
     hitbox:false,

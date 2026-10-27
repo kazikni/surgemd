@@ -391,6 +391,8 @@ export class AudioEngine {
     signals = new SignalManager()
     unlocked = false
 
+    controllers:Partial<Record<string,SoundController>>={}
+
     constructor() {
         // deno-lint-ignore no-explicit-any
         this.ctx = new ((self as any).AudioContext || (self as any).webkitAudioContext)()
@@ -436,8 +438,10 @@ export class AudioEngine {
         return voice
     }
 
-    create_controller(bus?: string) {
-        return new SoundController(this, bus)
+    create_controller(bus?: string,id?:string) {
+        const controller=new SoundController(this, bus)
+        this.controllers[id??bus??"_controller"]=controller
+        return controller
     }
 
     allocate_audio(): AudioInstance {

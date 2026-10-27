@@ -2,7 +2,7 @@ import { Sprite2D, ABParticle2D } from "common/engine/web.ts"
 import { GameObject } from "../others/gameObject.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { CircleHitbox2D, ColorM, random, Stream, v2, v2m } from "common/engine/core.ts";
+import { CircleHitbox2D, ColorM, matrix4, Numeric, random, Stream, v2, v2m } from "common/engine/core.ts";
 
 export class Parachute extends GameObject{
     ////////////////////////////
@@ -23,6 +23,7 @@ export class Parachute extends GameObject{
         super()
 
         this.allow_tick=true
+        this.sprite.layer=1000
     }
     override on_create(_args: void): void {
         this.base_hitbox=new CircleHitbox2D(v2.zero(),3)
@@ -32,10 +33,8 @@ export class Parachute extends GameObject{
             hotspot:v2.half_one,
             zIndex:zIndexes.Parachute
         },this.game.resources)
-        this.game.cam2d.add_object(this.sprite)
-    }
-    override on_layer_set(): void {
-        this.sprite.layer=this.layer
+        this.sprite.propertys={no_layer_parallax:true,all_layers:true}
+        this.scene.camera.add_object(this.sprite)
     }
     override on_destroy(): void {
         this.sprite.destroy()
@@ -48,7 +47,7 @@ export class Parachute extends GameObject{
             for(let i=0;i<7;i++){
                 const pos=random.random_in_circle(2)
                 v2m.add(pos,pos,this.position)
-                this.game.particles.add_particle(new ABParticle2D({
+                this.scene.particles.add_particle(new ABParticle2D({
                     frame:{
                         image:"riple",
                         hotspot:v2.half_one,
@@ -80,10 +79,16 @@ export class Parachute extends GameObject{
             this.on_landed()
             this.destroy()
         }
-        const s=v2(1.2,1.2)
-        v2m.scale(s,s,1-this.time/this.parachute_data.lifetime)
-        v2m.add(this.sprite.scale,s,v2(1.35,1.35))
+        const time=Numeric.clamp(1-(this.time/this.parachute_data.lifetime),0,1)
+        const s=v2(1.25,1.25)
+        v2m.scale(s,s,time)
+        v2m.add(this.sprite.scale,s,v2(1.3,1.3))
         this.sprite.position=this.position
+
+        this.sprite.zIndex=zIndexes.Airbodys+time
+        if(this.game.save.settings.get_var("graphics_perspective")){
+            this.sprite.matrix=matrix4.parallax_2d(this.scene.camera.position,1.03+(1*time))
+        }
     }
     override on_decode_net(stream:Stream,full:boolean):void{
         this.time=stream.read_float(0,30,2)

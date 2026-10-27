@@ -2,11 +2,12 @@ import { Model2D, model2d } from "../../core/definition/models.ts"
 import { Color, ColorM } from "../../core/math/color.ts"
 import { v2, Vec2 } from "../../core/math/vec2.ts"
 import { Batcher, BatcherCommand, BatcherMaterialCommand } from "./batcher.ts"
-import { type Texture, type Material, type Renderer, type WebglRenderer, type GLTexture } from "./renderer.ts"
+import { type Texture, type Material, type Renderer, type WebglRenderer, type GLTexture, GLMaterial } from "./renderer.ts"
 import { Frame } from "../resources/resources.ts"
 import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Hitbox2D, HitboxType2D } from "../../core/math/hitbox.ts";
 import { Stream } from "../../core/net/stream.ts";
+import { RenderCMD, RenderCMDType } from "../../core/lang/context_command.ts";
 
 export type VertexAddCallback=(cmd:BatcherMaterialCommand,vertex:number)=>void
 export type ContextGradient = {
@@ -181,8 +182,6 @@ export abstract class Context2D{
     begin_path(){
         this.path.length=0
     }
-    end_path(){
-    }
 
     move_to(x: number, y: number) {
         this.path.push([{x,y}])
@@ -335,6 +334,14 @@ export abstract class Context2D{
     fill_model(model:Model2D,matrix:Matrix=matrix4.default.identity):void{
         if(this.state.current_material)this.draw_model(model,this.apply_color(this.state.fill_color as Color),matrix,this.state.current_material,this.state.on_vertex)
     }
+    /*fill_texture(texture:Texture,tint:Color=ColorM.default.white,on_vertex?:VertexAddCallback){
+        if(!this.state.current_material||!texture?.material)return
+        for(const p of this.path){
+            const model=model2d.triangulateConvex(p)
+            const color=this.apply_color(tint)
+            this.draw_texture(texture)
+        }
+    }*/
     stroke(matrix:Matrix=matrix4.default.identity,on_vertex?:VertexAddCallback){
         if(!this.state.current_material)return
         const color=this.apply_color(this.state.stroke_color as Color)
@@ -350,13 +357,77 @@ export abstract class Context2D{
         }
     }
 
+    execute_command(cmd: RenderCMD, matrix?: Matrix) {
+        switch (cmd.type) {
+            case RenderCMDType.SetStyle:
+                if(cmd.fill_color)this.fill_color=cmd.fill_color
+                if(cmd.stroke_color)this.stroke_color=cmd.stroke_color
+                if(cmd.stroke_width!==undefined)this.line_width=cmd.stroke_width
+                break
+            case RenderCMDType.Fill:
+                this.fill(matrix)
+                break
+            case RenderCMDType.Stroke:
+                this.stroke(matrix)
+                break
+            case RenderCMDType.FillModel:
+                this.fill_model(cmd.model, matrix)
+                break
+            case RenderCMDType.StrokeModel:
+                this.stroke(matrix)
+                break
+            case RenderCMDType.BeginPath:
+                this.begin_path()
+                break
+            case RenderCMDType.Rect:
+                this.begin_path()
+                this.rect(cmd.min,cmd.max)
+                break
+            case RenderCMDType.Circle:
+                this.begin_path()
+                this.circle(cmd.center,cmd.radius,cmd.segments)
+                break
+            case RenderCMDType.MoveTo:
+                this.move_to(cmd.position.x, cmd.position.y)
+                break
+            case RenderCMDType.LineTo:
+                this.line_to(cmd.position.x, cmd.position.y)
+                break
+            case RenderCMDType.ClosePath:
+                if(this.path.length){
+                    const path = this.path[this.path.length - 1]
+                    if (path.length) path.push(v2.clone(path[0]))
+                }
+                break
+            case RenderCMDType.Save:
+                this.save()
+                break
+            case RenderCMDType.Restore:
+                this.restore()
+                break
+            case RenderCMDType.Translate:
+                this.translate(cmd.x, cmd.y)
+                break
+            case RenderCMDType.Rotate:
+                this.rotate(cmd.rad)
+                break
+            case RenderCMDType.Scale:
+                this.scale(cmd.x, cmd.y)
+                break
+        }
+    }
+
     abstract draw_model(model:Model2D,color:Color,matrix:Matrix,material:Material,on_vertex?:VertexAddCallback):void
-    abstract draw_frame2d(frame:Frame|undefined,model:Float32Array,tint?: Color,matrix?:Matrix):void
+    abstract draw_frame2d(frame:Frame|undefined,model:Float32Array,tint?: Color,matrix?:Matrix, on_vertex?:VertexAddCallback):void
+    //abstract draw_texture(texture:Texture,model:Model2D,tint?: Color,matrix?:Matrix, on_vertex?:VertexAddCallback):void
     abstract draw_batcher(batcher:Batcher,matrix?:Matrix):void
 
     abstract sub_context():Context2D
     abstract render(renderer:Renderer):void
     abstract clear():void
+    abstract free():void
+    abstract save_batcher():Batcher
+    abstract lock():void
 
     abstract bind_texture(texture:Texture):void
     abstract finish_texture(matrix?:Matrix):void
@@ -387,7 +458,7 @@ export class BatcherContext2D extends Context2D{
         }
     }
     draw_frame2d(frame:Frame|undefined,model:Float32Array,tint: Color=ColorM.default.white,matrix:Matrix=matrix4.default.identity, on_vertex?:VertexAddCallback) {
-        if(!frame||!frame.texture?.material||tint.a<=0)return
+        if(!frame?.texture?.material||tint.a<=0)return
         const vertexCount = model.length / 2
         if (vertexCount < 2) return
         const cmd = this.batcher.ensure(frame.texture.material)
@@ -406,15 +477,44 @@ export class BatcherContext2D extends Context2D{
         }
         return cmd
     }
+    /*draw_texture(texture:Texture|undefined,model:Model2D,tint: Color=ColorM.default.white,matrix:Matrix=matrix4.default.identity, on_vertex?:VertexAddCallback) {
+        if(!texture?.material||tint.a<=0)return
+        const vertexCount = model.vertices.length / 2
+        if (vertexCount < 2) return
+        const cmd = this.batcher.ensure(texture.material)
+        for(let i=0;i<vertexCount;i++){
+            const x=model.vertices[i*2]
+            const y=model.vertices[i*2+1]
+            cmd.stream.write_float32(matrix[0]*x+matrix[4]*y+matrix[12])
+            cmd.stream.write_float32(matrix[1]*x+matrix[5]*y+matrix[13])
+            Stream.write_uv(cmd.stream,frame.texcoords[i*2],frame.texcoords[i*2+1])
+            cmd.stream.write_uint8(tint.r)
+            cmd.stream.write_uint8(tint.g)
+            cmd.stream.write_uint8(tint.b)
+            cmd.stream.write_uint8(tint.a)
+            on_vertex?.(cmd,i)
+            cmd.vertex_count++
+        }
+        return cmd
+    }*/
 
     override draw_batcher(batcher: Batcher,matrix?:Matrix): void {
         this.batcher.draw_batcher(batcher,matrix)
+    }
+    save_batcher():Batcher{
+        return this.batcher.clone()
+    }
+    override lock(): void {
+        this.batcher.lock()
     }
 
     render(_renderer:Renderer){
     }
     clear(){
         this.batcher.clear()
+    }
+    override free(): void {
+        this.batcher.free()
     }
     override sub_context(): BatcherContext2D {
         const ctx=new BatcherContext2D()
@@ -439,13 +539,17 @@ export class GLContext2D extends BatcherContext2D{
     renderer:WebglRenderer
 
     commands:BatcherCommand[]=[]
+
+    _materials:Record<string,GLMaterial>={}
     constructor(renderer:WebglRenderer) {
         super()
         this.renderer=renderer
+        this.batcher.root=true
 
         this.default_material=(renderer as WebglRenderer).factorys2D.simple_batch.create({})
         this.state.current_material=this.default_material
     }
+
     override render(renderer: WebglRenderer): void {
         super.render(renderer)
         this.batcher.render(renderer,this.base_matrix)

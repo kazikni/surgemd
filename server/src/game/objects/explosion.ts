@@ -26,35 +26,36 @@ export class Explosion extends ServerGameObject{
         this.net_sync_deletion=false
 
         this.allow_tick=true
+        this.allow_checkpoint=false
     }
     explode_base(){
         if(this.exploded_base)return
         this.exploded_base=true
-        const floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.default_floor) as FloorType
+        const floor=this.scene.map.terrain.get_floor_type(this.position,this.layer,this.scene.map.default_floor) as FloorType
         const floor_def=Floors[floor]
         if(this.def.bullet){
             for(let i=0;i<this.def.bullet.count;i++){
-                const b=this.game.add_bullet(this.position,this.owner,undefined,this.source,this.layer)
+                const b=this.scene.add_bullet(this.position,this.owner,undefined,this.source,this.layer,Math.random()<=this.game.modeManager.rules.humans.critical_chance)
                 b.set_definition(this.def.bullet.def)
                 b.hit_owner=true
                 b.set_direction(random.rad())
             }
         }
         if(this.def.synced_particles){
-            const def=this.game.definitions.synced_particle.getFromString(this.def.synced_particles.def)
+            const def=this.game.definitions.synced_particles.getFromString(this.def.synced_particles.def)
             
             if(this.def.synced_particles.creator){
-                this.game.add_synced_particles_creator(this.position,def,this.owner,this.def.synced_particles.count,this.def.synced_particles.creator_time,this.layer)
+                this.scene.add_synced_particles_creator(this.position,def,this.owner,this.def.synced_particles.count,this.def.synced_particles.creator_time,this.layer)
             }else{
                 for(let i=0;i<this.def.synced_particles.count;i++){
-                    this.game.add_synced_particle(this.position,def,this.owner,this.layer)
+                    this.scene.add_synced_particle(this.position,def,this.owner,this.layer)
                 }
             }
         }
         if(floor_def.floor_kind!==FloorKind.Liquid){
-            if(this.def.decal)this.game.add_decal(this.position,0,this.game.definitions.decals.getFromString(this.def.decal.def),this.def.decal.tint,this.def.decal.scale,this.layer)
+            if(this.def.decal)this.scene.add_decal(this.position,0,this.game.definitions.decals.getFromString(this.def.decal.def),this.def.decal.tint,this.def.decal.scale,this.layer)
         }else{
-            if(this.def.liquid_decal)this.game.add_decal(this.position,0,this.game.definitions.decals.getFromString(this.def.liquid_decal.def),this.def.liquid_decal.tint,this.def.liquid_decal.scale,this.layer)}
+            if(this.def.liquid_decal)this.scene.add_decal(this.position,0,this.game.definitions.decals.getFromString(this.def.liquid_decal.def),this.def.liquid_decal.tint,this.def.liquid_decal.scale,this.layer)}
         }
     explode_damage(){
         const objs = this.manager.cells.get_objects(this.hitbox, this.layer).filter((v)=>this.hitbox.colliding_with(v.hitbox))
@@ -83,7 +84,8 @@ export class Explosion extends ServerGameObject{
                     case GameObjectType.StaticBody:
                     case GameObjectType.Obstacle:
                     case GameObjectType.Building:
-                        (obj as Human | StaticBody).damage({
+                    case GameObjectType.Walls:
+                        (obj as StaticBody).damage({
                             amount: damage*(this.def.obstacle_mult??1),
                             reason: DamageReason.Explosion,
                             source: this.source,
@@ -95,7 +97,7 @@ export class Explosion extends ServerGameObject{
                         })
                         break
                     case GameObjectType.Human: {
-                        (obj as Human | StaticBody).damage({
+                        (obj as Human).damage({
                             amount: damage,
                             reason: DamageReason.Explosion,
                             source: this.source,
@@ -135,7 +137,7 @@ export class Explosion extends ServerGameObject{
         }
         if(this.def.projectiles){
             for(let i=0;i<this.def.projectiles.count;i++){
-                const p=this.game.add_grenade(this.position,this.game.definitions.grenades.getFromString(this.def.projectiles.def),this.owner,this.layer)
+                const p=this.scene.add_grenade(this.position,this.game.definitions.grenades.getFromString(this.def.projectiles.def),this.owner,this.layer)
                 p.physical_data.zpos=0.5
                 p.physical_data.zpos_speed=1.5
                 p.physical_data.velocity=v2.random(-this.def.projectiles.speed,this.def.projectiles.speed)

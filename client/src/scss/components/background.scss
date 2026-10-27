@@ -3,7 +3,7 @@
     border-radius: 0.3vw;
     border: 0.13vw solid var(--item-border);
     background: var(--item-bg);
-    backdrop-filter: blur(7px);
+    backdrop-filter: var(--ui-panel-backdrop-filter);
 
     /*
     text-shadow: 0.2vh 0.2vh var(--item-text-shadow);

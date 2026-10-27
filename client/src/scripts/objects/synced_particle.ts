@@ -1,11 +1,10 @@
 import { Sprite2D, type Tween } from "common/engine/web.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
-import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
-import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
+import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particles.ts";
+import { MovingBody } from "./moving_body.ts";
 import { CircleHitbox2D, Stream, v2 } from "common/engine/core.ts";
 
 export class SyncedParticle extends MovingBody{
-    override physical_data: MovingBodyPhysicalData;
     ////////////////////////////
     // Definition             //
     ////////////////////////////
@@ -20,13 +19,10 @@ export class SyncedParticle extends MovingBody{
 
     constructor(){
         super()
-        this.physical_data={
-            rotation:0
-        }
     }
     override on_create(_args: Record<string,any>): void {
         this.base_hitbox=new CircleHitbox2D(v2.zero(),3)
-        this.game.cam2d.add_object(this.sprite)
+        this.scene.camera.add_object(this.sprite)
     }
     override on_layer_set(): void {
         this.sprite.layer=this.layer
@@ -34,7 +30,7 @@ export class SyncedParticle extends MovingBody{
     override on_destroy(): void {
         for(const t of this.tweens)t.kill()
         const time=this.time>=0.98?this.def.animation?.destroy?.time??0:0
-        this.game.add_timeout(()=>{
+        this.game.clock.add_timeout(()=>{
             this.sprite.destroy()
             for(const t of this.tweens)t.kill()
         },time)
@@ -69,7 +65,7 @@ export class SyncedParticle extends MovingBody{
         super.on_tick(dt)
 
         this.sprite.position=this.position
-        this.sprite.rotation=this.physical_data.rotation
+        this.sprite.rotation=this.rotation
 
         this.time+=dt
     }
@@ -119,7 +115,7 @@ export class SyncedParticle extends MovingBody{
         if (full) {
             this.time=stream.read_float(0,60,2)
             const id=stream.read_uint8()
-            this.set_definition(this.game.definitions.synced_particle.getFromNumber(id))
+            this.set_definition(this.game.definitions.synced_particles.getFromNumber(id))
         }
     }
 }

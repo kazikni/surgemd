@@ -1,14 +1,15 @@
-import { RectHitbox2D, v2 } from "../../../engine/core.ts";
-import { Spawn } from "../../others/constants.ts";
+import { cloneDeep, mergeDeep, RectHitbox2D, RotationMode, v2 } from "../../../engine/core.ts";
+import { Spawn, zIndexes } from "../../others/constants.ts";
 import { FloorType, RiverLayerDef } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
-import { MapBiomeDef, CounterMapDef, type MapDef } from "./base.ts";
+import { hit_sounds } from "../utils.ts";
+import { MapBiomeDef, type MapDef } from "./base.ts";
 export const NormalBiome:MapBiomeDef={
     floors:{
 
     },
     textures:[
-        "/assets/img/kspr/common"
+        "/assets/kspr/common"
     ],
     particles:["leaf_1_particle_1"],
     particles_tint:0x2b7317,
@@ -24,7 +25,7 @@ export const SnowBiome:MapBiomeDef={
         [FloorType.Sand]:0x505659
     },
     skin:"snow",
-    textures:["/assets/img/kspr/common","/assets/img/kspr/snow"],
+    textures:["/assets/kspr/common","/assets/kspr/snow"],
     ambient_sound:"snowstorm_ambience",
     musics:[],
     particles:[],
@@ -34,7 +35,7 @@ export const DesertBiome:MapBiomeDef={
     floors:{
         [FloorType.Sand]:0xa1761a
     },
-    textures:["/assets/img/kspr/common","/assets/img/kspr/desert"],
+    textures:["/assets/kspr/common","/assets/kspr/desert"],
     musics:[],
     particles:[],
 }
@@ -50,7 +51,7 @@ export const FallBiome:MapBiomeDef={
         "squared_bush":["fall_1","fall_2"],
     },
     skin_chance:0.2,
-    textures:["/assets/img/kspr/common","/assets/img/kspr/fall"],
+    textures:["/assets/kspr/common","/assets/kspr/fall"],
     musics:[
         "/assets/sounds/musics/online/game_fall_music_1.mp3",
         "/assets/sounds/musics/online/game_fall_music_2.mp3",
@@ -89,13 +90,44 @@ export const map_spawns={
 }
 export const NormalMap:MapDef={
     loot_tables:LootTables,
-    biome:NormalBiome,
+    biome:mergeDeep(cloneDeep(NormalBiome),{
+        textures:[...NormalBiome.textures,"/assets/kspr/maps/normal"]
+    }),
+    definitions:{
+        objects:{
+            obstacles:[{
+                idString:"gas_pump",
+                health:200,
+                onDestroyExplosion:"barrel_explosion",
+                hitbox:new RectHitbox2D(v2(-0.58,-1.1),v2(0.58,1.1)),
+                scale:{
+                    destroy:0.85
+                },
+                zIndex:{base:zIndexes.Obstacles2},
+                assets:{
+                    frame:{
+                        transform:{
+                            hotspot:v2(0.33,0.5)
+                        }
+                    },
+                    particles:{
+                        particle:"metal_particle",
+                        tint:0x868d94
+                    },
+                    sounds:hit_sounds.heavy_metal,
+                },
+                rotation_mode:RotationMode.limited,
+                reflect_bullets:true,
+            }]
+        }
+    },
     size:v2(600,600),
     generation:{
         base:FloorType.Water,
         spawn:[
             {def:"small_house_1",count:4},
             {def:"storehouse_1",count:4},
+            {def:"watchtower",count:4},
             {def:"bunker_1",count:2},
             {def:"shed",count:20},
             {def:map_spawns.containers,count:20},
@@ -113,7 +145,6 @@ export const NormalMap:MapDef={
             {def:"normal_loot",count:100},
             {def:"jeep",count:5},
             {def:"bike",count:5},
-            {def:"boat",count:5},
         ],
         islands:[{
             structures:[
@@ -124,7 +155,6 @@ export const NormalMap:MapDef={
                     passes:1,
                     points:10,
                     spawn:[
-                        {def:"bunker_1",count:1},
                         {def:map_spawns.trees,count:400,spawn:Spawn.grass_only},
                     ],
                     region:{
@@ -152,6 +182,9 @@ export const NormalMap:MapDef={
                             spacing:2,
                             variation:2,
                         },
+                    ],
+                    spawn:[
+                        {def:"bunker_2",count:1},
                     ],
                     radius:100,
                     variation:15,
@@ -241,50 +274,6 @@ export const NormalLobby:MapDef={
             {def:"copper_crate",count:6},
             {def:"barrel",count:13},
             {def:"normal_loot",count:20},
-        ],
-        islands:[{
-            terrain:{
-                radius:50,
-                passes:1,
-                points:5,
-                variation:1,
-                floors:[
-                    {
-                        padding:0,
-                        type:FloorType.Sand,
-                        spacing:1,
-                        variation:1,
-                    },
-                    {
-                        padding:10,
-                        type:FloorType.Grass,
-                        spacing:1,
-                        variation:1,
-                    }
-                ]
-            }
-        }]
-    },
-    biome:NormalBiome,
-}
-export const NormalCounterMD:CounterMapDef={
-    spawn:[
-        RectHitbox2D.centered(v2(15,45),v2(1,6)),
-        RectHitbox2D.centered(v2(75,45),v2(1,6))
-    ],
-    seed:1000,
-    size:v2(90,90),
-    loot_tables:NormalMap.loot_tables,
-    generation:{
-        base:FloorType.Water,
-        spawn:[
-            {def:"sillo",count:2},
-
-            {def:"oak_tree",count:80},
-            {def:"stone",count:60},
-            {def:"bush",count:40},
-
-            {def:"barrel",count:10},
         ],
         islands:[{
             terrain:{

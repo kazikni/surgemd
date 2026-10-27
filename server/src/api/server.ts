@@ -1,8 +1,7 @@
-import { ApiServerConfig, ApiSettings, GameConfig, GamePlayOption } from "common/scripts/config/config.ts";
+import { ApiServerConfig, ApiSettings, game_version, GameConfig } from "common/scripts/config/config.ts";
 import { GroupManager } from "./game/groups.ts";
-import { default_handlers, Server } from "common/engine/deno.ts";
 import { RegionManager } from "./game/regions.ts";
-import { error } from "node:console";
+import { Server, server_factory } from "common/engine/server/server.ts";
 export class ApiServer {
     server: Server
     groups = new GroupManager(this)
@@ -11,6 +10,7 @@ export class ApiServer {
     modes:GameConfig[]=[]
 
     api_settings!:ApiSettings
+    api_settings_s:string="{}"
 
     play_time?:{
         last_playtime?:number
@@ -18,8 +18,8 @@ export class ApiServer {
         day:number
         hour:number
     }
-    constructor(public config: ApiServerConfig){
-        this.server = new Server(
+    constructor(server:server_factory,public config: ApiServerConfig){
+        this.server = new server(
             config.host.port,
             config.host.ssl,
             config.host.cert,
@@ -48,6 +48,7 @@ export class ApiServer {
             }
         }
         this.api_settings={
+            game_version:game_version,
             database:{
                 enabled:this.config.database?.enabled!==undefined?this.config.database.enabled:false,
             },
@@ -62,10 +63,11 @@ export class ApiServer {
                 }
             }:undefined
         }
+        this.api_settings_s=JSON.stringify(this.api_settings)
     }
     routes(){
         this.server.route("/get-settings", () => {
-            return this.server.default_handlers.cors(default_handlers.no_cache(Response.json(this.api_settings)))
+            return this.server.default_handlers.cors(this.server.default_handlers.no_cache(new Response(this.api_settings_s)))
         })
         this.server.route("/find-game", async (req) => {
             if(req.method !== "POST"){
@@ -74,7 +76,7 @@ export class ApiServer {
             if(!this.can_play())return new Response("You Cant Play Now",{status:204})
             const body = await req.json()
             const game=await this.regions.find_game(body)
-            return this.server.default_handlers.cors(default_handlers.no_cache(Response.json(game??{})))
+            return this.server.default_handlers.cors(this.server.default_handlers.no_cache(Response.json(game??{})))
         })
         this.groups.routes(this.server.router("group"))
         this.regions.routes(this.server.router("regions"))
@@ -128,8 +130,8 @@ ${stack}
 ============================================================
 `
 
-        try {
-            await Deno.writeTextFile(
+        /*try {
+            await this.(
                 this.config.debug?.error_file??"database/error.log",
                 content,
                 {
@@ -140,7 +142,7 @@ ${stack}
         } catch (logError) {
             console.error("[SERVER] Failed to write error.log:", logError)
             console.error("[SERVER] Original error:", error)
-        }
+        }*/
 
         console.error(`[SERVER] ${context ?? "Error"}:`, error)
     }
@@ -149,7 +151,7 @@ ${stack}
             this.server.run()
             setInterval(this.tick.bind(this),1000)
         }catch(e){
-            this.log_server_error(error,"Error Catch")
+            this.log_server_error(e,"Error Catch")
         }
     }
 }

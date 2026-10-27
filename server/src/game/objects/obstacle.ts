@@ -19,7 +19,7 @@ export class Obstacle extends StaticBody{
     parent?:Building
     puzzle?:BuildingPuzzle
     puzzle_value?:string
-    connections:Obstacle[]=[]
+    connections:{obj?:Obstacle,type:number}[]=[]
 
     max_scale:number=1
 
@@ -46,6 +46,10 @@ export class Obstacle extends StaticBody{
         dirty:boolean
         dirty_part:boolean
 
+        spawn_hitbox?:Hitbox2D
+        hitbox:Hitbox2D
+        interaction_hitbox:Hitbox2D
+
         scale:number
         side:Orientation
         rotation:number
@@ -65,14 +69,7 @@ export class Obstacle extends StaticBody{
         rotation:0,
 
         hitbox:new NullHitbox2D(v2.new(0,0)),
-        spawn_hitbox:new NullHitbox2D(v2.new(0,0)),
         interaction_hitbox:new NullHitbox2D(v2.new(0,0)),
-
-        reflect_bullets:false,
-        no_collision:true,
-        no_bullets_collision:true,
-        no_pathfinding_collision:true,
-        passable_by_bullets:false,
 
         stairs:[]
     }
@@ -101,6 +98,14 @@ export class Obstacle extends StaticBody{
         this.allow_net_update=true
     }
 
+    override update_hitbox(): void {
+        super.update_hitbox()
+        if(this.physical_data.spawn_hitbox)this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(this.position)
+        else this.spawn_hitbox=undefined
+        if(this.physical_data.interaction_hitbox)this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(this.position)
+        else this.interaction_hitbox=undefined
+    }
+
     choose_door_side(playerPos: Vec2): -1 | 1 {
         if(this.door_data!.only_side)return this.door_data!.only_side as -1|1
         const toPlayer = v2.sub(playerPos, this.position)
@@ -111,6 +116,7 @@ export class Obstacle extends StaticBody{
         this.door_data!.open=val
         this.set_dirty_part()
         this.door_data!.dirty=true
+        this.physical_data.interaction_hitbox=this.door_data!.hitboxes[val].transform(undefined,1.1)
         this.base_hitbox=this.door_data!.hitboxes[val]
         this.door_data!.opening=false
     }
@@ -118,7 +124,7 @@ export class Obstacle extends StaticBody{
         if(this.door_data!.opening||val===this.door_data!.open)return
         if((this.def.expanded_behavior as ObstacleBehaviorDoor).open_delay){
             this.door_data!.opening=true
-            this.game.add_timeout(()=>this.set_door_open_state(val),(this.def.expanded_behavior as ObstacleBehaviorDoor).open_delay!)
+            this.game.clock.add_timeout(()=>this.set_door_open_state(val),(this.def.expanded_behavior as ObstacleBehaviorDoor).open_delay!)
         }else{
             this.door_data!.opening=true
             this.set_door_open_state(val)
@@ -162,7 +168,7 @@ export class Obstacle extends StaticBody{
                         const pos=v2.add(this.position,v2.rotate_RadAngle(interact_side.pos,this.physical_data.rotation))
                         const angle=interact_side.rot!==undefined?Angle.deg2rad(interact_side.rot)+this.physical_data.rotation:this.physical_data.rotation
                         
-                        user.manager.set_layer(this,user.layer+(this.def.expanded_behavior as ObstacleBehaviorScalable).floor_walk)
+                        user.manager.set_layer(user,user.layer+(this.def.expanded_behavior as ObstacleBehaviorScalable).floor_walk)
 
                         if(interact_side.dest_pos)user.position=v2.add(this.position,v2.rotate_RadAngle(interact_side.dest_pos,this.physical_data.rotation))
                         if(interact_side.dest_rot)user.physical_data.rotation=Angle.deg2rad(interact_side.dest_rot)+this.physical_data.rotation
@@ -179,13 +185,25 @@ export class Obstacle extends StaticBody{
                             def:this.def.expanded_behavior.obstacles.indexOf(choose)
                         }
                         const def=this.game.definitions.obstacles.getFromString(choose.id)
-                        this.game.add_timeout(()=>{
+                        if(this.def.expanded_behavior.give_item){
+                            const loot=this.game.get_loot_table(this.def.expanded_behavior.give_item)
+                            for(let i=0;i<loot.length;i++){
+                                user.inventory.give_item(loot[i].item,loot[i].count,true)
+                            }
+                        }
+                        if(this.def.expanded_behavior.delay){
+                            this.game.clock.add_timeout(()=>{
+                                this.destroy()
+                                const obs=this.scene.map.add_obstacle(def,this.layer)
+                                obs.initialize(this.physical_data.rotation)
+                                obs.set_position(this.position)
+                            },this.def.expanded_behavior.delay)
+                        }else{
                             this.destroy()
-
-                            const obs=this.game.map.add_obstacle(def,this.layer)
-                            obs.initialize()
+                            const obs=this.scene.map.add_obstacle(def,this.layer)
+                                obs.initialize(this.physical_data.rotation)
                             obs.set_position(this.position)
-                        },this.def.expanded_behavior.delay)
+                        }
                     }
                     break
                 }
@@ -205,7 +223,7 @@ export class Obstacle extends StaticBody{
         }
     }
     override can_interact(user: Human): boolean {
-        return !this.destroyed&&!this.health_data.dead&&(this.def.interactDestroy||this.def.expanded_behavior)as boolean&&(user.hitbox.colliding_with(this.interaction_hitbox)||user.hitbox.colliding_with(this.hitbox))
+        return !this.destroyed&&!this.health_data.dead&&(this.def.interactDestroy||this.def.expanded_behavior)as boolean&&(user.hitbox.colliding_with(this.interaction_hitbox??this.hitbox)||user.hitbox.colliding_with(this.hitbox))
     }
     override on_net_update(): void {
         if(this.door_data)this.door_data.dirty=false
@@ -225,11 +243,12 @@ export class Obstacle extends StaticBody{
         if(this.def)return
         this.def=def
 
-        this.physical_data.no_collision=this.def.no_collision??false
-        this.physical_data.no_bullets_collision=this.def.no_bullets_collision??false
-        this.physical_data.no_pathfinding_collision=this.def.no_pathfinding_collision??false
-        this.physical_data.reflect_bullets=this.def.reflect_bullets??false
-        this.physical_data.passable_by_bullets=this.def.passable_by_bullets??false
+        this.physical_data.no_collision=this.def.no_collision
+        this.physical_data.no_bullets_collision=this.def.no_bullets_collision
+        this.physical_data.no_pathfinding_collision=this.def.no_pathfinding_collision
+        this.physical_data.no_spawn_collision=this.def.no_spawn_collision
+        this.physical_data.reflect_bullets=this.def.reflect_bullets
+        this.physical_data.passable_by_bullets=this.def.passable_by_bullets
 
         this.health_data.max_health=this.def.health??1
         this.health_data.health=this.def.health??1
@@ -270,14 +289,14 @@ export class Obstacle extends StaticBody{
         if(rotation===undefined){
             if(this.def.rotation_mode===RotationMode.limited){
                 this.physical_data.side=random.int(0,3) as Orientation
-                this.physical_data.rotation=Angle.side_rad(this.physical_data.side)
+                this.physical_data.rotation=Angle.side2rad(this.physical_data.side)
             }else{
                 this.physical_data.rotation=Angle.random_rotation_modded(this.def.rotation_mode??RotationMode.full)
             }
         }else if(this.def.rotation_mode){
             if(this.def.rotation_mode===RotationMode.limited){
                 this.physical_data.side=Angle.add_orientation(rotation as Orientation,parent_side)
-                this.physical_data.rotation=Angle.side_rad(this.physical_data.side)
+                this.physical_data.rotation=Angle.side2rad(this.physical_data.side)
             }else{
                 this.physical_data.rotation=rotation!
             }
@@ -324,23 +343,21 @@ export class Obstacle extends StaticBody{
     decal?:Decal
     set_position(position:Vec2,allow_biome_skin:boolean=false){
         this.position=position
-        this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position,undefined,undefined,undefined)
-        this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(position,undefined,undefined,undefined)
         this.reset_scale()
         if(this.decal)this.decal.destroy()
         if(this.def.decal){
-            this.decal=this.game.add_decal(this.position,this.physical_data.rotation,this.game.definitions.decals.getFromString(this.def.decal.def),this.def.decal.tint,this.def.decal.scale,this.layer)
+            this.decal=this.scene.add_decal(this.position,this.physical_data.rotation,this.game.definitions.decals.getFromString(this.def.decal.def),this.def.decal.tint,this.def.decal.scale,this.layer)
         }
 
         if(allow_biome_skin&&this.def.assets?.frame?.biome_skins){
-            const biome=this.game.map.get_biome(this.position)
+            const biome=this.scene.map.get_biome(this.position)
             if(biome.skin_chance===undefined||biome.skin_chance<=Math.random()){
-                const skin_replace=this.game.map.biome.skins_replace?.[this.def.idString]
+                const skin_replace=this.scene.map.biome.skins_replace?.[this.def.idString]
                 let skin=""
                 if(skin_replace){
                     skin=(typeof skin_replace==="string")?skin_replace:random.choose(skin_replace)
-                }else if(this.game.map.biome.skin){
-                    skin=this.game.map.biome.skin
+                }else if(this.scene.map.biome.skin){
+                    skin=this.scene.map.biome.skin
                 }
                 this.visual_data.skin=this.def.assets.frame.biome_skins.indexOf(skin)+1
             }
@@ -361,6 +378,7 @@ export class Obstacle extends StaticBody{
         for(const s of this.physical_data.stairs){
             s.hitbox=s.base_hitbox.transform(this.position,this.physical_data.scale)
         }
+        this.update_hitbox()
     }
     override side_effect(sf:SideEffect,owner?:Human){
         switch(sf.type){
@@ -395,8 +413,13 @@ export class Obstacle extends StaticBody{
                 break
         }
     }
-    override damage(params:DamageParams){
-        if(this.health_data.dead||this.def.imortal||(this.def.resistence??0)>(params.resistence??0))return
+    override damage(params:DamageParams,force:boolean=false){
+        if(this.health_data.dead||this.def.imortal||((this.def.resistence??0)>(params.resistence??0)||force))return
+        for(const c of this.connections){
+            if(c.type!==1||!c.obj)continue
+            c.obj.damage(params)
+        }
+    
 
         this.health_data.health=Math.max(this.health_data.health-params.amount,0)
         if(this.health_data.health===0){
@@ -414,29 +437,23 @@ export class Obstacle extends StaticBody{
         this.reset_scale()
         if(this.def.onDestroyExplosion){
             const ex=this.game.definitions.explosions.getFromString(this.def.onDestroyExplosion)
-            this.game.add_explosion(this.hitbox.center(),ex,params.owner,this.def,this.layer)
+            this.scene.add_explosion(this.hitbox.center(),ex,params.owner,this.def,this.layer)
         }
         const loots:Loot[]=[]
         for(const l of this.loot){
-            loots.push(this.game.add_loot(this.hitbox.random_point(),l,this.layer))
+            loots.push(this.scene.add_loot(this.hitbox.random_point(),l,this.layer))
         }
 
         this.set_dirty_part()
         this.health_data.dead=true
         this.health_data.dirty=true
-        this.physical_data.no_collision=true
-        this.physical_data.no_bullets_collision=true
-
-        for(let i=0;i<10;i++){
-            for(const loot of loots){
-                loot.tick(1/30)
-            }
-        }
+        this.physical_data.no_collision=this.def.keep_collision_on_die?(this.def.no_collision):true
+        this.physical_data.no_bullets_collision=this.def.keep_collision_on_die?(this.def.no_bullets_collision):true
 
         if(params.owner)params.owner.inventory.accessorys.call_event("obstacle_destroy",{obstacle:this,human:params.owner})
         for(const c of this.connections){
-            if(c.def.imortal)continue
-            c.die({
+            if(!c.obj||c.obj.def.imortal||!(c.type===0||c.type===1))continue
+            c.obj.die({
                 amount:9999,
                 critical:false,
                 direction:0,
@@ -474,8 +491,8 @@ export class Obstacle extends StaticBody{
         }
     }
     override on_destroy(): void {
-        const idx=this.game.map.objects.indexOf(this)
-        if(idx!==-1)this.game.map.objects.splice(idx,1)
+        const idx=this.scene.map.objects.indexOf(this)
+        if(idx!==-1)this.scene.map.objects.splice(idx,1)
     }
     override on_encode_net(stream: Stream, full: boolean): void {
         const door_dirty=this.door_data&&(full||this.door_data.dirty)
@@ -530,15 +547,16 @@ export class Obstacle extends StaticBody{
         .write_boolean_group(this.health_data.dead)
         .write_uint8(this.visual_data.variation)
         .write_uint8(this.visual_data.skin)
-        
+
         for(let i=0;i<this.connections.length;i++){
-            if(!this.connections[i]){
+            if(!this.connections[i]?.obj){
                 this.connections.splice(i,1)
                 i--
             }
         }
         stream.write_array(this.connections,(i)=>{
-            stream.write_id(ctx.idco[i.id])
+            stream.write_uint8(i.type)
+            stream.write_id(ctx.idco[i.obj!.id])
         },1)
         .write_array(this.physical_data.stairs,(i)=>{
             stream.write_uint8(i.index)
@@ -574,10 +592,10 @@ export class Obstacle extends StaticBody{
         this.visual_data.skin=stream.read_uint8()
         this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(position,undefined,undefined,undefined)
         const connections=stream.read_array(()=>{
-            return stream.read_id()
+            return {type:stream.read_uint8(),id:stream.read_id()}
         },1)
         for(const c of connections){
-            this.connections.push(this.manager.objects[ctx.coid[c]])
+            this.connections.push({type:c.type,obj:this.manager.objects[ctx.coid[c.id]]})
         }
         stream.read_array(()=>{
             const idx=stream.read_uint8()

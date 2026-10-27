@@ -3,7 +3,7 @@ import { Particle2D } from "../../core/game/particles.ts"
 import { v2, v2m, Vec2 } from "../../core/math/vec2.ts"
 import { Color, ColorM } from "../../core/math/color.ts"
 import { Sprite2D } from "../2d/sprite.ts"
-import { Numeric } from "../../core/math/utils.ts"
+import { EaseFunction, Numeric } from "../../core/math/utils.ts"
 import { type ClientGame } from "./game.ts";
 
 export abstract class ClientParticle2D extends Particle2D{
@@ -21,6 +21,7 @@ export interface ABParticle2Config{
     speed:number
     direction:number
     life_time:number
+    velocity?:Vec2
     zIndex?:number
     layer?:number
     angle?:number
@@ -33,6 +34,8 @@ export interface ABParticle2Config{
         angle?:number
         scale?:number
         tint?:Color
+        tint_ease?:EaseFunction
+        velocity?:Vec2
     }
     on_tick?:(obj:ABParticle2D,dt:number)=>void
 }
@@ -96,9 +99,15 @@ export class ABParticle2D extends ClientParticle2D{
             this.sprite._scale._y=this.scale
         }
         if(this.config.to?.tint){
-            this.sprite.tint=ColorM.lerp(this.config.tint??ColorM.default.white,this.config.to.tint,tt)
+            this.sprite.tint=ColorM.lerp(this.config.tint??ColorM.default.white,this.config.to.tint,this.config.to.tint_ease===undefined?tt:this.config.to.tint_ease(tt))
         }
-        const vel=v2.from_RadAngle(dire,speed*dt)
+        let velocity=this.config.velocity
+        const vel=v2.from_RadAngle(dire,speed)
+        if(velocity){
+            if(this.config.to?.velocity)velocity=v2.lerp(velocity,this.config.to.velocity,tt)
+            v2m.add(vel,vel,velocity)
+        }
+        v2m.scale(vel,vel,dt)
         
         this.sprite._position._x+=vel.x
         this.sprite.position.y+=vel.y
@@ -108,7 +117,7 @@ export class ABParticle2D extends ClientParticle2D{
     override on_create(): void {
         super.on_create()
         this.sprite.set_frame(this.config.frame,(this.manager.game as unknown as ClientGame).resources);
-        (this.manager.game as unknown as ClientGame).cam2d.add_object(this.sprite)
+        (this.manager.game as unknown as ClientGame).scene_2d.camera.add_object(this.sprite)
     }
     override on_destroy(): void {
         this.sprite.destroy()
@@ -180,7 +189,7 @@ export class RainParticle2D extends ClientParticle2D{
     override on_create(): void {
         super.on_create()
         this.sprite.set_frame(this.config.frame.main,(this.manager.game as unknown as ClientGame).resources);
-        (this.manager.game as unknown as ClientGame).cam2d.add_object(this.sprite)
+        (this.manager.game as unknown as ClientGame).scene_2d.camera.add_object(this.sprite)
         this.sprite.visible=true
     }
     override on_destroy(): void {

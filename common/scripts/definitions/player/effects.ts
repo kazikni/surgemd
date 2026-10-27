@@ -1,5 +1,4 @@
 import { Definition, Definitions, FrameDef } from "../../../engine/core.ts";
-import { HumanModifiers } from "../../others/constants.ts";
 
 export enum EffectType{
     Buff,
@@ -11,6 +10,10 @@ export interface EffectDef extends Definition{
     particles?:{
         delay:number
         frame:FrameDef
+        angular_rotation?:boolean
+    }
+    target?:{
+        tint?:number
     }
     assets?:{
         sounds?:{
@@ -34,7 +37,7 @@ export type SideEffect=({
     merge?:boolean
 }|{
     type:SideEffectType.Modify,
-    modify:Partial<HumanModifiers>
+    modify:Record<string,number>
 }|{
     type:SideEffectType.Damage
     amount:number
@@ -58,8 +61,7 @@ export type SideEffect=({
 }|{
     type:SideEffectType.Parachute,
 })
-export const Effects=new Definitions<EffectDef,{}>((i)=>{
-})
+export const Effects=new Definitions<EffectDef,{}>()
 
 export interface EffectInstance{
     effect:EffectDef
@@ -73,8 +75,7 @@ Effects.insert(
         side_effects:[
             {
                 type:SideEffectType.Damage,
-                amount:8,
-                piercing:true,
+                amount:4,
             },
         ],
         particles:{
@@ -84,6 +85,20 @@ Effects.insert(
                 image:"fire_particle"
             },
         },
+    },
+    {
+        idString:"poison",
+        effect_type:EffectType.Debuff,
+        target:{
+            tint:0x88ff88,
+        },
+        side_effects:[
+            {
+                type:SideEffectType.Damage,
+                amount:2,
+                piercing:true,
+            },
+        ],
     },
     {
         idString:"kill_haste",
@@ -98,9 +113,10 @@ Effects.insert(
         ],
         particles:{
             delay:0.2,
+            angular_rotation:true,
             frame:{
                 scale:2,
-                image:"boost_addiction_particle"
+                image:"boost_addiction_particle",
             },
         },
         assets:{
@@ -114,6 +130,7 @@ Effects.insert(
         effect_type:EffectType.Buff,
         particles:{
             delay:0.2,
+            angular_rotation:true,
             frame:{
                 scale:2,
                 image:"leaf_01_particle_1"

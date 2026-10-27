@@ -3,15 +3,15 @@ import { GameObject } from "../others/gameObject.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts";
 import { HitParticlesDef, HitSoundsDef } from "common/scripts/definitions/utils.ts";
-import { Color, ColorM, Hitbox2D, random, Vec2 } from "common/engine/core.ts";
+import { Color, ColorM, ease, Hitbox2D, random, Vec2 } from "common/engine/core.ts";
 export type StaticBodyPhysicalData={
     hitbox:Hitbox2D
     side:number
 
-    reflect_bullets:boolean
-    no_collision:boolean
-    no_bullets_collision:boolean
-    passable_by_bullets:boolean
+    reflect_bullets?:boolean
+    no_collision?:boolean
+    no_bullets_collision?:boolean
+    passable_by_bullets?:boolean
 }
 export interface StaticBodyAssetData{
     particles?:{
@@ -38,7 +38,7 @@ export abstract class StaticBody extends GameObject{
 
     _add_own_particle(position:Vec2,force:number=1,small:boolean=false){
         if(!this.assets_data.particles)return
-        const tint=this.assets_data.particles.tint
+        const angle=random.rad()
         const p=new ABParticle2D({
             frame:{
                 image:random.choose(this.assets_data.particles.images),
@@ -46,25 +46,26 @@ export abstract class StaticBody extends GameObject{
             },
             position,
             speed:random.float(1,2)*force,
-            angle:random.rad(),
+            angle:angle,
             direction:random.rad(),
             life_time:random.float(1,2),
             zIndex:zIndexes.Particles,
             scale:small?random.float(0.2,0.5):random.float(0.5,1),
             tint:this.assets_data.particles.tint,
             to:{
-                speed:random.float(0.1,1),
-                angle:random.rad(),
-                tint:ColorM.mult_rgba(tint??ColorM.default.white,1,1,1,0),
+                speed:random.float(0.1,0.2),
+                angle:angle+random.neg_float(0.1,4),
+                tint:this.assets_data.particles.tint===undefined?ColorM.default.transparent:ColorM.mult_rgba(this.assets_data.particles.tint,1,1,1,0),
+                tint_ease:ease.quarticIn
             }
         })
-        this.game.particles.add_particle(p)
+        this.scene.particles.add_particle(p)
     }
     on_hitted(position:Vec2,critical:boolean){
-        if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Normal)this._add_own_particle(position,undefined,true)
+        if(this.game.save.settings.get_var("graphics_particles")>=GraphicsDConfig.Normal)this._add_own_particle(position,undefined,true)
         if(this.assets_data.sounds&&this.assets_data.sounds.hit&&this.assets_data.sounds.hit.length>0){
             this.game.sounds.play(random.choose(this.assets_data.sounds.hit),{
-                position:this.position,
+                position:position,
                 max_distance:12,
                 bus:"obstacles"
             })
@@ -88,7 +89,9 @@ export abstract class StaticBody extends GameObject{
             images:[],
         }
         const particle=particles.particle??id+"_particle"
-        if(particles.tint)this.assets_data.particles.tint=ColorM.number(typeof particles.tint==="number"?particles.tint:particles.tint[variation])
+        if(particles.tint){
+            this.assets_data.particles.tint=ColorM.number(typeof particles.tint==="number"?particles.tint:particles.tint[variation])
+        }
         if(particles.variations){
             for(let i=0;i<particles.variations;i++){
                 this.assets_data.particles.images.push(`${particle}_${i+1}`)

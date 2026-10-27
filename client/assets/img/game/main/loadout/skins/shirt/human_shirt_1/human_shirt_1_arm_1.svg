@@ -1,1 +1,95 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="54.404" height="39.434" viewBox="0 0 14.394 10.434"><defs><linearGradient xlink:href="#a" id="b" x1="256.44" x2="256.384" y1="176.243" y2="218.043" gradientTransform="matrix(1.04927 0 0 .83832 -12.432 16.816)" gradientUnits="userSpaceOnUse"/><linearGradient id="a" x1="256.384" x2="256.384" y1="188.499" y2="214.923" gradientTransform="matrix(1.03144 0 0 1.02308 -7.86 -4.877)" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#06f" style="stop-color:#98a1a1;stop-opacity:1"/><stop offset="1" stop-color="#001aff" style="stop-color:#fff;stop-opacity:1"/></linearGradient></defs><g style="stroke:#656a6a;stroke-opacity:1"><path fill="url(#a)" d="M250.81 196.364v-32.199h11.549v32.199c-1.47 3.06-9.608 3.131-11.549 0z" style="fill:url(#b);stroke:#7a8385;stroke-width:2.39364;stroke-dasharray:none;stroke-opacity:1" transform="rotate(-90 31.022 166.205)scale(.74833)"/></g></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="54.403999"
+   height="41.507"
+   viewBox="0 0 14.394 10.982504"
+   version="1.1"
+   id="svg14"
+   sodipodi:docname="human_shirt_1_arm_1.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview16"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="60.106052"
+     inkscape:cx="50.269481"
+     inkscape:cy="23.691458"
+     inkscape:window-width="1920"
+     inkscape:window-height="1008"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg14" />
+  <defs
+     id="defs8">
+    <linearGradient
+       xlink:href="#a"
+       id="b"
+       x1="256.44"
+       x2="256.384"
+       y1="176.243"
+       y2="218.043"
+       gradientTransform="matrix(1.04927,0,0,0.83832,-12.432,16.816)"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       id="a"
+       x1="256.384"
+       x2="256.384"
+       y1="188.49899"
+       y2="214.923"
+       gradientTransform="matrix(1.03144,0,0,1.02308,-7.86,-4.877)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0"
+         stop-color="#06f"
+         style="stop-color:#98a1a1;stop-opacity:1"
+         id="stop3" />
+      <stop
+         offset="1"
+         stop-color="#001aff"
+         style="stop-color:#fff;stop-opacity:1"
+         id="stop5" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#a"
+       id="b-3"
+       x1="256.44"
+       x2="256.384"
+       y1="176.243"
+       y2="218.043"
+       gradientTransform="matrix(1.04927,0,0,0.83832,-12.432,34.504)"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       xlink:href="#a"
+       id="b-6"
+       x1="256.44"
+       x2="256.384"
+       y1="176.243"
+       y2="218.043"
+       gradientTransform="matrix(1.04927,0,0,0.83832,-12.432,34.504)"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <g
+     style="stroke:#7a8385;stroke-opacity:1"
+     id="g338"
+     transform="translate(-13.225654,0.2741142)">
+    <path
+       fill="url(#a)"
+       d="m 250.81008,214.05104 -0.35366,-32.19804 12.25612,5e-5 -0.35354,32.19799 c -1.47,3.06 -9.60792,3.132 -11.54892,0 z"
+       style="fill:url(#b-6);stroke:#7a8385;stroke-width:2.39364;stroke-dasharray:none;stroke-opacity:1"
+       id="path336"
+       sodipodi:nodetypes="ccccc"
+       transform="matrix(0,-0.74833,0.74833,0,-135.191,197.227)" />
+  </g>
+</svg>

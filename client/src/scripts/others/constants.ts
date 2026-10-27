@@ -11,7 +11,7 @@ export type PlayArgs={
 }|{
     type: "join"
     url:string
-    password:string
+    password?:string
     attempts?:number
     delay?:number
 }|{
@@ -19,4 +19,13 @@ export type PlayArgs={
     handle:FileHandle
 }|{
     type: "editor"
+}
+
+export enum GameState{
+    Idle=0,
+    Playing,
+    Editor,
+    Cutscene,
+    Loading,
+    Joining,
 }

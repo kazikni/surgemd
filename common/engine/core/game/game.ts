@@ -1,73 +1,66 @@
 import { Clock, SignalManager } from "../math/utils.ts"
 import { BaseObject2D, type CellsManager2D, CheckpointSettings, GameObjectManager2D } from "./gameObject.ts"
 import { DefinitionsSimple } from "../definition/definitions.ts";
-import { v2, Vec2 } from "../math/vec2.ts";
 import { Stream } from "../net/stream.ts";
 export abstract class BaseGameObject2D extends BaseObject2D{
     // deno-lint-ignore no-explicit-any
     public game!:AbstractGame<any>
+    public scene!:Scene2DInstance<any>
 
     constructor(){
         super()
     }
 }
-export interface Scene2D{
-    cellsSize?:number
-    objects:Record<number,Array<{
-        type:string,
-        position?:Vec2
-        scale?:Vec2
-        rotation?:number
-        // deno-lint-ignore no-explicit-any
-        vals?:Record<string,any>
-        id?:number
-    }>>
-}
-export abstract class GameComponent<Game>{
-    game:Game
-    constructor(game:Game){
-        this.game=game
+export abstract class GameComponent<Game=any>{
+    game!:Game
+    binded:boolean=false
+
+    constructor(){
     }
 
-    on_update(dt:number):void{}
+    on_bind(){}
+    on_unbind(){}
+    on_tick(dt:number):void{}
     on_render(dt:number):void{}
     on_run():void{}
     on_stop():void{}
 }
 export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGameObject2D>{
-    readonly scene:Scene2D
     readonly objects:GameObjectManager2D<DefaultGameObject>
     readonly cells:CellsManager2D<DefaultGameObject>
-    readonly game:AbstractGame<DefaultGameObject>
+    game:AbstractGame<DefaultGameObject>
 
-    constructor(scene:Scene2D,game:AbstractGame<DefaultGameObject>){
-        this.scene=scene
-        this.objects=new GameObjectManager2D<DefaultGameObject>(scene.cellsSize)
-        this.cells=this.objects.cells
+    constructor(game:AbstractGame){
         this.game=game
+        this.objects=new GameObjectManager2D<DefaultGameObject>(5)
+        this.cells=this.objects.cells
+        this.objects.add_object=this.add_object.bind(this)
+        this.objects.make_object_net=this.make_object_net.bind(this)
+
         this.objects.make_object_checkpoint=this.make_object_checkpoint.bind(this)
-        this.reset()
     }
 
-    private _addObject(obj: DefaultGameObject, layer: number, id?: number, args?: Record<string, any>, sv?: Record<string, any>){
-        obj.game = this.game;
+    net_update(){
+        this.objects.update_to_net()
+    }
+
+    add_object(obj: DefaultGameObject, layer: number, id?: number, args?: Record<string, any>, sv?: Record<string, any>){
+        obj.game=this.game;
+        obj.scene=this;
         return GameObjectManager2D.prototype.add_object.call(this.objects,obj,layer,id,args,sv);
     }
-    reset(){
+    make_object_net(id:number,layer:number,t:number){
+        if(!this.game.objects.getFromNumberSafe(t))return undefined
+        return new (this.game.objects.getFromNumber(t))()
+    }
+
+    make_object_checkpoint(_stream:Stream,_id:number|undefined,_layer:number,t:number){
+        if(!this.game.objects.getFromNumberSafe(t))return undefined
+        return new (this.game.objects.getFromNumber(t))()
+    }
+
+    clear(){
         this.objects.clear()
-        this.objects.add_object = this._addObject.bind(this);
-        this.objects.make_object_net=(_id:number,_layer:number,t)=>{
-            if(!this.game.objects.getFromNumber(t))return undefined
-            return new (this.game.objects.getFromNumber(t))()
-        }
-        for(const c in this.scene.objects){
-            const cc=typeof c==="string"?parseInt(c):c
-            this.objects.add_layer(cc)
-            for(const o of this.scene.objects[c]){
-                const obj=this.objects.add_object(new (this.game.objects.getFromString(o.type))(),cc,o.id,o.vals,{"game":this.game})
-                if(o.position)obj.position=v2.clone(o.position as Vec2)
-            }
-        }
     }
     update(dt:number,net_update:boolean=true,destroy_queue:boolean=true):void{
         this.objects.tick(dt)
@@ -79,10 +72,6 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         }
     }
 
-    make_object_checkpoint(_stream:Stream,_id:number|undefined,_layer:number,t:number){
-        if(!this.game.objects.getFromNumber(t))return undefined
-        return new (this.game.objects.getFromNumber(t))()
-    }
     make_checkpoint(stream:Stream,settings?:CheckpointSettings){
         this.objects.encode_checkpoint(stream,settings)
     }
@@ -91,84 +80,76 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
     }
 }
 
-export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=BaseGameObject2D>{
+export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=any>{
     readonly tps:number
 
     readonly clock:Clock
 
     components:GameComponent<this>[]=[]
-
     objects:DefinitionsSimple<new()=>DefaultGameObject2D>=new DefinitionsSimple()
-    scene_2d:Scene2DInstance<DefaultGameObject2D>
-
     running:boolean=false
-
-    timeouts:{c:()=>void,delay:number}[]=[]
-
     signals:SignalManager=new SignalManager()
-
     delta_time:number=0
-    last_time:number=0
 
     constructor(tps: number,objects:Array<new()=>DefaultGameObject2D>){
         this.tps=tps
-        this.clock=new Clock(tps,1,(dt)=>{this.update(dt),this.draw(dt)})
+        this.clock=new Clock(tps,1,(dt)=>this.update(dt))
 
         for(const o of objects){
             const oi=new o()
             this.objects.set(o,oi.string_type,oi.number_type)
         }
+    }
 
-        this.scene_2d=new Scene2DInstance<DefaultGameObject2D>({objects:{}},this)
-    }
-    add_component(component:GameComponent<this>){
-        this.components.push(component)
-    }
-    draw(dt:number):void{
+    call_event(event:string,...args:any[]){
         for(const c of this.components){
-            c.on_render(dt)
+            if((c as any)["on_"+event])(c as any)["on_"+event](...args)
         }
-        this.scene_2d.objects.render(dt)
+        this.signals.emit(event,...args)
     }
-    update(dt:number,net_update:boolean=true,destroy_queue:boolean=true){
+    async call_event_async(event:string,...args:any[]):Promise<void>{
+        for(const c of this.components){
+            if((c as any)["on_"+event])await (c as any)["on_"+event](...args)
+        }
+        this.signals.emit(event,...args)
+    }
+    add_component(component:any):GameComponent{
+        if(component.binded)return component
+        component.game=this
+        this.components.push(component)
+        if(this.running){
+            component.binded=true
+            component.on_bind()
+        }
+        return component
+    }
+    remove_component(component:any):void{
+        if(!component.binded)return
+        for(let c=0;c<this.components.length;c++){
+            if(c===component){
+                this.components.splice(c,1)
+                c--
+            }
+        }
+        component.binded=false
+        component.on_unbind()
+    }
+    update(dt:number){
         this.clock.profiler.start(1)
         this.delta_time=dt
 
-        this.signals.emit("update")
         this.on_update(dt)
-        for(const c of this.components){
-            c.on_update(dt)
-        }
-
-        this.scene_2d.update(dt,net_update,destroy_queue)
-        this.update_timeouts(dt)
+        this.call_event("tick",dt)
 
         if(!this.running){
             this.clock.stop()
             this.on_stop()
-            this.signals.emit("stop",{game:this})
+            this.call_event("stop")
         }
         this.clock.profiler.end(1)
     }
-    update_timeouts(dt:number){
-        for(let i=0;i<this.timeouts.length;i++){
-            this.timeouts[i].delay-=dt
-            if(this.timeouts[i].delay<=0){
-                this.timeouts[i].c()
-                this.timeouts.splice(i,1) 
-                i--
-            }
-        }
-    }
-    add_timeout(callback:()=>void,delay:number):number{
-        if(delay==0){
-            callback()
-            return -1
-        }
-        this.timeouts.push({c:callback,delay:delay})
-        return this.timeouts.length-1
-    }
 
+    on_render(dt:number):void{}
     on_update(_dt:number):void{}
     on_run():void{}
     on_stop():void{}
@@ -178,7 +159,13 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         // Start
         this.running=true
         this.on_run()
-        this.signals.emit("start")
+        for(const c of this.components){
+            if(!c.binded){
+                c.on_bind()
+                c.binded=true
+            }
+        }
+        this.call_event("run")
         if(auto_mainloop){
             if(rqf){
                 this.clock.startRAF()
@@ -191,9 +178,11 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         if(!this.running)return
         this.running=false
         this.clock.stop()
-        this.signals.emit("stop",{game:this})
+        this.on_stop()
+        this.call_event("stop")
     }
-    clear(){
-        this.scene_2d.objects.clear()
-    }
+}
+export interface ConsoleLogger{
+    clear():void
+    log(...val:any[]):void
 }

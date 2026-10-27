@@ -11,15 +11,12 @@ export interface StairData{
     dest_layer:number
 }
 export type StaticBodyPhysicalData={
-    spawn_hitbox:Hitbox2D
-    hitbox:Hitbox2D
-    interaction_hitbox:Hitbox2D
-
-    reflect_bullets:boolean
-    no_collision:boolean
-    no_pathfinding_collision:boolean
-    no_bullets_collision:boolean
-    passable_by_bullets:boolean
+    reflect_bullets?:boolean
+    no_collision?:boolean
+    no_pathfinding_collision?:boolean
+    no_bullets_collision?:boolean
+    no_spawn_collision?:boolean
+    passable_by_bullets?:boolean
 
     stairs:StairData[]
 }
@@ -27,8 +24,8 @@ export abstract class StaticBody extends ServerGameObject{
     string_type:string="static_body"
     number_type:number=GameObjectType.StaticBody
 
-    spawn_hitbox!:Hitbox2D
-    interaction_hitbox!:Hitbox2D
+    spawn_hitbox?:Hitbox2D
+    interaction_hitbox?:Hitbox2D
 
     abstract physical_data:StaticBodyPhysicalData
 
@@ -38,4 +35,9 @@ export abstract class StaticBody extends ServerGameObject{
 
     damage(_params:DamageParams){}
     side_effect(_sf:SideEffect,_owner?:Human){}
+
+    override on_destroy(): void {
+        const idx=this.scene.map.objects.indexOf(this)
+        if(idx!==-1)this.scene.map.objects.splice(idx,1)
+    }
 }

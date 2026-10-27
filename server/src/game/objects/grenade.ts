@@ -38,7 +38,8 @@ export class Grenade extends Projectile{
     override on_collided(obj:ServerGameObject,dt:number){
         switch(obj.number_type){
             case GameObjectType.Obstacle:
-            case GameObjectType.Building:{
+            case GameObjectType.Building:
+            case GameObjectType.Walls:{
                 if((obj as StaticBody).physical_data.stairs.length>0){
                     for(const s of (obj as StaticBody).physical_data.stairs){
                         if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,obj.layer+s.dest_layer)
@@ -48,37 +49,43 @@ export class Grenade extends Projectile{
                 if(obj.number_type===GameObjectType.Obstacle){
                     if((obj as Obstacle).def.height===2||((obj as Obstacle).def.height===1&&this.physical_data.zpos>=0.5))break
                 }
+
                 const collisions=this.hitbox.overlap_collisions(obj.hitbox)
-                for(const col of collisions){
-                    const normal = col.dir
-                    const vel = this.physical_data.velocity
+                if(!this.def.no_collision){
+                    for(const col of collisions){
+                        const normal = col.dir
+                        const vel = this.physical_data.velocity
 
-                    const dot = v2.dot(vel, normal)
-                    const reflected = v2.sub(vel, v2.scale(normal, 2 * dot))
+                        const dot = v2.dot(vel, normal)
+                        const reflected = v2.sub(vel, v2.scale(normal, 2 * dot))
 
-                    this.physical_data.velocity=v2.scale(reflected, 0.4)
-                    if(this.def.fuse?.impact){
-                        this.kill()
-                        break
+                        this.physical_data.velocity=v2.scale(reflected, 0.4)
                     }
+                }
+                if(collisions.length>0&&this.def.fuse?.impact){
+                    this.kill()
+                    break
                 }
                 break
             }
             case GameObjectType.Human:{
                 if((obj as Human).dead||(this.owner&&obj.id===this.owner.id))break
                 const collisions=this.hitbox.overlap_collisions(obj.hitbox)
-                for(const col of collisions){
-                    const normal = col.dir
-                    const vel = this.physical_data.velocity
+                
+                if(!this.def.no_collision){
+                    for(const col of collisions){
+                        const normal = col.dir
+                        const vel = this.physical_data.velocity
 
-                    const dot = v2.dot(vel, normal)
-                    const reflected = v2.sub(vel, v2.scale(normal, 2 * dot))
+                        const dot = v2.dot(vel, normal)
+                        const reflected = v2.sub(vel, v2.scale(normal, 2 * dot))
 
-                    this.physical_data.velocity=v2.scale(reflected, 0.4)
-                    if(this.def.fuse?.impact){
-                        this.kill()
-                        break
+                        this.physical_data.velocity=v2.scale(reflected, 0.4)
                     }
+                }
+                if(collisions.length>0&&this.def.fuse?.impact){
+                    this.kill()
+                    break
                 }
                 break
             }
@@ -112,7 +119,7 @@ export class Grenade extends Projectile{
 
         if(!this.old_pos||!v2.is(this.position,this.old_pos)){
             this.old_pos=this.position
-            this.physical_data.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.default_floor)
+            this.physical_data.current_floor=this.scene.map.terrain.get_floor_type(this.position,this.layer,this.scene.map.default_floor)
 
             // Fall
             /*if(this.physical_data.current_floor===FloorType.Void){
@@ -135,19 +142,19 @@ export class Grenade extends Projectile{
         if(this.def.explosion)this.projectile_data.explosion=this.game.definitions.explosions.getFromString(this.def.explosion)
 
         if(this.def.call_airdrop){
-            this.game.add_timeout(()=>{
-                this.game.add_airdrop(this.position)
+            this.game.clock.add_timeout(()=>{
+                this.scene.add_airdrop(this.position)
             },this.def.call_airdrop.delay)
         }
         if(this.def.call_airstrike){
-            this.game.add_timeout(()=>{
+            this.game.clock.add_timeout(()=>{
                 const pos=v2.clone(this.position)
                 const def=this.game.definitions.grenades.getFromString(this.def.call_airstrike!.bomb.def)
                 const count=this.def.call_airstrike?.count??1
                 const gap=this.def.call_airstrike?.delay_gap??1
                 for(let c=0;c<count;c++){
-                    this.game.add_timeout(()=>{
-                        this.game.add_airstrike(pos,def,this.def.call_airstrike?.bomb.count??1,this.def.call_airstrike?.bomb.radius??0,this.owner)
+                    this.game.clock.add_timeout(()=>{
+                        this.scene.add_airstrike(pos,def,this.def.call_airstrike?.bomb.count??1,this.def.call_airstrike?.bomb.radius??0,this.owner)
                     },c*gap)
                 }
             },this.def.call_airstrike.delay)
@@ -172,7 +179,6 @@ export class Grenade extends Projectile{
         .write_float32(this.physical_data.zpos)
         .write_float32(this.physical_data.zpos_speed)
         .write_float32(this.fuse_delay)
-        .write_uint8(this.physical_data.current_floor)
         .write_boolean_group(this.owner !== undefined)
         if (this.owner) {
             stream.write_id(ctx.idco[this.owner.id])
@@ -188,13 +194,10 @@ export class Grenade extends Projectile{
         this.physical_data.zpos = stream.read_float32()
         this.physical_data.zpos_speed = stream.read_float32()
         this.fuse_delay = stream.read_float32()
-        this.physical_data.current_floor = stream.read_uint8() as FloorType
         const bg=stream.read_boolean_group()
         if(bg[0]){
             const id = stream.read_id()
             this.owner = this.manager.objects[ctx.coid[id]] as Human
         }
-
-        this.update_hitbox()
     }
 }

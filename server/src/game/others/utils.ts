@@ -20,3 +20,8 @@ export interface DamageParams{
     direction:number
     position:Vec2
 }
+
+export type human_die_event={
+    params:DamageParams
+    human:Human
+}

@@ -1,4 +1,4 @@
-import { PingDef } from "common/scripts/definitions/loadout/ping.ts";
+import { PingDef } from "common/scripts/definitions/loadout/pings.ts";
 import { GameApp } from "../managers/deviceManager.ts";
 import { ColorM, v2, Vec2 } from "common/engine/web.ts";
 import { PrivateUpdate } from "common/scripts/packets/update_packet.ts";
@@ -384,7 +384,7 @@ export class MapApp extends GameApp {
         if(type!=="private")return
 
         for(const p of data.pings){
-            this.add_ping(p.position,this.device.game.definitions.ping.getFromNumber(p.def),ColorM.number2hex(p.color),p.id)
+            this.add_ping(p.position,this.device.game.definitions.pings.getFromNumber(p.def),ColorM.number2hex(p.color),p.id)
         }
     }
 }

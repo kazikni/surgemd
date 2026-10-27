@@ -74,7 +74,7 @@ export class DumbBotAI extends BotAi {
     }
     get_deadzone_urgency(){
         const self = this.human
-        const dz = self.game.deadzone
+        const dz = self.scene.deadzone
         const dist = v2.distance(self.position, dz.state.position)
         const radius = dz.state.radius
         const edgeDist = dist - radius
@@ -88,7 +88,7 @@ export class DumbBotAI extends BotAi {
     }
     do_deadzone(dt:number){
         const self = this.human
-        const dz = self.game.deadzone
+        const dz = self.scene.deadzone
         this.update_stuck(dt)
         const center = dz.state.position
         if(!this._dz_target || Math.random() < 0.01){
@@ -163,7 +163,7 @@ export class DumbBotAI extends BotAi {
     }
     do_wander(dt:number){
         const self = this.human
-        const dz = self.game.deadzone
+        const dz = self.scene.deadzone
         if(this._move_timer > 0){
             this._move_timer -= dt
 
@@ -321,24 +321,30 @@ export class DumbBotAI extends BotAi {
 
         return Intent.Wander
     }
-    AI(dt:number){
-        this.reset_inputs()
-        //this.update_target()
-        this.update_loot_target()
-        const intent = this.choose_intent(dt)
 
-        switch(intent){
-            case Intent.EscapeGas:
-                this.do_deadzone(dt)
-                break
-            /*case Intent.Fight:
-                //this.do_fight()
-                break*/
-            case Intent.Loot:
-                this.do_loot(dt)
-                break
-            default:
-                this.do_wander(dt)
+    tick_timer=0
+    AI(dt:number){
+        this.tick_timer+=dt
+        if(this.tick_timer>=0.07){
+            this.reset_inputs()
+            //this.update_target()
+            this.update_loot_target()
+            const intent = this.choose_intent(this.tick_timer)
+
+            switch(intent){
+                case Intent.EscapeGas:
+                    this.do_deadzone(this.tick_timer)
+                    break
+                /*case Intent.Fight:
+                    //this.do_fight()
+                    break*/
+                case Intent.Loot:
+                    this.do_loot(this.tick_timer)
+                    break
+                default:
+                    this.do_wander(this.tick_timer)
+            }
+            this.tick_timer-=0.07
         }
     }
     override net_update(_general_update: Stream): void {

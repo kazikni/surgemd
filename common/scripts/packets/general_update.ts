@@ -1,6 +1,16 @@
 import { KDate, Stream, Packet, Vec2 } from "../../engine/core.ts";
 import { DamageReason, PacketType } from "../definitions/utils.ts";
 
+export interface GeneralFullMainState{
+    players:{id:number,name:string,badge?:number}[]
+    ntps:number
+    date:KDate
+}
+export interface GlobalMessage{
+    value?:string
+    lvalue?:string
+    lifetime?:number
+}
 export enum DeadZoneState{
     Deenabled,
     Advancing,
@@ -31,11 +41,19 @@ export interface MapZone{
 export interface GeneralUpdate{
     started:boolean
     feed_enabled:boolean
+
     leader_enabled:boolean
+    leader?:{
+        id:number
+        kills:number
+    }
+
     living_count:number[]
     feed:FeedMessage[]
+    global_message:GlobalMessage[]
     deadzone?:DeadZoneUpdate
     ambient?:AmbientData
+    main_state?:GeneralFullMainState
     map_zones:MapZone[]
 }
 export interface MakeDeadZoneSettings{
@@ -87,10 +105,7 @@ export interface FeedMessageKill{
 }
 export interface FeedMessageLeader{
     type:FeedMessageType.leader_assigned|FeedMessageType.leader_dead,
-    player:{
-        kills:number
-        id:number
-    }
+    player:number
 }
 export interface FeedMessageSP{
     type:FeedMessageType.join|FeedMessageType.set_name
@@ -122,8 +137,7 @@ function encode_feed_message(msg:FeedMessage,stream:Stream){
             break
         case FeedMessageType.leader_dead:
         case FeedMessageType.leader_assigned:
-            stream.write_id(msg.player.id)
-            stream.write_uint8(msg.player.kills)
+            stream.write_id(msg.player)
             break
     }
 }
@@ -156,24 +170,54 @@ function decode_feed_message(stream:Stream):FeedMessage{
         }
         case FeedMessageType.leader_dead:
         case FeedMessageType.leader_assigned:
-            msg["player"]={
-                id:stream.read_id(),
-                kills:stream.read_uint8()
-            }
+            msg["player"]=stream.read_id()
             break
     }
     return msg as unknown as FeedMessage
+}
+
+export function encode_general_main_state(stream:Stream,s:GeneralFullMainState){
+    stream.write_uint8(s.ntps)
+    stream.write_array(s.players,(e)=>{
+        stream.write_uint16((e.badge??-1)+1)
+        stream.write_string_sized(e.name,28)
+        stream.write_id(e.id)
+    },1)
+    stream.write_kdate(s.date)
+}
+export function decode_general_main_state(stream:Stream):GeneralFullMainState{
+    const s={
+    } as GeneralFullMainState
+    s.ntps=stream.read_uint8()
+    s.players=stream.read_array((_e)=>{
+        const b=stream.read_uint16()
+        return {
+            name:stream.read_string_sized(28),
+            id:stream.read_id(),
+            badge:b===0?undefined:b-1
+        }
+    },1)
+    s.date=stream.read_kdate()
+    return s
 }
 function encode_general_update(stream:Stream,up:GeneralUpdate){
     stream.write_boolean_group(
         up.started,
         up.feed_enabled,
         up.leader_enabled,
+        up.leader!==undefined,
         up.deadzone!==undefined,
         up.ambient!==undefined,
+        up.main_state!==undefined
     )
 
     stream.write_array(up.feed,(msg)=>encode_feed_message(msg,stream))
+    stream.write_array(up.global_message,(msg)=>{
+        stream.write_boolean_group(msg.value!=undefined,msg.lvalue!==undefined,msg.lifetime!==undefined)
+        if(msg.value!==undefined)stream.write_string(msg.value,2)
+        if(msg.lvalue!==undefined)stream.write_string(msg.lvalue,1)
+        if(msg.lifetime!==undefined)stream.write_float32(msg.lifetime)
+    })
     if(up.deadzone){
         stream.write_uint8(up.deadzone.state)
         .write_float(up.deadzone.radius,0,3000,3)
@@ -187,6 +231,10 @@ function encode_general_update(stream:Stream,up:GeneralUpdate){
         .write_float(up.ambient.rain,0,1,1)
         .write_float(up.ambient.thunder_storm,0,1,1)
     }
+    if(up.leader){
+        stream.write_id(up.leader.id??0)
+        stream.write_uint16(up.leader.kills??0)
+    }
     stream.write_array(up.living_count,(i,_s)=>{
         stream.write_uint8(i)
     },1)
@@ -198,21 +246,33 @@ function encode_general_update(stream:Stream,up:GeneralUpdate){
         .write_float32(i.radius)
         if(i.id!==undefined)stream.write_id(i.id)
     },1)
+    if(up.main_state)encode_general_main_state(stream,up.main_state)
 }
 function decode_general_update(stream:Stream,up:GeneralUpdate){
     const [
         started,
         feed_enabled,
         leader_enabled,
+        leader,
         deadzone,
-        ambient
+        ambient,
+        main_state
     ]=stream.read_boolean_group()
     up.started=started
     up.feed_enabled=feed_enabled
     up.leader_enabled=leader_enabled
     up.ambient=undefined
+    up.leader=undefined
 
     up.feed=stream.read_array(()=>decode_feed_message(stream))
+    up.global_message=stream.read_array(()=>{
+        const [has_value,has_lvalue,has_lifetime]=stream.read_boolean_group()
+        const msg:GlobalMessage={}
+        if(has_value)msg.value=stream.read_string(2)
+        if(has_lvalue)msg.lvalue=stream.read_string(1)
+        if(has_lifetime)msg.lifetime=stream.read_float32()
+        return msg
+    })
     if(deadzone){
         up.deadzone={
             state:stream.read_uint8(),
@@ -234,6 +294,12 @@ function decode_general_update(stream:Stream,up:GeneralUpdate){
         up.ambient.rain=stream.read_float(0,1,1)
         up.ambient.thunder_storm=stream.read_float(0,1,1)
     }
+    if(leader){
+        up.leader={
+            id:stream.read_id(),
+            kills:stream.read_uint16()
+        }
+    }
     up.living_count=stream.read_array((_s)=>{
         return stream.read_uint8()
     },1)
@@ -248,6 +314,8 @@ function decode_general_update(stream:Stream,up:GeneralUpdate){
         if(id)ret.id=stream.read_id()
         return ret
     },1)
+    up.main_state=undefined
+    if(main_state)up.main_state=decode_general_main_state(stream)
 }
 
 export class GeneralUpdatePacket extends Packet{
@@ -259,8 +327,9 @@ export class GeneralUpdatePacket extends Packet{
         leader_enabled:false,
         living_count:[],
         feed:[],
+        global_message:[],
         deadzone:undefined,
-        map_zones:[]
+        map_zones:[],
     }
     decode(stream: Stream): void {
         decode_general_update(stream,this.content)

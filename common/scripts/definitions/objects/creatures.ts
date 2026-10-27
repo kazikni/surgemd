@@ -95,8 +95,8 @@ export const PacifictCreature1 = {
         ai.time -= dt
     }
 } satisfies Partial<CreatureDef>
-export function Creatures_Default_Init(creatures:Definitions<CreatureDef,{}>){
-    creatures.insert(
+export function Creatures_Default_Init():CreatureDef[]{
+    return [
         {
             idString:"chicken",
             health:50,
@@ -149,5 +149,5 @@ export function Creatures_Default_Init(creatures:Definitions<CreatureDef,{}>){
                 PacifictCreature1.update(c,dt,cs)
             }
         }
-    )
+    ]
 }

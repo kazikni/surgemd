@@ -6,12 +6,13 @@ export enum InputActionType{
     set_hand,
     debug_give,
     set_scope,
-    emote_emote,
-    emote_item,
+    emote,
     message,
     ping,
     buy_on_shop,
     debug_spawn,
+    spectate,
+    command,
 }
 export type InputAction=({
     type:InputActionType.drop
@@ -30,11 +31,8 @@ export type InputAction=({
     type:InputActionType.set_scope
     scope_id:number
 }|{
-    type:InputActionType.emote_emote
-    emote:number
-}|{
-    type:InputActionType.emote_item
-    item:number
+    type:InputActionType.emote
+    id:number
 }|{
     type:InputActionType.message
     value:string
@@ -46,9 +44,11 @@ export type InputAction=({
     type:InputActionType.buy_on_shop
     item_id:number
 }|{
-    type:InputActionType.debug_give|InputActionType.debug_spawn
-    item:string
-    count:number
+    type:InputActionType.spectate
+    val:number // 0 = Normal, 1 = Next, 2 = Previor
+}|{
+    type:InputActionType.command
+    val:string[]
 })
 export class InputPacket extends Packet{
     ID=PacketType.Input
@@ -64,7 +64,7 @@ export class InputPacket extends Packet{
     interact:boolean=false
     cancel:boolean=false
     reload:boolean=false
-    swamp_guns:boolean=false
+    swap_guns:boolean=false
 
     actions:InputAction[]=[]
 
@@ -75,7 +75,7 @@ export class InputPacket extends Packet{
         stream.write_polar_mov2(this.movement)
             .write_rad(this.angle)
             .write_float(this.distance_to_aim,0,1,1)
-            .write_boolean_group(this.auto_fire,this.use_weapon,this.alt_use_weapon,this.interact,this.cancel,this.reload,this.swamp_guns)
+            .write_boolean_group(this.auto_fire,this.use_weapon,this.alt_use_weapon,this.interact,this.cancel,this.reload,this.swap_guns)
             .write_array(this.actions,(i,_s)=>{
                 stream.write_uint8(i.type)
                 switch(i.type){
@@ -92,11 +92,8 @@ export class InputPacket extends Packet{
                     case InputActionType.set_scope:
                         stream.write_uint8(i.scope_id)
                         break
-                    case InputActionType.emote_emote:
-                        stream.write_uint16(i.emote)
-                        break
-                    case InputActionType.emote_item:
-                        stream.write_uint16(i.item)
+                    case InputActionType.emote:
+                        stream.write_uint16(i.id)
                         break
                     case InputActionType.message:
                         stream.write_string_sized(i.value,50)
@@ -108,10 +105,11 @@ export class InputPacket extends Packet{
                     case InputActionType.buy_on_shop:
                         stream.write_uint16(i.item_id)
                         break
-                    case InputActionType.debug_give:
-                    case InputActionType.debug_spawn:
-                        stream.write_string_sized(i.item,32)
-                        .write_uint8(i.count)
+                    case InputActionType.spectate:
+                        stream.write_uint8(i.val)
+                        break
+                    case InputActionType.command:
+                        stream.write_array(i.val,(v)=>stream.write_string(v,2),2)
                         break
                 }
           },1)
@@ -127,7 +125,7 @@ export class InputPacket extends Packet{
         this.interact=bg[3]
         this.cancel=bg[4]
         this.reload=bg[5]
-        this.swamp_guns=bg[6]
+        this.swap_guns=bg[6]
         this.actions=stream.read_array((_s)=>{
           const ret={
               type:stream.read_uint8()
@@ -146,11 +144,8 @@ export class InputPacket extends Packet{
                 case InputActionType.set_scope:
                     ret["scope_id"]=stream.read_uint8()
                     break
-                case InputActionType.emote_emote:
-                    ret["emote"]=stream.read_uint16()
-                    break
-                case InputActionType.emote_item:
-                    ret["item"]=stream.read_uint16()
+                case InputActionType.emote:
+                    ret["id"]=stream.read_uint16()
                     break
                 case InputActionType.message:
                     ret["value"]=stream.read_string_sized(50)
@@ -162,10 +157,11 @@ export class InputPacket extends Packet{
                 case InputActionType.buy_on_shop:
                     ret["item_id"]=stream.read_uint16()
                     break
-                case InputActionType.debug_give:
-                case InputActionType.debug_spawn:
-                    ret["item"]=stream.read_string_sized(32)
-                    ret["count"]=stream.read_uint8()
+                case InputActionType.spectate:
+                    ret["val"]=stream.read_uint8()
+                    break
+                case InputActionType.command:
+                    ret["val"]=stream.read_array(()=>stream.read_string(2),1) as string[]
                     break
           }
           return ret

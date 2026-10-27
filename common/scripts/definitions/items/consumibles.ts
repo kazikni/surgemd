@@ -1,4 +1,4 @@
-import { AKeyFrame, DeepPartial, Definition, Definitions, mergeDeep, Random1, TD, tdm, TDType, v2, Vec2 } from "../../../engine/core.ts";
+import { AKeyFrame, DeepPartial, Definition,  mergeDeep, Random1, TD, tdm, TDType, v2, Vec2 } from "../../../engine/core.ts";
 import { DefaultFistRig, ItemRank } from "../../others/item.ts";
 import { SideEffect, SideEffectType } from "../player/effects.ts";
 import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
@@ -130,7 +130,7 @@ export const ConsumiblesAnimations={
 
 export function CreateSoda(color:string,boost_def:string,max?:number,amount:number=25,item:DeepPartial<ConsumibleDef>={}):ConsumibleDef{
     return mergeDeep({
-        idString:color+"_soda",
+        idString:color,
         description:true,
         consuming:{
             type:0,
@@ -145,7 +145,7 @@ export function CreateSoda(color:string,boost_def:string,max?:number,amount:numb
                 }
             ],
             use_delay:3,
-            animation:ConsumiblesAnimations.drinking(color+"_soda",2.5),
+            animation:ConsumiblesAnimations.drinking(color,2.5),
             drink:true,
             drop:true,
             boost_def:boost_def,
@@ -208,8 +208,8 @@ export function CreateSpray(color:string,item:DeepPartial<ConsumibleDef>={}):Con
         },
     },item)
 }
-export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{}>){
-    consumibles.insert(
+export function Consumibles_Default_Init():ConsumibleDef[]{
+    return [
         {
             idString:"bandage",
             consuming:{
@@ -252,7 +252,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
         },
 
         //Adrenaline
-        CreateSoda("yellow","adrenaline"),
+        CreateSoda("yellow_soda","adrenaline"),
         {
             idString:"inhaler",
             description:true,
@@ -276,7 +276,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
         CreatePills("yellow","adrenaline"),
 
         //Shield
-        CreateSoda("blue","shield",0.5),
+        CreateSoda("blue_soda","shield",0.5),
         {
             idString:"blue_potion",
             consuming:{
@@ -333,7 +333,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
         },
         CreatePills("purple",BoostType.Mana),*/
         //Addiction
-        CreateSoda("red","addiction",0.5,50),
+        CreateSoda("red_beer","addiction",0.5,50),
         {
             idString:"small_red_crystal",
             description:true,
@@ -372,8 +372,8 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
         },
         CreatePills("red","addiction"),
         //Green Bless
-        CreateSoda("green","green_bless",undefined,100),
+        CreateSoda("green_soda","green_bless",undefined,100),
         //Death
-        CreateSoda("black","death",undefined,1),
-    )
+        CreateSoda("black_soda","death",undefined,1),
+    ]
 }

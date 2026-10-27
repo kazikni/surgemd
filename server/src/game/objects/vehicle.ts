@@ -7,6 +7,7 @@ import {
     v2,
     v2m,
     Vec2,
+    HitboxType2D,
 } from "common/engine/core.ts"
 import { Human } from "./human.ts"
 import { GameObjectType } from "common/scripts/others/constants.ts"
@@ -175,15 +176,38 @@ export class Vehicle extends MovingBody {
     override on_create(args?: { position: Vec2; def: VehicleDef }) {
         if(args)this.set_configuration(args.position,args.def)
     }
-    move(input: PolarMovement, backWalk: boolean, _alt = false) {
-        const dir = v2.from_PolarMovement(input)
+    move(input:PolarMovement,backWalk:boolean,alt=false){
+        const dir=v2.from_PolarMovement(input)
 
-        this.physical_data.throttle = Numeric.clamp(-dir.y, -1, 1)
-        this.physical_data.steer_input = Numeric.clamp(dir.x, -1, 1)
+        if(alt){
+            this.physical_data.throttle=Numeric.clamp(-dir.y,-1,1)
+            this.physical_data.steer_input=Numeric.clamp(dir.x,-1,1)
+        }else{
+            const len=v2.len(dir)
 
-        this.back_walk = backWalk
+            if(len>0.001){
+                const target=Math.atan2(dir.y,dir.x)
+                const current=this.physical_data.rotation
+                let delta=Numeric.normalize_rad(target-current)
 
-        this.is_moving=Math.abs(this.physical_data.throttle) > 0.001 ||Math.abs(this.physical_data.steer_input) > 0.001
+                const forward=v2.from_RadAngle(current)
+                const forwardDot=v2.dot(forward,dir)/len
+
+                this.physical_data.steer_input=Numeric.clamp(delta/0.7,-1,1)
+
+                if(forwardDot>0){
+                    this.physical_data.throttle=Numeric.clamp(forwardDot,-1,1)
+                }else{
+                    this.physical_data.throttle=Numeric.clamp(forwardDot,-1,1)
+                }
+            }else{
+                this.physical_data.throttle=0
+                this.physical_data.steer_input=0
+            }
+        }
+
+        this.back_walk=backWalk
+        this.is_moving=Math.abs(this.physical_data.throttle)>0.001||Math.abs(this.physical_data.steer_input)>0.001
     }
 
     private update_surface() {
@@ -245,7 +269,7 @@ export class Vehicle extends MovingBody {
 
         // Tire Stress
         const lateralStress=Math.abs(lateralSpeed)*1
-        const steeringStress=Math.abs(pd.angular_velocity)*Numeric.lerp(0.4, 1.4,Numeric.clamp(speedAbs / 12, 0, 1))
+        const steeringStress=Math.abs(pd.angular_velocity)*Numeric.lerp(0.4, 3,Numeric.clamp(speedAbs/5, 0, 1))
         const accelStress=Math.max(0,throttle)*Numeric.clamp(speedAbs*0.2,0,2)
         const brakeStress=Math.max(0-throttle)*Numeric.clamp(speedAbs*5,0,10)
         this.tire_stress=lateralStress+steeringStress+accelStress+brakeStress
@@ -277,10 +301,10 @@ export class Vehicle extends MovingBody {
     override on_tick(dt: number) {
         if (this.dead) return
 
-        this.current_floor = this.game.map.terrain.get_floor_type(
+        this.current_floor = this.scene.map.terrain.get_floor_type(
             this.position,
             this.layer,
-            this.game.map.default_floor
+            this.scene.map.default_floor
         )
 
         this.update_surface()
@@ -291,6 +315,11 @@ export class Vehicle extends MovingBody {
 
         if(Math.abs(this.speed) > 0.001 ||Math.abs(this.physical_data.angular_velocity) > 0.001 ||this.is_new){
             this.physical_data.dirty = true
+            if(this.def!.hitbox.type===HitboxType2D.group){
+                this.base_hitbox=this.def!.hitbox.clone()
+                this.base_hitbox.rotate(this.physical_data.rotation)
+                this.update_hitbox()
+            }
             this.set_dirty_part()
         }
 

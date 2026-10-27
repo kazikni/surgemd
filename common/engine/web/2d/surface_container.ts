@@ -14,8 +14,7 @@ export class SurfaceContainer2D extends Container2DObject{
     }
 
     draw(cam:CamA){
-
-        this.draw_super()
+        this.draw_super(cam)
 
         const model=model2d.rect(
             {x:this._real_position.x,y:this._real_position.y},

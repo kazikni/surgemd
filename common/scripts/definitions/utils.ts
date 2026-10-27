@@ -1,5 +1,4 @@
-import { Definition, Stream, Vec2, WeightDefinition, TDObjectProperty, TDType, tdm, TD, DefinitionTD, Random1 } from "../../engine/core.ts"
-import { type HumanModifiers } from "../others/constants.ts"
+import { Definition, Stream, Vec2, WeightDefinition, TDObjectProperty, TDType, tdm, TD, DefinitionTD, Random1, MinMax1, EaseFunction } from "../../engine/core.ts"
 import { FireMode, ItemRank } from "../others/item.ts"
 export enum PacketType{
     Feed=1,
@@ -20,7 +19,9 @@ export enum BulletReflection{
 }
 export interface BulletDef{
     damage:number
+    weight?:number
     falloff?:number
+    effective_range?:number
     range:number
     speed:number
     effect?:{id:string,time:number}[]
@@ -113,6 +114,8 @@ export enum GameItemType{
 export enum GameObjectDefinitionType{
     item,
     emote,
+    badge,
+    ping,
     obstacle,
     explosion,
 }
@@ -175,11 +178,13 @@ export interface LoadoutPreset{
     badge?:string
     hair?:string
     hair_tint?:number
+    hair_paint?:{id:number,tint:number}
     body?:string
     body_tint?:number
     eyes?:string
     shirt?:string
     legs?:string
+    foot?:string|null
     accessorys?:string[]
     colors?:Record<string,string>
     wrapping?:string|string[]
@@ -208,7 +213,7 @@ export type HumanDefinition={
     group_color?:number
     ai?:HumanAIDef
     script?:string
-    modifiers?:Partial<HumanModifiers>
+    modifiers?:Record<string,number>
 }
 export type CharacterDefinition=HumanDefinition&{
     description?:string
@@ -277,6 +282,11 @@ export const hit_sounds:Record<string,HitSoundsDef>={
         hit:"tissue_hit",
         hit_variations:2,
         break:"tissue_break",
+    },
+    glass:{
+        hit:"glass_hit",
+        hit_variations:2,
+        break:"glass_break"
     }
 }
 export const PerspetiveSizes={
@@ -293,87 +303,6 @@ export type ScopeChange={zoom?:number,zoom_mult?:number,def?:string|number}
 export interface RecoilDef{
     duration:number
     speed:number
-}
-
-export interface GasParticle{
-    count:number
-    size:{
-        min:number
-        max:number
-    }
-    speed:{
-        min:number
-        max:number
-    }
-    life_time:number
-    direction_variation:number
-}
-export const GasParticles={
-    shotgun:{
-        count:7,
-        size:{
-            min:0.5,
-            max:1.2
-        },
-        speed:{
-            min:1,
-            max:2
-        },
-        life_time:0.9,
-        direction_variation:0.4
-    } satisfies GasParticle,
-    sniper:{
-        count:8,
-        size:{
-            min:0.6,
-            max:1.4
-        },
-        speed:{
-            min:1,
-            max:2
-        },
-        life_time:1.1,
-        direction_variation:0.43
-    } satisfies GasParticle,
-    dmr:{
-        count:3,
-        size:{
-            min:0.6,
-            max:1.4
-        },
-        speed:{
-            min:1,
-            max:2
-        },
-        life_time:1.1,
-        direction_variation:0.43
-    } satisfies GasParticle,
-    automatic:{
-        count:1, 
-        size:{
-            min:0.8,
-            max:1
-        },
-        speed:{
-            min:1,
-            max:2
-        },
-        life_time:0.7,
-        direction_variation:0.2
-    } satisfies GasParticle,
-    pistols:{
-        count:3,
-        size:{
-            min:0.5,
-            max:0.8
-        },
-        speed:{
-            min:1,
-            max:2
-        },
-        life_time:0.5,
-        direction_variation:0.2
-    } satisfies GasParticle
 }
 export interface MuzzleFlash{
     sprite:string
@@ -393,6 +322,12 @@ export interface ItemFireDefinition{
         delay:number
         sequence:number
     }
+    fire_sequence?:{
+        spread?:{begin:number,end?:number}
+        increse:number
+        decay:number
+        ease?:EaseFunction
+    }
 
     spread?:number
     idle_spread?:number
@@ -404,10 +339,13 @@ export interface ItemFireDefinition{
         walk:number
     }
     muzzle_flash?:MuzzleFlash
-    gas_particles?:GasParticle
     case_particle?:{
         position:Vec2
+        all_direction?:boolean
         at_begin?:boolean
+        speed?:MinMax1
+        direction?:MinMax1
+        count?:number
         frame?:string
         sound?:string
     }

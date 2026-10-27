@@ -1,9 +1,9 @@
-import { Container2DObject, Sprite2D, Sound, Tween } from "common/engine/web.ts"
+import { ABParticle2D, Container2DObject, Graphics2D, Sprite2D, Tween } from "common/engine/web.ts"
 import { BuildingCeilingDef, BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
 import { Debug } from "../others/config.ts";
-import { Angle, Color, ColorM, Hitbox2D, NullHitbox2D, Orientation, Stream, v2, v2m } from "common/engine/core.ts";
+import { Angle, Color, ColorM, ease, Hitbox2D, NullHitbox2D, Orientation, random, Stream, v2, v2m } from "common/engine/core.ts";
 export class BuildingCeiling{
     parent:Building
     def:BuildingCeilingDef
@@ -36,6 +36,49 @@ export class BuildingCeiling{
             }
         })
     }
+
+    break(){
+        if(!this.def.destroy)return
+        if(this.def.destroy.sound){
+            this.parent.game.sounds.play(this.parent.game.resources.get_sound(this.def.destroy!.sound!),{
+                position:this.parent.position,
+                max_distance:40,
+                delay:0.25,
+                bus:"obstacles"
+            })
+        }
+        if(this.def.destroy.particles){
+            const frame={
+                hotspot:v2.half_one(),
+                ...this.def.destroy.particles
+            }
+            const tint=ColorM.number(frame.tint??0xffffff)
+            const dest_tint=ColorM.mult_rgba(tint,1,1,1,0)
+            for(let j=0;j<this.def.destroy.particles.count;j++){
+                const angle=random.rad()
+                const scale=this.def.destroy.particles.scale_variation?random.random1(this.def.destroy.particles.scale_variation):(frame.scale??1)
+                this.parent.scene.particles.add_particle(new ABParticle2D({
+                    frame:frame,
+                    layer:this.parent.layer,
+                    position:this.hitbox.random_point(),
+                    speed:this.def.destroy.particles.speed?random.random1(this.def.destroy.particles.speed):0.2,
+                    angle:angle,
+                    direction:random.rad(),
+                    life_time:1,
+                    zIndex:zIndexes.Particles,
+                    scale:scale,
+                    tint,
+                    to:{
+                        speed:0,
+                        scale:scale*0.4,
+                        angle:angle+random.neg_float(0.1,4),
+                        tint:dest_tint,
+                        tint_ease:ease.quarticIn
+                    }
+                }))
+            }
+        }
+    }
 }
 export class Building extends StaticBody{
     ////////////////////////////
@@ -62,21 +105,19 @@ export class Building extends StaticBody{
     ////////////////////////////
     // Assets                 //
     ////////////////////////////
-    override assets_data: StaticBodyAssetData&{
-        sounds:{    
-            break?:Sound
-        }
-    }={
-        particles:{
-            images:[]
-        },
-        sounds:{
-            hit:[],
-        }
+    override assets_data: StaticBodyAssetData={
+        sounds:{hit:[]}
     }
 
     constructor(){
         super()
+        this.allow_tick=Debug.hitbox
+    }
+    override on_tick(_dt: number): void {
+        this.game.hitboxes_gfx.ctx.begin_path()
+        this.game.hitboxes_gfx.ctx.hitbox(this.hitbox)
+        this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
+        this.game.hitboxes_gfx.ctx.fill()
     }
     override on_destroy(): void {
         for(const o of this.objects){
@@ -89,28 +130,18 @@ export class Building extends StaticBody{
                 if(this.ceilings[i].def.destroy){
                     this.ceilings[i].alive=false
                     this.ceilings[i].sprite.set_frame({
-                        image:this.ceilings[i].def.destroy!.frame,
                         zIndex:zIndexes.DeadCeilings,
+                        image:this.ceilings[i].def.destroy!.frame.image,
+                        tint:this.ceilings[i].def.destroy!.frame.tint,
                     },this.game.resources)
-                    if(this.ceilings[i].def.destroy!.sound){
-                        this.game.sounds.play(this.game.resources.get_sound(this.ceilings[i].def.destroy!.sound!),{
-                            position:this.position,
-                            max_distance:40,
-                            delay:0.25,
-                            bus:"obstacles"
-                        })
-                    }
-                    if(this.ceilings[i].def.destroy!.particles?.count){
-                        for(let j=0;j<this.ceilings[i].def.destroy!.particles!.count;j++){
-                            this._add_own_particle(this.ceilings[i].hitbox.random_point())
-                        }
-                    }
+                    this.ceilings[i].break()
                 }
             }else if(!this.ceilings[i].alive&&ceilings[i].alive){
                 this.ceilings[i].alive=true
                 this.ceilings[i].sprite.set_frame({
+                    zIndex:this.ceilings[i].def.frame.zIndex??zIndexes.BuildingsCeiling,
                     image:this.ceilings[i].def.frame.image,
-                    zIndex:this.ceilings[i].def.frame.zIndex??zIndexes.BuildingsCeiling
+                    tint:this.ceilings[i].def.frame.tint??0xffffff
                 },this.game.resources)
             }
         }
@@ -120,10 +151,15 @@ export class Building extends StaticBody{
         if(def.hitbox)this.base_hitbox=def.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
 
         this.def=def
-        const rot=Angle.side_rad(this.physical_data.side as Orientation)
+        const rot=Angle.side2rad(this.physical_data.side as Orientation)
 
-        this.physical_data.no_collision=this.def.no_collisions??false
-        this.physical_data.no_bullets_collision=this.def.no_bullet_collision??false
+        if(this.def.is_ghost){
+            this.physical_data.no_collision=true
+            this.physical_data.no_bullets_collision=true
+        }else{
+            this.physical_data.no_collision=this.def.no_collisions??false
+            this.physical_data.no_bullets_collision=this.def.no_bullet_collision??false
+        }
 
         for(const f of def.floor_image??[]){
             const sprite=new Sprite2D()
@@ -153,11 +189,35 @@ export class Building extends StaticBody{
                 shadow_sprite.zIndex=sprite.zIndex
                 shadow_sprite.tint=this.game.world_shadow.color
                 v2m.add(shadow_sprite.position,shadow_sprite.position,this.game.world_shadow.offset)
-                this.game.cam2d.add_object(shadow_sprite)
+                this.scene.camera.add_object(shadow_sprite)
                 this.objects.push(shadow_sprite)
             }
 
-            this.game.cam2d.add_object(sprite)
+            this.scene.camera.add_object(sprite)
+            this.objects.push(sprite)
+        }
+        for(const f of def.floor_smrf??[]){
+            const sprite=new Graphics2D()
+            sprite.initialize(this.game.scene_2d.camera.ctx)
+
+            sprite.zIndex=zIndexes.BuildingsFloor3
+            sprite.transform_frame({
+                position:f.position?v2.add_with_orientation(this.position,f.position,this.physical_data.side as Orientation):this.position,
+                rotation:rot+(f.rotation??0),
+                layer:this.layer+(f.layer??0),
+
+                alpha:f.alpha,
+                scale:f.scale,
+                scale2:f.scale2,
+                zIndex:f.zIndex,
+                tint:f.tint,
+            })
+
+            sprite.ctx.clear()
+            for(const cmd of f.content.commands)sprite.ctx.execute_command(cmd)
+            sprite.ctx.lock()
+
+            this.scene.camera.add_object(sprite)
             this.objects.push(sprite)
         }
         for(const c of def.ceiling??[]){
@@ -168,7 +228,7 @@ export class Building extends StaticBody{
             sprite.zIndex=zIndexes.BuildingsCeiling
 
             sprite.set_frame({
-                image:c.destroy?.frame??c.frame.image,
+                image:c.destroy?.frame.image??c.frame.image,
                 position:c.frame.position?v2.add_with_orientation(this.position,c.frame.position,this.physical_data.side as Orientation):this.position,
                 rotation:rot+(c.frame.rotation??0),
                 layer:this.layer+(c.frame.layer??0),
@@ -177,9 +237,9 @@ export class Building extends StaticBody{
                 scale:c.frame.scale,
                 scale2:c.frame.scale2,
                 zIndex:zIndexes.DeadCeilings,
-                tint:c.frame.tint
+                tint:c.destroy?.frame.tint??c.frame.tint
             },this.game.resources)
-            this.game.cam2d.add_object(sprite)
+            this.scene.camera.add_object(sprite)
             this.objects.push(sprite)
 
             const ceiling=new BuildingCeiling(this,c,c.hitbox.transform(this.position,undefined,undefined,this.physical_data.side),sprite,sprite)
@@ -208,6 +268,7 @@ export class Building extends StaticBody{
         },1)
         this.update_ceilings(ceilings)
         if(Debug.hitbox&&full){
+            this.game.hitboxes_gfx.ctx.begin_path()
             this.game.hitboxes_gfx.ctx.hitbox(this.hitbox)
             this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
             this.game.hitboxes_gfx.ctx.fill()

@@ -71,15 +71,10 @@ export class Camera2D{
         parallax:1
     }
 
-    get_topdown_perspective_2d(matrix:Matrix,object_position: Vec2,parallax: number,z_distance: number,max_distance:number=13):void{
-        const distance=v2.distance(object_position,this.position)
+    get_topdown_perspective_2d(matrix:Matrix,object_position: Vec2,parallax: number,z_distance: number):void{
         const baseParallax=parallax*this.topdown.parallax
 
-        let effectiveParallax=1-(1-baseParallax)
-        if (distance>max_distance){
-            const t=max_distance/distance
-            effectiveParallax=1-(1-effectiveParallax)*t
-        }
+        const effectiveParallax=1-(1-baseParallax)
 
         matrix4.m.topdown_perspective_2d(matrix,this.position,effectiveParallax,z_distance)
     }
@@ -107,16 +102,23 @@ export class Camera2D{
     }
 
     resize(): void {
-        const canvas = this.renderer.canvas
-        const size = v2(canvas.width, canvas.height)
+        const canvas=this.renderer.canvas
+        const size=v2(canvas.width, canvas.height)
+        const screenAspect=size.x/size.y
 
         if(this.aspect_lock){
+            const referenceAspect=this.reference_width/this.reference_height
             const referenceWidth=this.reference_width/this.meter_size
-            const screenAspect=size.x/size.y
-            this.aspect=this.reference_width /(this.width || referenceWidth)
-            this.width=referenceWidth / this._zoom
-            this.height=this.width / screenAspect
-            this.size = v2(this.width, this.height)
+            const referenceHeight=this.reference_height / this.meter_size
+            if (screenAspect>=referenceAspect) {
+                this.height=referenceHeight/this._zoom
+                this.width=this.height*screenAspect
+            } else {
+                this.width=referenceWidth/this._zoom
+                this.height=this.width/screenAspect
+            }
+            this.aspect=referenceAspect
+            this.size=v2(this.width,this.height)
         }else{
             this.aspect=this.meter_size*this._zoom
             this.size=v2.dscale(size, this.aspect)
@@ -124,30 +126,13 @@ export class Camera2D{
             this.height=this.size.y
         }
 
-        this.viewport_matrix=matrix4.projection(this.size, 1000)
+        this.viewport_matrix=matrix4.projection(this.size,1000)
         this.screen_matrix=matrix4.projection(this.aspect_lock?this.size:v2.dscale(size, this.meter_size),1000)
 
         if (this.center_pos) {
             const center = v2(this.size.x / 2,this.size.y / 2)
-
-            this.viewport_matrix =
-                matrix4.mul(
-                    this.viewport_matrix,
-                    matrix4.translation_2d(center)
-                )
-
-            this.screen_matrix =
-                matrix4.mul(
-                    this.screen_matrix,
-                    matrix4.translation_2d(
-                        this.aspect_lock
-                            ? center
-                            : v2(
-                                size.x / this.meter_size / 2,
-                                size.y / this.meter_size / 2
-                            )
-                    )
-                )
+            this.viewport_matrix=matrix4.mul(this.viewport_matrix,matrix4.translation_2d(center))
+            this.screen_matrix=matrix4.mul(this.screen_matrix,matrix4.translation_2d(this.aspect_lock?center:v2(size.x / this.meter_size / 2,size.y / this.meter_size / 2)))
         }
     }
     stop_shake(){
@@ -167,6 +152,18 @@ export class Camera2D{
                 priority:priority
             }
         }
+    }
+    to_world(position:Vec2):Vec2{
+        const canvas=this.renderer.canvas
+        const x=position.x/canvas.width*this.size.x
+        const y=position.y/canvas.height*this.size.y
+        if(this.center_pos)return v2(x-this.size.x*.5,y-this.size.y*.5)
+        return v2(x,y)
+    }
+
+    to_world_camera(position:Vec2):Vec2{
+        const ret=this.to_world(position)
+        return v2.add(ret,this.position)
     }
 
     update(dt:number,resources:ResourcesManager): void {

@@ -1,43 +1,117 @@
 import { GameConstants, GameObjectType, LootData } from "common/scripts/others/constants.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { GameItemType } from "common/scripts/definitions/utils.ts";
-import { Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { CircleHitbox2D, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { FloorType } from "common/scripts/others/terrain.ts";
+import { CircleHitbox2D, DefaultGELvents, ObjectComponent, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { Human } from "./human.ts";
-import { StaticBody } from "./static_body.ts";
-import { decode_loot_data, encode_loot_data } from "common/scripts/others/functions.ts";
-
-export class Loot extends ServerGameObject{
+import { c_loot_entity, Loot_CData, LootEntity_CData } from "common/scripts/game/objects/loot.ts"
+import { SimulatedObject } from "common/scripts/game/objects/base.ts";
+import { encode_loot_data } from "common/scripts/others/functions.ts";
+export const c_loot_ns:ObjectComponent<Loot_CData&SimulatedObject>={
+    number_name:0,
+    string_name:"loot_ns",
+    events:{
+        [DefaultGELvents.net_encode]:[
+            (obj,stream:Stream,full:boolean)=>{
+                stream.write_pos2(  obj.position)
+                if(full){
+                    encode_loot_data(obj.game.definitions,obj.loot_data,stream)
+                }
+            }
+        ]
+    },
+    methods:{
+        set_loot_data(ctx,loot:LootData){
+            ctx.object.loot_data={
+                ...loot
+            }
+            let radius=1
+            switch(loot.item.item_type){
+                case GameItemType.gun:
+                case GameItemType.melee:
+                    radius=GameConstants.loot.radius.weapon
+                    break
+                case GameItemType.ammo:
+                    radius=GameConstants.loot.radius.ammo
+                    break
+                case GameItemType.consumible:
+                    radius=GameConstants.loot.radius.consumible
+                    break
+                case GameItemType.helmet:
+                    radius=GameConstants.loot.radius.equipament
+                    break
+                case GameItemType.backpack:
+                case GameItemType.vest:
+                    radius=GameConstants.loot.radius.equipament
+                    break
+                case GameItemType.grenade:
+                    radius=GameConstants.loot.radius.grenade
+                    break
+                case GameItemType.accessory:
+                    radius=GameConstants.loot.radius.accessory
+                    break
+                case GameItemType.scope:
+                    radius=GameConstants.loot.radius.scopes
+                    break
+            }
+            ;(ctx.object.base_hitbox as CircleHitbox2D).radius=radius
+        }
+    }
+}
+export class Loot extends ServerGameObject implements LootEntity_CData{
     string_type:string="loot"
     number_type: number=GameObjectType.Loot
-
-    current_floor:FloorType=FloorType.Water
 
     real_radius:number=0
     loot_data!:LootData
 
-    old_position:Vec2=v2(-1,-1)
-    velocity:Vec2
+    old_position!:Vec2
+    velocity!:Vec2
+    current_floor!:FloorType
+
+    push!:(speed:number,angle:number)=>void
+    set_loot_data!:(loot: LootData)=>void
 
     constructor(){
         super()
 
-        this.velocity=v2.zero()
-        this.old_position=v2.clone(this.position)
-        this.allow_tick=true
+        this.add_component(c_loot_entity)
+        this.add_component(c_loot_ns)
     }
     reduce_count(count:number){
         this.loot_data.count-=count
         this.destroy()
         if(this.loot_data.count>0){
-            this.game.add_loot(this.position,this.loot_data,this.layer)
+            this.scene.add_loot(this.position,this.loot_data,this.layer)
         }
     }
     override can_interact(user: Human): boolean {
         return user.hitbox.colliding_with(this.hitbox)&&!this.destroyed&&this.loot_data.count>0
     }
+    auto_pickup(user:Human):boolean{
+        switch(this.loot_data.item.item_type){
+            case GameItemType.melee:
+                return user.inventory.weapon_is_free(0)
+            case GameItemType.gun:
+                return user.inventory.weapon_is_free(1)||user.inventory.weapon_is_free(2)
+            case GameItemType.ammo:
+                return (user.inventory.aitems[this.loot_data.item.idString]??0)<(user.inventory.backpack?.max[this.loot_data.item.idString]??9999)
+            case GameItemType.consumible:{
+                return false//return this.game.ui.free_slot(this.loot_data.item.idString,this.game.inventory.item_limit(this.loot_data.item))
+            }
+            case GameItemType.helmet:
+                return !user.equipment_data.helmet||user.equipment_data.helmet.level<this.loot_data.item.level
+            case GameItemType.vest:
+                return !user.equipment_data.vest||user.equipment_data.vest.level<this.loot_data.item.level
+            case GameItemType.backpack:
+                return !user.inventory.backpack||user.inventory.backpack.level<this.loot_data.item.level
+            case GameItemType.scope:
+                if(!user.inventory.iitems.includes(this.loot_data.item))return true
+        }
+        return false
+    }
     override on_interact(user: Human): void {
-        const c=user.inventory.give_item(this.loot_data.item,this.loot_data.count,false,undefined,this.loot_data.skin)
+        const c=user.inventory.give_item(this.loot_data.item,this.loot_data.count,false,this.loot_data.ammo,this.loot_data.skin)
         for(const l of this.loot_data.aditional??[]){
             user.inventory.give_loot(l,undefined,undefined,this.position,this.layer)
         }
@@ -47,124 +121,9 @@ export class Loot extends ServerGameObject{
         }
         return
     }
-    set_loot(position:Vec2,loot:LootData){
-        this.position=position
-        this.loot_data={
-            item:loot.item,
-            count:loot.count,
-            aditional:loot.aditional,
-            skin:loot.skin
-        }
-        switch(loot.item.item_type){
-            case GameItemType.gun:
-            case GameItemType.melee:
-                this.real_radius=GameConstants.loot.radius.weapon
-                break
-            case GameItemType.ammo:
-                this.real_radius=GameConstants.loot.radius.ammo
-                break
-            case GameItemType.consumible:
-                this.real_radius=GameConstants.loot.radius.consumible
-                break
-            case GameItemType.helmet:
-                this.real_radius=GameConstants.loot.radius.equipament
-                break
-            case GameItemType.backpack:
-            case GameItemType.vest:
-                this.real_radius=GameConstants.loot.radius.equipament
-                break
-            case GameItemType.grenade:
-                this.real_radius=GameConstants.loot.radius.grenade
-                break
-            case GameItemType.accessory:
-                this.real_radius=GameConstants.loot.radius.accessory
-                break
-            case GameItemType.scope:
-                this.real_radius=GameConstants.loot.radius.scopes
-                break
-        }
-        (this.base_hitbox as CircleHitbox2D).radius=this.real_radius
-    }
     override on_create(args?: {position:Vec2,loot:LootData,pre_proccess?:number}): void {
         this.base_hitbox=new CircleHitbox2D(v2(0,0),1)
-        if(args)this.set_loot(args.position,args.loot)
-    }
-    override on_tick(dt:number): void {
-        const cf=Floors[this.current_floor]
-        const speed=1*(cf.speed_mult??1)
-        if(this.current_floor === FloorType.Water){
-            for(const river of this.game.map.rivers){
-                const col=river.get_point_inside(this.position)
-                if(!col?.push){
-                    continue
-                }
-                const point=river.get_closest_point(this.position)
-                if(point){
-                    v2m.add(this.velocity,this.velocity,v2.scale(point.direction,point.push_force*dt))
-                }
-                break
-            }
-        }
-        const others:ServerGameObject[]=this.manager.cells.get_objects(this.hitbox,this.layer)
-        for(const other of others){
-            switch(other.number_type){
-                case GameObjectType.Loot:{
-                    if(other.id===this.id)continue
-                    const col=this.hitbox.overlap_collision(other.hitbox)
-                    if(col){
-                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,3.6*dt))
-                    }
-                    break
-                }
-                // deno-lint-ignore no-fallthrough
-                case GameObjectType.Obstacle:
-                case GameObjectType.StaticBody:
-                case GameObjectType.Building:{
-                    if((other as StaticBody).physical_data.stairs.length>0){
-                        for(const s of (other as StaticBody).physical_data.stairs){
-                            if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,other.layer+s.dest_layer)
-                        }
-                    }
-                    if((other as StaticBody).physical_data.no_collision)break
-                    const collisions=this.hitbox.overlap_collisions(other.hitbox)
-                    for(const col of collisions){
-                        this.position=v2.sub(this.position,v2.scale(col.dir,col.pen))
-                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,0.03))
-                    }
-                    break
-                }
-            }
-        }
-        if(this.velocity.x!=0||this.velocity.y!=0){
-            v2m.scale(this.velocity,this.velocity,1/(1+dt*3))
-            const pos=v2.add(this.position,v2.scale(this.velocity,speed*dt))
-            this.position=this.game.map.clamp_hitbox(pos,this.base_hitbox)
-        }
-        if(!v2.is(this.position,this.old_position)||this.velocity.x!=0||this.velocity.y!=0){
-            this.old_position=v2.clone(this.position)
-            this.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.default_floor)
-            this.set_dirty_part()
-        }
-    }
-    push(speed:number,angle:number){
-        const a=v2.from_RadAngle(angle)
-        v2m.add_component(this.velocity,a.x*speed,a.y*speed)
-    }
-
-    override on_encode_net(stream: Stream, full: boolean): void {
-        stream.write_pos2(this.position)
-        if(full){
-            encode_loot_data(this.game.definitions,this.loot_data,stream)
-        }
-    }
-    override on_encode_checkpoint(stream: Stream): void {
-        stream.write_pos2(this.position)
-        .write_pos2(this.velocity)
-        encode_loot_data(this.game.definitions,this.loot_data,stream)
-    }
-    override on_decode_checkpoint(stream: Stream): void {
-        const position=stream.read_pos2()
-        this.velocity=stream.read_pos2()
-        this.set_loot(position,decode_loot_data(this.game.definitions,stream))
+        if(args?.position)this.position=args.position
+        if(args)this.set_loot_data(args.loot)
     }
 }

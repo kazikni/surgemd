@@ -16,15 +16,5 @@
     },
     "next_level":{
         "complete":"../level1"
-    },
-    "mode": {
-        "group_size":4,
-        "mode":"normal",
-        "settings":{
-            "map": {
-                "def": "tutorial",
-                "disable_minimap":true
-            }
-        }
     }
 }

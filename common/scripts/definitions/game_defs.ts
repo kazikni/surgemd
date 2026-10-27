@@ -1,27 +1,29 @@
+// deno-lint-ignore-file ban-types
 import { Definitions, DefinitionsMerge, mergeDeep } from "../../engine/core.ts";
 import { TD, TDType } from "../../engine/core/lang/td.ts";
-import { AccessoryDef, Accessorys_Default_Init } from "./items/accessorys.ts";
-import { AmmoDef, Ammos_Default_Init } from "./items/ammo.ts";
-import { BackpackDef, Backpacks_Default_Init } from "./items/backpacks.ts";
-import { ConsumibleDef, Consumibles_Default_Init } from "./items/consumibles.ts";
-import { HelmetDef, Helmets_Default_Init, VestDef, Vests_Default_Init } from "./items/equipaments.ts";
-import { GrenadeDef, Grenades_Default_Init } from "./items/grenades.ts";
-import { GunDef, Guns_Default_Init } from "./items/guns.ts";
-import { MeleeDef, Melees_Default_Init } from "./items/melees.ts";
-import { ScopeDef, Scopes_Default_Init } from "./items/scopes.ts";
-import { BadgeDef, Badges_Default_Init } from "./loadout/badges.ts";
-import { EmoteDef, Emotes_Default_Init } from "./loadout/emotes.ts";
-import { Ping_Default_Init, PingDef } from "./loadout/ping.ts";
-import { Loadout_Default_Init, LoadoutItemDef } from "./loadout/skins.ts";
-import { Wrapping_Default_Init, WrappingDef } from "./loadout/wrapping.ts";
-import { BuildingClientTD, BuildingDef, Buildings_Default_Init, BuildingTD } from "./objects/buildings_base.ts";
-import { CreatureDef, Creatures_Default_Init } from "./objects/creatures.ts";
-import { DecalDef, Decals_Default_Init } from "./objects/decals.ts";
-import { ExplosionDef, Explosions_Default_Init } from "./objects/explosions.ts";
-import { ObstacleDef, Obstacles_Default_Init, ObstacleTD } from "./objects/obstacles.ts";
-import { SyncedParticle_Default_Init, SyncedParticleDef } from "./objects/synced_particle.ts";
-import { VehicleDef, Vehicles_Default_Init } from "./objects/vehicles.ts";
-import { Boosts_Default_Init, BoostDef } from "./player/boosts.ts";
+import { DefaultDefinitions } from "./default.ts";
+import { AccessoryDef } from "./items/accessorys.ts";
+import { AmmoDef } from "./items/ammo.ts";
+import { BackpackDef } from "./items/backpacks.ts";
+import { ConsumibleDef } from "./items/consumibles.ts";
+import { HelmetDef, VestDef } from "./items/equipaments.ts";
+import { GrenadeDef } from "./items/grenades.ts";
+import { GunDef } from "./items/guns.ts";
+import { MeleeDef } from "./items/melees.ts";
+import { ScopeDef } from "./items/scopes.ts";
+import { BadgeDef } from "./loadout/badges.ts";
+import { EmoteDef } from "./loadout/emotes.ts";
+import { PingDef } from "./loadout/pings.ts";
+import { LoadoutItemDef } from "./loadout/skins.ts";
+import { WrappingDef } from "./loadout/wrapping.ts";
+import { BuildingClientTD, BuildingDef,BuildingTD } from "./objects/buildings_base.ts";
+import { CreatureDef } from "./objects/creatures.ts";
+import { DecalDef } from "./objects/decals.ts";
+import { ExplosionDef} from "./objects/explosions.ts";
+import { ObstacleDef, ObstacleTD } from "./objects/obstacles.ts";
+import { SyncedParticleDef } from "./objects/synced_particles.ts";
+import { VehicleDef} from "./objects/vehicles.ts";
+import { BoostDef } from "./player/boosts.ts";
 import { GameItemType, GameObjectDefinitionType } from "./utils.ts";
 
 export type GameItem=GunDef|MeleeDef|GrenadeDef|AmmoDef|ConsumibleDef|VestDef|HelmetDef|BackpackDef|AccessoryDef|ScopeDef
@@ -29,24 +31,49 @@ export type GameObjectDef=GameItem|EmoteDef|BadgeDef|ObstacleDef|ExplosionDef|Bu
 export type WeaponDef=MeleeDef|GunDef|GrenadeDef
 export type DamageSourceDef=WeaponDef|ObstacleDef
 
+export const DefinitionItemCategoryList:DefinitionItemCategoryType[]=["ammos","backpacks","helmets","vests","accessorys","consumibles","grenades","guns","melees","scopes"]
+export type DefinitionItemCategoryType="ammos"|"backpacks"|"helmets"|"vests"|"accessorys"|"consumibles"|"grenades"|"guns"|"melees"|"scopes"
+
+export const DefinitionLoadoutCategoryList:DefinitionLoadoutCategoryType[]=["loadout","badges","emotes","wrapping","pings"]
+export type DefinitionLoadoutCategoryType="loadout"|"badges"|"emotes"|"wrapping"|"pings"
+
+export const DefinitionObjectsCategoryList:DefinitionObjectsCategoryType[]=["buildings","creatures","decals","explosions","obstacles","vehicles","synced_particles"]
+export type DefinitionObjectsCategoryType="buildings"|"creatures"|"decals"|"explosions"|"obstacles"|"vehicles"|"synced_particles"
+
+export const DefinitionOthersCategoryList:DefinitionOthersCategoryType[]=["boosts"]
+export type DefinitionOthersCategoryType="boosts"
+
 export interface GameADefinitions{
     items?:{
         ammos?:AmmoDef[]
         backpacks?:BackpackDef[]
+        helmets?:HelmetDef[]
+        vests?:VestDef[]
+        accessorys?:AccessoryDef[]
         consumibles?:ConsumibleDef[]
-        helmet?:HelmetDef[]
-        vest?:VestDef[]
         grenades?:GrenadeDef[]
         guns?:GunDef[]
         melees?:MeleeDef[]
         scopes?:ScopeDef[]
     }
     loadout?:{
-        
+        loadout?:LoadoutItemDef[]
+        badges?:BadgeDef[]
+        emotes?:EmoteDef[]
+        wrapping?:WrappingDef[]
+        pings?:PingDef[]
     }
     objects?:{
-        obstacles?:ObstacleDef[]
         buildings?:BuildingDef[]
+        creatures?:CreatureDef[]
+        decals?:DecalDef[]
+        explosions?:ExplosionDef[]
+        obstacles?:ObstacleDef[]
+        vehicles?:VehicleDef[]
+        synced_particles?:SyncedParticleDef[]
+    }
+    others?:{
+        boosts?:BoostDef[]
     }
 }
 export class GameDefinition{
@@ -72,30 +99,37 @@ export class GameDefinition{
     ammos=new Definitions<AmmoDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.ammo
+        return i
     })
     backpacks=new Definitions<BackpackDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.backpack
-    })
-    consumibles=new Definitions<ConsumibleDef,{}>((i)=>{
-        i.def_type=GameObjectDefinitionType.item
-        i.item_type=GameItemType.consumible
+        return i
     })
     vests=new Definitions<VestDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.vest
+        return i
     })
     helmets=new Definitions<HelmetDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.helmet
+        return i
     })
     accessorys=new Definitions<AccessoryDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.accessory
+        return i
+    })
+    consumibles=new Definitions<ConsumibleDef,{}>((i)=>{
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.consumible
+        return i
     })
     grenades=new Definitions<GrenadeDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.grenade
+        return i
     })
     guns=new Definitions<GunDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
@@ -105,193 +139,125 @@ export class GameDefinition{
             dd.idString=dd.idString+"_dual"
             this.guns.insert(dd)
         }
+        return i
     })
     melees=new Definitions<MeleeDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.melee
+        return i
     })
     scopes=new Definitions<ScopeDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.scope
+        return i
     })
 
     // Loadout
-    loadout=new Definitions<LoadoutItemDef,{}>((i)=>{})
-    badges=new Definitions<BadgeDef,{}>((i)=>{})
+    loadout=new Definitions<LoadoutItemDef,{}>()
+    badges=new Definitions<BadgeDef,{}>((b)=>{
+        b.def_type=GameObjectDefinitionType.badge
+        return {
+            ...b,
+            idString:b.idString+"_badge"
+        }
+    })
     emotes=new Definitions<EmoteDef,{}>((e)=>{
         e.def_type=GameObjectDefinitionType.emote
+        return {
+            ...e,
+            idString:e.idString
+        }
     })
-    wrapping=new Definitions<WrappingDef,{}>((w)=>{})
-    ping=new Definitions<PingDef,{}>((e)=>{
-        e.idString="ping_"+e.idString
+    wrapping=new Definitions<WrappingDef,{}>()
+    pings=new Definitions<PingDef,{}>((e)=>{
+        return {
+            ...e,
+            def_type:GameObjectDefinitionType.ping,
+            idString:"ping_"+e.idString,
+        }
     })
 
     // Objects
-    buildings=new Definitions<BuildingDef,{}>((i)=>{})
-    creatures=new Definitions<CreatureDef,{}>((i)=>{})
-    decals=new Definitions<DecalDef,{}>((_v)=>{})
-    explosions=new Definitions<ExplosionDef,{}>((_v)=>{})
+    buildings=new Definitions<BuildingDef,{}>()
+    creatures=new Definitions<CreatureDef,{}>()
+    decals=new Definitions<DecalDef,{}>()
+    explosions=new Definitions<ExplosionDef,{}>()
     obstacles=new Definitions<ObstacleDef,{}>((o)=>{
         o.def_type=GameObjectDefinitionType.obstacle
+        return o
     })
-    vehicles=new Definitions<VehicleDef,{}>((_g)=>{})
-    synced_particle=new Definitions<SyncedParticleDef,{}>((_v)=>{})
+    vehicles=new Definitions<VehicleDef,{}>()
+    synced_particles=new Definitions<SyncedParticleDef,{}>()
 
-    // Player
-    boosts=new Definitions<BoostDef,{}>((_v)=>{})
+    // Others
+    boosts=new Definitions<BoostDef,{}>()
 
     game_items=new DefinitionsMerge<GameItem>()
     game_objects=new DefinitionsMerge<GameObjectDef>()
     valueString: any;
 
     constructor(){
-        
+        this.game_objects.name="game_objects"
+        this.game_items.name="game_items"
+
+        this.ammos.parents=[this.game_objects,this.game_items]
+        this.backpacks.parents=[this.game_objects,this.game_items]
+        this.vests.parents=[this.game_objects,this.game_items]
+        this.helmets.parents=[this.game_objects,this.game_items]
+        this.accessorys.parents=[this.game_objects,this.game_items]
+        this.consumibles.parents=[this.game_objects,this.game_items]
+        this.grenades.parents=[this.game_objects,this.game_items]
+        this.guns.parents=[this.game_objects,this.game_items]
+        this.melees.parents=[this.game_objects,this.game_items]
+        this.scopes.parents=[this.game_objects,this.game_items]
+
+        this.badges.parents=[this.game_objects]
+        this.emotes.parents=[this.game_objects]
+        this.wrapping.parents=[this.game_objects]
+        this.pings.parents=[this.game_objects]
+
+        this.buildings.parents=[this.game_objects]
+        this.creatures.parents=[this.game_objects]
+        this.decals.parents=[this.game_objects]
+        this.explosions.parents=[this.game_objects]
+        this.obstacles.parents=[this.game_objects]
+        this.vehicles.parents=[this.game_objects]
+        this.synced_particles.parents=[this.game_objects]
     }
 
     clear(){
-        this.melees.clear()
-        this.guns.clear()
-        this.ammos.clear()
-        this.consumibles.clear()
-        this.backpacks.clear()
-        this.helmets.clear()
-        this.vests.clear()
-        this.grenades.clear()
-        this.scopes.clear()
-        this.accessorys.clear()
-
-        this.loadout.clear()
-        this.badges.clear()
-        this.emotes.clear()
-        this.wrapping.clear()
-        this.ping.clear()
-
-        this.buildings.clear()
-        this.creatures.clear()
-        this.decals.clear()
-        this.explosions.clear()
-        this.obstacles.clear()
-        this.vehicles.clear()
-        this.synced_particle.clear()
-
+        for(const c of [...DefinitionItemCategoryList,...DefinitionLoadoutCategoryList,...DefinitionObjectsCategoryList,...DefinitionOthersCategoryList]){
+            this[c].clear()
+        }
         this.game_items.clear()
         this.game_objects.clear()
     }
     init_default(){
-        Melees_Default_Init(this.melees)
-        Guns_Default_Init(this.guns)
-        Ammos_Default_Init(this.ammos)
-        Consumibles_Default_Init(this.consumibles)
-        Backpacks_Default_Init(this.backpacks)
-        Helmets_Default_Init(this.helmets)
-        Vests_Default_Init(this.vests)
-        Grenades_Default_Init(this.grenades)
-        Scopes_Default_Init(this.scopes)
-        Accessorys_Default_Init(this.accessorys)
-
-        Loadout_Default_Init(this.loadout)
-        Badges_Default_Init(this.badges)
-        Emotes_Default_Init(this.emotes)
-        Wrapping_Default_Init(this.wrapping)
-        Ping_Default_Init(this.ping)
-
-        Buildings_Default_Init(this.buildings)
-        Creatures_Default_Init(this.creatures)
-        Decals_Default_Init(this.decals)
-        Explosions_Default_Init(this.explosions)
-        Obstacles_Default_Init(this.obstacles,this.guns,this.melees)
-        Vehicles_Default_Init(this.vehicles)
-        SyncedParticle_Default_Init(this.synced_particle)
-
-        Boosts_Default_Init(this.boosts)
-
-        this.game_items.insert_def(this.melees.value)
-        this.game_items.insert_def(this.guns.value)
-        this.game_items.insert_def(this.ammos.value)
-        this.game_items.insert_def(this.consumibles.value)
-        this.game_items.insert_def(this.backpacks.value)
-        this.game_items.insert_def(this.helmets.value)
-        this.game_items.insert_def(this.vests.value)
-        this.game_items.insert_def(this.grenades.value)
-        this.game_items.insert_def(this.scopes.value)
-        this.game_items.insert_def(this.accessorys.value)
-
-        this.game_objects.insert_def(this.game_items.valueString)
-        this.game_objects.insert_def(this.loadout.value)
-        this.game_objects.insert_def(this.emotes.value)
-        this.game_objects.insert_def(this.badges.value)
-        this.game_objects.insert_def(this.ping.value)
-        this.game_objects.insert_def(this.buildings.value)
-        this.game_objects.insert_def(this.creatures.value)
-        this.game_objects.insert_def(this.explosions.value)
-        this.game_objects.insert_def(this.obstacles.value)
-        this.game_objects.insert_def(this.vehicles.value)
-        this.game_objects.insert_def(this.synced_particle.value)
+        this.add_definitions(DefaultDefinitions)
     }
     reset(){
         this.clear()
         this.init_default()
     }
     add_definitions(mm:GameADefinitions){
-        if(mm.items){
-            for(const def of mm.items.ammos??[]){
-                this.ammos.insert(def)
-                this.game_items.insert(def)
-                this.game_objects.insert(def)
-            }
-            for(const def of mm.items.backpacks??[]){
-                this.backpacks.insert(def)
-                this.game_items.insert(def)
-                this.game_objects.insert(def)
-            }
-            for(const def of mm.items.consumibles??[]){
-                this.consumibles.insert(def)
-                this.game_items.insert(def)
-                this.game_objects.insert(def)
-            }
-            for(const def of mm.items.vest??[]){
-                this.vests.insert(def)
-                this.game_items.insert(def)
-                this.game_objects.insert(def)
-            }
-            for(const def of mm.items.helmet??[]){
-                this.helmets.insert(def)
-                this.game_items.insert(def)
-                this.game_objects.insert(def)
-            }
-            for(const def of mm.items.grenades??[]){
-                this.grenades.insert(def)
-                this.game_items.insert(def)
-                this.game_objects.insert(def)
-            }
-            for(const def of mm.items.guns??[]){
-                this.guns.insert(def)
-                this.game_items.insert(def)
-                this.game_objects.insert(def)
-            }
-            for(const def of mm.items.melees??[]){
-                this.melees.insert(def)
-                this.game_items.insert(def)
-                this.game_objects.insert(def)
-            }
-            for(const def of mm.items.scopes??[]){
-                this.scopes.insert(def)
-                this.game_items.insert(def)
-                this.game_objects.insert(def)
+        for(const c in mm.items){
+            for(const def of mm.items[c as DefinitionItemCategoryType]??[]){
+                this[c as DefinitionLoadoutCategoryType].insert(def as any)
             }
         }
-        if(mm.objects){
-            if(mm.objects.buildings){
-                for(const def of mm.objects.buildings??[]){
-                    this.buildings.insert(def)
-                    this.game_objects.insert(def)
-                }
+        for(const c in mm.loadout){
+            for(const def of mm.loadout[c as DefinitionLoadoutCategoryType]??[]){
+                this[c as DefinitionLoadoutCategoryType].insert(def as any)
             }
-            if(mm.objects.obstacles){
-                for(const def of mm.objects.obstacles??[]){
-                    this.obstacles.insert(def)
-                    this.game_objects.insert(def)
-                }
+        }
+        for(const c in mm.objects){
+            for(const def of mm.objects[c as DefinitionObjectsCategoryType]??[]){
+                this[c as DefinitionObjectsCategoryType].insert(def as any)
+            }
+        }
+        for(const c in mm.others){
+            for(const def of mm.others[c as DefinitionOthersCategoryType]??[]){
+                this[c as DefinitionOthersCategoryType].insert(def as any)
             }
         }
     }

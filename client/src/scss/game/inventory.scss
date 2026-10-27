@@ -121,12 +121,12 @@
             width: 2vw;
             height: 2vw;
         }
-    }
-    .scope-slot-selected{
-        border:var(--ui-panel-border);
-        .icon{
-            width: 2.5vw;
-            height: 2.5vw;
+        &.scope-slot-selected{
+            border:var(--ui-panel-border);
+            .icon{
+                width: 2.5vw;
+                height: 2.5vw;
+            }
         }
     }
 }
@@ -188,11 +188,11 @@
     color: var(--ui-theme-tertiary);
     .equipment-fixed {
         display: flex;
-        gap: 10px;
+        gap: 0.4vw;
     }
     .equipment-accessories {
         display: flex;
-        gap: 10px;
+        gap: 0.4vw;
         flex-wrap: wrap;
     }
     .equipment-slot {

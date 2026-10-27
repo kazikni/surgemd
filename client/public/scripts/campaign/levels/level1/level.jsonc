@@ -16,13 +16,5 @@
     },
     "next_level":{
         "complete":"../level2"
-    },
-    "mode": {
-        "mode":"normal",
-        "settings":{
-            "map": {
-                "def": "normal"
-            }
-        }
     }
 }

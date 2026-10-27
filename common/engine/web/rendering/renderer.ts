@@ -1,9 +1,12 @@
 import { v2, Vec2 } from "../../core/math/vec2.ts";
-import { GL2D_SimpleBatchArgs, GL2D_SimpleBatchAttr, GL2D_SimpleMatArgs, GL2D_SimpleMatAttr, GL2D_TexBatchArgs, GL2D_TexBatchAttr, GL2D_TexMatArgs, GL2D_TexMatAttr, GL3D_SimpleMatArgs, GL3D_SimpleMatAttr, GLF_Simple, GLF_Simple3, GLF_SimpleBatch, GLF_Texture, GLF_TextureBatch } from "./materials.ts";
+import { GL2D_CosmicBatchArgs, GL2D_CosmicBatchAttr, GL2D_SimpleBatchArgs, GL2D_SimpleBatchAttr, GL2D_TexBatchArgs, GL2D_TexBatchAttr, GL3D_SimpleMatArgs, GL3D_SimpleMatAttr, GLF_CosmicBatch, GLF_Simple3, GLF_SimpleBatch, GLF_TextureBatch } from "./materials.ts";
 import { Color, ColorM } from "../../core/math/color.ts";
 import { Matrix } from "../../core/math/matrix.ts";
 import { Context2D, GLContext2D } from "./context.ts";
 export interface Material{
+    renderer:Renderer
+    initialized?:boolean
+    initialize?:(material:Material)=>void
     draw(material:Material,matrix:Matrix,attr:any):void
     free():void
 }
@@ -21,9 +24,9 @@ export class GLTexture implements Texture{
     renderer:WebglRenderer
     texture?:WebGLTexture
     framebuffer?:WebGLFramebuffer
-    material:Material
+    material:GLMaterial<GL2D_TexBatchArgs,GL2D_TexBatchAttr>
 
-    constructor(size: Vec2,texture:WebGLTexture,renderer:WebglRenderer,material:Material){
+    constructor(size: Vec2,texture:WebGLTexture,renderer:WebglRenderer,material:GLMaterial<GL2D_TexBatchArgs,GL2D_TexBatchAttr>){
         this.renderer=renderer
         this.size=size
         this.texture=texture
@@ -51,6 +54,7 @@ export class GLTexture implements Texture{
     free(): void {
         if(this.texture){
             if(this.framebuffer)this.renderer.gl.deleteFramebuffer(this.framebuffer)
+            if(this.material.texture)this.material.free()
             this.renderer.gl.deleteTexture(this.texture)
             this.texture=undefined
         }
@@ -71,6 +75,7 @@ export abstract class Renderer {
     abstract unbind_texture():void
 
     abstract create_context():Context2D
+    abstract create_buffer():RenderBuffer
 
     abstract set_background_color(color:Color):void
     abstract clear(): void
@@ -79,38 +84,47 @@ export abstract class Renderer {
         fullCanvas(this.canvas,max_ration,roundPixels)
     }
 }
-export class GLDynamicBuffer {
+export abstract class RenderBuffer{
+    abstract bind():void
+    abstract upload_f32(data:Float32Array,usage?:number):void
+    abstract upload_u8(data:Uint8Array,usage?:number):void
+    abstract free():void
+}
+export class GLDynamicBuffer extends RenderBuffer{
     buffer: WebGLBuffer
     size = 0
     draw_calls:number=0
     private disposed = false
     constructor(private gl: WebGLRenderingContext) {
+        super()
         this.buffer = gl.createBuffer()!
     }
-    upload_f32(target: number, data: Float32Array, usage: number = 35048) {
+    bind(){
+        if(this.disposed)return
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.buffer)
+    }
+    upload_f32(data: Float32Array, usage: number = 35048) {
         if (this.disposed) return
 
         const gl = this.gl
-        gl.bindBuffer(target, this.buffer)
+        gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer)
 
         if (data.length > this.size) {
             this.size = data.length
-            gl.bufferData(target, data, usage)
+            gl.bufferData(this.gl.ARRAY_BUFFER, data, usage)
         } else {
-            gl.bufferSubData(target, 0, data)
+            gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, data)
         }
     }
-    upload_u8(target: number, data: Uint8Array, usage: number = 35048) {
+    upload_u8(data: Uint8Array, usage: number = 35048) {
         if (this.disposed) return
-
         const gl = this.gl
-        gl.bindBuffer(target, this.buffer)
-
+        gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer)
         if (data.length > this.size) {
             this.size = data.length
-            gl.bufferData(target, data, usage)
+            gl.bufferData(this.gl.ARRAY_BUFFER, data, usage)
         } else {
-            gl.bufferSubData(target, 0, data)
+            gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, data)
         }
     }
     exists(): boolean {
@@ -129,6 +143,7 @@ export class GLDynamicBuffer {
 }
 // deno-lint-ignore no-explicit-any
 export type GLMaterial<Args=any,Attr=any>={
+    renderer:Renderer
     group:string
     factory:GLMaterialFactory<Args,Attr>
     draw:(mat:GLMaterial<Args,Attr>,matrix:Matrix,attr:Attr)=>void
@@ -144,10 +159,8 @@ export class WebglRenderer extends Renderer {
     readonly gl: WebGLRenderingContext
     readonly factorys2D:{
         simple_batch:GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_SimpleBatchAttr>,
-        simple:GLMaterialFactory<GL2D_SimpleMatArgs,GL2D_SimpleMatAttr>,
-        texture:GLMaterialFactory<GL2D_TexMatArgs,GL2D_TexMatAttr>,
         texture_batch:GLMaterialFactory<GL2D_TexBatchArgs,GL2D_TexBatchAttr>,
-        //light:GLMaterialFactory<GL2D_LightMatArgs,GL2D_LightMatAttr>
+        cosmic_batch:GLMaterialFactory<GL2D_CosmicBatchArgs,GL2D_CosmicBatchAttr>,
     }
     readonly factorys3D:{
         simple:GLMaterialFactory<GL3D_SimpleMatArgs,GL3D_SimpleMatAttr>,
@@ -190,9 +203,8 @@ export class WebglRenderer extends Renderer {
 
         this.factorys2D={
             simple_batch:this.proccess_factory(GLF_SimpleBatch),
-            simple:this.proccess_factory(GLF_Simple),
             texture_batch:this.proccess_factory(GLF_TextureBatch),
-            texture:this.proccess_factory(GLF_Texture),
+            cosmic_batch:this.proccess_factory(GLF_CosmicBatch)
             //light:this.proccess_factory(GLF_Light),
         }
 
@@ -277,6 +289,9 @@ export class WebglRenderer extends Renderer {
         gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,smooth?this.gl.LINEAR:this.gl.NEAREST);
 
         return new GLTexture(v2(width,height),tex,this,this.factorys2D.texture_batch.create({texture:tex}))
+    }
+    override create_buffer():RenderBuffer{
+        return new GLDynamicBuffer(this.gl)
     }
     override load_texture(img:HTMLImageElement,smooth:boolean=true):Texture{
         const texture=this.gl.createTexture()!

@@ -1,29 +1,23 @@
 import { DeepPartial, mergeDeep, RectHitbox2D, v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
-import { BuildingDef, BuildingObstacles, buildings_factory } from "../objects/buildings_base.ts";
+import { buildings_factory } from "../objects/buildings.ts";
+import { BuildingDef, BuildingObjectObstacle } from "../objects/buildings_base.ts";
 import { obstacles_factory } from "../objects/obstacles.ts";
 import { hit_sounds } from "../utils.ts";
 import { type MapBiomeDef, type MapDef } from "./base.ts";
 import { map_spawns, river_layers } from "./normal.ts";
 export function create_hunt_house(id:string,settings:{
-        walls_tint?:number
-        doors_tint?:number
-        b?:DeepPartial<BuildingDef>
-        content?:BuildingObstacles[]
+    walls_tint?:number
+    doors_tint?:number
+    b?:DeepPartial<BuildingDef>
+    content?:BuildingObjectObstacle[]
 }={}){
     const walls_tint=settings.walls_tint??1
     const doors_tint=settings.doors_tint??walls_tint
     return mergeDeep({
         idString:id,
-        no_collisions:true,
-        no_bullet_collision:true,
-        assets:{
-            particles:{
-                particle:"plank_particle",
-                tint:0x656877,
-            }
-        },
+        is_ghost:true,
         ceiling:[ 
             {
                 frame:{
@@ -33,11 +27,17 @@ export function create_hunt_house(id:string,settings:{
                 },
                 connections:[10,11,12,13,14,15],
                 destroy:{
-                    frame:"hunt_house_ceiling_break",
+                    frame:{
+                        image:"wood_ceiling_break_1",
+                        tint:0x42a64a,
+                    },
                     sound:"ceiling_break_1",
                     count:3,
                     particles:{
-                        count:30
+                        image:"plank_particle",
+                        count:13,
+                        scale:2.2,
+                        tint:0x42a64a,
                     }
                 },
                 hitbox:new RectHitbox2D(v2(-1.75,-1.55),v2(1.75,1.55)),
@@ -125,7 +125,7 @@ export const TundraBiome:MapBiomeDef={
         [FloorType.Water]:0x274763
     },
     skin:"snow",
-    textures:["/assets/img/kspr/common","/assets/img/kspr/snow","/assets/img/kspr/maps/tundra"],
+    textures:["/assets/kspr/common","/assets/kspr/snow","/assets/kspr/maps/tundra"],
     musics:[
         "/assets/sounds/musics/online/game_tundra_music_1.mp3",
         "/assets/sounds/musics/online/game_tundra_music_2.mp3",
@@ -140,24 +140,24 @@ export const TundraMap:MapDef={
     loot_tables:{
         ...LootTables,
         ammos:[
-            {item:"9mm",count:60,weight:6},
-            {item:"762mm",count:40,weight:6},
-            {item:"556mm",count:40,weight:6},
-            {item:"45acp",count:40,weight:6},
-            {item:"22lr",count:80,weight:4.5},
-            {item:"50cal",count:20,weight:0.1},
-            {item:"308sub",count:5,weight:0.05},
+            {item:"l19",count:60,weight:6},
+            {item:"c51",count:40,weight:6},
+            {item:"c45",count:40,weight:6},
+            {item:"c22",count:40,weight:6},
+            {item:"l15",count:80,weight:4.5},
+            {item:"p61",count:20,weight:0.1},
+            {item:"p85",count:5,weight:0.05},
             {item:"gasoline",count:5,weight:0.05},
             {item:"explosive_ammo",count:2,weight:0.05},
         ],
         special_ammos:[
-            {item:"9mm",count:80,weight:5},
-            {item:"762mm",count:80,weight:5},
-            {item:"556mm",count:80,weight:5},
-            {item:"45acp",count:80,weight:5},
-            {item:"22lr",count:100,weight:4},
-            {item:"50cal",count:40,weight:0.3},
-            {item:"308sub",count:10,weight:0.2},
+            {item:"l19",count:80,weight:5},
+            {item:"c51",count:80,weight:5},
+            {item:"c45",count:80,weight:5},
+            {item:"c22",count:80,weight:5},
+            {item:"l15",count:100,weight:4},
+            {item:"p61",count:40,weight:0.3},
+            {item:"p85",count:10,weight:0.2},
             {item:"gasoline",count:10,weight:0.2},
             {item:"explosive_ammo",count:4,weight:0.2},
         ],
@@ -176,10 +176,10 @@ export const TundraMap:MapDef={
             {item:"colt1873",weight:100},
     
             // Uncommon Guns
-            {item:"sr25",weight:83},
-            {item:"rifle_cbc",weight:83},
+            {item:"m110a2",weight:83},
             {item:"vss",weight:83},
-            {item:"model94",weight:80},
+            {item:"rifle_cbc",weight:80},
+            {item:"super_conqueror",weight:80},
             {item:"blr81",weight:75},
 
             // Unrelated Weapons
@@ -188,6 +188,7 @@ export const TundraMap:MapDef={
             {item:"ak47",weight:55},
             {item:"ar15",weight:55},
             {item:"m1921",weight:55},
+            {item:"tec22",weight:50},
 
             {item:"kar98k",weight:46},
 
@@ -208,7 +209,7 @@ export const TundraMap:MapDef={
             {item:"rpg7",weight:1},
         ],
         mythic_guns:[
-            {item:"sr25",weight:13},
+            {item:"m110a2",weight:13},
             {item:"desert_eagle",weight:7},
             {item:"kar98k",weight:7},
             {item:"m2_2",weight:2},
@@ -420,7 +421,7 @@ export const TundraMap:MapDef={
                                     def:[
                                         {def:"rifle_cbc_mount",weight:10},
                                         {def:"vss_mount",weight:10},
-                                        {def:"model94_mount",weight:8},
+                                        {def:"super_conqueror_mount",weight:8},
                                         {def:"blr81_mount",weight:8},
                                         {def:"kar98k_mount",weight:4},
                                         {def:"awp_mount",weight:0.05},
@@ -444,7 +445,7 @@ export const TundraMap:MapDef={
                                 {weight:15},
                                 {def:"rifle_cbc_mount",weight:10},
                                 {def:"vss_mount",weight:10},
-                                {def:"model94_mount",weight:8},
+                                {def:"super_conqueror_mount",weight:8},
                                 {def:"blr81_mount",weight:8},
                                 {def:"kar98k_mount",weight:4},
                                 {def:"awp_mount",weight:0.05},
@@ -490,10 +491,12 @@ export const TundraMap:MapDef={
         spawn:[
             {def:[{def:"bush_group_1",weight:1},{def:"bush_group_2",weight:1}],count:20},
 
-            {def:"storehouse_1",count:5},
+            {def:"storehouse_1",count:4},
+            {def:"watchtower",count:4},
             {def:map_spawns.containers,count:20},
 
-            {def:"bunker_1",count:3},
+            {def:"bunker_1",count:2},
+            {def:"bunker_2",count:1},
             {def:[
                 {def:"shed_t",weight:1},
                 {def:"hunt_house_1",weight:3}

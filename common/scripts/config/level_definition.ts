@@ -1,16 +1,14 @@
-import { Vec2 } from "../../engine/core.ts";
 import { MapDef } from "../definitions/maps/base.ts";
 import { CharacterDefinition, HumanDefinition } from "../definitions/utils.ts";
 import { type GameConfig } from "./config.ts";
 export type LevelMapDefinition=string|(MapDef&{base:string})
 
 export type LevelEnemys={
-    def:HumanDefinition|string
+    def:HumanDefinition
     team?:number
     name?:string
-    position?:Vec2
     count?:number
-}[]
+}
 export enum GameOverScreenType{
     Normal,
     Restart,

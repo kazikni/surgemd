@@ -1,13 +1,11 @@
-import { type Game } from "../others/game.ts";
-import { Client, Numeric, random, StaticStream, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Client, GameComponent, Numeric, random, StaticStream, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { Human } from "../objects/human.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
-import { type JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Group, type Team } from "./teams.ts";
 import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { LootSetting } from "common/scripts/others/constants.ts";
+import { LootSetting, PlayerStatus } from "common/scripts/others/constants.ts";
 import { MapDef } from "common/scripts/definitions/maps/base.ts";
 import { FallBiome, NormalLobby, NormalMap } from "common/scripts/definitions/maps/normal.ts";
 import { TundraMap } from "common/scripts/definitions/maps/tundra.ts";
@@ -15,6 +13,9 @@ import { WarMap } from "common/scripts/definitions/maps/war.ts";
 import { DebugMap, SingleBuildMap } from "common/scripts/definitions/maps/debug.ts";
 import { TutorialMap } from "common/scripts/definitions/maps/tutorial.ts";
 import { GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
+import { human_die_event } from "../others/utils.ts";
+import { ServerGameScene2D } from "../others/scene.ts";
+import { type Game } from "../others/game.ts";
 export interface GameRules{
     humans:{
         boosts:{
@@ -28,7 +29,10 @@ export interface GameRules{
                 speed:number
             }
         },
+        critical_chance:number
+        idle_critical_chance:number
         keep_inventory:boolean
+        body_with_name:boolean
         help_up:{
             time:number
             distance:number
@@ -36,6 +40,8 @@ export interface GameRules{
         group_colors:number[]
         no_quickswitch:boolean
         reload_while_shoot:boolean
+        hold_ammo:boolean
+        modifiers:Record<string,number>
     }
     ambient:{
         day_night_cycle:number
@@ -92,8 +98,9 @@ export const Maps:Record<string,MapDef>={
     debug:DebugMap,
     single_building:SingleBuildMap,
 }
-export abstract class ModeManager{
-    game!:Game
+export abstract class ModeManager extends GameComponent{
+    declare game:Game
+    scene!:ServerGameScene2D
     rules:GameRules={
         humans:{
             boosts:{
@@ -107,9 +114,12 @@ export abstract class ModeManager{
                     abstinence:0.009
                 },
             },
+            critical_chance:0.1,
+            idle_critical_chance:0.2,
             keep_inventory:false,
+            body_with_name:true,
             no_quickswitch:false,
-            reload_while_shoot:true,
+            reload_while_shoot:false,
             help_up:{
                 time:7,
                 distance:2
@@ -119,7 +129,9 @@ export abstract class ModeManager{
                 0xd61cab,
                 0x146aba,
                 0xffcc00,
-            ]
+            ],
+            hold_ammo:true,
+            modifiers:{}
         },
         ambient:{
             day_night_cycle:1,
@@ -156,21 +168,18 @@ export abstract class ModeManager{
         feed:{
             enabled:true
         },
-        loot_settings:{}
+        loot_settings:{
+            hold_ammo:true
+        },
     }
 
-    constructor(){}
-
-    init(game:Game){
-        this.game=game
-        this.on_init()
+    constructor(){
+        super()
     }
-    tick(dt:number){
-        if(this.game.started){
-            this.update_day_and_night(dt)
-            this.update_rain(dt)
-        }
-        this.on_tick(dt)
+
+    init(scene:ServerGameScene2D){
+        this.scene=scene
+        this.scene.game.add_component(this)
     }
     update_day_and_night(dt:number){
         if(this.rules.ambient.day_night_cycle){
@@ -233,32 +242,54 @@ export abstract class ModeManager{
         }
     }
 
-    on_init(){}
-    on_tick(dt:number){}
-    on_net_update(){}
-    on_start():void{}
-    on_finish(winners:Human[]):void{}
+    override on_tick(dt:number){
+        if(this.game.started){
+            this.update_day_and_night(dt)
+            this.update_rain(dt)
+        }
+    }
+    on_game_finish(e:{winners:Player[]}): void {
+        for(const p of e.winners){
+            p.conn?.send_game_over((p.team_data.group?.get_status()??[p.status]) as PlayerStatus[],this.game.can_win)
+        }
+    }
 
     abstract can_join():boolean
     abstract can_start():boolean
     abstract can_down(human:Human):boolean
     abstract is_ally(a:Human,b:Human):boolean
 
-    abstract is_leader(p:Human):boolean
-    abstract get_leader():Human|undefined
-    abstract can_be_leader(p:Human):boolean
-    abstract search_leader():Human|undefined
-    abstract assign_leader(p:Human):boolean
-    abstract leader_die(p:Human):void
+    is_leader(p:Human):boolean{return false}
+    get_leader():Human|undefined{return undefined}
 
     on_player_connect(p:PlayerConnManager):void{}
     on_player_join(p:Player):void{}
-    on_player_die(p:Player):void{}
+    on_spectate(conn:PlayerConnManager,val:number):void{
+        let h:Human|undefined
+        if(val===0){
+            h=conn.real_human?.killed_by
+        }
+        if(!h)h=this.game.players.living_players[0]
+        if(h instanceof Player)conn.set_spectator(h)
+    }
     proccess_group_token(client:Client,token:string):void{}
-    reset():void{}
 
     on_human_create(human:Human):void{}
-    on_human_die(human:Human):void{}
+    on_human_die(e:human_die_event):void{
+        e.human.inventory.drop_all()
+        if(e.human.is_player)(e.human as Player).conn?.send_game_over?.([(e.human as Player).status],false)   
+        if(e.human.killed_by){
+            if(e.human.killed_by.id!==e.human.id&&!this.is_ally(e.human,e.human.killed_by)){
+                const killer=e.human.killed_by
+                const rules=this.rules
+                let kill_reward=rules.score.kill_reward
+                if(this.is_leader(e.human)){
+                    kill_reward*=rules.score.leader_kill
+                }
+                killer.on_kill(kill_reward,e.params)
+            }
+        }
+    }
     on_human_revive(human:Human):void{}
 
     get_group(group:number):Group|undefined{return undefined}
@@ -274,30 +305,34 @@ export abstract class ModeManager{
         return v2.zero()
     }
 
-    manage_joinned_packet(jp:JoinnedPacket){
-    }
     manage_general_packet(g:GeneralUpdatePacket){
         g.content.feed_enabled=this.rules.feed.enabled
         g.content.leader_enabled=this.rules.leader.enabled
     }
 
     human_buy_item(human:Human,item:GameItem){}
-    
-    add_enemies(enemies?:LevelEnemys){
-        if(!enemies) return
+
+    make_enemy():Human|undefined{
+        const client=this.scene.game.players.add_bot(new JoinPacket())
+        return client.human
+    }
+    add_enemies(enemies?:LevelEnemys[]):Human[]{
+        if(!enemies) return []
+        const ret:Human[]=[]
         for(const e of enemies){
             const count = e.count ?? 1
             for(let i = 0; i < count; i++){
-                const bot = this.game.players.add_enemy(e.def,new JoinPacket())
+                const bot=this.make_enemy()
                 if(!bot) continue
-                if(e.position){
-                    v2m.set(bot.position, e.position.x, e.position.y)
-                }else{
-                    const pos = this.get_human_spawn_position(bot)
-                    if(pos) bot.position = pos
+                bot.set_preset(e.def)
+                if(!e.def.position){
+                    const pos=this.get_human_spawn_position(bot)
+                    if(pos)bot.position=pos
                 }
+                ret.push(bot)
             }
         }
+        return ret
     }
     abstract generate_map():Promise<void>
     async load_map(map:string|MapDef):Promise<MapDef|undefined>{
@@ -321,14 +356,14 @@ export abstract class ModeManager{
             return map
         }
     }
-    write_checkpoint(stream:Stream){
+    on_encode_checkpoint(stream:Stream){
         stream.write_kdate(this.game.ambient.date)
         .write_float32(this.game.ambient.rain)
         .write_float32(this.game.ambient.target_rain)
         .write_uint8(this.game.ambient.rain_state)
         .write_float32(this.game.ambient.rain_timer)
     }
-    decode_checkpoint(stream:Stream){
+    on_decode_checkpoint(stream:Stream){
         this.game.ambient.date=stream.read_kdate()
         this.game.ambient.rain=stream.read_float32()
         this.game.ambient.target_rain=stream.read_float32()

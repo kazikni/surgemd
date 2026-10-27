@@ -67,7 +67,8 @@ export class Container2D extends Container2DObject{
         }
     }
     draw(cam:CamA):void{
-        this.draw_super()
+        this.draw_super(cam)
+        if(cam.draw_function&&this.object_group)cam.draw_function(this)
         if(this.dirty_zindex){
             this.update_zindex(cam)
             this.dirty_zindex=false
@@ -79,7 +80,7 @@ export class Container2D extends Container2DObject{
 
         for (let o = 0; o < this.visible_children.length; o++) {
             const c=this.visible_children[o]
-            if(c.destroyed||!c._visible)continue
+            if(c.destroyed||!c._visible||c._real_tint.a===0)continue
             const rect=c.get_rect()
             if(c.full||!this.full_request||(rect.max.x>=cam.rect.min.x&&rect.min.x<=cam.rect.max.x&&rect.max.y>=cam.rect.min.y&&rect.min.y<=cam.rect.max.y))c.draw(cam)
         }
@@ -122,6 +123,9 @@ export class Container2D extends Container2DObject{
         return s
     }
     clear(){
+        for(const c of this.children){
+            c.on_destroy()
+        }
         this.visible_children.length=0
         this.children.length=0
         this.update_children.length=0

@@ -1,10 +1,11 @@
 import { CircleHitbox2D, cloneDeep, Hitbox2D, Numeric, random, SeededRandom, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
-import { Game } from "./game.ts";
 import { DeadZoneStage, DeadZoneState, DeadZoneUpdate } from "common/scripts/packets/general_update.ts";
 import { Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
 import { MakeDeadZoneStages } from "common/scripts/others/functions.ts";
 import { type GameMap } from "./map.ts";
+import { BaseDeadzone } from "common/scripts/objects/scene.ts";
+import { ServerGameScene2D } from "./scene.ts";
 
 export const DeadZoneDefinition: DeadZoneStage[]=MakeDeadZoneStages({
     count:9,
@@ -14,19 +15,19 @@ export const DeadZoneDefinition: DeadZoneStage[]=MakeDeadZoneStages({
     },
     damage:{
         advancing_scale:2,
-        waiting_scale:1,
-        limit:10,
-        initial:2
+        waiting_scale:1.2,
+        limit:15,
+        initial:1
     },
     wait_time:{
-        initial:80,
+        initial:70,
         decay:0.88,
-        min:40,
+        min:30,
     },
     advancing_time:{
-        initial:60,
+        initial:70,
         decay:0.88,
-        min:20,
+        min:30,
     },
 })
 
@@ -50,8 +51,8 @@ export const DefaultDeadzone:DeadZoneConfig={
     timeSpeed: 1,
     damage: 1
 }
-export class DeadZoneManager {
-    readonly game: Game
+export class DeadZoneManager extends BaseDeadzone{
+    scene:ServerGameScene2D
     readonly hitbox: CircleHitbox2D
 
     config!:DeadZoneConfig
@@ -80,8 +81,9 @@ export class DeadZoneManager {
 
     running = false
 
-    constructor(game:Game){
-        this.game = game
+    constructor(scene:ServerGameScene2D){
+        super()
+        this.scene=scene
         this.hitbox = new CircleHitbox2D(v2(0,0),1)
     }
 
@@ -98,12 +100,12 @@ export class DeadZoneManager {
     }
 
     reset(){
-        this.radius_size=Math.min(this.game.map.size.x,this.game.map.size.y)/100
+        this.radius_size=Math.min(this.scene.map.size.x,this.scene.map.size.y)/100
 
-        this.state.position=v2.scale(this.game.map.size, 0.5)
-        this.state.new_position=v2.scale(this.game.map.size, 0.5)
+        this.state.position=v2.scale(this.scene.map.size, 0.5)
+        this.state.new_position=v2.scale(this.scene.map.size, 0.5)
 
-        this.state.radius=this.radius_size*80*(this.game.map.size.x/this.game.map.size.y)
+        this.state.radius=this.radius_size*80*(this.scene.map.size.x/this.scene.map.size.y)
         this.state.new_radius=this.state.radius
         this.state.old_radius=this.state.radius
 
@@ -134,7 +136,7 @@ export class DeadZoneManager {
         this.state.new_radius = stage.radius * this.radius_size
 
         if(this.stageIndex === 0){
-            const center = v2.scale(this.game.map.size, 0.5)
+            const center = v2.scale(this.scene.map.size, 0.5)
             this.state.old_position = center
             this.state.position = center
             this.state.new_position = this.next_position()
@@ -150,6 +152,11 @@ export class DeadZoneManager {
         this.hitbox.position = this.state.position
 
         this.stageIndex++
+
+        this.scene.global_messages.push(
+            {lvalue:"global_message.deadzone.adv_state."+this.state.state},
+            {value:Math.round(this.duration)+"s"}
+        )
     }
     jump_stages(targetStage: number){
         if(targetStage <= 0) return
@@ -170,7 +177,7 @@ export class DeadZoneManager {
             this.hitbox.position = this.state.position
         }
     }
-    tick(dt:number){
+    override on_tick(dt:number){
         if(!this.running||this.state.state===DeadZoneState.Deenabled){
             this.running=false
             return
@@ -220,7 +227,7 @@ export class DeadZoneManager {
                 pos=v2.from_RadAngle(angle, len)
                 v2m.add(pos,pos,this.state.position)
             }
-            const floor=this.game.map.terrain.get_floor_type(pos,Layers.Normal,FloorType.Void)
+            const floor=this.scene.map.terrain.get_floor_type(pos,Layers.Normal,FloorType.Void)
             let valid = true
             switch(mode.type){
                 case SpawnModeType.any:
@@ -246,7 +253,7 @@ export class DeadZoneManager {
         return pos
     }
     random_point_in_map(radius:number):Vec2{
-        return v2(random.float(radius, this.game.map.size.x - radius),random.float(radius, this.game.map.size.y - radius))
+        return v2(random.float(radius, this.scene.map.size.x - radius),random.float(radius, this.scene.map.size.y - radius))
     }
     random_point_inside(radius:number):Vec2{
         const angle = random.rad()
@@ -281,7 +288,7 @@ export class DeadZoneManager {
         return this.damage*(this.config.damage??1)
     }
 
-    random_point_inside_cb(hitbox:Hitbox2D,map:GameMap,random:SeededRandom):Vec2{
+    override random_point_inside_cb(hitbox:Hitbox2D,map:GameMap,random:SeededRandom):Vec2{
         if(this.stageIndex===0)return this.random_point_in_map(this.state.new_radius)
         const angle = random.rad()
         const maxLen = Math.max(this.state.radius, 0)
@@ -291,7 +298,7 @@ export class DeadZoneManager {
 
         return pos
     }
-    write_checkpoint(stream:Stream){
+    on_encode_checkpoint(stream:Stream){
         stream.write_uint8(this.state.state)
 
         .write_pos2(this.state.position)
@@ -306,7 +313,7 @@ export class DeadZoneManager {
         .write_float32(this.timer)
         .write_float32(this.duration)
     }
-    decode_checkpoint(stream:Stream){
+    on_decode_checkpoint(stream:Stream){
         this.state.state=stream.read_uint8()
 
         this.state.position=stream.read_pos2()

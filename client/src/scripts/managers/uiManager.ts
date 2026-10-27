@@ -7,24 +7,24 @@ import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { CrosshairManager, StaticCrosshair } from "./crosshairManager.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, ShowElement } from "common/engine/web.ts";
+import { disableContextMenuPrevent, enableContextMenuPrevent, Frame, HideElement, InputEventType, is_mobile, Key, ShowElement, ToggleElement } from "common/engine/web.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../objects/human.ts";
-import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { AimCrosshair, DefaultCrosshair } from "../defs/crosshair.ts";
 import { BuildingCeiling, type Building } from "../objects/building.ts";
 import { InformationBoxModule } from "../uim/information-box.ts";
 import { MinimapModule } from "../uim/minimap.ts";
-import { FeedMessage, FeedMessageLeader, FeedMessageType, GeneralUpdate } from "common/scripts/packets/general_update.ts";
+import { FeedMessage, FeedMessageType, GeneralFullMainState, GeneralUpdate } from "common/scripts/packets/general_update.ts";
 import { AdditionalInfoModule } from "../uim/additional_info.ts";
 import { type Obstacle } from "../objects/obstacle.ts";
 import { GameOverScreen, GameOverScreenType } from "common/scripts/config/level_definition.ts";
 import { GroupMembersModule } from "../uim/groups.ts";
-import { PingDef } from "common/scripts/definitions/loadout/ping.ts";
+import { PingDef } from "common/scripts/definitions/loadout/pings.ts";
 import { BottomLeftModule } from "../uim/bottom_left_container.ts";
 import { InventoryModule } from "../uim/inventory.ts";
 import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";
 import { Angle, ColorM, random, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -39,6 +39,8 @@ export class UiManager{
         gameD:document.querySelector("#game") as HTMLDivElement,
         game_gui:document.querySelector("#game-gui") as HTMLDivElement,
 
+        //hints:document.querySelector("#information-hints") as HTMLImageElement,
+    
         action_info_delay:document.querySelector("#action-info-delay") as HTMLSpanElement,
         action_info:document.querySelector("#action-info") as HTMLDivElement,
 
@@ -47,10 +49,12 @@ export class UiManager{
 
         normal_gameOver:document.querySelector("#normal-gameover-container") as HTMLDivElement,
         restart_gameOver:document.querySelector("#restart-gameover-container") as HTMLDivElement,
-        
+
         gameover_status_container:document.querySelector("#gameover-status-container") as HTMLDivElement,
         gameOver_main_message:document.querySelector("#gameover-main-message") as HTMLDivElement,
         gameOver_menu_btn:document.querySelector("#gameover-menu-btn") as HTMLButtonElement,
+        gameOver_spectate_btn:document.querySelector("#gameover-spectate-btn") as HTMLButtonElement,
+        gameOver_show_status_btn:document.querySelector("#gameover-show-status-btn") as HTMLButtonElement,
 
         feed:document.querySelector("#feed-container") as HTMLDivElement,
 
@@ -80,6 +84,8 @@ export class UiManager{
         tooltip:document.querySelector("#item-tooltip") as HTMLDivElement,
         tooltip_title:document.querySelector("#item-tooltip-title") as HTMLDivElement,
         tooltip_description:document.querySelector("#item-tooltip-description") as HTMLDivElement,
+
+        mouse:document.querySelector("#mouse-emulated") as HTMLDivElement
     }
     tooltip_element?:HTMLElement
     mobile_content={
@@ -90,17 +96,18 @@ export class UiManager{
         btn_interact:document.querySelector("#btn-mobile-interact") as HTMLButtonElement,
         btn_reload:document.querySelector("#btn-mobile-reload") as HTMLButtonElement,
         btn_emotes:document.querySelector("#btn-mobile-emotes") as HTMLButtonElement,
+        btn_toggle_map:document.querySelector("#btn-mobile-toggle-map") as HTMLButtonElement,
     }
 
     feed_enabled:boolean=false
+    self_feed_enabled:boolean=false
 
     leader_enabled:boolean=true
     old_leader_enabled:boolean=true
-    leader?:{
-        id:number
-        kills:number
+    leader={
+        id:-1,
+        kills:0
     }
-    money:number=0
 
     hover_objects:Set<GameObject|BuildingCeiling>=new Set()
 
@@ -110,17 +117,19 @@ export class UiManager{
 
     group_members:Record<number,GroupMemberState>={}
     map_humans:MapHumanData[]=[]
+
+    joystick_timer:number=0
     constructor(game:Game){
         this.game=game
 
         HideElement(this.content.normal_gameOver)
         HideElement(this.content.emote_wheel.main)
 
-        if(isMobile||Debug.force_mobile){
-            this.mobile_init()
-        }
-
         this.content.gameOver_menu_btn.onclick=this.game.finish_game_over.bind(this.game,false)
+        this.content.gameOver_spectate_btn.onclick=self.requestAnimationFrame.bind(self,()=>this.game.spectate())
+        this.content.gameOver_show_status_btn.onclick=()=>{
+            ToggleElement(this.content.gameover_status_container)
+        }
 
         this.game.ui_manager.add(new BottomLeftModule())
         this.game.ui_manager.add(new InventoryModule())
@@ -129,11 +138,25 @@ export class UiManager{
         this.game.ui_manager.add(new AdditionalInfoModule())
         this.game.ui_manager.add(new GroupMembersModule())
     }
-    clear(){
+    async init(){
+        this.content.restart_gameOver.innerHTML=`<div class="go-message">${this.game.language.get("gameover.restart.press")}</div>`
+//#if defined(is_mobile_port)
+        if(is_mobile()){
+            await this.mobile_init()
+        }
+//#endif
+    }
+    clear_top_right(){
         this.content.feed.innerHTML=""
         this.content.leader_span.innerText=""
-        this.leader=undefined
+        this.leader={
+            id:-1,
+            kills:0
+        }
         this.content.help_gui.innerText=""
+    }
+    clear(){
+        this.clear_top_right()
 
         this.players_name={}
         this.group_members={}
@@ -166,7 +189,7 @@ export class UiManager{
         color=ColorM.mult_rgba(color,1,1,1,0.4)
         this.content.game_gui.style.setProperty("--ui-panel-background",ColorM.rgba2hex(color))
         this.content.game_gui.style.setProperty("--ui-panel-border",`0.2vh solid ${primary}`)
-        this.content.game_gui.style.setProperty("--ui-panel-box-shadow",this.game.save.get_variable("sv_ui_simple_mode")?"":`0 0 0.5vh ${primary}`)
+        this.content.game_gui.style.setProperty("--ui-panel-box-shadow",this.game.save.settings.get_var("ui_simple_mode")?"":`0 0 0.5vh ${primary}`)
 
         this.game.ui_manager.signal("update_theme",{})
     }
@@ -187,15 +210,20 @@ export class UiManager{
         loot: this._makeHint(["E - Take Loot"]),
         interact: this._makeHint(["E - Interact"]),
     }
-    mobile_init(){
+
+//#if defined(is_mobile_port)
+    async mobile_init(){
+        this.mobile_enabled=true
         this.mobile_open()
-        let rotating=false
+        document.body.classList.toggle("game-mobile-version",true)
+        document.body.style.setProperty("--ui-panel-backdrop-filter","initial")
+       
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
         this.mobile_content.left_joystick.addEventListener("joystickmove",(e:JoystickEvent)=>{
             this.game.input.movement.dir=Math.atan2(e.detail.y,e.detail.x)
             this.game.input.movement.scale=v2.len(e.detail)
-            if(!rotating){
+            if(this.joystick_timer<=0&&!this.mobile_content.right_joystick.active){
                 this.game.set_lookTo_angle(this.game.input.movement.dir,2)
             }
         })
@@ -205,68 +233,93 @@ export class UiManager{
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
         this.mobile_content.right_joystick.addEventListener("joystickmove",(e:JoystickEvent)=>{
-            rotating=true
-            this.game.aim_line.enabled=true
+            this.joystick_timer=1
+            this.game.aim_line=true
             const dist=Math.sqrt(e.detail.x*e.detail.x+e.detail.y*e.detail.y)
-            /*if(!this.game.active_entity?.current_weapon||this.game.active_entity.current_weapon.item_type!==GameItemType.gun||!this.game.active_entity.current_weapon.fireOnRelease){
-                
-            }*/
 
             if(this.game.active_entity?.current_weapon){
-                if(this.game.active_entity.current_weapon.item_type===GameItemType.gun){
-                    if(dist>0.9){
-                        this.game.input.use_weapon=true
-                    }else{
-                        this.game.input.use_weapon=false
-                    }
-                }else{
+                if(this.game.active_entity.current_weapon.item_type===GameItemType.grenade){
                     this.game.input.use_weapon=true
+                }else{
+                    this.game.input.use_weapon=dist>0.97
                 }
             }
             this.game.set_lookTo_angle(Math.atan2(e.detail.y,e.detail.x),dist)
         })
         this.mobile_content.right_joystick.addEventListener("joystickend",()=>{
+            this.joystick_timer=1
             this.game.input.use_weapon=false
-            rotating=false
-            this.game.aim_line.enabled=false
+            this.game.aim_line=false
         })
-        this.mobile_content.btn_interact.addEventListener("click",()=>{
+        
+        self.addEventListener("mobile-back",()=>{
+            this.game.input_manager.emit({
+                type: InputEventType.ActionDown,
+                action: "escape"
+            })
+            this.game.input_manager.emit({
+                type: InputEventType.ActionUp,
+                action: "escape"
+            })
+        })
+
+        this.mobile_content.btn_interact.innerHTML=await (await fetch("/assets/img/menu/gui/buttons/interaction_button.svg")).text()
+        this.mobile_content.btn_interact.addEventListener("pointerdown",()=>{
             this.game.input_manager.listener.emit("actiondown",{action:"interact"})
         })
-        this.mobile_content.btn_reload.addEventListener("click",()=>{
+        this.mobile_content.btn_reload.innerHTML=await (await fetch("/assets/img/menu/gui/buttons/reload_button.svg")).text()
+        this.mobile_content.btn_reload.addEventListener("pointerdown",()=>{
             this.game.input_manager.listener.emit("actiondown",{action:"reload"})
         })
-        this.mobile_content.btn_emotes.addEventListener("click",(e)=>{
+        this.mobile_content.btn_emotes.addEventListener("pointerdown",(e)=>{
             this.begin_emote_wheel(v2(this.game.renderer.canvas.clientWidth/2,this.game.renderer.canvas.clientHeight/2),false)
         })
+        HideElement(this.mobile_content.btn_toggle_map)
+        this.mobile_content.btn_toggle_map.addEventListener("pointerdown",(e)=>{
+            this.game.input_manager.emit({type:InputEventType.ActionDown,action:"toggle_full_device"})
+            this.game.input_manager.emit({type:InputEventType.ActionUp,action:"toggle_full_device"})
+        })
+
+        this.content.restart_gameOver.innerHTML=`<div class="go-message">${this.game.language.get("gameover.restart.click")}</div>`
+        this.content.restart_gameOver.onclick=()=>{
+            this.game.input_manager.emit({type:InputEventType.KeyDown,key:Key.R})
+            this.game.input_manager.emit({type:InputEventType.KeyUp,key:Key.R})
+        }
     }
+//#endif
     emote_wheel={
         positon:v2(0,0),
+        world_position:undefined as Vec2|undefined,
         active:false,
         up_enable:true,
         current_side:-1,
-        emotes:[] as (EmoteDef|PingDef|undefined)[],
+        emotes:[] as (EmoteDef|BadgeDef|PingDef|undefined)[],
     }
-    begin_emote_wheel(position:Vec2,up_enable:boolean=true,emotes?:(EmoteDef|PingDef|undefined)[]){
+    begin_emote_wheel(position:Vec2,up_enable:boolean=true,emotes?:(EmoteDef|BadgeDef|PingDef|undefined)[],world_position?:Vec2,comunication_mode?:boolean){
+        if(this.emote_wheel.active)return
         ShowElement(this.content.emote_wheel.main)
         HideElement(this.mobile_content.btn_emotes)
         this.content.emote_wheel.main.style.left=`${position.x}px`
         this.content.emote_wheel.main.style.top=`${position.y}px`
+        this.emote_wheel.world_position=world_position  
         this.emote_wheel.positon=position
         this.emote_wheel.active=true
         this.emote_wheel.up_enable=up_enable
 
         if(!emotes){
-            if(this.game.comunication_mode){
+            if(this.game.comunication_mode||comunication_mode){
                 emotes=[
-                    this.game.definitions.ping.getFromString("ping_alert"), //Right
+                    this.game.definitions.pings.getFromString("ping_alert"), // Right
+                    this.game.definitions.pings.getFromString("ping_here"),  // Bottom
+                    this.game.definitions.pings.getFromString("ping_heal"),  // Left
+                    this.game.definitions.pings.getFromString("ping_gift"),  // Top
                 ]
             }else{
                 emotes=[
-                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_right")), //Right
-                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_bottom")), //Bottom
-                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_left")), //Left
-                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_top")), //Top
+                    this.game.definitions.game_objects.valueString[this.game.save.settings.get_var("loadout_emote_right")] as (EmoteDef|BadgeDef|PingDef|undefined),  // Right
+                    this.game.definitions.game_objects.valueString[this.game.save.settings.get_var("loadout_emote_bottom")] as (EmoteDef|BadgeDef|PingDef|undefined), // Bottom
+                    this.game.definitions.game_objects.valueString[this.game.save.settings.get_var("loadout_emote_left")] as (EmoteDef|BadgeDef|PingDef|undefined),   // Left
+                    this.game.definitions.game_objects.valueString[this.game.save.settings.get_var("loadout_emote_top")] as (EmoteDef|BadgeDef|PingDef|undefined),    // Top
                 ]
             }
             
@@ -274,18 +327,22 @@ export class UiManager{
         this.emote_wheel_set_emotes(emotes)
     }
     end_emote_wheel(force:boolean=false){
+        if(!this.emote_wheel.active)return
         if(!this.emote_wheel.up_enable&&!force)return
         HideElement(this.content.emote_wheel.main)
         ShowElement(this.mobile_content.btn_emotes)
         this.emote_wheel.active=false
-        let selected_emote:EmoteDef|PingDef|undefined=undefined
+        let selected_emote:EmoteDef|BadgeDef|PingDef|undefined=undefined
         if(this.emote_wheel.current_side!==-1){
             selected_emote=this.emote_wheel.emotes[this.emote_wheel.current_side]
         }
         if(selected_emote){
-            if(this.game.definitions.ping.exist(selected_emote.idString)){
-                const pos=v2.dscale(this.emote_wheel.positon,this.game.cam2d.meter_size*this.game.cam2d.zoom)
-                v2m.add(pos,pos,this.game.cam2d.position)
+            if(this.game.definitions.pings.exist(selected_emote.idString)){
+                let pos:Vec2|undefined=this.emote_wheel.world_position
+                if(!pos){
+                    pos=this.game.scene_2d.camera.to_world(this.emote_wheel.positon)
+                    v2m.add(pos,pos,this.game.scene_2d.camera.position)
+                }
                 this.game.input.actions.push({
                     type:InputActionType.ping,
                     ping:selected_emote.idNumber!,
@@ -293,8 +350,8 @@ export class UiManager{
                 })
             }else{
                 this.game.input.actions.push({
-                    type:InputActionType.emote_emote,
-                    emote:selected_emote.idNumber!
+                    type:InputActionType.emote,
+                    id:this.game.definitions.game_objects.keysString[selected_emote.idString]
                 })
             }
         }
@@ -339,15 +396,23 @@ export class UiManager{
             }
         }
     }
-    emote_wheel_set_emotes(emotes:(EmoteDef|PingDef|undefined)[]){
+    emote_wheel_set_emotes(emotes:(EmoteDef|BadgeDef|PingDef|undefined)[]){
         for(const ev in this.content.emote_wheel.emotes){
             const emote=emotes[ev]
             if(emote){
-                const frame=this.game.resources.get_frame("emote_"+emote.idString)
+                let frame:Frame|undefined
+                switch(emote.def_type){
+                    default:
+                        frame=this.game.resources.get_frame("emote_"+emote.idString)
+                        break
+                    case GameObjectDefinitionType.badge:
+                        frame=this.game.resources.get_frame(emote.idString)
+                        break
+                }
                 if(frame){
                     ShowElement(this.content.emote_wheel.emotes[ev])
                     this.content.emote_wheel.emotes[ev].style.setProperty("--ping-color","#eeeeee")
-                    this.content.emote_wheel.emotes[ev].src=this.game.resources.get_frame("emote_"+emote.idString).url!
+                    this.content.emote_wheel.emotes[ev].src=frame.url!
                     this.content.emote_wheel.emotes[ev].draggable=false
                 }
             }else{
@@ -357,7 +422,9 @@ export class UiManager{
         this.content.emote_wheel.main.onclick=(e)=>this.end_emote_wheel(true)
         this.emote_wheel.emotes=emotes
     }
-    mobile_enabled:boolean=isMobile||Debug.force_mobile
+    mobile_enabled:boolean=false
+
+//#if defined(is_mobile_port)
     mobile_close(){
         HideElement(this.mobile_content.gui)
         ShowElement(this.content.help_gui)
@@ -368,13 +435,14 @@ export class UiManager{
         HideElement(this.content.help_gui)
         this.mobile_enabled=true
     }
+//#endif
     start(){
         HideElement(this.content.post_proccess.tiltshift)
         HideElement(this.content.post_proccess.vignetting)
-        if(this.game.save.get_variable("sv_graphics_post_proccess")>=GraphicsDConfig.Advanced){
+        if(this.game.save.settings.get_var("graphics_post_proccess")>=GraphicsDConfig.Advanced){
             ShowElement(this.content.post_proccess.tiltshift)
         }
-        if(this.game.save.get_variable("sv_graphics_post_proccess")>=GraphicsDConfig.Normal){
+        if(this.game.save.settings.get_var("graphics_post_proccess")>=GraphicsDConfig.Normal){
             ShowElement(this.content.post_proccess.vignetting)
         }
         this.game.renderer.canvas.focus()
@@ -387,27 +455,37 @@ export class UiManager{
         ShowElement(this.content.game_gui)
     }
     players_name:Record<number,{name:string,badge:string,full:string}>={}
-    proccess_joinned_packet(jp:JoinnedPacket){
-        for(const p of jp.players){
-            const badge_frame=this.game.resources.get_frame(p.badge!==undefined?"badge_"+this.game.definitions.badges.getFromNumber(p.badge).idString:"")
+    proccess_general_main_state(state:GeneralFullMainState){
+        this.clear_top_right()
+        for(const p of state.players){
+            const badge_frame=this.game.resources.get_frame(p.badge!==undefined?this.game.definitions.badges.getFromNumber(p.badge).idString:"")
             const badge_html=badge_frame?`<img class="badge-icon" src="${badge_frame.src}">`:""
             this.players_name[p.id]={name:p.name,badge:badge_html,full:`${badge_html}${p.name}`}
         }
-        if(jp.leader){
-            this.assign_leader({
-                type:FeedMessageType.leader_assigned,
-                player:jp.leader
-            })
-        }
     }
     proccess_general_update(up:GeneralUpdate){
+        const leader_enabled=up.leader_enabled&&up.leader!==undefined
         this.feed_enabled=up.feed_enabled
-        this.leader_enabled=up.leader_enabled
+        this.self_feed_enabled=this.feed_enabled
+        this.leader_enabled=leader_enabled
         if(this.leader_enabled!==this.old_leader_enabled){
             this.old_leader_enabled=this.leader_enabled
             if(this.leader_enabled)ShowElement(this.content.leader_container)
             else HideElement(this.content.leader_container)
         }
+
+        if(leader_enabled){
+            if(this.leader.id!==up.leader!.id||this.leader.kills!==up.leader!.kills){
+                this.leader.id=up.leader!.id
+                this.leader.kills=up.leader!.kills
+                if(up.leader!.id===0){
+                    this.content.leader_span.innerText=this.game.language.get("leader-wait")
+                }else{
+                    this.content.leader_span.innerText=`${this.leader.kills} - ${this.players_name[up.leader!.id]?.name}`
+                }
+            }
+        }
+
         for(const msg of up.feed){
             this.add_feed_message(msg)
         }
@@ -439,13 +517,6 @@ export class UiManager{
             HideElement(this.mobile_content.btn_interact)
         }
     }
-    assign_leader(msg:FeedMessageLeader){
-        this.leader={
-            id:msg.player.id,
-            kills:msg.player.kills
-        }
-        this.content.leader_span.innerText=`${this.leader.kills} - ${this.players_name[msg.player.id].name}`
-    }
     feed_queue: HTMLDivElement[] = []
     max_feed_messages = 13
     add_feed_message(msg:FeedMessage){
@@ -457,7 +528,7 @@ export class UiManager{
             case FeedMessageType.set_name:
                 block_message=true
             case FeedMessageType.join:{
-                const badge_frame=this.game.resources.get_frame(msg.playerBadge!==undefined?"badge_"+this.game.definitions.badges.getFromNumber(msg.playerBadge).idString:"")
+                const badge_frame=this.game.resources.get_frame(msg.playerBadge!==undefined?this.game.definitions.badges.getFromNumber(msg.playerBadge).idString:"")
                 const badge_html=badge_frame?`<img class="badge-icon" src="${badge_frame.src}">`:""
                 this.players_name[msg.playerId]={badge:badge_html,name:msg.playerName,full:`${badge_html}${msg.playerName}`}
                 elem.innerHTML=this.game.language.get("feed.join",{"player":this.players_name[msg.playerId].full})
@@ -479,10 +550,6 @@ export class UiManager{
                             player2:this.players_name[msg.victimId].full,
                             source:this.game.language.get(dsd.tname??(dsd.def_type===GameObjectDefinitionType.item?"items."+dsd.idString:"objects."+dsd.idString),undefined,dsd.name),
                         })
-                        if(this.leader&&msg.killer.id===this.leader.id){
-                            this.leader.kills=msg.killer.kills
-                            this.content.leader_span.innerText=`${this.leader.kills} - ${this.players_name[msg.killer.id].name}`
-                        }
                         break
                     }
                     case DamageReason.VehicleCollision:{
@@ -528,7 +595,6 @@ export class UiManager{
                     elem.classList.add("feed-message-negative")
                 }else if(msg.killer&&msg.killer.id===this.game.active_entity?.id){
                     elem.classList.add("feed-message-good")
-                    this.game.ui_manager.signal("info-kill",{player_id:msg.victimId,msg:`You Killed ${this.game.ui.players_name[msg.victimId].name}<br><p id="infobox-kills">${msg.killer.kills} Kills<p>`,kills:msg.killer.kills})
                 }
                 break
             }
@@ -593,9 +659,8 @@ export class UiManager{
                 break
             }
             case FeedMessageType.leader_assigned:{
-                if(!this.players_name[msg.player.id])break
-                elem.innerHTML=this.game.language.get("feed.leader.assigned",{"player":this.players_name[msg.player.id].full})
-                this.assign_leader(msg)
+                if(!this.players_name[msg.player])break
+                elem.innerHTML=this.game.language.get("feed.leader.assigned",{"player":this.players_name[msg.player].full})
                 this.game.sounds.play(this.game.resources.get_sound("kill_leader_assigned"),{
                     volume:0.4,
                     bus:"ui"
@@ -603,7 +668,6 @@ export class UiManager{
                 break
             }
             case FeedMessageType.leader_dead:{
-                this.leader=undefined
                 elem.innerHTML=this.game.language.get("feed.leader.dead",{})
                 this.content.leader_span.innerText=this.game.language.get("leader-wait",{})
                 this.game.sounds.play(this.game.resources.get_sound("kill_leader_dead"),{
@@ -613,6 +677,8 @@ export class UiManager{
                 break
             }
         }
+        this.game.ui_manager.signal("feed_message",{obj:msg,text:elem.innerHTML})
+        this.game.signals.emit("feed_message",{obj:msg,text:elem.innerHTML})
         if(!block_message){
             this.content.feed.appendChild(elem)
             this.feed_queue.push(elem)
@@ -622,24 +688,23 @@ export class UiManager{
                     old.remove()
                 }
             }
-            this.game.add_timeout(()=>{
+            this.game.clock.add_timeout(()=>{
                 elem.remove()
             },4)
-            this.game.signals.emit("feed_message",{obj:msg,text:elem.innerHTML})
         }
     }
     crosshair=false
-    crosshair_manager:CrosshairManager=new CrosshairManager(document.body)
+    crosshair_manager:CrosshairManager=new CrosshairManager()
     enableCrosshair() {
-        const v=new StaticCrosshair(document.body,random.choose([DefaultCrosshair,AimCrosshair]))
+        /*const v=new StaticCrosshair(random.choose([DefaultCrosshair,AimCrosshair]))
         v.rainbow=Math.random()<=0.01
         this.crosshair_manager.set(v)
-        this.crosshair=true
+        this.crosshair=true*/
     }
     disableCrosshair() {
-        document.body.style.cursor = this.game.cursors.default
+        /*this.game.renderer.canvas.style.cursor = this.game.cursors.default
         this.crosshair=false
-        this.crosshair_manager.clear("")
+        this.crosshair_manager.clear("")*/
     }
     update_crosshair(dt:number){
         if(!this.crosshair)return
@@ -650,33 +715,6 @@ export class UiManager{
     }
     update_self_state(state:SelfStateUpdate){
         this.game.device.update_self_state(state)
-
-        if (state.dirty.inventory.aitems) {
-            this.game.inventory.aitems = {}
-            for (const a of Object.keys(state.inventory.aitems)) {
-                const def = this.game.definitions.ammos.getFromNumber(a as unknown as number)
-                this.game.inventory.aitems[def.idString] = state.inventory.aitems[a as unknown as number]
-            }
-        }
-        if(state.dirty.inventory.iitems) {
-            this.game.inventory.iitems = state.inventory.iitems
-        }
-        this.game.set_scope(this.game.definitions.scopes.getFromNumber(state.current_scope))
-        if(state.dirty.inventory.weapons){
-            for(const idx in state.inventory.weapons){
-                this.game.inventory.set_weapon(idx as unknown as number,state.inventory.weapons[idx])
-            }
-        }
-        if(state.dirty.inventory.hand){
-            this.game.inventory.hand_settings=state.inventory.hand
-            if(state.inventory.hand)this.game.inventory.set_weapon_index(state.inventory.hand.slot,true)
-        }
-        if(state.dirty.inventory.items) {
-            this.items.length=0
-            for (let i = 0; i < state.inventory.items.length; i++) {
-                this.items.push({id:state.inventory.items[i].idNumber,count:state.inventory.items[i].count})
-            }
-        }
         if(state.dirty.group){
             this.group_members=state.group??{}
             this.game.ui_manager.signal("update_group_members",null)
@@ -689,7 +727,6 @@ export class UiManager{
             this.update_theme()
         }
 
-        this.money=state.money
         this.game.ui_manager.signal("self_state",state)
     }
     handle_slot_click(e:MouseEvent){
@@ -707,12 +744,12 @@ export class UiManager{
                     break
             }
         }else if(e.button===0){
-            if(!this.game.save.get_variable("sv_ui_interactive"))return
+            if(!this.game.save.settings.get_var("ui_interactive"))return
             switch(item_kind){
                 case 1:
                     if(this.game.comunication_mode){
                         const def=this.game.inventory.weapons[item_value]?.def
-                        if(def)this.game.input.actions.push({type:InputActionType.emote_item,item:this.game.definitions.game_items.keysString[def.idString]})
+                        if(def)this.game.input.actions.push({type:InputActionType.emote,id:this.game.definitions.game_objects.keysString[def.idString]})
                     }else{
                         this.game.input.actions.push({
                             type:InputActionType.set_hand,
@@ -723,12 +760,12 @@ export class UiManager{
                 case 2:
                     if(this.game.comunication_mode){
                         const def=this.game.definitions.ammos.getFromNumber(item_value)
-                        this.game.input.actions.push({type:InputActionType.emote_item,item:this.game.definitions.game_items.keysString[def.idString]})
+                        this.game.input.actions.push({type:InputActionType.emote,id:this.game.definitions.game_objects.keysString[def.idString]})
                     }
                     break
                 case 3:
                     if(this.game.comunication_mode){
-                        if(this.items[item_value].count>0)this.game.input.actions.push({type:InputActionType.emote_item,item:this.items[item_value].id})
+                        if(this.game.inventory._items[item_value].count>0)this.game.input.actions.push({type:InputActionType.emote,id:this.game.definitions.game_items.keysString[this.game.definitions.game_items.valueNumber[this.game.inventory._items[item_value].id].idString]})
                     }else{
                         this.game.input.actions.push({type:InputActionType.use_item,slot:item_value})
                     }
@@ -736,7 +773,7 @@ export class UiManager{
                 case 5:
                     if(this.game.comunication_mode){
                         const def=this.game.definitions.scopes.getFromNumber(item_value)
-                        this.game.input.actions.push({type:InputActionType.emote_item,item:this.game.definitions.game_items.keysString[def.idString]})
+                        this.game.input.actions.push({type:InputActionType.emote,id:this.game.definitions.game_objects.keysString[def.idString]})
                     }else{
                         this.game.input.actions.push({type:InputActionType.set_scope,scope_id:item_value})
                     }
@@ -766,9 +803,10 @@ export class UiManager{
     hide_game_over(){
         ShowElement(this.content.game_gui)
         HideElement(this.content.normal_gameOver)
-        this.content.restart_gameOver.classList.add("hidden")
+        this.disableCrosshair()
+        this.content.restart_gameOver.classList.toggle("hidden",true)
     }
-    async show_game_over(g:GameOverPacket){
+    async apply_game_over(g:GameOverPacket){
         switch(this.game_over_screen.type){
             case GameOverScreenType.Normal:{
                 this.normal_game_over(g)
@@ -780,42 +818,39 @@ export class UiManager{
                     this.game.sounds.play(this.game.resources.get_sound("ui_death"),{
                         bus:"ui"
                     })
-                    this.content.restart_gameOver.classList.remove("hidden")
                     this.game.scope_zoom*=0.75
                     this.game.zoom_speed*=0.05
-                    await this.game.input_manager.wait_for_action("reload")
+                    this.content.restart_gameOver.classList.toggle("hidden",false)
+                    await this.game.input_manager.wait_for_key(Key.R)
                 }
-                    this.game.finish_game_over(g.status.win)
+                this.game.finish_game_over(g.status.win)
                 break
             case GameOverScreenType.Light:
                 break
         }
     }
     normal_game_over(g:GameOverPacket){
+        if(this.game.fineshed)return
+        this.game.fineshed=true
         HideElement(this.content.game_gui)
         this.disableCrosshair()
         disableContextMenuPrevent()
         if(g.status.win){
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.you-win",{})
             ShowElement(this.content.normal_gameOver)
+            HideElement(this.content.gameOver_spectate_btn)
             this.content.normal_gameOver.style.opacity="1"
         }else{
-            this.game.ambient.last_music_pos=this.game.ambient.music.offset
-            this.game.ambient.music.set(null)
-                this.game.sounds.play(this.game.resources.get_sound("ui_death"),{
-                    bus:"ui"
-                })
+            this.game.ambient.clear()
+            this.game.sounds.play(this.game.resources.get_sound("ui_death"),{
+                bus:"ui"
+            })
             if(!this.players_name[g.status.eliminator])return
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.eliminated-by",{
                 player:`<span id="gameover-eliminator">${this.players_name[g.status.eliminator].full}</span>`
             })
-            this.game.scope_zoom*=0.75
-            this.game.zoom_speed*=0.05
-            this.content.normal_gameOver.style.opacity="0"
-            this.game.add_timeout(()=>{
-                ShowElement(this.content.normal_gameOver)
-                self.requestAnimationFrame(()=>this.content.normal_gameOver.style.opacity="1")
-            },3)
+            ShowElement(this.content.normal_gameOver)
+            ShowElement(this.content.gameOver_spectate_btn)
         }
         let content=""
         for(const status of g.status.status){
@@ -829,6 +864,8 @@ export class UiManager{
 </div>
 `
         }
+
+        HideElement(this.content.gameover_status_container)
         this.content.gameover_status_container.innerHTML=content
     }
     ping_time:number=0
@@ -851,6 +888,9 @@ export class UiManager{
                 this.tooltip_hide()
             }
         }
+        if(this.joystick_timer>0){
+            this.joystick_timer-=dt
+        }
         this.update_emote_wheel()
         this.update_crosshair(dt)
     }
@@ -862,6 +902,7 @@ export class UiManager{
         const old_inter=this.current_interaction
 
         this.current_interaction = undefined
+        if(player.downed)this.current_interaction=player
         this.state.interact = false
         this.state.information_box_message = ""
 
@@ -906,7 +947,7 @@ export class UiManager{
             if(!o.can_interact(player)) continue
             this.current_interaction = o
             if(this.current_interaction!==old_inter){
-                if(this.game.save.get_variable("sv_mobile_auto_pickup")&&this.current_interaction.auto_interact(player)){
+                if(this.game.save.settings.get_var("mobile_auto_pickup")&&this.current_interaction.auto_interact(player)){
                     this.game.input_manager.listener.emit("actiondown",{action:"interact"})
                 }
                 const hint = o.get_interact_hint(player)
@@ -930,19 +971,55 @@ export class UiManager{
         this.game.ui_manager.signal("active_player_update",{dt,player})
     }
 
-    items: {id:number,count:number}[] = []
-    free_slot(id:string,limit:number):boolean{
-        return this.items.some((v)=>{
-            return v.count===0||(v.id===this.game.definitions.game_items.keysString[id]&&v.count<limit)
-        })
-    }
-    melee_free():boolean{
-        return this.game.inventory.weapon_is_free(0)
-    }
-    gun_free():boolean{
-        return this.game.inventory.weapon_is_free(1)||this.game.inventory.weapon_is_free(2)
+    tooltip_press_timer?:number
+    tooltip_press_element?:HTMLElement
+
+    tooltip_start_press(element:HTMLElement,title:string|undefined,description:string){
+        this.tooltip_cancel_press()
+
+        if(!title)return
+
+        this.tooltip_press_element=element
+        this.tooltip_press_timer=setTimeout(()=>{
+            if(this.tooltip_press_element===element){
+                this.tooltip_show(title,description,element)
+            }
+        },500) as unknown as number
     }
 
+    tooltip_bind(element:HTMLElement){
+        element.onmouseenter=()=>{
+            if(this.mobile_enabled)return
+            this.tooltip_show(element.dataset.item_name,element.dataset.item_description??"",element)
+        }
+        element.onmouseleave=()=>{
+            if(this.mobile_enabled)return
+            this.tooltip_hide()
+        }
+        element.ontouchstart=()=>{
+            if(!this.mobile_enabled)return
+            this.tooltip_start_press(element,element.dataset.item_name,element.dataset.item_description??"")
+        }
+        element.ontouchend=()=>{
+            if(!this.mobile_enabled)return
+            this.tooltip_hide()
+        }
+        element.ontouchcancel=()=>{
+            if(!this.mobile_enabled)return
+            this.tooltip_hide()
+        }
+        element.ontouchmove=()=>{
+            if(!this.mobile_enabled)return
+            this.tooltip_cancel_press()
+        }
+    }
+    tooltip_cancel_press(){
+        if(this.tooltip_press_timer!==undefined){
+            clearTimeout(this.tooltip_press_timer)
+            this.tooltip_press_timer=undefined
+        }
+        this.tooltip_press_element=undefined
+    }
     tooltip_show(title:string|null|undefined,description:string,element?:HTMLElement){
         if(!title)return
         this.content.tooltip_title.innerText=title
@@ -951,6 +1028,7 @@ export class UiManager{
         this.content.tooltip.classList.add("tooltip-visible")
     }
     tooltip_hide(){
+        this.tooltip_cancel_press()
         this.content.tooltip.classList.remove("tooltip-visible")
         this.tooltip_element=undefined
     }

@@ -11,21 +11,23 @@ export const LootTables={
         {item:"hp18",weight:60},
         {item:"ak47",weight:40},
         {item:"ar15",weight:40},
-        {item:"m1921",weight:40},
         {item:"m870",weight:39},
+        {item:"tec22",weight:37},
+        {item:"aipc39",weight:35},
+        {item:"m1921",weight:10},
         {item:"famas",weight:8},
         {item:"rifle_cbc",weight:7},
         {item:"spas12",weight:7},
-        {item:"model94",weight:1},
+        {item:"super_conqueror",weight:1},
         {item:"blr81",weight:1},
     ],
     mythic_guns:[
-        {item:"sr25",weight:13},
-        {item:"vss",weight:13},
-        {item:"vector",weight:13},
-        {item:"p90",weight:10},
-        {item:"m4a1",weight:10},
-        {item:"desert_eagle",weight:7},
+        {item:"m110a2",weight:20},
+        {item:"vss",weight:20},
+        {item:"vector",weight:20},
+        {item:"m4a1",weight:20},
+        {item:"desert_eagle",weight:15},
+        {item:"p90",weight:15},
         {item:"kar98k",weight:7},
         {item:"m2_2",weight:5},
         {item:"m79",weight:2},
@@ -43,20 +45,21 @@ export const LootTables={
     ],
     //Guns Spawn
     guns:[
-        {table:"common_guns",weight:150},
+        {table:"common_guns",weight:160},
         {table:"mythic_guns",weight:5},
         {table:"legendary_guns",weight:0.2}
     ],
     melees:[
         {item:"survival_knife",weight:15},
         {item:"shovel",weight:15},
+        {item:"baseball_bat",weight:15},
         {item:"axe",weight:10},
         {item:"crowbar",weight:7},
         {item:"katana",weight:3},
         {item:"sledgehammer",weight:3},
         {item:"pan",weight:2},
-        {item:"bonesaw",weight:2},
-        {item:"bonesaw_bloody",weight:2},
+        {item:"bonesaw",weight:1},
+        {item:"bonesaw_bloody",weight:1},
     ],
     advanced_melees:[
         {item:"sledgehammer",weight:3},
@@ -88,7 +91,7 @@ export const LootTables={
         {item:"blue_pills",count:1,weight:0.1},
     ],
     addiction_consumibles:[
-        {item:"red_soda",count:2,weight:5},
+        {item:"red_beer",count:2,weight:5},
         {item:"small_red_crystal",count:4,weight:1},
         {item:"red_crystal",count:2,weight:0.1},
     ],
@@ -105,16 +108,16 @@ export const LootTables={
     ],
     //Ammos
     ammos:[
-        {item:"12g",count:10,weight:5},
-        {item:"9mm",count:60,weight:5},
-        {item:"762mm",count:40,weight:5},
-        {item:"556mm",count:40,weight:5},
-        {item:"45acp",count:40,weight:3.5},
-        {item:"22lr",count:80,weight:3.5},
-        {item:"50cal",count:20,weight:0.1},
-        {item:"308sub",count:5,weight:0.05},
-        {item:"gasoline",count:5,weight:0.05},
-        {item:"explosive_ammo",count:2,weight:0.05},
+        {item:"p76",count:10,weight:5},
+        {item:"l19",count:60,weight:5},
+        {item:"c51",count:40,weight:5},
+        {item:"c45",count:40,weight:5},
+        {item:"c22",count:40,weight:3.5},
+        {item:"l15",count:80,weight:3.5},
+        {item:"p61",count:40,weight:0.1},
+        {item:"p85",count:10,weight:0.05},
+        {item:"gasoline",count:10,weight:0.05},
+        {item:"explosive_ammo",count:5,weight:0.05},
     ],
     //Throwables
     throwables:[
@@ -172,6 +175,7 @@ export const LootTables={
         {weight:5,item:"sprite_ammo"},
         {weight:5,item:"biggest_magazine"},
         {weight:5,item:"self_revive"},
+        {weight:4.5,item:"incendiary_bullets"},
         {weight:4,item:"nature_leaf"},
         {weight:4,item:"rip_ammo"},
         {weight:4,item:"first_last_great"},
@@ -264,6 +268,15 @@ export const LootTables={
         [{weight:1,count:5,table:"throwables"}],
         [{weight:1,count:4,table:"scopes"}],
     ],
+    military_chest:{
+        max:4,
+        min:2,
+        content:[
+            {weight:20,table:"guns"},
+            {weight:1,table:"mythic_guns"},
+            {weight:0.1,table:"legendary_guns"},
+        ]
+    },
     //Animals
     animal_medium:[
         [{weight:1,count:1,table:"consumibles"}],
@@ -291,3 +304,58 @@ export const LootTables={
         ]
     ]
 } satisfies Record<string,LootTable<LootAditional>>
+
+export const SimpleLootTables={
+    common_guns:[
+        {item:"m9",weight:100},
+        {item:"mp5",weight:90},
+        {item:"micro_uzi",weight:80},
+        {item:"ak47",weight:40},
+        {item:"m870",weight:39},
+        {item:"aipc39",weight:35},
+        {item:"m110a2",weight:5},
+        {item:"kar98k",weight:5},
+    ],
+    guns:[
+        {table:"common_guns",weight:1},
+    ],
+    melees:[
+        {item:"survival_knife",weight:15},
+        {item:"shovel",weight:15},
+        {item:"axe",weight:10},
+        {item:"pan",weight:2},
+    ],
+    scopes:[
+        {item:"scope_2",count:1,weight:28},
+        {item:"scope_3",count:1,weight:11},
+    ],
+    consumibles:[
+        {table:"health_consumibles",count:1,weight:10},
+        {table:"adrenaline_consumibles",count:1,weight:6},
+    ],
+    ammos:[
+        {item:"p76",count:10,weight:5},
+        {item:"l19",count:60,weight:5},
+        {item:"c51",count:40,weight:5},
+    ],
+
+    wood_crate:[
+        {weight:1,count:1,table:"normal_loot"},
+    ],
+    civil_loot:[
+        {weight:1,table:"ammos"},
+        {weight:1,table:"consumibles"},
+        {weight:0.7,table:"equipments"},
+        {weight:0.7,table:"scopes"},
+        {weight:0.1,table:"guns"},
+        {weight:0.003,table:"melees"},
+    ],
+    normal_loot:[
+        {weight:1,table:"ammos"},
+        {weight:1,table:"consumibles"},
+        {weight:0.8,table:"guns"},
+        {weight:0.7,table:"equipments"},
+        {weight:0.6,table:"scopes"},
+        {weight:0.01,table:"melees"},
+    ],
+}

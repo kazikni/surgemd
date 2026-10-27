@@ -1,42 +1,39 @@
-import { ClientGame, Graphics2D, Grid2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Key, Sound, WebglRenderer } from "common/engine/web.ts";
+import { ClientGame, Graphics2D, InputActionEvent, InputAxisEvent, InputControllerChanged, InputEventType, InputMouseMoveEvent, is_mobile, Key, ShowElement, Tileset, ToggleElement, WebglRenderer } from "common/engine/web.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
-import { GameObject } from "./gameObject.ts";
+import { ClientScene2D, GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
 import { TerrainM } from "../managers/terrainManager.ts";
 import { MenuManager } from "../managers/menuManager.ts";
 import { DeadZoneManager } from "../managers/deadZoneManager.ts";
 import { AmbientManager } from "../managers/ambientManager.ts";
 import { Human } from "../objects/human.ts";
-import { DamageSplash, PrivateUpdate, SelfStateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
+import { PrivateUpdate, SelfStateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
-import { Layers, zIndexes } from "common/scripts/others/constants.ts";
-import { ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
+import { zIndexes } from "common/scripts/others/constants.ts";
+import { API_BASE, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { Loot } from "../objects/loot.ts";
 import { Obstacle } from "../objects/obstacle.ts";
 import { Bullet } from "../objects/bullet.ts";
 import { Explosion } from "../objects/explosion.ts";
-import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
 import { Grenade } from "../objects/grenade.ts";
-import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
-import { GeneralUpdate, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
+import { GeneralFullMainState, GeneralUpdate, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { GameOverScreenType } from "common/scripts/config/level_definition.ts";
 import { Building } from "../objects/building.ts";
 import { DamageSplashOBJ } from "../objects/damageSplash.ts";
 import { Vehicle } from "../objects/vehicle.ts";
 import { MinimapManager } from "../managers/miniMapManager.ts";
-import { GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
-import { GameOverPacket, GameOverStatus } from "common/scripts/packets/gameOver.ts";
+import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
+import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { LocalGameServer } from "./offline_game.ts";
-import { is_binary } from "../defs/go_files.ts";
+import { is_binary } from "../defs/bin_files.ts";
 import { Creature } from "../objects/creature.ts";
 import { Parachute } from "../objects/parachute.ts";
 import { SyncedParticle } from "../objects/synced_particle.ts";
-import { GInventory, GunItem, LItem, MeleeItem } from "./inventory.ts";
+import { GInventory } from "./inventory.ts";
 import { GameDeviceManager } from "../managers/deviceManager.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
-import { load_kspr } from "common/engine/core/lang/kspr.ts";
+import { LoadoutFootDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { Plane } from "../objects/plane.ts";
 import { Decal } from "../objects/decals.ts";
 import { HumanBody } from "../objects/human_body.ts";
@@ -44,11 +41,19 @@ import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/message
 import { StartPacket, StartSettings } from "common/scripts/packets/start_packet.ts";
 import { input_popup, yes_no_popup } from "../defs/menu.ts";
 import { Matrix, matrix4 } from "common/engine/core/math/matrix.ts";
-import { EditorManager } from "../managers/editorManager.ts";
-import { BasicSocket, Client, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Language, Numeric, ReplayWatcher, sleep, Stream, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { BasicSocket, CircleHitbox2D, Client, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Language, Numeric, Path, StaticStream, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Drone } from "../objects/drone.ts";
 import { decode_map_config } from "common/scripts/packets/map_message.ts";
+import { FindGameResult } from "common/scripts/config/config.ts";
+import { GameState, PlayArgs } from "./constants.ts";
+import { JoinnedPacket } from "common/scripts/packets/joinned.ts";
+import { PingWorld } from "../objects/ping_world.ts";
+import { Walls } from "../objects/walls.ts";
+import { EditorManager } from "../managers/editorManager.ts";
 export class Game extends ClientGame<GameObject>{
+    state:GameState=GameState.Idle
+
+    scene_2d: ClientScene2D
     client?:Client
     input:InputPacket=new InputPacket()
     comunication_mode:boolean=false
@@ -56,11 +61,9 @@ export class Game extends ClientGame<GameObject>{
 
     offline:boolean=false
     can_act:boolean=true
-    get play_sounds():boolean{
-        return this.menu.content.gameover_text_screen.style.opacity=="0"
-    }
-    game_over:boolean=false
-    started:boolean=false
+    spectating:boolean=false
+    fineshed:boolean=false
+    match_started:boolean=false
 
     local_server:LocalGameServer
     start_with_intro:boolean=false
@@ -85,16 +88,14 @@ export class Game extends ClientGame<GameObject>{
     device:GameDeviceManager
     minimap:MinimapManager
 
+    editor?:EditorManager
+
     active_entity?:Human
     active_entity_id?:number
 
     global_interpolation:number=1
 
-    terrain_gfx=new Graphics2D()
-    grid=new Grid2D()
-
     loaded=false
-    loaded_textures:string[]=[]
 
     definitions!:GameDefinition
 
@@ -106,45 +107,29 @@ export class Game extends ClientGame<GameObject>{
         scale: Vec2
     }
     fs?:FileManager
-    watcher?:ReplayWatcher
-    editor?: EditorManager
-    cam_type:number=0
 
+    cam_type:number=0
     free_cam_pos=v2(0,0)
     free_cam_speed=2
     free_cam_zoom=0.5
 
     hitboxes_gfx:Graphics2D=new Graphics2D()
     ui_gfx:Graphics2D=new Graphics2D()
-    aim_line:{
-        enabled:boolean
-        width:number
-        height:number
-        color:Color
-    }={
-        enabled:false,
-        width:1000,
-        height:0.1,
-        color:{r:255,g:255,b:255,a:229}
-    }
+    aim_line:boolean=false
 
     theme_colors:Record<string,string>={}
+
     ntps:number=30
-
-    parallax:Record<number,Obstacle>={}
-
-    objects_process_queue:Stream[]=[]
 
     constructor(definitions:GameDefinition,menu:MenuManager,canvas:HTMLCanvasElement,translation:TranslationManager,objects:Array<new ()=>GameObject>=[]){
         super(
             new WebglRenderer(canvas),
             translation,
-            [...objects,Human,Loot,Building,Obstacle,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane,HumanBody,Drone],
+            [...objects,Human,Loot,Building,Obstacle,Walls,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane,HumanBody,Drone],
         )
-
-        this.set_meter_size(100)
-        this.cam2d.visible_callback=(o)=>o.layer<=this.cam2d.layer
-        this.cam2d.aspect_lock=true
+        this.scene_2d=new ClientScene2D(this)
+        this.scene_2d.camera.visible_callback=(o)=>(o.propertys?.["all_layers"]||o.layer<=this.scene_2d.camera.layer)
+        this.scene_2d.camera.aspect_lock=true
 
         this.local_server=new LocalGameServer(this)
 
@@ -159,80 +144,61 @@ export class Game extends ClientGame<GameObject>{
         this.sounds.create_bus("obstacles")
         this.sounds.create_bus("explosions")
 
-        this.save.casters=ConfigCasters
-        this.save.default_values=ConfigDefaultValues
-        this.save.default_actions=ConfigDefaultActions
+        this.save.settings.casters=ConfigCasters
+        this.save.settings.default_values=ConfigDefaultValues
+        this.save.settings.default_actions=ConfigDefaultActions
 
         this.ui=new UiManager(this)
         this.menu=menu
 
-        this.inventory=new GInventory()
-        this.dead_zone=new DeadZoneManager(this)
-        this.ambient=new AmbientManager(this)
+        this.inventory=new GInventory(this.definitions)
+        this.dead_zone=this.add_component(new DeadZoneManager()) as DeadZoneManager
+        this.ambient=this.add_component(new AmbientManager()) as AmbientManager
         this.device=new GameDeviceManager(this)
         this.minimap=new MinimapManager(this)
 
-        this.cam2d.add_object(this.terrain_gfx)
-        this.cam2d.add_object(this.grid)
-        this.cam2d.add_object(this.hitboxes_gfx)
-        this.cam2d.add_object(this.ui_gfx)
+        this.scene_2d.camera.add_object(this.hitboxes_gfx)
+        this.scene_2d.camera.add_object(this.ui_gfx)
 
-        this.terrain_gfx.zIndex=zIndexes.Terrain
-        this.grid.zIndex=zIndexes.Grid
         this.ui_gfx.zIndex=zIndexes.UI
         this.hitboxes_gfx.zIndex=zIndexes.UI
 
         this.world_shadow={
             enabled:true,
-            color:ColorM.hex("#0013"),
+            color:ColorM.hex("#0014"),
             matrix:matrix4.translation_2d(v2(0.1,0.1)),//matrix4.mul(),matrix4.translation_2d(v2(0.9,0.9)))
             offset:v2(0.1,0.1),
             scale:v2(1,1)
         }
 
-        this.inventory.initialize(this.definitions,{
-            0:MeleeItem as (new(item:GameItem)=>LItem),
-            1:GunItem as (new(item:GameItem)=>LItem),
-            2:GunItem as (new(item:GameItem)=>LItem)
-        })
-
-        this.grid.size=0.05
-        this.grid.size=5
-        this.grid.stroke=ColorM.rgba(0,0,0,25)
-
-        this.terrain_gfx.initialize(this.cam2d.ctx)
-        this.hitboxes_gfx.initialize(this.cam2d.ctx)
-        this.ui_gfx.initialize(this.cam2d.ctx)
-        this.dead_zone.append()
+        this.hitboxes_gfx.initialize(this.scene_2d.camera.ctx)
+        this.ui_gfx.initialize(this.scene_2d.camera.ctx)
+        this.terrain.append()
     }
     get_theme_color(name:string):string{
         if(this.theme_colors[name])return this.theme_colors[name]
         switch(name){
             case "primary":
-                return this.save.get_variable("sv_ui_primary_color")
+                return this.save.settings.get_var("ui_primary_color")
             case "secondary":
-                return this.save.get_variable("sv_ui_secondary_color")
+                return this.save.settings.get_var("ui_secondary_color")
             case "tertiary":
-                return this.save.get_variable("sv_ui_tertiary_color")
+                return this.save.settings.get_var("ui_tertiary_color")
             case "positive":
-                return this.save.get_variable("sv_ui_positive_color")
+                return this.save.settings.get_var("ui_positive_color")
             case "negative":
-                return this.save.get_variable("sv_ui_negative_color")
+                return this.save.settings.get_var("ui_negative_color")
             case "special":
-                return this.save.get_variable("sv_ui_special_color")
+                return this.save.settings.get_var("ui_special_color")
         }
         return "#ffffff"
-    }
-    add_damage_splash(d:DamageSplash){
-        const dd=new DamageSplashOBJ()
-        this.scene_2d.objects.add_object(dd,d.taker_layer,undefined,d)
     }
     override listeners_init(): void {
         this.input_manager.add_axis("movement","move_up","move_down","move_left","move_right","left")
         this.input_manager.add_axis("aim","aim_up","aim_down","aim_left","aim_right","right")
         this.input_manager.listener.on(InputEventType.Axis,(a:InputAxisEvent)=>{
             if(a.action==="movement"){
-                if(!this.can_act){
+                if(!this.can_act||!(this.state===GameState.Playing||this.state===GameState.Editor)){
                     this.input.movement={dir:0,scale:0}
                     return
                 }
@@ -241,15 +207,23 @@ export class Game extends ClientGame<GameObject>{
                 }else{
                     this.input.movement={dir:Math.atan2(a.value.y,a.value.x),scale:1}
                 }
-            }else if(a.action==="aim"){
-                if(a.value.x!==0||a.value.y!==0)this.set_lookTo_angle(Math.atan2(a.value.y,a.value.x),1)
+            }else if(a.action==="aim"&&!this.input_manager.mouse_emulation){
+                const len=v2.len(a.value)
+                if(len>0.2){
+                    this.set_lookTo_angle(Math.atan2(a.value.y,a.value.x),1)
+                    this.aim_line=true
+                }else{
+                    this.aim_line=false
+                }
             }
         })
         this.input_manager.listener.on(InputEventType.ActionDown,(a:InputActionEvent)=>{
-            if(!this.can_act||this.editor)return
+            if(!this.can_act||!(this.state===GameState.Playing))return
+            if(a.action==="toggle_cursor")this.input_manager.mouse_emulation=!this.input_manager.mouse_emulation
+            if(this.input_manager.mouse_emulation)return
             switch(a.action){
                 case "fire":
-                    if(a.element!==this.renderer.canvas)break
+                    if(a.element&&a.element!==this.renderer.canvas)break
                     this.input.use_weapon=true
                     break
                 case "alt_fire":
@@ -260,7 +234,7 @@ export class Game extends ClientGame<GameObject>{
                     this.ui.begin_emote_wheel(this.input_manager.mouse_position)
                     break
                 case "message":
-                    if(this.happening&&!this.showing_menu&&!this.game_over){
+                    if(!this.showing_menu){
                         this.showing_menu=true
                         this.can_act=false
                         this.input.movement={dir:0,scale:0}
@@ -288,8 +262,8 @@ export class Game extends ClientGame<GameObject>{
                 case "cancel":
                     this.input.cancel=true
                     break
-                case "swamp_guns":
-                    this.input.swamp_guns=true
+                case "swap_guns":
+                    this.input.swap_guns=true
                     break
                 case "weapon1":
                     this.input.actions.push({type:InputActionType.set_hand,hand:0})
@@ -299,12 +273,6 @@ export class Game extends ClientGame<GameObject>{
                     break
                 case "weapon3":
                     this.input.actions.push({type:InputActionType.set_hand,hand:2})
-                    break
-                case "toggle_full_device":
-                    this.device.toggle_full()
-                    break
-                case "toggle_hide_device":
-                    this.device.toggle_visibility()
                     break
                 case "use_item1":
                     this.input.actions.push({type:InputActionType.use_item,slot:0})
@@ -327,12 +295,22 @@ export class Game extends ClientGame<GameObject>{
                 case "use_item7":
                     this.input.actions.push({type:InputActionType.use_item,slot:6})
                     break
-                case "previous_weapon":
-                    this.input.actions.push({type:InputActionType.set_hand,hand:Math.max(this.inventory.weapon_idx-1,0)})
+                case "previous_weapon":{
+                    let walk=Math.max(this.inventory.weapon_idx-1,0)
+                    if(this.inventory.weapons[walk]===undefined){
+                        walk=Math.max(this.inventory.weapon_idx-2,0)
+                    }
+                    this.input.actions.push({type:InputActionType.set_hand,hand:walk})
                     break
-                case "next_weapon":
-                    this.input.actions.push({type:InputActionType.set_hand,hand:Math.max(this.inventory.weapon_idx+1,0)})
+                }
+                case "next_weapon":{
+                    let walk=Math.max(this.inventory.weapon_idx+1,0)
+                    if(this.inventory.weapons[walk]===undefined){
+                        walk=Math.max(this.inventory.weapon_idx+2,0)
+                    }
+                    this.input.actions.push({type:InputActionType.set_hand,hand:walk})
                     break
+                }
                 case "previous_scope":{
                     const oidx=this.inventory.iitems.indexOf(this.inventory.scope!)
                     const it=this.inventory.iitems[oidx-1]
@@ -359,7 +337,7 @@ export class Game extends ClientGame<GameObject>{
                     break
                 }
                 case "escape":
-                    if(this.happening&&!this.showing_menu&&!this.game_over){
+                    if(!this.showing_menu){
                         this.showing_menu=true
                         this.menu.game_popup(yes_no_popup("Exit?")).then((v)=>{
                             if(v){
@@ -373,6 +351,7 @@ export class Game extends ClientGame<GameObject>{
             this.ui_manager.signal("actiondown",a)
         })
         this.input_manager.listener.on(InputEventType.ActionUp,(a:InputActionEvent)=>{
+            if(!this.can_act)return
             switch(a.action){
                 case "fire":
                     this.input.use_weapon=false
@@ -389,23 +368,36 @@ export class Game extends ClientGame<GameObject>{
             }
             this.ui_manager.signal("actionup",a)
         })
+        //#if defined(is_desktop_port)
         this.input_manager.listener.on(InputEventType.MouseMove,(e:InputMouseMoveEvent)=>{
-            if(!isMobile){
-                const cam_c=v2.dscale(this.cam2d.size,2)
-                const mouse_p=e.position
+            //#if defined(is_web_port)
+            if(!this.ui.mobile_enabled){
+            //#endif
+                const canvas_rect=this.renderer.canvas.getBoundingClientRect()
+                const cam_c=v2(canvas_rect.width/2,canvas_rect.height/2)
+                const mouse_p=this.input_manager.real_mouse_position
                 const angle=v2.lookTo(cam_c,mouse_p)
-                const dist=v2.distance(cam_c,mouse_p)/v2.len(cam_c)
+                const dist=v2.distance(cam_c,mouse_p)/Math.min(cam_c.x,cam_c.y)
                 this.set_lookTo_angle(angle,dist)
+            //#if defined(is_web_port)
+            }
+            //#endif
+        })
+        //#endif
+        this.input_manager.listener.on(InputEventType.ControllerChanged,(e:InputControllerChanged)=>{
+            if(e.connected){
+                this.input_manager.mouse_emulation=this.state!==GameState.Playing
+            }else{
+                this.input_manager.mouse_emulation=false
             }
         })
-        
         this.ui_manager.init()
     }
     override async bind(fs?:FileManager): Promise<void> {
         super.bind()
-        this.save.compatible_version=1
-        this.save.version=1
-        await this.save.init(is_binary?{
+        this.save.settings.compatible_version=1
+        this.save.settings.version=1
+        await this.save.settings.init(is_binary?{
             type:"file",
             path:"save/settings.json",
             fs:fs!,
@@ -415,18 +407,24 @@ export class Game extends ClientGame<GameObject>{
         })
 
         this.language.load_default_language(await(await fetch("/scripts/languages/en.json")).json() as Language,"main")
-        this.language.load_language(await(await fetch(`/scripts/languages/${this.save.get_variable("sv_ui_translation")}.json`)).json() as Language,"main")
+        this.language.load_language(await(await fetch(`/scripts/languages/${this.save.settings.get_var("ui_translation")}.json`)).json() as Language,"main")
+
+        this.sounds.set_master_volume(Numeric.clamp(this.save.settings.get_var("sounds_master_volume"),0,1))
+        this.sounds.get_bus("music").set_volume(Numeric.clamp(this.save.settings.get_var("sounds_music_volume"),0,1))
+        this.sounds.get_bus("ambience").set_volume(Numeric.clamp(this.save.settings.get_var("sounds_music_volume"),0,1))
 
         this.fs=fs
+        await this.ui.init()
     }
 
     set_lookTo_angle(angle:number,dist:number){
         if(!this.active_entity)return
         this.input.angle=angle
+        if(dist>1)dist=1
         this.input.distance_to_aim=dist
-        if(!this.active_entity.downed&&!this.active_entity.swimming&&!this.active_entity.seat&&this.save.get_variable("sv_game_client_rot")&&!this.game_over){
+        if(!this.spectating&&!this.fineshed&&!this.active_entity.downed&&!this.active_entity.swimming&&!this.active_entity.seat&&this.save.settings.get_var("game_client_rot")){
             this.active_entity.enable_auto_rot=false
-            this.active_entity.physical_data.rotation=this.input.angle
+            this.active_entity.rotation=this.input.angle
         }else{
             this.active_entity.enable_auto_rot=true
         }
@@ -439,103 +437,85 @@ export class Game extends ClientGame<GameObject>{
             this.ui.current_interaction.on_interact(this.active_entity)
         }
     }
-    set_scope(scope:ScopeDef){
-        if(this.inventory.scope&&this.inventory.scope===scope){
-            return
-        }
-        this.inventory.scope=scope
-        this.ui_manager.signal("current_scope_dirty",scope)
+    spectate(){
+        /*
+        this.input.actions.push({type:InputActionType.spectate,val:0})
+        this.ui.hide_game_over()
+        */
     }
-    async load_resources(textures:string[]=[],assets:Record<string,string>,languages_path:string="",show_loading_screen:boolean=true){
-        if(!this.resources||(this.loaded_textures.length==textures.length&&textures==this.loaded_textures))return
+    async load_resources(agro:string[]=[],assets:Record<string,string>,languages_path:string="",definitions:string[]=[]){
+        if(!this.resources)return
         this.loaded=false
-        if(show_loading_screen)this.menu.show_loading_screen()
         this.menu.set_loading_current("Somethings",true)
 
-        textures=["/assets/img/kspr/main",...textures]
-        this.resources.clear([
-            "essentials",
-            "main",
-            ...textures
-        ])
-
-        for (const tt of textures) {
-            this.menu.set_loading_current(`${tt}.kspr`)
-            const res = await fetch(`${tt}.kspr`)
-            const buffer = await res.arrayBuffer()
-            const kspr = load_kspr(buffer)
-            let resolution = this.save.get_variable("sv_graphics_resolution")
-            if(!["low","medium"].includes(resolution)){
-                resolution="low"
-                this.save.set_variable("sv_graphics_resolution",resolution)
-            }
-            await this.resources.load_kspr(kspr,resolution,tt,"",undefined,undefined,this.menu.set_loading_current)
+        agro=["/assets/kspr/main",...agro]
+        for(const p in this.resources.imported){
+            if(agro.includes(p))continue
+            this.resources.unload_imported(p)
         }
-        await this.resources.load_ksnd("/assets/sounds/ksnd/main","main",undefined,this.menu.set_loading_current)
+        let resolution = this.save.settings.get_var("graphics_resolution")
+        for(const tt of agro){
+            if(this.resources.imported[tt])continue
+            const v=await this.resources.load_json(`${tt}/settings.json`,this.menu.set_loading_current)
+
+            for(const f of (v.files as string[])){
+                const path=Path.join_simple(tt,f)
+                this.menu.set_loading_current(path)
+                if(f.startsWith("sounds")){
+                    await this.resources.load_source(tt,path)
+                }else if(f.startsWith("sheets/sheet_"+resolution)){
+                    resolution=""
+                    await this.resources.load_source(tt,path)
+                }
+            }
+        }
         if(languages_path!=""){
             try{
                 this.language.load_default_language(await this.resources.load_json(`${languages_path}/en.json`),"ingame")
-                this.language.load_language(await this.resources.load_json(`${languages_path}/${this.save.get_variable("sv_ui_translation")}.json`),"ingame")
+                this.language.load_language(await this.resources.load_json(`${languages_path}/${this.save.settings.get_var("ui_translation")}.json`),"ingame")
             }catch(e){
                 console.log(e)
             }
         }
-        if(show_loading_screen)this.menu.hide_loading_screen()
+        for(const d of definitions){
+            const stream=new StaticStream((await (await fetch(d)).bytes()).buffer)
+            this.definitions.add_definitions(stream.read_td(GameDefinition.add_td))
+        }
+        this.call_event("load",agro)
         this.loaded=true
     }
-    async start_editor(){
-        this.close_game()
-        this.editor = new EditorManager(this)
-        this.cam_type=1
-        this.happening=true
-
-        this.free_cam_pos=v2.zero()
-        this.free_cam_zoom=1
-        this.menu.game_start()
-        this.ui.start()
-        this.hitboxes_gfx.ctx.clear()
-        this.editor.start()
-        //await this.editor.load(path)
-    }
     async start(settings:StartSettings){
+        this.definitions.reset()
         await this.load_resources(settings.textures,settings.assets,settings.languages_path)
         this.menu.game_start()
-        this.happening=true
 
-        this.cam2d.position.x=-10000
-        this.cam2d.position.y=-10000
-        this.sounds.set_listener_position(this.cam2d.position)
-        this.cam2d.zoom=6
+        this.scene_2d.set_camera_position(v2(-10000,-10000))
+        this.scene_2d.camera.zoom=6
         this.zoom_speed=4
 
         if(settings.map){
             const map=decode_map_config(settings.map)
-            if(map.definitions){
-                this.definitions.reset()
-                this.definitions.add_definitions(map.definitions)
-            }
+            if(map.definitions)this.definitions.add_definitions(map.definitions)
             await this.terrain.process_map(map)
             this.minimap.init(map)
         }
 
-        this.ambient.on_game_start()
+        this.call_event("game_start",settings)
 
         this.ui.game_over_screen={
             type:GameOverScreenType.Normal
         }
+        this.fineshed=false
         this.ui.start()
         this.join()
-        this.watcher?.play?.()
 
         this.scope_zoom=1
-        this.hitboxes_gfx.ctx.clear()
-    }
-    async show_final_screen(game_over:GameOverStatus){
-        /*this.final_screen.set_final_screen(island_final)
-        await this.final_screen.show_final_screen()
-        await this.final_screen.show_status(game_over.status[0] as PlayerStatus)
-        if(game_over.leaderboards)await this.final_screen.show_leaderboards(game_over.leaderboards)
-        await this.final_screen.hide_final_screen()*/
+        this.menu.hide_loading_screen()
+
+        if(this.offline){
+            this.ui.game_over_screen={type:GameOverScreenType.Restart}
+            this.local_server.init(this.start_with_intro)
+        }
     }
     close_game(hard:boolean=true){
         if(this.client&&this.client.opened)this.client.disconnect()
@@ -543,164 +523,155 @@ export class Game extends ClientGame<GameObject>{
             this.local_server.stop()
             this.menu.hide_loading_screen()
         }
-        if(this.editor)this.editor.close()
-        this.editor=undefined
-        this.happening=false
-        this.started=false
+        this.state=GameState.Idle
+        this.match_started=false
         this.menu.game_end()
-        this.ambient.on_game_close()
+        this.call_event("game_close")
         this.client=undefined
         this.cam_type=0
         this.language.clear("ingame")
         this.soft_close_game()
+        this.showing_menu=false
     }
     soft_close_game(){
-        this.objects_process_queue.length=0
-        this.clear()
+        this.scene_2d.clear()
         this.ui.clear()
-        this.cam2d.stop_shake()
-        this.game_over=false
         this.active_entity=undefined
         this.active_entity_id=undefined
         this.ui.hide_game_over()
-        this.set_scope(this.definitions.scopes.getFromNumber(0))
-        this.cam2d.zoom=6
+
+        this.scene_2d.set_camera_position(v2(-10000,-10000))
+        this.scene_2d.camera.zoom=6
         this.zoom_speed=4
     }
     finish_game_over(win:boolean){
         if(this.offline){
             if(win){
-                this.menu.show_loading_screen()
                 this.close_game(false)
-                this.start_with_intro=true
-                this.local_server.next_level("complete")
             }else{
                 this.soft_close_game()
                 this.local_server.reset_level()
+                this.state=GameState.Playing
             }
         }else{
             this.close_game()
         }
     }
     override on_update(dt:number){
-        if(this.objects_process_queue){
-            for(const s of this.objects_process_queue){
-                this.scene_2d.objects.proccess_net(s,true)
-            }
-            this.objects_process_queue.length=0
-        }
         super.on_update(dt)
-        if(this.save.get_variable("sv_game_interpolation")){
+        if(this.ui.content.mouse){
+            if(this.input_manager.mouse_emulation_changed)ToggleElement(this.ui.content.mouse,undefined,this.input_manager.mouse_emulation)
+            if(this.input_manager.mouse_emulation){
+                this.ui.content.mouse.style.left=this.input_manager.virtual_mouse.x+"px"
+                this.ui.content.mouse.style.top=this.input_manager.virtual_mouse.y+"px"
+            }
+        }
+        if(this.save.settings.get_var("game_interpolation")){
             this.global_interpolation=Numeric.get_interpolation_t(this.ntps,dt)
         }else{
             this.global_interpolation=1
         }
-        if(this.happening){
-            this.ambient.update(dt)
-            this.dead_zone.tick(dt)
+        this.hitboxes_gfx.ctx.clear()
+        this.ui_gfx.ctx.clear()
+        if(this.state===GameState.Playing){
+            this.ui.update(dt)
         }
-        this.ui.update(dt)
-        if(this.editor)this.editor.tick(dt)
 
-        if (this.cam_type === 1) {
+        this.scene_2d.update(dt,false,true)
+        this.local_server?.tick?.(dt)
+        if(this.cam_type===0){
+            if(this.active_entity&&this.active_entity_id!==this.active_entity.id){
+                this.active_entity=this.scene_2d.objects.get_object(this.active_entity_id!) as Human
+            }
+            if(this.active_entity){
+                if(this.aim_line){
+                    this.ui_gfx.ctx.stroke_color=ColorM.mult_hsv(ColorM.hex(this.get_theme_color("primary")),0.95,0.6,0.95)
+                    this.ui_gfx.ctx.stroke_color.a*=0.9
+                    this.ui_gfx.ctx.line_width=0.1
+
+                    const m=matrix4.translation_2d(this.active_entity.position)
+                    matrix4.m.rotate_2d(m,m,this.active_entity.rotation)
+                    
+                    let x=(this.active_entity.base_hitbox as CircleHitbox2D).radius+0.3
+                    const count=11.5/this.scope_zoom
+
+                    this.ui_gfx.ctx.begin_path()
+                    for(let i=0;i<count;i++){
+                        this.ui_gfx.ctx.move_to(x,0)
+                        this.ui_gfx.ctx.line_to(x+0.5,0)
+                        x+=1
+                    }
+
+                    this.ui_gfx.ctx.stroke(m)
+                }
+
+                this.scene_2d.camera.position=this.active_entity.position
+                this.scene_2d.camera.zoom=Numeric.lerp(this.scene_2d.camera.zoom,this.scope_zoom,Numeric.dt_expo_inter(this.zoom_speed,dt))
+                this.scene_2d.camera.layer=this.active_entity.layer
+                if(this.active_entity.dead)this.active_entity=undefined
+            }
+        }else if(this.cam_type === 1){
             const move = this.input.movement
             this.free_cam_speed=5/this.free_cam_zoom
             if (move.scale>0) {
                 this.free_cam_pos.x+=Math.cos(move.dir)*this.free_cam_speed*dt
                 this.free_cam_pos.y+=Math.sin(move.dir)*this.free_cam_speed*dt
             }
-            this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom, this.free_cam_zoom, Numeric.dt_expo_inter(5, dt))
-            v2m.lerp(this.cam2d.position,this.free_cam_pos, Numeric.dt_expo_inter(5, dt))
+            this.scene_2d.camera.zoom=Numeric.lerp(this.scene_2d.camera.zoom, this.free_cam_zoom, Numeric.dt_expo_inter(5, dt))
+            v2m.lerp(this.scene_2d.camera.position,this.free_cam_pos, Numeric.dt_expo_inter(5, dt))
+
             if(this.input_manager.keyPress(Key.E)){
                 v2m.add(this.free_cam_pos,this.free_cam_pos,v2.scale(this.input_manager.mouse_delta,0.01))
             }
-        }else{
-            if(this.active_entity&&this.active_entity_id!==this.active_entity.id){
-                this.active_entity=this.scene_2d.objects.get_object(this.active_entity_id!) as Human
-            }
-            if(this.active_entity){
-                this.cam2d.position=this.active_entity.position
-                //this.cam2d.position=v2.add_rotate_RadAngle(this.active_entity.position,v2(0.05/this.cam2d.zoom,0),this.active_entity.physical_data.rotation)
-                this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(this.zoom_speed,dt))
-                this.cam2d.layer=this.active_entity.layer
-                /*this.ui_gfx.ctx.clear()
-                if(this.aim_line.enabled){
-                    this.ui_gfx.ctx.fill_color=this.aim_line.color
-                    this.ui_gfx.ctx.dr(this.active_entity.position,v2.add(this.active_entity.position,v2.from_RadAngle(this.active_entity.physical_data.rotation,this.aim_line.width)),this.aim_line.height/this.cam2d.zoom)
-                }*/
-                if(this.active_entity.dead)this.active_entity=undefined
-            }
         }
-        this.sounds.set_listener_position(this.cam2d.position)
-        if(this.save.get_variable("sv_graphics_perspective")){
-            for(const k in this.parallax){
-                if(!this.parallax[k].sprite.matrix)this.parallax[k].sprite.matrix=matrix4.identity()
-                this.cam2d.get_topdown_perspective_2d(this.parallax[k].sprite.matrix,this.parallax[k].position,this.parallax[k].def.parallax!,0)
-            }
-        }
-        this.terrain.draw(this.terrain_gfx,this.cam2d.layer)
-        this.update_grid(this.grid,this.cam2d.position,v2(this.cam2d.width,this.cam2d.height))
-        this.ambient.update_camera()
+        this.scene_2d.set_camera_position(this.scene_2d.camera.position)
+        this.terrain.tick()
         if(this.client&&this.client.opened){
+            //#if defined(is_mobile_port)
             this.input.auto_fire=this.ui.mobile_enabled
+            //#endif
             this.client.emit_packet(this.input)
             this.reset_input()
         }
+    }
+    override on_render(dt: number): void {
+        const cam_layer=this.scene_2d.camera.layer
+        this.ui_gfx.layer=cam_layer
+        this.hitboxes_gfx.layer=cam_layer
+        if(this.save.settings.get_var("graphics_perspective")){
+            for(const obj of this.scene_2d.camera.container.children){
+                if(obj.propertys?.["no_layer_parallax"])continue
+                const parallax=1-(cam_layer-obj.layer)*0.14
+                obj.matrix=matrix4.identity()
+                matrix4.m.topdown_perspective_2d(obj.matrix,this.scene_2d.camera.position,parallax,this.scene_2d.camera.layer-obj.layer)
+            }
+        }
+        this.scene_2d.draw(dt)
     }
     reset_input(){
         this.input.reload=false
         this.input.interact=false
         this.input.cancel=false
-        this.input.swamp_guns=false
+        this.input.swap_guns=false
         this.input.actions.length=0
     }
-    update_grid(grid:Grid2D,camera_position:Vec2,camera_size:Vec2){
-        grid.layer=this.terrain_gfx.layer
-        this.dead_zone.sprite.layer=grid.layer
-        this.ui_gfx.layer=grid.layer
-        this.hitboxes_gfx.layer=grid.layer
-        if(this.cam2d.layer<Layers.Normal){
-            this.grid.visible=false
-            return
-        }
-        this.grid.visible=true
-
-        const begin=v2(camera_size.x/2,camera_size.y/2)
-        v2m.sub(begin,camera_position,begin)
-        v2m.dscale(begin,begin,grid.size)
-        v2m.floor(begin)
-        v2m.sub_component(begin,1,1)
-
-        const end=v2(camera_size.x/grid.size+2,camera_size.y/grid.size+2)
-        v2m.ceil(end)
-        v2m.add(end,end,begin)
-        grid.begin=begin
-        grid.end=end
-    }
-    override on_render(_dt: number): void {
-        this.ambient.render()
-    }
-    async game_over_messages(text:string[],music:Sound,time_per_message?:number,opacity_anim?:number):Promise<void>{
-        this.ambient.ambience.set(undefined)
-        await this.menu.game_over_messages(text,music,this.ambient.music,time_per_message,opacity_anim)
-        this.ambient.reload()
-    }
     process_general_update(up:GeneralUpdate){
-        if(up.deadzone)this.dead_zone.update_from_data(up.deadzone)
-        if(up.ambient){
-            this.ambient.update_from_data(up.ambient)
-            if(!this.started)this.ambient.date=up.ambient.date
-        }
-        if(up.started&&!this.started){
-            this.started=true
+        this.call_event("general_update",up)
+        if(up.started&&!this.match_started){
+            this.match_started=true
         }else if(!up.started){
-            this.started=false
+            this.match_started=false
         }
         this.ui.proccess_general_update(up)
     }
     process_self_state(state:SelfStateUpdate){
         this.scope_zoom=state.scope_zoom
+        this.inventory.update_self_state(state)
         this.ui.update_self_state(state)
+    }
+    proccess_general_main_state(state:GeneralFullMainState){
+        this.ntps=state.ntps
+        this.ui.proccess_general_main_state(state)
     }
     process_private(priv:PrivateUpdate){
         this.ui.proccess_private(priv)
@@ -714,75 +685,166 @@ export class Game extends ClientGame<GameObject>{
         }
         if(priv.splashes.length>0){
             for(const s of priv.splashes){
-                this.add_damage_splash(s)
+                const dd=new DamageSplashOBJ()
+                this.scene_2d.objects.add_object(dd,s.taker_layer,undefined,s)
             }
         }
         if(priv.self_state)this.process_self_state(priv.self_state)
+        if(priv.pings){
+            for(const p of priv.pings){
+                const def=this.definitions.pings.getFromNumberSafe(p.def)
+                if(def?.world_version)this.scene_2d.add_object(new PingWorld(),this.scene_2d.camera.layer,undefined,p)
+            }
+        }
         this.device.update_private(priv)
         this.ui_manager.signal("private",priv)
     }
     join(){
         if(!this.client)return
         const packet=new JoinPacket()
-        packet.player_name=this.save.get_variable("sv_loadout_name")
+        packet.player_name=this.save.settings.get_var("loadout_name")
         packet.skin={
-            female:this.save.get_variable("sv_loadout_female"),
-            body_tint:ColorM.hex2number(this.save.get_variable("sv_loadout_body_tint")),
-            hair:(this.definitions.loadout.getFromString(this.save.get_variable("sv_loadout_hair"))).idNumber!,
-            hair_tint:ColorM.hex2number(this.save.get_variable("sv_loadout_hair_tint")),
-            shirt:(this.definitions.loadout.getFromString(this.save.get_variable("sv_loadout_shirt")) as LoadoutShirtDef).idNumber!,
+            female:this.save.settings.get_var("loadout_female"),
+            body_tint:ColorM.hex2number(this.save.settings.get_var("loadout_body_tint")),
+            hair:(this.definitions.loadout.getFromStringSafe(this.save.settings.get_var("loadout_hair")))?.idNumber??0,
+            hair_tint:ColorM.hex2number(this.save.settings.get_var("loadout_hair_tint")),
+            shirt:(this.definitions.loadout.getFromString(this.save.settings.get_var("loadout_shirt")) as LoadoutShirtDef).idNumber!,
+            legs:(this.definitions.loadout.getFromString(this.save.settings.get_var("loadout_legs")) as LoadoutLegDef).idNumber!,
+            foot:(this.definitions.loadout.getFromString(this.save.settings.get_var("loadout_foot")) as LoadoutFootDef).idNumber!,
         }
         packet.group_token=this.group_token
-        let sv=this.save.get_variable("sv_loadout_emote_victory")
-        if(sv!=""){
-            packet.victory_emote=this.definitions.emotes.getFromString(sv).idNumber!+1
-        }
-        sv=this.save.get_variable("sv_loadout_emote_death")
-        if(sv!=""){
-            packet.death_emote=this.definitions.emotes.getFromString(sv).idNumber!+1
-        }
-        sv=this.save.get_variable("sv_loadout_wrapping_weapons")
-        if(sv!=""){
-            packet.wrapping=this.definitions.wrapping.getFromString(sv).idNumber!+1
-        }
-        sv=this.save.get_variable("sv_loadout_badge")
-        if(sv!=""){
-            packet.badge=this.definitions.badges.getFromStringSafe(sv)?.idNumber
-        }
+        packet.victory_emote=this.definitions.game_objects.keysString[this.save.settings.get_var("loadout_emote_victory")]??0
+        packet.death_emote=this.definitions.game_objects.keysString[this.save.settings.get_var("loadout_emote_death")]??0
+        packet.wrapping=this.definitions.wrapping.getFromStringSafe(this.save.settings.get_var("loadout_wrapping_weapons"))?.idNumber??0
+        packet.badge=this.definitions.badges.getFromStringSafe(this.save.settings.get_var("loadout_badge"))?.idNumber??0
+        packet.tank_vehicle_control=this.save.settings.get_var("game_tank_vehicle_control")
+        packet.auto_pickup=is_mobile()
         this.client.emit_packet(packet)
+    }
 
-        if(this.offline){
-            this.ui.game_over_screen={type:GameOverScreenType.Restart}
-            this.local_server.init(this.start_with_intro)
+    play_game_hard(result:FindGameResult){
+        if(result.success){
+            this.group_token=result.token??""
+            this.set_socket(new WebSocket(result.address))
         }
     }
-    connect(url:string){
-        if(this.happening)return
-        this.set_socket(new WebSocket(url) as unknown as BasicSocket)
-        this.offline=false
+    async play_game(play:PlayArgs){
+        if(this.state!==GameState.Idle)return
+        this.state=GameState.Joining
+        this.menu.show_loading_screen()
+        switch(play.type){
+            case "online":{
+                if(this.offline)this.local_server.stop()
+                this.offline=false
+                const args={
+                    ...play,
+                    region:this.save.settings.get_var("game_region"),
+                }
+                try{
+                    if(this.menu.group_state){
+                        this.menu.team_ws!.send(JSON.stringify({
+                            ...args,
+                            type:"play"
+                        }))
+                        return
+                    }else{
+                        const ghost:FindGameResult=await(await fetch(API_BASE+"/find-game",{
+                            method:"post",
+                            body:JSON.stringify(args),
+                            signal: AbortSignal.timeout(4000)
+                        })).json()
+                        if(ghost.success){
+                            this.set_socket(new WebSocket(ghost.address))
+                            return
+                        }
+                    }
+                }catch{
+                    alert("Error")
+                }
+                break
+            }
+            case "join":{
+                const ws=new WebSocket(play.url)
+                ws.addEventListener("error", (event) => {
+                    this.state=GameState.Idle
+                    this.menu.hide_loading_screen()
+                    alert("No Server")
+                });
+                this.set_socket(ws)
+                return
+            }
+            case "campaign":{
+                this.start_with_intro=play.start_with_intro
+                this.local_server.load_level(play.path)
+                return
+            }
+            case "editor":{
+                this.editor=new EditorManager()
+
+                this.cam_type=1
+                this.free_cam_pos=v2.zero()
+                this.free_cam_zoom=1
+
+                this.menu.game_start()
+                this.ui.start()
+
+                this.state=GameState.Editor
+                this.add_component(this.editor)
+
+                return
+            }
+        }
+        this.state=GameState.Idle
+        this.menu.hide_loading_screen()
     }
-    set_socket(socket:BasicSocket){
+    set_socket(socket:BasicSocket|WebSocket){
         if(this.client)return
-        const client=new Client(socket,PacketManager)
+        const client=new Client(socket as unknown as BasicSocket,PacketManager)
         client.onopen=this.set_client.bind(this,client)
+    }
+
+    async online_message(msg:OnlineMessage){
+        const old_state=this.state
+        let ret:any=undefined
+        this.state=GameState.Cutscene
+        switch(msg.type){
+            case OnlineMessageType.Cutscene:{
+                await this.menu.cutscene.play(msg.cutscene)
+                break
+            }
+            case OnlineMessageType.CharacterSelector:{
+                ret=await this.menu.select_character_screen(msg.characters)
+                break
+            }
+            case OnlineMessageType.Load:{
+                if(msg.assets){
+                    for(const a in msg.assets){
+                        await this.resources.load_source(a,msg.assets[a],undefined,this.menu.set_loading_current,true)
+                    }
+                }
+                break
+            }
+        }
+        this.state=old_state
+        return ret
     }
     set_client(client:Client){
         if(!client.opened)return
         if(this.client===client)return
         if(this.client&&this.client.opened)this.client.disconnect()
-        this.objects_process_queue.length=0
         this.client=client
-        client.send_ping_emulation=this.save.get_variable("sv_debug_ping_emulation")
-        client.recev_ping_emulation=this.save.get_variable("sv_debug_ping_emulation")
+        client.send_ping_emulation=this.save.settings.get_var("debug_ping_emulation")
+        client.recev_ping_emulation=this.save.settings.get_var("debug_ping_emulation")
 
-        this.world_shadow.enabled=this.save.get_variable("sv_graphics_shadows")
+        this.world_shadow.enabled=this.save.settings.get_var("graphics_shadows")
 
         client.on("general_update",(p:GeneralUpdatePacket)=>{
             this.process_general_update(p.content)
         })
         client.on("update",(p:UpdatePacket)=>{
+            this.spectating=p.spectating
             this.process_private(p.priv)
-            if(p.objects)this.objects_process_queue.push(p.objects)
+            if(p.objects)this.scene_2d.objects_process_queue.push(p.objects)
         })
         client.on("connect",(_p:ConnectPacket)=>{
         })
@@ -790,51 +852,17 @@ export class Game extends ClientGame<GameObject>{
             await this.start(s.settings)
         })
         client.on("joinned",(jp:JoinnedPacket)=>{
-            this.ui.proccess_joinned_packet(jp)
-            this.ntps=jp.ntps
-
+            this.proccess_general_main_state(jp.main_state)
+            this.state=GameState.Playing
         })
-        client.on("gameover",async(p:GameOverPacket)=>{
-            this.game_over = true
-            if(p.status.win){
-                await this.show_final_screen(p.status)
-            }
-            this.ui.show_game_over(p)
+        client.on("gameover",(p:GameOverPacket)=>{
+            this.scene_2d.game_over=p
         })
         client.on("disconnect",(_p:DisconnectPacket)=>{
-            if(!this.game_over)this.close_game()
+            if(this.state===GameState.Playing&&!this.fineshed)this.close_game()
         })
-        client.on("message",async(msg:OnlineMessage)=>{
-            switch(msg.type){
-                case OnlineMessageType.Cutscene:{
-                    await this.menu.cutscene.play(msg.cutscene)
-                    client.emit("_end")
-                    break
-                }
-                case OnlineMessageType.CharacterSelector:{
-                    const r=await this.menu.select_character_screen(msg.characters)
-                    client.emit("_end",r)
-                    break
-                }
-                case OnlineMessageType.Load:{
-                    if(msg.assets){
-                        for(const a in msg.assets){
-                            await this.resources.load_source(a,msg.assets[a],undefined,"level",this.menu.set_loading_current)
-                        }
-                    }
-                    client.emit("_end")
-                    break
-                }
-                case OnlineMessageType.SetLoad:{
-                    if(msg.enabled){
-                        this.menu.show_loading_screen()
-                    }else{
-                        this.menu.hide_loading_screen()
-                    }
-                    client.emit("_end")
-                    break
-                }
-            }
+        client.on("message",(msg:any)=>{
+            this.scene_2d.online_messages.push(msg)
         })
     }
 }

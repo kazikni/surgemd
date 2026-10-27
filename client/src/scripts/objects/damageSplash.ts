@@ -1,9 +1,9 @@
-import { Sound, Sprite2D } from "common/engine/web.ts";
+import { Sound, Sprite2D, Tween } from "common/engine/web.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { DamageSplash } from "common/scripts/packets/update_packet.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Human } from "./human.ts";
-import { ease, random, v2, v2m } from "common/engine/core.ts";
+import { ease, FrameDef, random, v2, v2m } from "common/engine/core.ts";
 export class DamageSplashOBJ extends GameObject{
     ////////////////////////////
     // Definition             //
@@ -17,18 +17,11 @@ export class DamageSplashOBJ extends GameObject{
     sprite:Sprite2D
 
     ////////////////////////////
-    // Assets                 //
-    ////////////////////////////
-    sounds?:{
-        break?:Sound
-        hit?:Sound[]
-    }
-
-    ////////////////////////////
     // State                 //
     ////////////////////////////
     dying:boolean=false
     can_die:boolean=true
+    tween?:Tween<Sprite2D>
     lifetime:number=3
 
     constructor(){
@@ -63,29 +56,31 @@ export class DamageSplashOBJ extends GameObject{
         this.sprite.rotation=-0.1
         this.sprite.layer=this.layer
 
-        const s=((random.float(1.5,2)/this.game.cam2d.zoom)*(args.critical?1.5:1))
+        const s=((random.float(1.5,2)/this.scene.camera.zoom)*(args.critical?1.5:1))
         this.game.add_tween({
-            duration: 1,
+            duration: 2,
             target: this.sprite.scale,
             to: v2.random(s,s),
-            ease:ease.cubicOut
+            ease:ease.elasticOut
         })
 
         this.game.add_tween({
-            duration: 0.4,
+            duration: 0.6,
             target: this.sprite.position,
-            to: v2.add(this.sprite.position, v2.scale(v2.random2(v2(-0.2,-0.5),v2(0.2,-0.7)),(args.critical?1.2:1)/this.game.cam2d.zoom)),
-        })
-        this.game.add_tween({
-            duration: args.critical?0.1:0.3,
-            target: this.sprite,
-            to: {rotation:0.1},
-            yoyo:true,
-            ease:ease.quadraticInOut,
-            infinite:true
+            to: v2.add(this.sprite.position, v2.scale(v2.random2(v2(-0.2,-0.5),v2(0.2,-0.7)),(args.critical?1.2:1)/this.scene.camera.zoom)),
+            onComplete:()=>{
+                this.tween=this.game.add_tween({
+                    duration: args.critical?0.2:0.4,
+                    target: this.sprite,
+                    to: {rotation:0.1},
+                    yoyo:true,
+                    ease:ease.quadraticInOut,
+                    infinite:true
+                })
+            }
         })
         
-        this.game.cam2d.add_object(this.sprite)
+        this.scene.camera.add_object(this.sprite)
     }
     override on_layer_set(): void {
         this.sprite.layer=this.layer
@@ -93,6 +88,7 @@ export class DamageSplashOBJ extends GameObject{
     override on_destroy(): void {
         this.sprite.frame?.free()
         this.sprite.destroy()
+        if(this.tween)this.tween.kill()
     }
     override on_tick(dt:number): void {
         this.lifetime-=dt

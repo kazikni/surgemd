@@ -1,10 +1,10 @@
-import { Definition, Definitions } from "../../../engine/core.ts";
-import { type HumanModifiers } from "../../others/constants.ts";
+import { Definition } from "../../../engine/core.ts";
 import { DamageReason } from "../utils.ts";
 import { SideEffect, SideEffectType } from "./effects.ts";
 
 export interface BoostDef extends Definition{
     color:string
+    animation_color:string
     particle:string
 
     shield?:{
@@ -13,29 +13,39 @@ export interface BoostDef extends Definition{
         break_invensibility:number
     }
     se?:{
-        update_modifiers?:(human:any)=>Partial<HumanModifiers>
+        update_modifiers?:(human:any)=>Record<string,number>
         tick?:(dt:number,human:any)=>number
+        on_hitted?:(human:any)=>void
         can_apply?:(e:SideEffect,human:any)=>boolean
     }
 }
 
-export function Boosts_Default_Init(boosts:Definitions<BoostDef,{}>){
-    boosts.insert(
+export function Boosts_Default_Init():BoostDef[]{
+    return [
         {
             idString:"adrenaline",
             color:"#ff0",
+            animation_color:"#ff07",
             particle:"boost_adrenaline_particle",
             se:{
                 tick(dt,h){
-                    h.health.value=Math.min(h.health.value+(h.boost.value*dt)*0.01,h.health.max)
-                    h.boost.value=Math.max(h.boost.value-0.3*dt,0)
-                    return h.boost.value>h.boost.max/2?1.15:1
+                    const percent=h.boost.value/h.boost.max
+                    if(h.boost.value>0){
+                        let regen=h.boost.max*0.01
+                        if(percent<0.25)regen*=0.5
+                        if(percent<0.5)regen*=0.65
+                        if(percent<0.8)regen*=0.8
+                        h.health.value=Math.min(h.health.value+(regen*dt),h.health.max)
+                        h.boost.value=Math.max(h.boost.value-0.23*dt,0)
+                    }
+                    return percent>=0.5/2?1.1:1
                 }
             }
         },
         {
             idString:"shield",
             color:"#08f",
+            animation_color:"#08f7",
             shield:{
                 multiplier:1.2,
                 penetrate:2.2,
@@ -46,11 +56,13 @@ export function Boosts_Default_Init(boosts:Definitions<BoostDef,{}>){
         {
             idString:"mana",
             color:"#92a",
+            animation_color:"#92a7",
             particle:"boost_mana_particle"
         },
         {
             idString:"addiction",
             color:"#e13",
+            animation_color:"#e137",
             particle:"boost_addiction_particle",
             se:{
                 tick(dt,h){
@@ -82,22 +94,31 @@ export function Boosts_Default_Init(boosts:Definitions<BoostDef,{}>){
         {
             idString:"green_bless",
             color:"#1f3",
+            animation_color:"#1f37",
             particle:"boost_green_bless_particle",
+            shield:{
+                multiplier:4,
+                penetrate:2,
+                break_invensibility:0.2
+            },
             se:{
-                update_modifiers(h):Partial<HumanModifiers>{
-                    return {
-                        damage_reduction:0.8
-                    }
-                },
                 tick(dt,h){
-                    h.health.value=Math.min(h.health.value+(h.boost.value*dt)*0.01,h.health.max)
+                    if(h.boost.time<6)h.boost.time+=dt
+                    if(h.boost.time>=6){
+                        h.boost.value=Math.min(h.boost.value+50*dt,h.boost.max)
+                    }
+                    h.health.value=Math.min(h.health.value+(h.boost.max*dt)*0.007,h.health.max)
                     return 1.1
+                },
+                on_hitted(h){
+                    h.boost.time=0
                 }
             }
         },
         {
             idString:"death",
             color:"#001",
+            animation_color:"#0017",
             particle:"boost_death_particle",
             se:{
                 can_apply(s,h){
@@ -122,7 +143,7 @@ export function Boosts_Default_Init(boosts:Definitions<BoostDef,{}>){
                     }
                     return 1.25
                 },
-                update_modifiers(h):Partial<HumanModifiers>{
+                update_modifiers(h):Record<string,number>{
                     return {
                         damage_reduction:0.25,
                         speed:1+(h.boost.value/h.boost.max)*0.5,
@@ -131,5 +152,5 @@ export function Boosts_Default_Init(boosts:Definitions<BoostDef,{}>){
                 },
             }
         }
-    )
+    ]
 }

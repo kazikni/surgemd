@@ -42,6 +42,50 @@ class TabsContainer extends HTMLElement{
         });
     }
 }
+class SMDEConsole extends HTMLElement{
+    constructor(){
+        super()
+    }
+    connectedCallback(){
+        this.innerHTML=`
+            <div class="output"></div>
+            <input type="text" class="input"></input>
+        `
+
+        this.output=this.querySelector(".output")
+        this.input=this.querySelector(".input")
+
+        this.input.addEventListener("keydown",e=>{
+            if(e.key!=="Enter")return
+            e.preventDefault()
+            const value=this.input.value
+            this.input.value=""
+            const p=this.dispatchEvent(new CustomEvent("enter",{detail:value,cancelable:true}))
+            if(p)this.log("> "+value)
+        })
+    }
+
+    clear(){
+        this.output.innerHTML=""
+    }
+
+    log(...args){
+        const line=document.createElement("div")
+        line.textContent=args.map(x=>{
+            if(typeof x==="string")return x
+            try{return JSON.stringify(x,null,2)}
+            catch{return String(x)}
+        }).join(" ")
+        this.output.append(line)
+        this.output.scrollTop=this.output.scrollHeight
+    }
+
+    insert({index,html}){
+        const content=this.output.innerHTML
+        this.output.innerHTML=content.slice(0,index)+html+content.slice(index)
+    }
+}
+
 class SMDEMenu extends HTMLElement {
     constructor(){
         super()
@@ -230,6 +274,7 @@ class SMDEWindow extends HTMLElement{
         this.content=null
         this._movable=true
         this.moving=false
+        this.initialized=false
         this.dragOffset={x:0,y:0}
     }
     appendChild(n){
@@ -240,6 +285,8 @@ class SMDEWindow extends HTMLElement{
         this.content.appendChild(n)
     }
     connectedCallback(){
+        if(this.initialized)return
+        this.initialized=true
         const content=document.createElement("div")
         content.innerHTML=this.innerHTML
         content.className="smde-window-content"
@@ -311,8 +358,100 @@ class SMDEWindow extends HTMLElement{
         this.tilte.innerHTML=val
     }
 }
+class SMDETree extends HTMLElement{
+    constructor(){
+        super()
+        this.items=[]
+        this.parent_arrow=null
+    }
+    add_option(text, elem, onclick, index) {
+        return this.insert_item({
+            text,
+            elem,
+            onclick,
+            tree: undefined
+        }, index)
+    }
+    add_subtree(text, tree = new SMDETree(), onclick, index) {
+        return this.insert_item({
+            text,
+            tree,
+            onclick
+        }, index)
+    }
+
+    create_item(item){
+        const container=document.createElement("div")
+        container.className="smde-tree-node"
+
+        const row=document.createElement("div")
+        row.className="smde-tree-row"
+
+        const arrow=document.createElement("span")
+        arrow.className="smde-tree-arrow"
+        arrow.textContent=item.tree?"▸":""
+
+        const label=document.createElement("button")
+        label.className="smde-tree-item"
+        label.textContent=item.text
+        label.onclick=e=>item.onclick?.(e)
+
+        const children=document.createElement("div")
+        children.className="smde-tree-children"
+
+        if(item.tree){
+            children.appendChild(item.tree)
+            item.tree.parent_arrow=arrow
+        }
+
+        arrow.onclick=e=>{
+            e.stopPropagation()
+
+            if(!item.tree?.items.length)return
+
+            const open=children.classList.toggle("open")
+            arrow.textContent=open?"▾":"▸"
+        }
+
+        row.appendChild(arrow)
+        row.appendChild(label)
+
+        container.appendChild(row)
+        container.appendChild(children)
+
+        return container
+    }
+
+    refresh(){
+        if(this.parent_arrow){
+            this.parent_arrow.textContent=this.items.length?"▸":""
+        }
+    }
+    insert_item(item, index) {
+        const node = this.create_item(item)
+        if (index === undefined || index >= this.items.length) {
+            this.items.push(item)
+            this.appendChild(node)
+        } else {
+            index = Math.max(0, index)
+            this.items.splice(index, 0, item)
+            this.insertBefore(node, this.children[index])
+        }
+        this.refresh()
+        return node
+    }
+
+    clear(){
+        this.items.length=0
+        this.innerHTML=""
+        this.refresh()
+    }
+}
+
 customElements.define("smde-joystick", SMDEJoystick);
+customElements.define("smde-console",SMDEConsole)
 customElements.define('tabs-container', TabsContainer)
 customElements.define("smde-menu", SMDEMenu)
 customElements.define("smde-option-submenu", SMDEOptionSubMenu)
 customElements.define("smde-window", SMDEWindow)
+customElements.define("smde-tree",SMDETree)

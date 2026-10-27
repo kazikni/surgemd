@@ -1,5 +1,5 @@
 import { type Game } from "../others/game.ts"
-import { Floor, Floors,FloorType } from "common/scripts/others/terrain.ts"
+import { Floors,FloorType, MapTerrain } from "common/scripts/others/terrain.ts"
 import { MapConfig, MapObjectObstacle, MapRegion } from "common/scripts/packets/map_message.ts"
 import { GetObstacleBaseFrame } from "../objects/obstacle.ts"
 import { zIndexes } from "common/scripts/others/constants.ts";
@@ -50,13 +50,13 @@ export class MinimapManager {
         this.game.ui_manager.signal("minimap",{})
     }
 
-    render(terrain:Floor[],objects:MapObjectObstacle[],regions:MapRegion[],cam_pos:Vec2=v2.zero()){
+    render(terrain:MapTerrain,objects:MapObjectObstacle[],regions:MapRegion[],cam_pos:Vec2=v2.zero()){
         this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height)
 
         this.ctx.fillStyle=ColorM.number2hex(Floors[FloorType.Void].default_color)
         this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height)
 
-        for(const floor of terrain){
+        for(const floor of terrain.floors){
             const color=ColorM.number2hex(floor.tint??this.biome?.floors[floor.type as FloorType]??Floors[floor.type as FloorType].default_color)
             this.draw_hitbox(color,floor.hb,cam_pos)
         }
@@ -88,11 +88,11 @@ export class MinimapManager {
     draw_grid(cam_position:Vec2){
         const ctx=this.ctx
 
-        const step=this.game.grid.size*this.meter_size
+        const step=5*this.meter_size
 
         ctx.save()
-        ctx.strokeStyle=ColorM.rgba2hex(this.game.grid.stroke!)
-        ctx.lineWidth=this.game.grid.line_width*this.meter_size
+        ctx.strokeStyle=ColorM.rgba2hex(ColorM.rgba(0,0,0,25))
+        ctx.lineWidth=0.05*this.meter_size
         ctx.beginPath()
 
         const start_x=(-(cam_position.x*this.meter_size))%step
@@ -164,8 +164,8 @@ export class MinimapManager {
         const sh=(frame.frame_rect?.max.y ?? frame.image.height)-sy
 
         const base_scale=(def.assets?.frame?.transform?.scale ?? 2)*obj.scale*this.meter_size
-        const w=(sw/(this.game.cam2d.meter_size*2))*base_scale
-        const h=(sh/(this.game.cam2d.meter_size*2))*base_scale
+        const w=(sw/(this.game.scene_2d.camera.meter_size*2))*base_scale
+        const h=(sh/(this.game.scene_2d.camera.meter_size*2))*base_scale
 
         const pos=v2.scale(obj.position,this.meter_size)
         v2m.sub(pos,pos,cam_position)

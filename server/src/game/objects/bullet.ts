@@ -29,9 +29,11 @@ export class Bullet extends ServerGameObject{
     // Damage
     damage:number=0
     penetration:number=1
+    weight?:number
     obstacle_mult:number=1
-    critical_mult:number=1.25
-    falloff:number=1
+    critical_mult?:number
+    falloff?:number
+    effective_range?:number
     on_hit_explosion?:ExplosionDef
     effects?:SideEffect[]
 
@@ -64,10 +66,11 @@ export class Bullet extends ServerGameObject{
         this.net_sync_can_unsee=false
 
         this.allow_tick=true
+        this.allow_checkpoint=false
     }
     on_hit(){
         if(this.on_hit_explosion){
-            this.game.add_explosion(this.position,this.on_hit_explosion,this.owner,this.source,this.layer)
+            this.scene.add_explosion(this.position,this.on_hit_explosion,this.owner,this.source,this.layer)
         }
         this.destroy()
     }
@@ -116,8 +119,13 @@ export class Bullet extends ServerGameObject{
                             }
                             break
                         }
-                        const dmg:number=this.damage*(this.falloff===1?1:Numeric.lerp(1,this.falloff,disT))*(this.critical?this.critical_mult:1)
-
+                        let dmg=this.damage
+                        if(this.falloff!==undefined){
+                            const range=this.effective_range??0
+                            const falloffT=Math.max(0,Math.min(1,(disT-range)/(1-range)))
+                            dmg*=Numeric.lerp(1,this.falloff,falloffT)
+                        }
+                        if(this.critical&&this.critical_mult!==undefined)dmg*=this.critical_mult
                         ;(obj as Human).damage({
                             amount:dmg,
                             owner:this.owner,
@@ -145,7 +153,8 @@ export class Bullet extends ServerGameObject{
                     break
                 }
                 case GameObjectType.Obstacle:
-                case GameObjectType.Building:{
+                case GameObjectType.Building:
+                case GameObjectType.Walls:{
                     if((obj as StaticBody).physical_data.no_bullets_collision||this.collided_with.has(obj))break
                     const col1=obj.hitbox.overlap_line(this.old_position,this.position)
                     if(!col1)continue
@@ -178,9 +187,9 @@ export class Bullet extends ServerGameObject{
             this.on_hit()
         }
     }
-    override on_create(args?: {position:Vec2,owner:Human,ammo:AmmoDef,critical_chance?:number,critical?:boolean,source?:DamageSourceDef,satured?:number}): void {
+    override on_create(args?: {position:Vec2,owner:Human,ammo:AmmoDef,critical?:boolean,source?:DamageSourceDef,satured?:number}): void {
         this.base_hitbox=new CircleHitbox2D(v2.zero,0.2)
-        if(args)this.set_configuration(args.position,args.owner,args.ammo,args.critical_chance,args.critical,args.source)
+        if(args)this.set_configuration(args.position,args.owner,args.ammo,args.critical,args.source)
     }
     set_definition(def:BulletDef){
         this.speed=def.speed
@@ -188,6 +197,7 @@ export class Bullet extends ServerGameObject{
         if(def.reflection!==undefined)this.reflection=def.reflection
         else this.reflection=BulletReflection.Only_Reflective
 
+        if(def.weight!==undefined)this.weight=def.weight
         this.tracer_width=def.tracer.width
         this.tracer_height=def.tracer.height
         this.tracer_alpha=255
@@ -199,17 +209,18 @@ export class Bullet extends ServerGameObject{
         if(def.obstacle_mult!==undefined)this.obstacle_mult=def.obstacle_mult
         if(def.critical_mult!==undefined)this.critical_mult=def.critical_mult
         if(def.falloff!==undefined)this.falloff=def.falloff
+        if(def.effective_range!==undefined)this.effective_range=def.effective_range
         if(def.on_hit_explosion)this.on_hit_explosion=this.game.definitions.explosions.getFromStringSafe(def.on_hit_explosion)
 
         this.pass_through_humans=def.pass_through_humans??false
     }
-    set_configuration(position:Vec2,owner:Human,ammo:AmmoDef,critical_chance:number=0.15,critical?:boolean,source?:DamageSourceDef,satured?:number){
+    set_configuration(position:Vec2,owner:Human,ammo:AmmoDef,critical?:boolean,source?:DamageSourceDef,satured?:number){
         this.position=position
         this.initial_position=v2.clone(position)
         this.old_position=v2.clone(this.position)
 
         this.owner=owner
-        this.critical=critical===undefined?(Math.random()<=critical_chance):critical
+        this.critical=critical??false
         this.source=source
         this.ammo=ammo
     }
@@ -247,7 +258,7 @@ export class Bullet extends ServerGameObject{
         return b
     }
     clone(position?:Vec2){
-        const b=this.game.add_bullet(position??this.position,this.owner,this.ammo,this.source,this.layer)
+        const b=this.scene.add_bullet(position??this.position,this.owner,this.ammo,this.source,this.layer,this.critical)
         
         b.speed=this.speed
         b.max_distance=this.max_distance
@@ -260,9 +271,11 @@ export class Bullet extends ServerGameObject{
 
         b.damage=this.damage
         b.penetration=this.penetration
+        b.weight=this.weight
         b.obstacle_mult=this.obstacle_mult
         b.critical_mult=this.critical_mult
-        b.falloff=this.falloff
+        if(this.falloff)b.falloff=this.falloff
+        if(this.effective_range)b.effective_range=this.effective_range
         b.on_hit_explosion=this.on_hit_explosion
         b.effects=this.effects
 
@@ -282,6 +295,7 @@ export class Bullet extends ServerGameObject{
             .write_float32(this.max_distance)
             .write_float32(this.speed)
             .write_rad(this.angle)
+            .write_uint8(this.weight??0)
             .write_float32(this.tracer_width)
             .write_float32(this.tracer_height)
             .write_uint32(this.tracer_color)

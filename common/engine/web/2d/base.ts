@@ -17,6 +17,7 @@ export interface CamA{
 
     visible_function?:(obj:Container2DObject)=>boolean
     sort_function:(a:Container2DObject,b:Container2DObject)=>number
+    draw_function?:(obj:Container2DObject)=>void
 }
 export abstract class Container2DObject {
     abstract object_type: string
@@ -80,6 +81,8 @@ export abstract class Container2DObject {
         this._tint.set(Math.floor(val.r),Math.floor(val.g),Math.floor(val.b),Math.floor(val.a))
     }
 
+    propertys?:Record<string,any>
+
     _real_position: Vec2 = v2(0, 0)
     _real_scale: Vec2 = v2(1, 1)
     _real_rotation: number = 0;
@@ -125,7 +128,9 @@ export abstract class Container2DObject {
         if(this.parent){
             this.parent.dirty_children=true
         }
+        this.on_destroy()
     }
+    on_destroy(){}
     _bid(){
         this.dirty_reals=true
     }
@@ -154,7 +159,7 @@ export abstract class Container2DObject {
             if(this.parent._real_matrix&&this._matrix)this._real_matrix=matrix4.mul(this._matrix,this.parent._real_matrix)
             else if(this.parent._real_matrix)this._real_matrix=this.parent._real_matrix
             else this._real_matrix=this._matrix
-            ColorM.mul(this._real_tint,this._tint,this.parent._tint)
+            ColorM.mul(this._real_tint,this._tint,this.parent._real_tint)
         } else {
             v2m.set(this._real_position,this._position._x,this._position._y)
             v2m.set(this._real_scale,this._scale._x,this._scale._y)
@@ -167,7 +172,7 @@ export abstract class Container2DObject {
     }
     update(_dt:number,_resources:ResourcesManager): void {
     }
-    draw_super(){
+    draw_super(cam:CamA){
         if(this.dirty_reals){
             this.update_real()
             this.dirty_reals=false

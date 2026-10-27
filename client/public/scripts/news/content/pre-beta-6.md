@@ -19,7 +19,7 @@ ___
 * Humans Drop Consumibles After Use
 * More Casing Particles
 * Casing Sounds
-* M1A1 - 45acp Tommy AR
+* M1A1 - c22 Tommy AR
 * TaurusTX - 22LR Pistol
 * Pygmy Necklance
 * Luck Coin

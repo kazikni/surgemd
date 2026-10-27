@@ -1,4 +1,4 @@
-import { Definition, Definitions, FrameDef, v2, Vec2 } from "../../../engine/core.ts";
+import { Definition, FrameDef, v2, Vec2 } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
 
 export enum LoadoutItemKind{
@@ -7,6 +7,7 @@ export enum LoadoutItemKind{
     Eyes,
     Shirt,
     Leg,
+    Foot,
     Accessory
 }
 export interface LoadoutBodyDef extends Definition{
@@ -25,8 +26,8 @@ export interface LoadoutBodyDef extends Definition{
 export interface LoadoutHairDef extends Definition{
     item:LoadoutItemKind.Hair
     frame?:{
-        front?:FrameDef
-        back?:FrameDef
+        front?:FrameDef&{paint?:string}
+        back?:FrameDef&{paint?:string}
     }
     rank:ItemRank
 }
@@ -50,10 +51,13 @@ export interface LoadoutShirtDef extends Definition{
 }
 export interface LoadoutLegDef extends Definition{
     item:LoadoutItemKind.Leg
-    frame?:{
-        foot?:FrameDef
-        leg?:FrameDef
-    }
+    frame?:FrameDef
+    rank:ItemRank
+}
+export interface LoadoutFootDef extends Definition{
+    item:LoadoutItemKind.Foot
+    frame?:FrameDef
+    downed_frame?:FrameDef
     rank:ItemRank
 }
 export interface LoadoutAccessoryDef extends Definition{
@@ -62,9 +66,9 @@ export interface LoadoutAccessoryDef extends Definition{
     hide_helmet?:boolean
     rank:ItemRank
 }
-export type LoadoutItemDef=LoadoutBodyDef|LoadoutHairDef|LoadoutEyesDef|LoadoutShirtDef|LoadoutLegDef|LoadoutAccessoryDef
-export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
-    loadout.insert(
+export type LoadoutItemDef=LoadoutBodyDef|LoadoutHairDef|LoadoutEyesDef|LoadoutShirtDef|LoadoutLegDef|LoadoutFootDef|LoadoutAccessoryDef
+export function Loadout_Default_Init():LoadoutItemDef[]{
+    return [
         {
             item:LoadoutItemKind.Body,
             idString:"body_1",
@@ -117,6 +121,17 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
                 front:{
                     position:v2(-0.15,0)
                 }
+            }
+        },
+        {
+            item:LoadoutItemKind.Hair,
+            idString:"hair_5",
+            rank:ItemRank.E,
+            frame:{
+                front:{
+                    position:v2(-0.1,0),
+                    paint:"human_hair_5_front_paint"
+                },
             }
         },
         //Eyes
@@ -269,28 +284,88 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
         //Legs
         {
             item:LoadoutItemKind.Leg,
-            idString:"jeans_pants",
+            idString:"blue_jeans_pants",
             rank:ItemRank.E,
             frame:{
-                leg:{
-                    image:"human_leg_1_1",
-                    tint:0x667994
-                },
-                foot:{
-                    image:"human_leg_1_2",
-                    tint:0x222233,
-                },
+                image:"human_leg_1_1",
+                tint:0x233537
             }
+        },
+        {
+            item:LoadoutItemKind.Leg,
+            idString:"grey_jeans_pants",
+            rank:ItemRank.E,
+            frame:{
+                image:"human_leg_1_1",
+                tint:0x2f2f2f
+            }
+        },
+        {
+            item:LoadoutItemKind.Leg,
+            idString:"green_grey_jeans_pants",
+            rank:ItemRank.E,
+            frame:{
+                image:"human_leg_1_1",
+                tint:0x3c4c42
+            }
+        },
+        // Foot
+        {
+            item:LoadoutItemKind.Foot,
+            idString:"black_shoes",
+            rank:ItemRank.D,
+            frame:{
+                image:"human_foot_2_1",
+                tint:0x222233,
+                zIndex:0
+            },
+            downed_frame:{
+                image:"human_foot_1_2",
+                tint:0x7e7e7e,
+                zIndex:2,
+            },
+        },
+        {
+            item:LoadoutItemKind.Foot,
+            idString:"blue_shoes",
+            rank:ItemRank.D,
+            frame:{
+                image:"human_foot_2_1",
+                tint:0x213258,
+                zIndex:0,
+            },
+            downed_frame:{
+                image:"human_foot_1_2",
+                tint:0x667db0,
+                zIndex:2,
+            },
+        },
+        {
+            item:LoadoutItemKind.Foot,
+            idString:"grey_shoes",
+            rank:ItemRank.D,
+            frame:{
+                image:"human_foot_2_1",
+                tint:0x2f4338,
+                zIndex:0,
+            },
+            downed_frame:{
+                image:"human_foot_1_2",
+                tint:0x878787,
+                zIndex:2,
+            },
         },
         // Accessorys
         {
             item:LoadoutItemKind.Accessory,
-            idString:"hair_bow",
+            idString:"white_hair_bow",
             rank:ItemRank.E,
             frame:{
-                position:v2(-0.15,-0.3),
-                rotation:-0.4
+                image:"hair_bow",
+                position:v2(-0.1,-0.26),
+                rotation:-0.4,
+                zIndex:9 
             }
         },
-    )
+    ]
 }

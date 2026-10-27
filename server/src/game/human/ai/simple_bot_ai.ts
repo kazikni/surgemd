@@ -18,6 +18,18 @@ export abstract class BotAi{
     constructor(human:Human){
         this.human=human
     }
+    update(dt:number){
+        this.AI(dt)
+    }
+    /*ai_tick_delta:number=0
+    ai_tps:number=1/20
+    update(dt:number){
+        this.ai_tick_delta+=dt
+        if(this.ai_tick_delta>=this.ai_tps){
+            this.AI(this.ai_tick_delta)
+            this.ai_tick_delta=0
+        }
+    }*/
     abstract AI(dt:number):void
     abstract net_update(general_update:Stream):void
     reset_inputs(){
@@ -102,7 +114,7 @@ export class SimpleBotAi extends BotAi{
             }
         }
         if(Math.random()<=0.003){
-            this.human.input.actions.push({type:InputActionType.emote_emote,emote:random.choose(this.emotes).idNumber!})
+            this.human.input.actions.push({type:InputActionType.emote,id:this.human.game.definitions.game_objects.keysString[random.choose(this.emotes).idString]})
         }
     }
 }

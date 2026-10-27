@@ -1,11 +1,9 @@
-import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameTransform, Hitbox2D, HitboxGroup2D, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
+import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, HitboxGroup2D, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
 import { Spawn, SpawnMode } from "../../others/constants.ts";
 import { FloorKind } from "../../others/terrain.ts";
 import { ScopeChange } from "../utils.ts";
-export interface WheelDef{
+export interface WheelDef extends FrameDef{
     movable: boolean
-    position: Vec2
-    scale: number
     marks?: {
         frame?:string
         stress_resistance?:number
@@ -59,9 +57,9 @@ export const VehicleTemplates = {
         idString: id,
         spawn:Spawn.ground,
         hitbox: new HitboxGroup2D(
-            new CircleHitbox2D(v2(1.0, 0), 1.0),
-            new CircleHitbox2D(v2(-0.9, 0), 1.0),
-            new CircleHitbox2D(v2(0, 0), 1.2)
+            new CircleHitbox2D(v2(0.9, 0), 0.5),
+            new CircleHitbox2D(v2(-0.9, 0), 0.5),
+            new CircleHitbox2D(v2(0, 0), 0.5)
         ),
         frame: {
             base_transform:{
@@ -70,26 +68,24 @@ export const VehicleTemplates = {
         },
         center: v2(0, 0),
         pillot_seat: {
-            position: v2(0, 0),
+            position: v2(-0.3, 0),
             leave: v2(0, 1),
             doors: [v2(0, 0.5), v2(0, -0.5)],
-            scope_change:{zoom:0.25}
         },
         wheels: {
             defs: [
-                {movable: true,position: v2(0.75, 0),scale: 1},
-                {movable: true,position: v2(-0.75, 0),scale: 1}
+                {movable: true,position: v2(1.1, 0),scale: 1.4},
+                {movable: false,position: v2(-1, 0),scale: 1.4}
             ]
         },
         physics:{
             mass:130,
 
-            engine_force:700,
-            brake_force:700,
+            engine_force:1500,
+            brake_force:1000,
 
-            traction:1.1,
-
-            drag:0.1,
+            traction:1,
+            drag:0.75,
 
             max_steer_speed:7,
             steer_force:20,
@@ -103,10 +99,10 @@ export const VehicleTemplates = {
             new CircleHitbox2D(v2(1.2,0.55),1.15),
             new CircleHitbox2D(v2(1.2,-0.55),1.15),
 
-            new CircleHitbox2D(v2(-1.2,0.55),1.2),
-            new CircleHitbox2D(v2(-1.2,-0.55),1.2),
+            new CircleHitbox2D(v2(-1.8,0.55),1.2),
+            new CircleHitbox2D(v2(-1.8,-0.55),1.2),
 
-            new CircleHitbox2D(v2(0,0),1.45)
+            new CircleHitbox2D(v2(-0.5,0),1.45)
         ),
         frame: {
             base_transform:{
@@ -136,7 +132,6 @@ export const VehicleTemplates = {
             position:v2(0,-0.7),
             leave:v2(0,-1.5),
             doors:[v2(0,-1.5)],
-            scope_change:{zoom:0.3}
         },
 
         seats:[
@@ -144,6 +139,17 @@ export const VehicleTemplates = {
                 position:v2(0,0.7),
                 leave:v2(0,2),
                 doors:[v2(0,1.5)]
+            },
+
+            {
+                position:v2(-1.3,0.7),
+                leave:v2(-1.3,2),
+                doors:[v2(-1.3,1.5)]
+            },
+            {
+                position:v2(-1.3,-0.7),
+                leave:v2(-1.3,-2),
+                doors:[v2(-1.3,-1.5)]
             }
         ],
 
@@ -151,33 +157,35 @@ export const VehicleTemplates = {
             defs:[
                 {
                     movable:true,
-                    position:v2(.4,-1.4),
+                    position:v2(1.4,-1.2),
                     marks:{
-                        stress_resistance:2.5,
+                        stress_resistance:3,
                     },
-                    scale:2.5,
+                    scale2:v2(2.5,3.2),
                 },
                 {
                     movable:true,
-                    position:v2(.4,1.4),
+                    position:v2(1.4,1.2),
                     marks:{
-                        stress_resistance:2.5,
+                        stress_resistance:3,
                     },
-                    scale:2.5
+                    scale2:v2(2.5,3.2),
                 },
                 {
                     movable:false,
-                    position:v2(-1.5,-1.4),
+                    position:v2(-2,-1.2),
                     marks:{
+                        stress_resistance:1
                     },
-                    scale:2.5
+                    scale2:v2(2.5,3),
                 },
                 {
                     movable:false,
-                    position:v2(-1.5,1.4),
+                    position:v2(-2,1.2),
                     marks:{
+                        stress_resistance:1
                     },
-                    scale:2.5
+                    scale2:v2(2.5,3),
                 }
             ]
         },
@@ -237,10 +245,10 @@ export const VehicleTemplates = {
     },...merge)
 } satisfies Record<string, (id: string, ...merge: DeepPartial<VehicleDef>[]) => VehicleDef>
 
-export function Vehicles_Default_Init(vehicles: Definitions<VehicleDef, {}>) {
-    vehicles.insert(
+export function Vehicles_Default_Init() {
+    return [
         VehicleTemplates.bike("bike"),
         VehicleTemplates.jeep("jeep"),
         VehicleTemplates.boat("boat"),
-    )
+    ]
 }

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="37.119293"
+   height="83.226601"
+   viewBox="0 0 9.8212982 22.020557"
+   version="1.1"
+   id="svg13609"
+   sodipodi:docname="blood_particle.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs13613" />
+  <sodipodi:namedview
+     id="namedview13611"
+     pagecolor="#000000"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#000000"
+     showgrid="false"
+     inkscape:zoom="5.274089"
+     inkscape:cx="-55.080603"
+     inkscape:cy="44.936671"
+     inkscape:window-width="1920"
+     inkscape:window-height="1008"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg13609" />
+  <path
+     style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.18897;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:9.59"
+     d="M 0.42493215,18.159018 C 1.3982781,22.3117 9.8920763,23.852105 9.8208533,19.035146 8.3575153,13.859496 7.3919243,9.3899204 8.0113673,5.2102616 8.9062533,-2.2253653 0.80690315,-0.61317927 0.34303015,3.3102365 -0.73735815,12.44811 1.1451991,14.785361 0.42493215,18.159018 Z"
+     id="path13835"
+     sodipodi:nodetypes="cccsc" />
+</svg>

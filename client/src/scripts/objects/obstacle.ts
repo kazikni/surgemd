@@ -6,7 +6,7 @@ import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./stati
 import { Human } from "./human.ts";
 import { CalculateDoorHitbox } from "common/scripts/others/functions.ts";
 import { HitSoundsDef } from "common/scripts/definitions/utils.ts";
-import { Angle, Color, ColorM, Hitbox2D, matrix4, model2d, NullHitbox2D, Numeric, Orientation, ParticlesEmitter2D, random, RotationMode, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Angle, Color, ColorM, Hitbox2D, model2d, NullHitbox2D, Numeric, Orientation, ParticlesEmitter2D, random, RotationMode, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 export function GetObstacleBaseFrame(def:ObstacleDef,variation:number,skin:number):string{
     let spr=def.assets?.frame?.base??def.idString
     if(skin>0&&def.assets?.frame?.biome_skins){
@@ -23,6 +23,8 @@ export class Obstacle extends StaticBody{
     override physical_data: StaticBodyPhysicalData&{
         scale:number
         rotation:number
+
+        interaction_hitbox?:Hitbox2D
     }={
         hitbox:new NullHitbox2D(v2.zero),
 
@@ -35,6 +37,7 @@ export class Obstacle extends StaticBody{
         rotation:0,
         side:0
     }
+    interaction_hitbox?:Hitbox2D
     door_data?:{
         open:-1|0|1
         hitboxes:Record<number,Hitbox2D>
@@ -87,7 +90,7 @@ export class Obstacle extends StaticBody{
         },
         sounds:{
             hit:[],
-        }
+        },
     }
 
     ////////////////////////////
@@ -101,24 +104,35 @@ export class Obstacle extends StaticBody{
 
     constructor(){
         super()
+        this.allow_tick=Debug.hitbox
         this.container.visible=false
         this.container.add_child(this.sprite)
     }
+    override update_hitbox(): void {
+        super.update_hitbox()
+        if(this.physical_data.interaction_hitbox)this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(this.position)
+        else this.interaction_hitbox=undefined
+    }
+
     override on_layer_set(): void {
         this.container.layer=this.layer
         if(this.shadow)this.shadow.layer=this.layer
     }
     // deno-lint-ignore no-explicit-any
     override on_create(_args: Record<string,any>): void {
-        this.game.cam2d.add_object(this.container)
+        this.scene.camera.add_object(this.container)
     }
     override on_destroy(): void {
         this.container.destroy()
         if(this.emitter_1)this.emitter_1.destroyed=true
         if(this.shadow)this.shadow.destroy()
-        if(this.game.parallax[this.id])delete this.game.parallax[this.id]
     }
-
+    override on_tick(_dt: number): void {
+        this.game.hitboxes_gfx.ctx.begin_path()
+        this.game.hitboxes_gfx.ctx.hitbox(this.hitbox)
+        this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
+        this.game.hitboxes_gfx.ctx.fill()
+    }
 
     // Below
     can_below(other:Hitbox2D):boolean{
@@ -141,13 +155,14 @@ export class Obstacle extends StaticBody{
     }
     update_frame(){
         this.sprite.transform_frame({
+            visible:true,
             tint:0xffffff,
+            alpha:255,
             scale:2,
             hotspot:v2.half_one
         })
         if(this.def.assets?.frame?.transform)this.sprite.transform_frame(this.def.assets.frame.transform)
         this.sprite.matrix=undefined
-        if(this.game.parallax[this.id])delete this.game.parallax[this.id]
         if(this.health_data.dead){
             if(this.assets_data.frame.dead)this.sprite.frame=this.game.resources.get_frame(this.assets_data.frame.dead)
             this.container.zIndex=this.def.zIndex?.dead===undefined?zIndexes.DeadObstacles:this.def.zIndex?.dead
@@ -180,15 +195,16 @@ export class Obstacle extends StaticBody{
                     this.shadow_sprite.tint=this.game.world_shadow.color
                 }
             }
-            if(this.def.parallax!==undefined)this.game.parallax[this.id]=this
         }
-
-        this.container.visible=true
-
         const tid=this.def.assets?.frame?.tint_variations
         if(tid){
-            this.sprite.tint=ColorM.number(tid[Numeric.clamp(this.variation-1,0,tid.length)])
+            const a=this.sprite.tint.a
+            const color=ColorM.number(tid[Numeric.clamp(this.variation-1,0,tid.length)])
+            if(this.assets_data.particles)this.assets_data.particles.tint=color
+            this.sprite.tint=color
+            this.sprite.tint.a=a
         }
+        this.container.visible=true
     }
     update_shadow(){
         if(this.shadow){
@@ -202,8 +218,8 @@ export class Obstacle extends StaticBody{
     die(){
         if(this.health_data.dead)return
         this.health_data.dead=true
-        const ac=random.int(8,13)
-        if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Normal){
+        if(this.game.save.settings.get_var("graphics_particles")>=GraphicsDConfig.Normal){
+            const ac=random.int(8,10)
             for(let i=0;i<ac;i++){
                 this._add_own_particle(this.hitbox.random_point(),2)
             }
@@ -229,7 +245,7 @@ export class Obstacle extends StaticBody{
         if(this.def.assets?.particles)this.set_hit_particles_def(this.def.idString,this.variation-1,this.def.assets.particles)
         if(this.def.onDestroyExplosion){
             if(!this.emitter_1){
-                this.emitter_1=this.game.particles.add_emiter({
+                this.emitter_1=this.scene.particles.add_emiter({
                     delay:0.4,
                     particle:()=>new ABParticle2D({
                         frame:{
@@ -251,7 +267,6 @@ export class Obstacle extends StaticBody{
                 })
             }
         }
-        this.physical_data.reflect_bullets=this.def.reflect_bullets??false
         if(this.def.expanded_behavior){
             switch(this.def.expanded_behavior.type){
                 case 3:
@@ -275,9 +290,10 @@ export class Obstacle extends StaticBody{
             this.shadow.add_child(this.shadow_sprite)
 
             this.shadow.layer=this.layer
-            this.game.cam2d.add_object(this.shadow)
+            this.scene.camera.add_object(this.shadow)
         }
-        this.physical_data.passable_by_bullets=this.def.passable_by_bullets??false
+        if(this.def.passable_by_bullets!==undefined)this.physical_data.passable_by_bullets=this.def.passable_by_bullets??false
+        if(this.def.reflect_bullets!==undefined)this.physical_data.reflect_bullets=this.def.reflect_bullets
         if(this.def.expanded_behavior?.type===4){
             this.press_data={
                 activated:false,
@@ -297,6 +313,7 @@ export class Obstacle extends StaticBody{
     initialize_hitboxes(){
         if(this.def.hitbox)this.physical_data.hitbox=this.def.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
         this.base_hitbox=this.physical_data.hitbox
+        this.physical_data.interaction_hitbox=this.physical_data.hitbox.transform(undefined,1.1)
         if(this.def.expanded_behavior){
             switch(this.def.expanded_behavior.type){
                 case 0:
@@ -324,9 +341,9 @@ export class Obstacle extends StaticBody{
             bus:"obstacles"
         })
         for(const p of (this.def.expanded_behavior as ObstacleBehaviorTransformInto).first_particles??[]){
-            this.game.add_timeout(()=>{
+            this.game.clock.add_timeout(()=>{
                 for(let c=0;c<p.count;c++){
-                    this.game.particles.add_particle(new ABParticle2D({
+                    this.scene.particles.add_particle(new ABParticle2D({
                         frame:{layer:this.layer,...p.frame},
                         position:this.position,
                         speed:random.float(1,2),
@@ -345,29 +362,31 @@ export class Obstacle extends StaticBody{
         if((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites&&(this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites![def]){
             this.sprite.set_frame((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites![def],this.game.resources)
         }
-        this.game.add_timeout(()=>{
-            for(const p of (this.def.expanded_behavior as ObstacleBehaviorTransformInto).transform_particles??[]){
-                this.game.add_timeout(()=>{
-                    for(let c=0;c<p.count;c++){
-                        this.game.particles.add_particle(new ABParticle2D({
-                            frame:{layer:this.layer,...p.frame},
-                            position:this.hitbox.random_point(),
-                            speed:random.float(1,4),
-                            angle:this.physical_data.rotation,
-                            direction:random.rad(),
-                            life_time:3,
-                            zIndex:zIndexes.Particles,
-                            tint:ColorM.default.white,
-                            to:{
-                                speed:random.float(0.1,1),
-                                angle:this.physical_data.rotation+random.rad(),
-                                tint:ColorM.default.transparent
-                            }
-                        }))
-                    }
-                },p.delay)
-            }
-        },(this.def.expanded_behavior as ObstacleBehaviorTransformInto).delay)
+        if((this.def.expanded_behavior as ObstacleBehaviorTransformInto).delay){
+            this.game.clock.add_timeout(()=>{
+                for(const p of (this.def.expanded_behavior as ObstacleBehaviorTransformInto).transform_particles??[]){
+                    this.game.clock.add_timeout(()=>{
+                        for(let c=0;c<p.count;c++){
+                            this.scene.particles.add_particle(new ABParticle2D({
+                                frame:{layer:this.layer,...p.frame},
+                                position:this.hitbox.random_point(),
+                                speed:random.float(1,4),
+                                angle:this.physical_data.rotation,
+                                direction:random.rad(),
+                                life_time:3,
+                                zIndex:zIndexes.Particles,
+                                tint:ColorM.default.white,
+                                to:{
+                                    speed:random.float(0.1,1),
+                                    angle:this.physical_data.rotation+random.rad(),
+                                    tint:ColorM.default.transparent
+                                }
+                            }))
+                        }
+                    },p.delay)
+                }
+            },(this.def.expanded_behavior as ObstacleBehaviorTransformInto).delay!)
+        }
     }
     update_door(ne:number,force:boolean=false){
         const old=this.door_data!.open
@@ -378,6 +397,7 @@ export class Obstacle extends StaticBody{
             if(ne===1)new_rot-=(Math.PI/2)
             if(ne===-1)new_rot+=(Math.PI/2)
             this.physical_data.hitbox=this.door_data!.hitboxes[this.door_data!.open]
+            this.physical_data.interaction_hitbox=this.physical_data.hitbox.transform(undefined,1.1)
             this.base_hitbox=this.physical_data.hitbox
             if(force){
                 this.container.rotation=new_rot
@@ -431,7 +451,7 @@ export class Obstacle extends StaticBody{
                 this.game.sounds.play(this.game.resources.get_sound(this.def.expanded_behavior.click_sound),{
                     position:this.position,
                 })
-                this.game.add_timeout(()=>{
+                this.game.clock.add_timeout(()=>{
                     this.game.sounds.play(this.game.resources.get_sound("menu_music"),{
                         position:this.position,
                     })
@@ -464,7 +484,7 @@ export class Obstacle extends StaticBody{
         return ""
     }
     override can_interact(h:Human): boolean {
-        return !this.health_data.dead&&this.hitbox.colliding_with(h.hitbox)&&(this.def.interactDestroy===true||this.def.expanded_behavior!==undefined)
+        return !this.health_data.dead&&h.hitbox.colliding_with(this.interaction_hitbox??this.hitbox)&&(this.def.interactDestroy===true||this.def.expanded_behavior!==undefined)
     }
     override auto_interact(h:Human): boolean {
         return (this.def.interactDestroy===true)
@@ -488,7 +508,7 @@ export class Obstacle extends StaticBody{
                 this.physical_data.rotation=rotation
                 this.physical_data.side=side
             }else if(this.def.rotation_mode===RotationMode.limited){
-                this.physical_data.rotation=Angle.side_rad(rotation as Orientation)
+                this.physical_data.rotation=Angle.side2rad(rotation as Orientation)
                 this.physical_data.side=(side??0 as Orientation)
             }else{
                 this.physical_data.rotation=rotation
@@ -562,11 +582,6 @@ export class Obstacle extends StaticBody{
             this.press_data.locked=bg[1]
             this.press_data.allow_switch=bg[2]
             this.update_press_data()
-        }
-        if(Debug.hitbox&&full){
-            this.game.hitboxes_gfx.ctx.hitbox(this.hitbox)
-            this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
-            this.game.hitboxes_gfx.ctx.fill()
         }
     }
 }

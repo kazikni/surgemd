@@ -1,20 +1,19 @@
 import { PlayerStatus, ScoreApplyerType, Spawn, SpawnMode } from "common/scripts/others/constants.ts";
 import { ModeManager } from "./modeManager.ts";
 import { type Human } from "../objects/human.ts";
-import { Player } from "../objects/player.ts";
+import { Player, PlayerConnManager } from "../objects/player.ts";
 import { MapDef} from "common/scripts/definitions/maps/base.ts";
-import { v2, Vec2 } from "common/engine/core.ts";
+import { random, v2, Vec2, WeightDefinition } from "common/engine/core.ts";
 import { Group, GroupsManager, Team, TeamsManager} from "./teams.ts";
 import { DeadZoneConfig, DefaultDeadzone } from "../others/deadzone.ts";
 import { DebugMap } from "common/scripts/definitions/maps/debug.ts";
-import { FeedMessageType } from "common/scripts/packets/general_update.ts";
+import { FeedMessageType, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { NormalMap } from "common/scripts/definitions/maps/normal.ts";
-import { LocationDrone } from "../objects/drone.ts";
-export interface AirdropConfig{
-    spawn:number[]
-    obstacle:string
-}
-export interface DronesConfig{
+import { human_die_event } from "../others/utils.ts";
+import { GamemodeEventContent } from "../others/scene.ts";
+
+export type GamemodeEvent={
+    content:GamemodeEventContent|((GamemodeEventContent&WeightDefinition)[])
     spawn:number[]
 }
 export interface BattleRoyaleSettings{
@@ -29,9 +28,9 @@ export interface BattleRoyaleSettings{
         disable_minimap?:boolean
     }
     spawn_mode?:SpawnMode
+    spawn_mode_deadzone?:SpawnMode
     deadzone?:DeadZoneConfig
-    airdrops?:AirdropConfig
-    drones?:DronesConfig
+    events?:GamemodeEvent[]
     teams?:number
     group_size?:number
 }
@@ -49,9 +48,9 @@ export class BattleRoyale extends ModeManager{
             disable_minimap?:boolean
         }
         spawn_mode:SpawnMode
+        spawn_mode_deadzone:SpawnMode
+        events:GamemodeEvent[]
         deadzone:DeadZoneConfig
-        airdrops:AirdropConfig
-        drones:DronesConfig
     }
     groups_manager?:GroupsManager
     group_size:number
@@ -72,16 +71,25 @@ export class BattleRoyale extends ModeManager{
                 disable_minimap:settings.map?.disable_minimap
             },
             spawn_mode:settings.spawn_mode??Spawn.grass,
-            deadzone:settings.deadzone??DefaultDeadzone,
-            airdrops:settings.airdrops??{
-                obstacle:"iron_crate",
-                spawn:[
-                    20,150,301
-                ]
+            spawn_mode_deadzone:settings.spawn_mode??{
+                ...Spawn.grass,
+                position_generator:"deadzone"
             },
-            drones:settings.drones??{
-                spawn:[20,301]
-            }
+            deadzone:settings.deadzone??DefaultDeadzone,
+            events:settings.events??[
+                {
+                    content:[
+                        {type:"drone",weight:1},
+                        {type:"danger_zone",weight:1},
+                        {type:"toxic_zone",weight:1},
+                    ],
+                    spawn:[20,150,350]
+                },
+                {
+                    spawn:[20,150],
+                    content:{type:"airdrop",obstacle:"iron_crate"},
+                }
+            ],
         }
         this.group_size=settings.group_size===undefined?group_size:settings.group_size
         if(this.group_size>1){
@@ -112,33 +120,36 @@ export class BattleRoyale extends ModeManager{
         if(!this.teams_manager)return
         return this.teams_manager.add_team(team)
     }
-    override on_start(){
-        this.game.deadzone.start()
-        for(const p of this.settings.airdrops.spawn){
-            this.game.add_timeout(()=>{
-                this.game.add_airdrop()
-            },p)
+    on_game_start(){
+        this.scene.deadzone.start()
+        for(const event of this.settings.events){
+            for(const s of event.spawn){
+                this.game.clock.add_timeout(()=>{
+                    if(Array.isArray(event.content)){
+                        this.scene.add_gamemode_event(random.weight2(event.content) as GamemodeEventContent)
+                    }else{
+                        this.scene.add_gamemode_event(event.content)
+                    }
+                },s)
+            }
         }
-        for(const d of this.settings.drones.spawn){
-            this.game.add_timeout(()=>{
-                this.game.add_drone(undefined,undefined,new LocationDrone())
-            },d)
-        }
-        this.game.add_timeout(()=>{
+        this.game.clock.add_timeout(()=>{
             this.game.close()
         },this.settings.join_time)
     }
     override on_tick(dt: number): void {
+        super.on_tick(dt)
         if(this.groups_manager)this.groups_manager.tick(dt)
         if(this.teams_manager)this.teams_manager.tick(dt)
     }
-    override on_net_update(){
+    on_net_update(){
         if(this.groups_manager)this.groups_manager.net_update()
         if(this.teams_manager)this.teams_manager.net_update()
     }
-    override reset(): void {
+    on_game_reset(): void {
         if(this.groups_manager)this.groups_manager.reset()
         if(this.teams_manager)this.teams_manager.reset()
+        this.leader=undefined
     }
     override can_down(human: Human): boolean {
         if(this.teams_manager&&(human.team_data.team&&human.team_data.team.can_down(human))!){
@@ -174,21 +185,18 @@ export class BattleRoyale extends ModeManager{
     can_be_leader(p:Human):boolean{
         return p instanceof Player&&(this.leader===undefined?p.status.kills>=this.rules.leader.kills_min:this.leader.status.kills<p.status.kills)
     }
-    is_leader(p:Human):boolean{
+    override is_leader(p:Human):boolean{
         return this.leader?.id===p.id
     }
-    get_leader(): Human|undefined {
+    override get_leader(): Human|undefined {
         return this.leader
     }
     assign_leader(p:Human):boolean{
         if(this.can_be_leader(p)){
             this.leader=p as Player
-            this.game.feed_messages.push({
+            this.game.scene_2d.feed_messages.push({
                 type:FeedMessageType.leader_assigned,
-                player:{
-                    id:p.id,
-                    kills:p.status.kills
-                }
+                player:p.id
             })
             return true
         }
@@ -196,15 +204,12 @@ export class BattleRoyale extends ModeManager{
     }
     leader_die(p:Human){
         this.leader=undefined
-        this.game.feed_messages.push({
+        this.game.scene_2d.feed_messages.push({
             type:FeedMessageType.leader_dead,
-            player:{
-                id:p.id,
-                kills:p.status.kills
-            }
+            player:p.id
         })
     }
-    override search_leader(): Human | undefined {
+    search_leader(): Human | undefined {
         let selected:Player|undefined
         let selected_kills:number=0
         for(const p of this.game.players.living_players){
@@ -219,6 +224,17 @@ export class BattleRoyale extends ModeManager{
     give_rank_score(){
         this.game.players.apply_score(ScoreApplyerType.Rank,this.rules.score.rank_reward/this.game.players.match_players_count)
     }
+
+    override on_spectate(conn:PlayerConnManager,val:number):void{
+        if(conn.real_human&&conn.real_human.team_data.group){
+            const lv=conn.real_human.team_data.group.get_living_humans()
+            if(lv.length>0&&lv[0] instanceof Player){
+                conn.set_spectator(lv[0])
+                return
+            }
+        }
+        return super.on_spectate(conn,val)
+    }
     override on_player_join(p: Player): void {
         if(this.groups_manager){
             this.set_group_for_human(p)
@@ -228,37 +244,64 @@ export class BattleRoyale extends ModeManager{
             this.game.close()
         }
     }
-    override on_player_die(p:Player){
-        if(this.game.fineshed){
-            return
-        }
-        this.game.leaderboards.push({
-            id:p.id,
-            kills:p.status.kills,
-            score:p.status.score,
-            rank:this.game.players.living_players.length+1,
-        })
-        if(p.conn){
-            const status=p.team_data.group?.get_status() ?? [p.status]
-            p.conn?.send_game_over(status as PlayerStatus[],false,p.killed_by?.id)
-        }
-        if(this.game.started){
-            this.give_rank_score()
-
-            let stopped:boolean=false
-            let winners:Player[]=[]
-            if(this.game.players.living_players.length<=1||(this.groups_manager&&this.groups_manager.get_living_groups().length<=1)){
-                winners=[...this.game.players.living_players]
-                stopped=true
-            }
-            if(stopped){
-                for(const w of winners){
-                    if(w.visual.emotes.victory){
-                        w.input.emote=w.visual.emotes.victory
-                    }
+    override on_human_die(e:human_die_event){
+        e.human.inventory.drop_all()
+        e.human.inventory.clear()
+        if(e.human.killed_by){
+            if(e.human.killed_by.id!==e.human.id&&!this.is_ally(e.human,e.human.killed_by)){
+                const killer=e.human.killed_by
+                const rules=this.rules
+                let kill_reward=rules.score.kill_reward
+                if(this.is_leader(e.human)){
+                    kill_reward*=rules.score.leader_kill
                 }
-                this.game.finish(winners,2)
+                killer.on_kill(kill_reward,e.params)
+                this.assign_leader(killer)
             }
+        }
+        if(this.is_leader(e.human)){
+            this.leader_die(e.human)
+            if(this.rules.leader.search)this.search_leader()
+        }
+        if(e.human.is_player){
+            this.game.scene_2d.leaderboards.push({
+                id:e.human.id,
+                kills:e.human.status.kills,
+                score:e.human.status.score,
+                rank:this.game.players.living_players.length+1,
+            })
+            if((e.human as Player).conn){
+                const status=e.human.team_data.group?.get_status()??[(e.human as Player).status]
+                ;(e.human as Player).conn?.send_game_over(status as PlayerStatus[],false,e.human.killed_by?.id)
+            }
+            if(this.game.started){
+                this.give_rank_score()
+
+                let stopped:boolean=false
+                let winners:Player[]=[]
+                if(this.game.players.living_players.length<=1||(this.groups_manager&&this.groups_manager.get_living_groups().length<=1)){
+                    winners=[...this.game.players.living_players]
+                    stopped=true
+                }
+                if(stopped){
+                    for(const w of winners){
+                        w.on_win()
+                    }
+                    this.game.finish(winners,2)
+                }
+            }
+        }
+    }
+    override manage_general_packet(g: GeneralUpdatePacket): void {
+        super.manage_general_packet(g)
+
+        const leader=this.game.modeManager.get_leader()
+        g.content.leader=leader?{
+            id:leader.id,
+            kills:leader.status.kills
+        }:{
+            id:0,
+            kills:0
         }
     }
     override on_human_revive(human: Human): void {
@@ -266,10 +309,10 @@ export class BattleRoyale extends ModeManager{
         const pos=this.get_human_spawn_position(human)
         if(pos)human.position=pos
     }
-    override on_finish(winners:Player[]): void {
+    override on_game_finish(e:{winners:Player[]}): void {
         for(const p of this.game.players.living_players){
             this.give_rank_score()
-            this.game.leaderboards.push({
+            this.game.scene_2d.leaderboards.push({
                 id:p.id,
                 kills:p.status.kills,
                 score:p.status.score,
@@ -277,9 +320,7 @@ export class BattleRoyale extends ModeManager{
             })
         }
         this.game.players.apply_score(ScoreApplyerType.Win,this.rules.score.win_reward)
-        for(const p of winners){
-            p.conn?.send_game_over((p.team_data.group?.get_status()??[p.status]) as PlayerStatus[],true)
-        }
+        super.on_game_finish(e)
     }
     override set_group_for_human(p: Human){
         if(!this.groups_manager) return
@@ -292,16 +333,17 @@ export class BattleRoyale extends ModeManager{
         }
     }
     override async generate_map(): Promise<void> {
-        this.game.map.generate(await this.load_map(this.settings.map.def??"normal")??NormalMap,this.settings.map.seed,!this.settings.map.disable_minimap)
-        this.game.deadzone.set_config(this.settings.deadzone)
-        //this.game.deadzone.start()
+        this.scene.map.generate(await this.load_map(this.settings.map.def??"normal")??NormalMap,this.settings.map.seed,!this.settings.map.disable_minimap)
+        this.scene.deadzone.set_config(this.settings.deadzone)
+        //this.scene.deadzone.start()
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
         if(h.team_data.group&&this.settings.players.group_spawn){
             const c=h.team_data.group.choose_human(h)
             if(c?.position)return c.position
         }
-        return this.game.map.getRandomPosition(h.base_hitbox,h.id,h.layer,this.settings.spawn_mode,this.game.map.random)
+        if(this.game.scene_2d.deadzone.stageIndex>2)return this.scene.map.getRandomPosition(h.base_hitbox,h.id,h.layer,this.settings.spawn_mode_deadzone,this.scene.map.random)
+        return this.scene.map.getRandomPosition(h.base_hitbox,h.id,h.layer,this.settings.spawn_mode,this.scene.map.random)
     }
 }
 export class BattleRoyaleDebug extends BattleRoyale{
@@ -312,12 +354,13 @@ export class BattleRoyaleDebug extends BattleRoyale{
         }
         super(s,group_size)
     }
-    override on_start(){
+    override on_game_start(){
     }
     override async generate_map(): Promise<void> {
-        this.game.map.generate(await this.load_map(this.settings.map.def??"debug")??DebugMap,this.settings.map.seed,!this.settings.map.disable_minimap)
+        this.scene.map.generate(await this.load_map(this.settings.map.def??"debug")??DebugMap,this.settings.map.seed,!this.settings.map.disable_minimap)
+        //const bb=this.game.scene_2d.add_object(new ToxicZone(),Layers.Normal,undefined,{grenade:this.game.definitions.grenades.getFromStringSafe("mini_nuke"),position:v2.dscale(this.scene.map.size,2)})
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
-        return v2.dscale(this.game.map.size,2)
+        return v2.dscale(this.scene.map.size,2)
     }
 }

@@ -1,9 +1,8 @@
-import { Definition, Definitions, Numeric, tdm } from "../../../engine/core.ts";
+import { Definition, Numeric, tdm } from "../../../engine/core.ts";
 import { TD, TDType } from "../../../engine/core/lang/td.ts";
-import { HumanModifiers } from "../../others/constants.ts";
 import { ItemRank } from "../../others/item.ts";
 import { SideEffectType } from "../player/effects.ts";
-import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
+import { BulletReflection, GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 
 export const AccessoryTD:TD={
     type:TDType.object,
@@ -21,21 +20,20 @@ export interface AccessoryDef extends Definition{
     rank:ItemRank
 
     property?:string[]
-    modifiers?:Partial<HumanModifiers>
+    modifiers?:Record<string,number>
     events?:Record<string,(e:any)=>void>
 }
 
 export function AccessoryDropLootFromObstacle(table:string){
     return (e:any)=>{
         const loot=e.human.game.get_loot_table(table)
-
         for(const l of loot){
-            e.human.game.add_loot(e.obstacle.hitbox.random_point(),{item:l.item,count:l.count},e.obstacle.layer)
+            e.human.scene.add_loot(e.obstacle.hitbox.random_point(),{item:l.item,count:l.count},e.obstacle.layer)
         }
     }
 }
-export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>){
-    accessorys.insert(
+export function Accessorys_Default_Init():AccessoryDef[]{
+    return [
         {
             idString:"rip_ammo",
             rank:ItemRank.A,
@@ -43,7 +41,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                 "gun_shoot":(e)=>{
                     if(e.bullet.on_hit_explosion)return
                     e.bullet.damage*=0.6
-                    e.bullet.tracer_height*=0.6
+                    e.bullet.tracer_height*=1
 
                     const spread=Numeric.clamp(e.spread*0.005,0.01,0.045)
 
@@ -80,7 +78,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                         e.bullet.damage*=1.2
                         e.bullet.speed*=1.2
                         e.bullet.tracer_height*=1.75
-                        e.bullet.set_satured(1)
+                        e.bullet.set_satured(0)
                     }
                 }
             }
@@ -96,7 +94,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                     e.bullet.damage*=1.25
                     e.bullet.speed*=1.2
                     e.bullet.tracer_height*=1.75
-                    e.bullet.set_satured(1)
+                    e.bullet.set_satured(0)
                 }
             }
         },
@@ -119,6 +117,22 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                     e.bullet.speed*=0.7
                     e.bullet.damage*=0.7
                     e.bullet.tracer_alpha*=0.5
+                }
+            }
+        },
+        {
+            idString:"incendiary_bullets",
+            rank:ItemRank.A,
+            events:{
+                "gun_shoot":(e)=>{
+                    e.bullet.damage*=0.95
+                    e.bullet.speed*=0.95
+                    if(!e.bullet.effects)e.bullet.effects=[]
+                    e.bullet.effects.push({
+                        type:SideEffectType.AddEffect,
+                        duration:10,
+                        effect:"fire"
+                    })
                 }
             }
         },
@@ -206,5 +220,14 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                 }
             }
         },
-    )
+        {
+            idString:"all_reflect",
+            rank:ItemRank.A,
+            events:{
+                "gun_shoot":(e)=>{
+                    e.bullet.reflection=BulletReflection.All
+                }
+            }
+        },
+    ]
 }

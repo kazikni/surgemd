@@ -1,8 +1,8 @@
 import { FloorType } from "common/scripts/others/terrain.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
-import { BaseObject2D, CircleHitbox2D, GameObjectManager2D, Hitbox2D, PolarMovement, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { BaseObject2D, CheckpointContext, CircleHitbox2D, GameObjectManager2D, Hitbox2D, PolarMovement, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameConstants, GameObjectType, HumanoidVisualData } from "common/scripts/others/constants.ts";
-import { LoadoutBodyDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { type StaticBody } from "./static_body.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
@@ -62,6 +62,8 @@ export class Humanoid extends MovingBody {
             value:100,
             old:-1,
         }
+
+        this.allow_checkpoint=false
     }
     update_body(){
         this.base_hitbox = new CircleHitbox2D(v2(0,0),GameConstants.humanoid.radius*this.physical_data.scale)
@@ -72,14 +74,14 @@ export class Humanoid extends MovingBody {
         this.visual={
             accessorys:[],
             body:{def:this.game.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,tint:0x000000},
-            legs:this.game.definitions.loadout.getFromString("jeans_pants") as LoadoutLegDef,
+            legs:this.game.definitions.loadout.getFromString("blue_jeans_pants") as LoadoutLegDef,
             shirt:this.game.definitions.loadout.getFromString("black_shirt") as LoadoutShirtDef,
             
         }
     }
     isBlockedForPath(manager: GameObjectManager2D<BaseObject2D>,hb: Hitbox2D,_x: number,_y: number,layer: number): boolean {
         for (const obj of manager.cells.get_objects(hb, layer)) {
-            if ((obj.number_type===GameObjectType.Building||obj.number_type===GameObjectType.Obstacle)&&!(obj as StaticBody).physical_data.no_collision&&!(obj as StaticBody).physical_data.no_pathfinding_collision){
+            if ((obj.number_type===GameObjectType.Building||obj.number_type===GameObjectType.Obstacle||obj.number_type===GameObjectType.Walls)&&!(obj as StaticBody).physical_data.no_collision&&!(obj as StaticBody).physical_data.no_pathfinding_collision){
                 if(hb.colliding_with(obj.hitbox))return true
             }
         }
@@ -89,7 +91,8 @@ export class Humanoid extends MovingBody {
     override on_collided(obj: ServerGameObject,_dt:number): void {
         switch(obj.number_type){
             case GameObjectType.Building:
-            case GameObjectType.Obstacle:{
+            case GameObjectType.Obstacle:
+            case GameObjectType.Walls:{
                 if((obj as Obstacle|Building).physical_data.stairs.length>0){
                     for(const s of (obj as Obstacle|Building).physical_data.stairs){
                         if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,obj.layer+s.dest_layer)
@@ -115,25 +118,54 @@ export class Humanoid extends MovingBody {
         this.animation_data.dirty=false
         this.animation_data.alt_animations.length=0
     }
-    encode_net_visual(stream:Stream){
-        stream.write_boolean_group(
-            this.visual.hair!==undefined,
-            this.visual.eyes!==undefined,
-        )
+
+    encode_visual(stream:Stream){
         stream.write_uint16(this.visual.body.def.idNumber!)
-        if(this.visual.hair){
-            stream.write_uint16(this.visual.hair.def.idNumber!)
-            .write_uint32(this.visual.hair.tint)
-        }
-        if(this.visual.eyes){
-            stream.write_uint16(this.visual.eyes.idNumber!)
-        }
-        stream.write_uint16(this.visual.shirt.idNumber!)
+        .write_uint16(this.visual.hair?.def.idNumber??0)
+        .write_uint16(this.visual.eyes?.idNumber??0)
+        .write_uint16(this.visual.shirt.idNumber!)
         .write_uint16(this.visual.legs.idNumber!)
-        .write_uint32(this.visual.body.tint)
+        .write_uint16(this.visual.foot?.idNumber??0)
+        if(this.visual.hair){
+            stream.write_uint32(this.visual.hair.tint)
+            .write_uint8(this.visual.hair.paint?.id??0)
+            if(this.visual.hair.paint?.id){
+                stream.write_uint32(this.visual.hair.paint.tint)
+            }
+        }
+        stream.write_uint32(this.visual.body.tint)
         .write_array(this.visual.accessorys,(v)=>{
             stream.write_uint16(v.idNumber!)
         },1)
         return stream
+    }
+    decode_visual(stream:Stream){
+        this.visual.body.def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutBodyDef
+        const hair_def=this.game.definitions.loadout.getFromNumberSafe(stream.read_uint16()) as LoadoutHairDef|undefined
+        this.visual.eyes=this.game.definitions.loadout.getFromNumberSafe(stream.read_uint16()) as LoadoutEyesDef|undefined
+        this.visual.shirt=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutShirtDef
+        this.visual.legs=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutLegDef
+        this.visual.foot=this.game.definitions.loadout.getFromNumberSafe(stream.read_uint16()) as LoadoutFootDef|undefined
+        if(hair_def){
+            this.visual.hair={
+                def:hair_def,
+                tint:stream.read_uint32()
+            }
+            const hair_paint_id=stream.read_uint8()
+            if(hair_paint_id)this.visual.hair.paint={id:hair_paint_id,tint:stream.read_uint32()}
+        }
+        this.visual.body.tint=stream.read_uint32()
+        this.visual.accessorys=stream.read_array(()=>this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutAccessoryDef,1)
+    }
+
+    override on_encode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
+        stream.write_pos2(this.position)
+        stream.write_float32(this.health.value)
+        this.encode_visual(stream)
+    }
+    override on_decode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
+        this.position=stream.read_pos2()
+        this.health.value=stream.read_float32()
+        this.decode_visual(stream)
     }
 }

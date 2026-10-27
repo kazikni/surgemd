@@ -1,6 +1,6 @@
-import { LootTable as LootTableBase, Vec2 } from "../../engine/core.ts";
+import { DefaultGELvents, LootTable as LootTableBase, Vec2 } from "../../engine/core.ts";
 import { type GameItem } from "../definitions/game_defs.ts";
-import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
+import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
 import { WrappingDef } from "../definitions/loadout/wrapping.ts"
 import { FloorType } from "./terrain.ts";
 
@@ -14,19 +14,28 @@ export const GameConstants={
     },
     loot:{
         radius:{
-            ammo:0.44,
-            weapon:0.65,
-            accessory:0.65,
-            consumible:0.44,
-            equipament:0.44,
-            grenade:0.44,
-            scopes:0.44,
+            ammo:0.5,
+            weapon:0.59,
+            accessory:0.6,
+            consumible:0.5,
+            equipament:0.5,
+            grenade:0.5,
+            scopes:0.5,
         }
     },
     collision:{
         threads:2,
         chunckSize:2
     }
+}
+export const ObjectsComponentEvent={
+    damage:                DefaultGELvents.last+1,
+    collided:              DefaultGELvents.last+2,
+    interact:              DefaultGELvents.last+3,
+    human_clear:           DefaultGELvents.last+4,
+    human_load_preset:     DefaultGELvents.last+5,
+    human_apply_modifiers: DefaultGELvents.last+6,
+    human_tick_input:      DefaultGELvents.last+7
 }
 export enum GameObjectType{
     StaticBody,
@@ -36,8 +45,10 @@ export enum GameObjectType{
     Loot,
     Obstacle,
     Building,
+    Walls,
     Bullet,
     Decal,
+    GraphicVisual,
     Explosion,
     Grenade,
     Vehicle,
@@ -79,7 +90,9 @@ export type HumanAnimation={
     type:HumanAnimationType.Reset
 })
 export enum Layers{
-    Normal=10
+    Underground=9,
+    Normal=10,
+    Top=11
 }
 export const LayersL=[
     Layers.Normal
@@ -89,6 +102,7 @@ export enum zIndexes{
     //Ground
     Terrain,
     Grid,
+    TilemapV,
     BuildingFloor1,
     BuildingsFloor2,
     BuildingsFloor3,
@@ -99,33 +113,37 @@ export enum zIndexes{
     DeadCreatures,
     PlayersBody,
 
+    BuildingsWalls1,
     Loots,
-    DownedPlayers,
+    DownedHumans,
+    Bullets,
     Obstacles1,
-    Obstacles2,
     GrenadeGround,
+    Obstacles2,
     Rain2,
 
-    Bullets,
     Vehicles,
     Creatures,
-    Players,
+    CaseParticles,
+    Humans,
     Particles,
-    GrenadeAir,
+    GrenadeAir1,
+    DamageSplashs,
     Obstacles3,
-    BuildingsWalls1,
+    Obstacles4,
     Explosions,
     SyncedParticle,
     BuildingsCeiling,
-    Obstacles4,
     Obstacles5,
+    Obstacles6,
     ParachutePlayers,
+    GrenadeAir2,
     Rain1,
     Parachute,
     Airbodys,
     DeadZone,
     Lights,
-    DamageSplashs,
+    PingWorld,
     UI,
 }
 export enum ActionsType{
@@ -133,20 +151,6 @@ export enum ActionsType{
     Consuming,
     Helpup,
     BeingHelpup
-}
-
-export type HumanModifiers={
-    size:number
-    damage:number
-    speed:number
-    health:number
-    boost:number
-    bullet_speed:number
-    bullet_size:number
-    critical_mult:number
-    luck:number
-    mana_consume:number
-    damage_reduction:number
 }
 export enum  SpawnModeType{
     any,
@@ -211,8 +215,13 @@ export interface HumanoidVisualData {
     hair?:{
         def:LoadoutHairDef
         tint:number
+        paint?:{
+            tint:number
+            id:number
+        }
     }
     eyes?:LoadoutEyesDef
+    foot?:LoadoutFootDef
     shirt:LoadoutShirtDef
     legs:LoadoutLegDef
     accessorys:LoadoutAccessoryDef[]
@@ -227,6 +236,8 @@ export interface ObstacleVisualData{
 }
 export enum ScoreApplyerType{
     Kill,
+    BounceKill,
+    LeaderKill,
     Win,
     Rank,
     DamageTaken,
@@ -251,12 +262,14 @@ export interface PlayerStatus extends HumanStatus{
 export interface LootData{
     count:number
     item:GameItem
+    ammo?:number|boolean
     skin?:number
     aditional?:LootData[]
 }
 export interface LootSetting{
     without_ammo?:boolean
     include_ammo?:boolean
+    hold_ammo?:boolean
     all_skins?:boolean
 }
 export interface LootAditional extends LootSetting{

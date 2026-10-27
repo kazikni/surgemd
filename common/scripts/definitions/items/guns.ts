@@ -1,6 +1,7 @@
-import { DeepPartial, Definition, Definitions, FrameTransform, mergeDeep, Random1, v2, Vec2 } from "../../../engine/core.ts";
+import { AKeyFrame, DeepPartial, Definition, ease, FrameDef, FrameTransform, mergeDeep, v2 } from "../../../engine/core.ts";
+import { default_animations, default_animations_factory } from "../../others/animations.ts";
 import { WeaponsArmRig,WeaponsRig, ItemRank, tracers, FistRig, WeaponAssets, FireMode} from "../../others/item.ts";
-import { GasParticles, ItemFireDefinition, MuzzleFlash, type BulletDef, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
+import { ItemFireDefinition, MuzzleFlash, type BulletDef, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export type GunDef={
     def_type?:GameObjectDefinitionType.item
     item_type?:GameItemType.gun
@@ -30,6 +31,7 @@ export type GunDef={
 
     rig_arms?:FistRig
     rig_image?:FrameTransform
+    rig_image2?:FrameDef
     reload?:{
         capacity:number
         delay:number
@@ -44,6 +46,9 @@ export type GunDef={
     assets?:WeaponAssets&{
         reload_sound?:string
         reload_sound_alt?:string
+        reload_animation?:AKeyFrame[]
+        reload_alt_animation?:AKeyFrame[]
+        cycle_animation?:AKeyFrame[]
         use_last?:boolean|string
         use_alt_func?:string
     }
@@ -79,43 +84,49 @@ export const GunsConstructors={
 export const bullets_factory={
     assault(power:number):BulletDef{
         return {
-            damage:10*power,
+            damage:12*power,
             range: 170*(1+(power-1) * 0.5),
             speed: 37*(1+(power-1) * 0.5),
 
             critical_mult: 1.25,
             obstacle_mult: 1,
-            falloff:0.85,
-            tracer:tracers.medium
+            falloff:0.8,
+            tracer:tracers.medium,
+            weight:1
         }
     },
     sniper(power:number,tracer=tracers.large):BulletDef{
         return {
-            damage: 50 * power,
+            damage: 53 * power,
             range: 200 * (1 + (power - 1) * 0.5),
-            speed: 57 * (1 + (power - 1) * 0.6),
+            speed: 55 * (1 + (power - 1) * 0.6),
 
-            critical_mult: 1.1,
+            critical_mult: 1.15,
             obstacle_mult: 1.25,
-            falloff: 0.7,
+            falloff: 0.75,
+            effective_range:0.17,
             tracer: tracer,
+
+            weight:3
         }
     },
     heavy_sniper(power:number,tracer=tracers.large):BulletDef{
         return {
-            damage:99*power,
+            damage:100*power,
             range:220*(1+(power-1)*0.01),
-            speed:40*(1+(power-1)*-0.5),
+            speed:40*(1+(power-1)*-1),
 
-            falloff:0.7,
+            falloff:0.75,
             critical_mult:1.1,
             obstacle_mult:2,
+            effective_range:0.12,
+            weight:4,
             tracer:tracer
         }
     },
     smg(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:7*power,
+            damage:8.4*power,
             range:40*(1 + (power - 1) * 0.5),
             speed:28*(1 + (power - 1) * 0.5),
 
@@ -126,29 +137,29 @@ export const bullets_factory={
     },
     ac_smg(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:5.9*power,
-            range:50*(1 + (power - 1) * 0.5),
-            speed:25*(1 + (power - 1) * 0.5),
+            damage:6.6*power,
+            range:54*(1 + (power - 1) * 0.5),
+            speed:28*(1 + (power - 1) * 0.5),
 
             falloff:0.6,
             critical_mult:1.25,
             tracer:tracer
         }
     },
-    buckshot(power:number,tracer=tracers.small):BulletDef{
+    buckshot(power:number,tracer=tracers.medium):BulletDef{
         return {
-            damage:6.8 * power,
+            damage:8.04 * power,
             speed:26 * (1 + (power - 1) * 0.4),
             range:30 * (1 + (power - 1) * 0.4),
 
-            falloff:0.4,
+            falloff:0.75,
             critical_mult:1.25,
             tracer:tracer
         }
     },
     birdshot(power:number,tracer=tracers.tiny):BulletDef{
         return {
-            damage:2.7*power,
+            damage:3.6*power,
             speed:24*(1+(power-1)*0.4),
             range:32*(1+(power-1)*0.4),
 
@@ -159,15 +170,29 @@ export const bullets_factory={
     },
     flechette(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:5 * power,
-            speed:30 * (1 + (power - 1) * 0.4),
-            range:55 * (1 + (power - 1) * 0.2),
+            damage:6.5*power,
+            speed:30*(1 + (power - 1) * 0.4),
+            range:54.5*(1 + (power - 1) * 0.2),
 
             falloff:0.85,
             critical_mult:1.2,
             tracer:tracer
         }
     },
+
+    dmr(power:number,tracer=tracers.large):BulletDef{
+        return {
+            damage:6*power,
+            speed:30*(1 + (power - 1) * 0.4),
+            range:55*(1 + (power - 1) * 0.2),
+            effective_range:0.17,
+
+            falloff:0.85,
+            critical_mult:1.2,
+            tracer:tracer,
+            weight:2
+        }
+    }
 }
 export const guns_factory={
     simple(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
@@ -186,15 +211,14 @@ export const guns_factory={
             class:GunClasses.Pistol,
             rank:ItemRank.E,
 
-            barrel_length:0.8,
+            barrel_length:0.85,
 
             fire_delay:1,
-            switch_delay:0.1,
+            switch_delay:0.4,
 
-            gas_particles:GasParticles.pistols,
             muzzle_flash:MuzzleFlash.normal,
             case_particle:{
-                position:v2.new(0.5,0.1)
+                position:v2.new(0.5,0.05)
             },
             recoil_animation:{
                 time_scale:9,
@@ -204,13 +228,11 @@ export const guns_factory={
             ammo_type:ammo,
 
             rig_arms:WeaponsArmRig[3],
-            rig_image:WeaponsRig[0],
+            rig_image:WeaponsRig[1],
             assets:{
                 world:"weapon_small_world",
                 world_tint:0x22222f
             },
-
-            speed_mod:0.98,
         },extend??{})
     },
     assault(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
@@ -219,34 +241,39 @@ export const guns_factory={
             class:GunClasses.Assault,
             rank:ItemRank.C,
 
-            barrel_length:1.06,
-            idle_spread:0.15,
+            barrel_length:1.08,
+            idle_spread:0.2,
 
             fire_delay:0.1,
-            switch_delay:0.2,
-            unload_delay:1,
+            switch_delay:0.7,
+            fire_sequence:{
+                decay:0.55,
+                increse:0.073,
+                spread:{begin:0.15}
+            },
+            recoil:{
+                duration:0.2,
+                speed:0.55
+            },
 
-            gas_particles:GasParticles.automatic,
             case_particle:{
-                position:v2.new(0.6,0.1)
+                position:v2.new(0.6,0.05)
             },
             muzzle_flash:MuzzleFlash.normal,
 
             ammo_type:ammo,
 
-            rig_arms:WeaponsArmRig[1],
-            rig_image:{
-                position:v2.new(0.7,0.0),
-            },
+            rig_arms:WeaponsArmRig[0],
+            rig_image:WeaponsRig[0],
             assets:{
                 world:"weapon_medium_world",
-                world_tint:0x22222f
+                world_tint:0x22222f,
+                load_animation:default_animations.load_assault
             },
             recoil_animation:{
                 time_scale:20,
                 walk:0.05
             },
-            speed_mod:0.97,
         },extend??{})
     },
     smg(id:string,ammo:string,small:boolean,extend:DeepPartial<GunDef>={}):GunDef{
@@ -255,25 +282,31 @@ export const guns_factory={
             class:GunClasses.SMG,
             rank:ItemRank.C,
 
-            barrel_length:1,
+            barrel_length:1.08,
             idle_spread:0.4,
 
             fire_delay:0.1,
             switch_delay:0.2,
             unload_delay:1,
+            fire_sequence:{
+                decay:0.55,
+                increse:0.05,
+                spread:{begin:0.5}
+            },
+            recoil:{
+                duration:0.2,
+                speed:0.6
+            },
 
-            gas_particles:GasParticles.automatic,
             case_particle:{
-                position:v2.new(0.6,0.1)
+                position:v2.new(0.6,0.05)
             },
             muzzle_flash:MuzzleFlash.normal,
     
             ammo_type:ammo,
 
-            rig_arms:WeaponsArmRig[1],
-            rig_image:{
-                position:v2.new(0.7,0.0),
-            },
+            rig_arms:WeaponsArmRig[0],
+            rig_image:WeaponsRig[0],
             assets:{
                 world:small?"weapon_small_world":"weapon_medium_world",
                 world_tint:0x22222f
@@ -283,7 +316,6 @@ export const guns_factory={
                 time_scale:25,
                 walk:0.03
             },
-            speed_mod:0.98,
         },extend??{})
     },
     dmr(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
@@ -292,36 +324,36 @@ export const guns_factory={
             class:GunClasses.DMR,
             rank:ItemRank.A,
 
-            barrel_length:1.06,
+            barrel_length:1.08,
             idle_spread:0.5,
 
             fire_mode:FireMode.Single,
             fire_delay:0.1,
-            switch_delay:0.1,
+            switch_delay:0.4,
+            recoil:{
+                duration:0.5,
+                speed:0.55
+            },
 
-            gas_particles:GasParticles.dmr,
             case_particle:{
-                position:v2.new(0.6,0.1)
+                position:v2.new(0.6,0.05)
             },
             muzzle_flash:MuzzleFlash.normal,
 
             ammo_type:ammo,
 
-            rig_arms:WeaponsArmRig[1],
-            rig_image:{
-                position:v2.new(0.7,0.0),
-                rotation:0,
-            },
+            rig_arms:WeaponsArmRig[0],
+            rig_image:WeaponsRig[0],
             assets:{
                 world:"weapon_medium_world",
-                world_tint:0x22222f
+                world_tint:0x22222f,
+                load_animation:default_animations.load_assault
             },
 
             recoil_animation:{
                 time_scale:8,
                 walk:0.07
             },
-            speed_mod:0.95,
         },extend??{})
     },
     sniper(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
@@ -330,18 +362,17 @@ export const guns_factory={
             class:GunClasses.Sniper,
             rank:ItemRank.A,
 
-            barrel_length:1.3,
+            barrel_length:1.25,
             idle_spread:0.1,
 
             fire_mode:FireMode.Single,
             fire_on_release:true,
             fire_delay:0.2,
-            switch_delay:0.2,
-            unload_delay:1,
+            switch_delay:0.15,
+            unload_delay:1.1,
 
-            gas_particles:GasParticles.sniper,
             case_particle:{
-                position:v2.new(0.7,0.1)
+                position:v2.new(0.75,0.05)
             },
             muzzle_flash:MuzzleFlash.normal,
             recoil_animation:{
@@ -351,18 +382,15 @@ export const guns_factory={
 
             ammo_type:ammo,
 
-            rig_arms:WeaponsArmRig[2],
-            rig_image:{
-                position:v2.new(0.75,0.0),
-                rotation:0,
-            },
+            rig_arms:WeaponsArmRig[1],
+            rig_image:WeaponsRig[0],
             assets:{
                 world:"weapon_large_world",
                 world_tint:0x22222f,
-                cycle_sound:true
+                cycle_sound:true,
+                load_animation:default_animations.load_sniper,
+                cycle_animation:default_animations_factory.bolt_action_cycle(0.5),
             },
-
-            speed_mod:0.95,
         },extend??{})
     },
     shotgun(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
@@ -371,20 +399,23 @@ export const guns_factory={
             class:GunClasses.Shotgun,
             rank:ItemRank.C,
 
-            barrel_length:1.06,
+            barrel_length:1.08,
             idle_spread:0.75,
 
             fire_mode:FireMode.Single,
             fire_delay:0.2,
-            switch_delay:0.2,
-            unload_delay:1,
+            switch_delay:0.15,
+            unload_delay:1.1,
             class_switch_multiply:{
                 [GunClasses.Shotgun]:10
             },
+            recoil:{
+                duration:1.1,
+                speed:0.55
+            },
 
-            gas_particles:GasParticles.shotgun,
             case_particle:{
-                position:v2.new(0.5,0.1)
+                position:v2.new(0.65,0.05)
             },
             muzzle_flash:MuzzleFlash.normal,
             recoil_animation:{
@@ -395,18 +426,27 @@ export const guns_factory={
             ammo_type:ammo,
 
             rig_arms:WeaponsArmRig[1],
-            rig_image:{
-                position:v2.new(0.7,0.0),
-                rotation:0,
-            },
+            rig_image:WeaponsRig[0],
             assets:{
                 world:"weapon_medium_world",
                 world_tint:0x22222f,
-                cycle_sound:true
+                cycle_sound:true,
+                reload_animation:default_animations_factory.insert_reload(0.8),
+                load_animation:default_animations.load_pump,
+                cycle_animation:default_animations_factory.pump_cycle(0.4)
             },
-
-            speed_mod:0.95,
         },extend??{})
+    },
+
+    shotgun_buckshot(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
+        return this.shotgun(id,ammo,{
+            spread:5,
+            jitter_radius:0.36,
+            bullet:{
+                def:bullets_factory.buckshot(1),
+                count:9
+            },
+        ...extend})
     },
     lmg(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
         return mergeDeep({
@@ -414,17 +454,20 @@ export const guns_factory={
             class:GunClasses.LMG,
             rank:ItemRank.S,
 
-            barrel_length:1.3,
+            barrel_length:1.25,
             idle_spread:0.25,
 
             fire_mode:FireMode.Auto,
             fire_on_release:true,
             fire_delay:0.1,
             switch_delay:0.5,
+            recoil:{
+                duration:0.2,
+                speed:0.55
+            },
 
-            gas_particles:GasParticles.automatic,
             case_particle:{
-                position:v2.new(0.7,0.1)
+                position:v2.new(0.8,0.05)
             },
             muzzle_flash:MuzzleFlash.normal,
             recoil_animation:{
@@ -434,11 +477,8 @@ export const guns_factory={
 
             ammo_type:ammo,
 
-            rig_arms:WeaponsArmRig[2],
-            rig_image:{
-                position:v2.new(0.75,0.0),
-                rotation:0,
-            },
+            rig_arms:WeaponsArmRig[1],
+            rig_image:WeaponsRig[0],
             assets:{
                 world:"weapon_large_world",
                 world_tint:0x22222f,
@@ -448,17 +488,22 @@ export const guns_factory={
         },extend??{})
     },
 }
-export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
-    guns.insert(
+export function Guns_Default_Init():GunDef[]{
+    return [
         /////////////////////////////////////////////
         //                 PISTOLS                 //
         /////////////////////////////////////////////
-        guns_factory.pistol("m9","9mm",{
+        guns_factory.pistol("m9","l19",{
             name:"M9",
-            fire_delay:0.2,
+            fire_delay:0.15,
             fire_mode:FireMode.Single,
-            spread:3,
-            idle_spread:0.3,
+            spread:6,
+            idle_spread:0.75,
+            fire_sequence:{
+                decay:0.7,
+                increse:0.1,
+                spread:{begin:0.1},
+            },
 
             ammo_spawn:{
                 amount:45,
@@ -466,17 +511,18 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:11,
+                    damage:13,
                     range:110,
                     falloff:0.8,
                     speed:38,
                     obstacle_mult:1.2,
+                    critical_mult:1.3,
                     tracer:tracers.small,
                 }
             },
             recoil:{
                 duration:0.2,
-                speed:0.8
+                speed:0.7
             },
             reload:{
                 delay:2,
@@ -484,10 +530,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 extended_capacity:25,
             },
             dual:{
-                dual_offset:0.2,
+                dual_offset:0.17,
 
                 fire_delay:0.1,
-                spread:2,
+                spread:7,
                 reload:{
                     capacity:30,
                     extended_capacity:50,
@@ -495,9 +541,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 }
             },
         }),
-        guns_factory.pistol("taurustx","22lr",{
+        guns_factory.pistol("taurustx","l15",{
             name:"Taurus-TX 22",
-            fire_delay:0.4,
+            fire_delay:0.3,
             fire_mode:FireMode.Burst,
             burst:{
                 delay:0.05,
@@ -511,16 +557,17 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:8,
+                    damage:9,
+                    critical_mult:1.3,
                     range:70,
-                    falloff:0.8,
-                    speed:20,
+                    falloff:0.6,
+                    speed:22,
                     tracer:tracers.tiny
                 }
             },
             recoil:{
                 duration:0.2,
-                speed:0.8
+                speed:0.7
             },
             reload:{
                 delay:2,
@@ -528,13 +575,13 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 extended_capacity:40,
             },
             dual:{
-                dual_offset:0.2,
+                dual_offset:0.17,
 
                 fire_delay:0.2,
                 spread:7,
 
                 burst:{
-                    delay:0.05,
+                    delay:0.04,
                     sequence:8
                 },
                 reload:{
@@ -544,7 +591,49 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 }
             },
         }),
-        guns_factory.pistol("colt1873","45acp",{
+        guns_factory.pistol("tec22","l15",{
+            name:"Tec22",
+            fire_delay:0.05,
+            rank:ItemRank.C,
+            fire_mode:FireMode.Auto,
+            spread:7,
+            jitter_radius:0.25,
+            idle_spread:0.75,
+            fire_sequence:{
+                increse:0.038,
+                decay:0.6,
+                spread:{begin:0.75}
+            },
+
+            ammo_spawn:{
+                amount:87,
+            },
+
+            bullet:{
+                def:bullets_factory.smg(1)
+            },
+            recoil:{
+                duration:0.1,
+                speed:0.75
+            },
+            reload:{
+                delay:2,
+                capacity:29,
+                extended_capacity:35,
+            },
+            dual:{
+                dual_offset:0.17,
+
+                fire_delay:0.03,
+                spread:12,
+                reload:{
+                    capacity:58,
+                    extended_capacity:70,
+                    delay:3.7
+                }
+            },
+        }),
+        guns_factory.pistol("colt1873","c22",{
             name:"Colt-1873",
             fire_delay:0.3,
             switch_delay:0.2,
@@ -552,6 +641,13 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             spread:1.25,
             idle_spread:0.4,
+            case_particle:{
+                position:v2.new(0.5,0.1),
+                direction:{min:1.75,max:3},
+                at_begin:true,
+                all_direction:true,
+                count:6,
+            },
 
             ammo_spawn:{
                 amount:30
@@ -559,16 +655,17 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:18,
+                    damage:21.6,
+                    critical_mult:1.25,
                     range:130,
                     falloff:0.8,
                     speed:43,
-                    tracer:tracers.large
+                    tracer:tracers.medium
                 }
             },
             recoil:{
                 duration:1,
-                speed:0.75
+                speed:0.65
             },
             reload:{
                 delay:3,
@@ -577,25 +674,29 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             dual:{
                 spread:1,
-                dual_offset:0.2,
+                dual_offset:0.17,
                 fire_delay:0.2,
                 reload:{
                     capacity:12,
                     extended_capacity:20,
-                    delay:5
+                    delay:5,
+                },
+                assets:{
+                    reload_animation:[]
                 }
             },
             assets:{
-                world_tint:0xb7c1c3
+                world_tint:0xb7c1c3,
+                reload_animation:default_animations_factory.insert_reload(0.3,6,"casing_ammo_c22",false,undefined,WeaponsArmRig[3].left,"left_arm",undefined,v2(0.25,-0.2),-0.2),
             }
         }),
-        guns_factory.pistol("desert_eagle","50cal",{
+        guns_factory.pistol("desert_eagle","p61",{
             name:"Desert-Eagle",
-            fire_delay:0.3,
+            fire_delay:0.25,
             fire_mode:FireMode.Single,
             rank:ItemRank.A,
             spread:3,
-            idle_spread:0.33333,
+            idle_spread:0.3,
 
             ammo_spawn:{
                 amount:47,
@@ -603,19 +704,20 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:21,
+                    damage:25.2,
+                    critical_mult:1.25,
                     range:170,
                     falloff:0.8,
                     speed:45,
                     tracer:{
-                        ...tracers.large,
+                        ...tracers.medium,
                         color:0xd8b818
                     }
                 }
             },
             recoil:{
                 duration:0.3,
-                speed:0.75
+                speed:0.6
             },
             reload:{
                 delay:2.1,
@@ -624,7 +726,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             dual:{
                 rank:ItemRank.S,
-                dual_offset:0.2,
+                dual_offset:0.17,
                 fire_delay:0.15,
                 spread:5,
                 reload:{
@@ -637,22 +739,36 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 world_tint:0xd8b818
             }
         }),
-        guns_factory.pistol("pfeifer_zeliska","308sub",{
+        guns_factory.pistol("pfeifer_zeliska","p85",{
             name:"Pfeifer-Zeliska",
             rank:ItemRank.S,
 
             fire_delay:1.6,
             switch_delay:0.1,
-            spread:0.8,
+            spread:4,
             idle_spread:0.5,
             fire_mode:FireMode.Single,
+            fire_sequence:{
+                decay:0.65,
+                increse:0.25,
+                spread:{
+                    begin:0.19
+                }
+            },
+            case_particle:{
+                position:v2.new(0.5,0.1),
+                direction:{min:1.75,max:3},
+                at_begin:true,
+                all_direction:true,
+                count:5,
+            },
 
             ammo_spawn:{
                 amount:30
             },
 
             bullet:{
-                def:bullets_factory.heavy_sniper(0.42)
+                def:bullets_factory.heavy_sniper(0.55)
             },
             reload:{
                 delay:3.2,
@@ -660,27 +776,39 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 extended_capacity:7,
             },
             recoil:{
-                duration:1.5,
-                speed:0.3
+                duration:1.8,
+                speed:0.2
             },
             dual:{
-                dual_offset:0.2,
-                fire_delay:0.8,
+                dual_offset:0.17,
+                fire_delay:1,
+                spread:6,
                 reload:{
                     capacity:10,
                     extended_capacity:14,
                     delay:6
+                },
+                assets:{
+                    reload_animation:[]
                 }
             },
-            speed_mod:0.95,
+            assets:{
+                reload_animation:default_animations_factory.insert_reload(0.3,5,"casing_ammo_p85",false,v2.half_one,WeaponsArmRig[3].left,"left_arm",undefined,v2(0.25,-0.2),-0.2),
+            },
         }),
         /////////////////////////////////////////////
         //                 ASSAULT                 //
         /////////////////////////////////////////////
-        guns_factory.assault("ak47","762mm",{
+        guns_factory.assault("ak47","c51",{
             name:"AK-47",
             fire_delay:0.1,
-            spread:7,
+            spread:7.5,
+            fire_sequence:{
+                decay:0.55,
+                increse:0.065,
+                ease:ease.quarticOut,
+                spread:{begin:0.15},
+            },
 
             ammo_spawn:{
                 amount:60
@@ -694,21 +822,22 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 capacity:30,
                 extended_capacity:45,
             },
-            recoil:{
-                duration:0.12,
-                speed:0.75
-            },
             assets:{
                 world_tint:0x573c05
             }
         }),
-        guns_factory.assault("ar15","556mm",{
+        guns_factory.assault("ar15","c45",{
             name:"AR-15",
             fire_delay:0.07,
             spread:8,
 
             ammo_spawn:{
                 amount:60
+            },
+            fire_sequence:{
+                decay:0.6,
+                increse:0.06,
+                spread:{begin:0.3}
             },
 
             bullet:{
@@ -719,18 +848,20 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 capacity:30,
                 extended_capacity:45,
             },
-            recoil:{
-                duration:0.1,
-                speed:0.75
-            },
         }),
-        guns_factory.assault("m4a1","556mm",{
+        guns_factory.assault("m4a1","c45",{
             name:"M4A1",
             fire_delay:0.1,
-            spread:2,
+            spread:3,
+            idle_spread:0.75,
+            fire_sequence:{
+                decay:0.5,
+                increse:0.065,
+                spread:{begin:0.75},
+            },
 
             ammo_spawn:{
-                amount:60
+                amount:80
             },
 
             bullet:{
@@ -741,12 +872,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 capacity:20,
                 extended_capacity:35,
             },
-            recoil:{
-                duration:0.1,
-                speed:0.7
-            },
         }),
-        guns_factory.assault("m16_gl","556mm",{
+        guns_factory.assault("m16_gl","c45",{
             name:"M16-GL",
             fire_delay:0.08,
             spread:8,
@@ -783,17 +910,19 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 capacity:30,
                 extended_capacity:45,
             },
-            recoil:{
-                duration:0.1,
-                speed:0.75
-            },
         }),
-        guns_factory.assault("mp5","9mm",{
+        guns_factory.assault("mp5","l19",{
             name:"MP5",
             rank:ItemRank.D,
 
             fire_delay:0.08,
-            spread:3,
+            spread:4,
+            idle_spread:0.8,
+            fire_sequence:{
+                spread:{begin:0.75},
+                decay:0.9,
+                increse:0.05
+            },
 
             ammo_spawn:{
                 amount:96
@@ -808,14 +937,19 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 extended_capacity:48,
             },
             recoil:{
-                duration:0.15,
-                speed:0.8
+                duration:0.2,
+                speed:0.6
             },
         }),
-        guns_factory.assault("m1921","45acp",{
+        guns_factory.assault("m1921","c22",{
             name:"M1921",
             fire_delay:0.1,
             spread:8,
+            fire_sequence:{
+                decay:0.5,
+                increse:0.045,
+                spread:{begin:0.75}
+            },
             idle_spread:0.35,
             rank:ItemRank.B,
 
@@ -828,10 +962,6 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 capacity:40,
                 extended_capacity:60,
             },
-            recoil:{
-                duration:0.12,
-                speed:0.75
-            },
             bullet:{
                 def:bullets_factory.assault(0.9)
             },
@@ -839,13 +969,18 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 world_tint:0x573c05
             }
         }),
-        guns_factory.assault("famas","556mm",{
+        guns_factory.assault("famas","c45",{
             name:"FAMAS",
             rank:ItemRank.B,
 
             fire_delay:0.4,
-            spread:2.5,
-            idle_spread:0.5,
+            spread:3,
+            idle_spread:0.75,
+            fire_sequence:{
+                decay:0.8,
+                increse:0.2,
+                spread:{begin:0.75}
+            },
 
             fire_mode:FireMode.Burst,
             burst:{
@@ -865,19 +1000,16 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 capacity:24,
                 extended_capacity:33,
             },
-            recoil:{
-                duration:0.4,
-                speed:0.75
-            },
         }),
         /////////////////////////////////////////////
         //                   SMG                   //
         /////////////////////////////////////////////
-        guns_factory.smg("micro_uzi","9mm",true,{
+        guns_factory.smg("micro_uzi","l19",true,{
             name:"Micro-Uzi",
             rank:ItemRank.D,
             fire_delay:0.035,
-            spread:8,
+            spread:10,
+            idle_spread:0.8,
 
             ammo_spawn:{
                 amount:96
@@ -891,16 +1023,12 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 capacity:32,
                 extended_capacity:48,
             },
-            recoil:{
-                duration:0.07,
-                speed:0.77
-            },
         }),
-        guns_factory.smg("vector","9mm",false,{
+        guns_factory.smg("vector","l19",false,{
             name:"Vector",
             rank:ItemRank.A,
             fire_delay:0.037,
-            spread:2,
+            spread:3,
 
             ammo_spawn:{
                 amount:96
@@ -914,38 +1042,35 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 capacity:33,
                 extended_capacity:44,
             },
-            recoil:{
-                duration:0.07,
-                speed:0.77
-            },
         }),
-        guns_factory.smg("p90","45acp",false,{
+        guns_factory.smg("p90","c22",false,{
             name:"P90",
             rank:ItemRank.A,
-            fire_delay:0.04,
-            spread:3,
+            fire_delay:0.045,
+            spread:6,
+            fire_sequence:{
+                decay:0.55,
+                increse:0.04,
+                spread:{begin:0.2}
+            },
 
             ammo_spawn:{
                 amount:90
             },
 
             bullet:{
-                def:bullets_factory.ac_smg(1.15)
+                def:bullets_factory.ac_smg(0.96)
             },
             reload:{
-                delay:2.6,
-                capacity:30,
-                extended_capacity:45,
-            },
-            recoil:{
-                duration:0.07,
-                speed:0.7
+                delay:2.8,
+                capacity:50,
+                extended_capacity:60,
             },
         }),
         /////////////////////////////////////////////
         //                 SNIPERS                 //
         /////////////////////////////////////////////
-        guns_factory.sniper("kar98k","762mm",{
+        guns_factory.sniper("kar98k","c51",{
             name:"Kar98-K",
             fire_delay:1.6,
             spread:0.4,
@@ -968,15 +1093,17 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             recoil:{
                 duration:1.8,
-                speed:0.5
+                speed:0.55
             },
 
             assets:{
                 cycle_sound:true,
-                world_tint:0x573c05
+                world_tint:0x573c05,
+                load_animation:default_animations.load_sniper_bolt,
+                reload_animation:default_animations_factory.insert_reload(1,undefined,"casing_ammo_c51",true,v2(0.5,0.5),undefined,undefined,undefined,undefined,0),
             }
         }),
-        guns_factory.sniper("awp","762mm",{
+        guns_factory.sniper("awp","c51",{
             name:"AWP",
             rank:ItemRank.S,
             fire_delay:1.6,
@@ -987,22 +1114,22 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.sniper(1.13,tracers.xl)
+                def:bullets_factory.sniper(1.11,tracers.xl)
             },
             reload:{
                 delay:2.7,
                 capacity:8,
-                extended_capacity:12,
+                extended_capacity:13,
             },
             recoil:{
                 duration:1.7,
-                speed:0.6
+                speed:0.55
             },
             assets:{
                 world_tint:0x040c29
             }
         }),
-        guns_factory.sniper("awm","308sub",{
+        guns_factory.sniper("awm","p85",{
             name:"AWM",
             rank:ItemRank.S,
 
@@ -1023,13 +1150,13 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             recoil:{
                 duration:1.85,
-                speed:0.3
+                speed:0.4
             },
             assets:{
                 world_tint:0x334736
             }
         }),
-        guns_factory.sniper("blr81","556mm",{
+        guns_factory.sniper("blr81","c45",{
             name:"BLR-81",
             rank:ItemRank.B,
 
@@ -1041,7 +1168,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.sniper(0.87)
+                def:bullets_factory.sniper(0.85)
             },
             reload:{
                 delay:2.5,
@@ -1050,11 +1177,11 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             recoil:{
                 duration:1,
-                speed:0.75
+                speed:0.6
             },
         }),
-        guns_factory.sniper("model94","45acp",{
-            name:"Model-94",
+        guns_factory.sniper("super_conqueror","c22",{
+            name:"SUPER Conqueror",
             rank:ItemRank.B,
 
             fire_delay:1,
@@ -1066,7 +1193,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.sniper(0.72)
+                def:bullets_factory.sniper(0.7)
             },
             reload:{
                 delay:0.6,
@@ -1075,56 +1202,126 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 reload_count:1,
             },
             recoil:{
-                duration:0.9,
+                duration:1,
+                speed:0.6
+            },
+            assets:{
+                world_tint:0x5e625f,
+                reload_animation:default_animations_factory.insert_reload(0.6,undefined,"casing_ammo_c22",undefined,undefined,undefined,undefined,undefined,undefined,0),
+            }
+        }),
+        guns_factory.sniper("rifle_cbc","l15",{
+            name:"Rifle-CBC",
+            fire_delay:0.9,
+            spread:2,
+            idle_spread:0.75,
+            fire_sequence:{
+                spread:{begin:0.5},
+                increse:0.2,
+                decay:0.2
+            },
+
+            ammo_spawn:{
+                amount:60
+            },
+
+            bullet:{
+                def:{
+                    ...bullets_factory.sniper(0.65,tracers.medium),
+                    pass_through_humans:true,
+                }
+            },
+            reload:{
+                delay:0.6,
+                capacity:10,
+                extended_capacity:20,
+                reload_count:1
+            },
+            recoil:{
+                duration:1,
                 speed:0.75
             },
+            assets:{
+                cycle_sound:true,
+                load_animation:default_animations.load_pump,
+                reload_animation:default_animations_factory.insert_reload(0.6,undefined,"casing_ammo_l15",undefined,undefined,undefined,undefined,undefined,undefined,0),
+                cycle_animation:default_animations_factory.pump_cycle(0.45,0.15)
+            }
         }),
         /////////////////////////////////////////////
         //                SHOTGUNS                 //
         /////////////////////////////////////////////
-        guns_factory.shotgun("m870","12g",{
+        guns_factory.shotgun_buckshot("m870","p76",{
             name:"M870",
             fire_delay:1,
-            spread:4.5,
-            jitter_radius:0.35,
 
             ammo_spawn:{
                 amount:10
             },
 
-            bullet:{
-                def:bullets_factory.buckshot(1),
-                count:10
-            },
             reload:{
                 delay:0.8,
                 capacity:5,
                 extended_capacity:10,
                 reload_count:1,
             },
-            recoil:{
-                duration:1.1,
-                speed:0.6
-            },
             assets:{
                 world_tint:0x573c05
             }
         }),
-        guns_factory.shotgun("spas12","12g",{
+        guns_factory.shotgun_buckshot("aipc39","p76",{
+            name:"AIPC-39",
+            fire_delay:0.2,
+            barrel_length:0.9,
+
+            recoil:{
+                speed:0.55,
+                duration:0.3
+            },
+            ammo_spawn:{
+                amount:10
+            },
+            case_particle:{
+                position:v2.new(0.5,0.1),
+                direction:{min:1.75,max:3},
+                at_begin:true,
+                all_direction:true,
+                count:2,
+            },
+            rig_arms:WeaponsArmRig[0],
+
+            reload:{
+                delay:2.5,
+                capacity:2,
+            },
+            recoil_animation:{
+                time_scale:15,
+                walk:0.07
+            },
+            assets:{
+                world:"weapon_small_world",
+                world_tint:0x573c05,
+                reload_animation:default_animations_factory.insert_reload(0.8,2),
+                load_animation:Object.freeze([]as AKeyFrame[]) as (AKeyFrame[]),
+                cycle_animation:Object.freeze([]as AKeyFrame[]) as (AKeyFrame[])
+            }
+        }),
+        guns_factory.shotgun("spas12","p76",{
             name:"Spas12",
             rank:ItemRank.B,
 
             fire_delay:1,
             spread:2.5,
-            jitter_radius:0.1,
-    
+            idle_spread:0.85,
+            jitter_radius:0.15,
+
             ammo_spawn:{
                 amount:16
             },
 
             bullet:{
                 def:bullets_factory.flechette(1),
-                count:10
+                count:9
             },
             reload:{
                 delay:0.6,
@@ -1132,20 +1329,17 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 extended_capacity:13,
                 reload_count:1,
             },
-            recoil:{
-                duration:1.1,
-                speed:0.6
-            },
             assets:{
-                world_tint:0x47527d
+                world_tint:0x47527d,
+                reload_animation:default_animations_factory.insert_reload(0.6),
             }
         }),
-        guns_factory.shotgun("hp18","12g",{
+        guns_factory.shotgun("hp18","p76",{
             name:"HP-18",
             rank:ItemRank.D,
 
-            fire_delay:0.3,
-            spread:6.75,
+            fire_delay:0.5,
+            spread:7,
             jitter_radius:0.25,
 
             fire_mode:FireMode.Auto,
@@ -1163,31 +1357,31 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 extended_capacity:7,
                 reload_count:1,
             },
-            recoil:{
-                duration:0.4,
-                speed:0.75
-            },
             assets:{
-                cycle_sound:false
+                cycle_sound:false,
+                load_animation:Object.freeze([]as AKeyFrame[]) as (AKeyFrame[]),
+                cycle_animation:Object.freeze([]as AKeyFrame[]) as (AKeyFrame[])
             }
         }),
         /////////////////////////////////////////////
         //                   DMR                   //
         /////////////////////////////////////////////
-        guns_factory.dmr("sr25","762mm",{
-            name:"sr25",
+        guns_factory.dmr("m110a2","c51",{
+            name:"M110 A2",
             fire_delay:0.25,
-            spread:2,
+            spread:2.5,
             ammo_spawn:{
                 amount:60
             },
             bullet:{
                 def:{
-                    damage:23,
+                    damage:24,
+                    critical_mult:1.2,
                     falloff:0.75,
                     range:165,
-                    speed:50,
-                    tracer:tracers.large
+                    speed:48,
+                    tracer:tracers.large,
+                    effective_range:0.17,
                 }
             },
             reload:{
@@ -1195,15 +1389,16 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 capacity:20,
                 extended_capacity:35,
             },
-            recoil:{
-                duration:0.4,
-                speed:0.75
-            },
         }),
-        guns_factory.dmr("vss","9mm",{
+        guns_factory.dmr("vss","l19",{
             name:"VSS Vintorez",
             fire_delay:0.15,
-            spread:3,
+            spread:6,
+            fire_sequence:{
+                spread:{begin:0.25},
+                increse:0.07,
+                decay:0.6
+            },
 
             ammo_spawn:{
                 amount:80
@@ -1211,7 +1406,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:14,
+                    damage:16.8,
+                    critical_mult:1.2,
                     falloff:0.7,
                     range:165,
                     speed:45,
@@ -1229,49 +1425,13 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 extended_capacity:40,
             },
             recoil:{
-                duration:0.4,
-                speed:0.8
+                duration:0.5,
+                speed:0.65
             },
         }),
-        guns_factory.dmr("rifle_cbc","22lr",{
-            name:"Rifle-CBC",
-            fire_delay:0.12,
-            spread:4.5,
-
-            ammo_spawn:{
-                amount:60
-            },
-
-            bullet:{
-                def:{
-                    damage:15.5,
-                    falloff:0.6,
-                    range:165,
-                    speed:40,
-                    pass_through_humans:true,
-                    tracer:{
-                        ...tracers.small,
-                        alpha:0.75
-                    }
-                }
-            },
-            reload:{
-                delay:0.7,
-                capacity:10,
-                extended_capacity:20,
-                reload_count:2
-            },
-            recoil:{
-                duration:0.4,
-                speed:0.85
-            },
-            assets:{
-                cycle_sound:true,
-            }
-        }),
-        guns_factory.dmr("m1_garand","762mm",{
+        guns_factory.dmr("m1_garand","c51",{
             name:"M1-Garand",
-            fire_delay:0.3,
+            fire_delay:0.31,
             spread:3,
 
             ammo_spawn:{
@@ -1279,17 +1439,13 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.sniper(0.72)
+                def:bullets_factory.sniper(0.7)
             },
 
             reload:{
                 delay:2.5,
                 capacity:8,
                 extended_capacity:12,
-            },
-            recoil:{
-                duration:0.4,
-                speed:0.7
             },
             assets:{
                 use_last:true,
@@ -1299,12 +1455,17 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         /////////////////////////////////////////////
         //                   LMG                   //
         /////////////////////////////////////////////
-        guns_factory.lmg("pkp","762mm",{
+        guns_factory.lmg("pkp","c51",{
             name:"PKP Pecheneg",
 
             fire_delay:0.1,
             switch_delay:1,
-            spread:7.5,
+            spread:9,
+            fire_sequence:{
+                decay:0.13,
+                increse:0.02,
+                spread:{begin:0.4}
+            },
 
             ammo_spawn:{
                 amount:200
@@ -1312,8 +1473,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:14,
-                    obstacle_mult:1.5,
+                    damage:12,
+                    critical_mult:1.25,
+                    obstacle_mult:2,
                     range:170,
                     speed:35,
                     falloff:0.7,
@@ -1325,18 +1487,24 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 capacity:200,
                 extended_capacity:250,
             },
-            recoil:{
-                duration:0.13,
-                speed:0.75
+            rig_image2:{
+                image:"pkp_world",
+                scale:1.5,
+                position:v2(0.65,0)
             },
         }),
-        guns_factory.lmg("m249","556mm",{
+        guns_factory.lmg("m249","c45",{
             name:"M249",
 
             fire_delay:0.1,
             switch_delay:1,
-            spread:5,
+            spread:6,
             idle_spread:0.4,
+            fire_sequence:{
+                decay:0.25,
+                increse:0.04,
+                spread:{begin:0.45}
+            },
 
             ammo_spawn:{
                 amount:200
@@ -1350,18 +1518,20 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 capacity:100,
                 extended_capacity:200,
             },
-            recoil:{
-                duration:0.1,
-                speed:0.75
-            },
         }),
-        guns_factory.lmg("xm556","556mm",{
+        guns_factory.lmg("xm556","c45",{
             name:"XM556-Minigun",
 
             fire_delay:0.045,
             switch_delay:1,
-            spread:3,
+            spread:8,
             idle_spread:0.35,
+            fire_sequence:{
+                decay:0.07,
+                increse:0.01,
+                ease:ease.sexticIn,
+                spread:{begin:0.15}
+            },
 
             ammo_spawn:{
                 amount:200
@@ -1376,10 +1546,6 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 extended_capacity:300,
             },
             speed_mod:0.5,
-            recoil:{
-                duration:0.1,
-                speed:0.7
-            },
             recoil_animation:{
                 time_scale:40,
                 walk:0.07
@@ -1404,19 +1570,6 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             fire_mode:FireMode.Single,
             ammo_spawn:{
                 amount:11
-            },
-            gas_particles:{
-                count:10,
-                life_time:1.2,
-                speed:{
-                    min:1,
-                    max:2
-                },
-                direction_variation:0.4,
-                size:{
-                    min:0.6,
-                    max:2,
-                }
             },
             bullet:{
                 def:{
@@ -1464,27 +1617,12 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             spread:1,
             idle_spread:0.33333,
             barrel_length:1,
-            barrel_offset:0.45,
 
             ammo_type:"explosive_ammo",
             fire_mode:FireMode.Single,
 
             ammo_spawn:{
                 amount:11
-            },
-
-            gas_particles:{
-                count:10,
-                life_time:1.2,
-                speed:{
-                    min:1,
-                    max:2
-                },
-                direction_variation:0.4,
-                size:{
-                    min:0.6,
-                    max:2,
-                }
             },
 
             projectile:{
@@ -1544,11 +1682,20 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 speed:0.5
             },
             rig_arms:WeaponsArmRig[1],
-            rig_image:{
-                position:v2(0.28,0.075),
-                rotation:0,
+            rig_image:WeaponsRig[1],
+            rig_image2:{
+                image:"m2_2_world",
+                position:v2(0,0.1)
+            },
+            recoil_animation:{
+                time_scale:10,
+                walk:0.06
             },
             speed_mod:0.6,
+            assets:{
+                world:"weapon_medium_world",
+                world_tint:0xd8b818
+            }
         },
-    )
+    ]
 }

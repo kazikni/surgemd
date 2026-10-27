@@ -60,8 +60,7 @@ export class Drone extends AirBody {
         this.angular_velocity=Numeric.lerp_rad(this.angular_velocity,this.angular_velocity_dest,expo*2)
         if(this.angular_timer<=0){
             this.angular_timer+=random.float(2,6)
-            this.angular_velocity_dest=Math.random()
-            if(Math.random()<0.5)this.angular_velocity_dest*=-1
+            this.angular_velocity_dest=random.neg_float(0,2)
         }
         this.physical_data.rotation+=this.angular_velocity*dt
 
@@ -89,7 +88,7 @@ export class Drone extends AirBody {
         this.set_dirty_part()
     }
     choose_next_dest():Vec2{
-        return this.game.deadzone.next_position()
+        return this.scene.deadzone.next_position()
     }
     override on_encode_net(stream: Stream,full: boolean): void {
         stream.write_float32(this.z)
@@ -141,17 +140,17 @@ export class LocationDrone extends Drone{
             id:this.id,
             radius:5
         }
-        this.game.map_zones.push(this.zone)
+        this.scene.map_zones.push(this.zone)
         this.lifetime=120
-        
+
         this.dest=this.choose_next_dest()
         this.speed=100
     }
     override on_destroy(): void {
         super.on_destroy()
         if(this.zone){
-            const idx=this.game.map_zones.indexOf(this.zone)
-            if(idx!==-1)this.game.map_zones.splice(idx,1)
+            const idx=this.scene.map_zones.indexOf(this.zone)
+            if(idx!==-1)this.scene.map_zones.splice(idx,1)
         }
     }
     override on_net_update(): void {

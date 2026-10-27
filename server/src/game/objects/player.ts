@@ -3,39 +3,59 @@ import { Human } from "./human.ts";
 import { DamageParams } from "../others/utils.ts";
 import { DamageReason, HumanDefinition } from "common/scripts/definitions/utils.ts";
 import { PlayersManager } from "../managers/players_manager.ts";
-import { InputPacket } from "common/scripts/packets/input_packet.ts";
-import { type Game } from "../others/game.ts";
+import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { Stream, RectHitbox2D } from "common/engine/core.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { SideEffect } from "common/scripts/definitions/player/effects.ts";
-import { LoadoutAccessoryDef, LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { LoadoutAccessoryDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { PlayerStatus } from "common/scripts/others/constants.ts";
 import { FeedMessageType } from "common/scripts/packets/general_update.ts";
+import { type ServerGameScene2D } from "../others/scene.ts";
+import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
+import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 export abstract class PlayerConnManager{
-    game:Game
+    scene:ServerGameScene2D
     human?:Human|Player
     real_human?:Human|Player
+    id=-1
     spectating:boolean=false
     connected:boolean=true
     join_packet?:JoinPacket
 
-    constructor(game:Game){
-        this.game=game
+    spectating_conn?:PlayerConnManager
+    spectators:PlayerConnManager[]=[]
+
+    constructor(scene:ServerGameScene2D){
+        this.scene=scene
     }
-    abstract send_game_over(status:PlayerStatus[],win?:boolean,eliminated_by?:number):void;
+    abstract send_game_over(status:PlayerStatus[],win?:boolean,eliminated_by?:number,fineshed?:boolean):void;
     set_spectator(p:Player) {
+        if(this.spectating_conn){
+            const idx=this.spectating_conn.spectators.indexOf(this)
+            if(idx!==-1)this.spectating_conn.spectators.splice(idx,1)
+            this.spectating_conn=undefined
+        }
         this.spectating=true
         this.human=p
+        if(p.conn){
+            this.spectating_conn=p.conn
+            p.conn.spectators.push(this)
+        }
     }
     set_active_player(p:Player) {
+        if(this.spectating_conn){
+            const idx=this.spectating_conn.spectators.indexOf(this)
+            if(idx!==-1)this.spectating_conn.spectators.splice(idx,1)
+            this.spectating_conn=undefined
+        }
         this.spectating=false
         this.human=p
         this.real_human=p
         p.conn=this
     }
     add_player():Player|undefined{
-        if(this.join_packet&&!this.game.fineshed&&!(this.human&&!this.human.dead)&&this.connected){
+        if(this.join_packet&&!this.scene.game.fineshed&&!(this.human&&!this.human.dead)&&this.connected){
             let p=new Player()
             if(this.human){
                 p.status=(this.human as Player).status
@@ -48,7 +68,7 @@ export abstract class PlayerConnManager{
                     p.team_data.group.replace(this.human,p)
                 }
             }
-            p=this.game.players.add_player(p,this.join_packet)
+            p=this.scene.game.players.add_player(p,this.join_packet)
             this.set_active_player(p)
             return p
         }
@@ -63,10 +83,18 @@ export abstract class PlayerConnManager{
     }
     get_update_packet_objects(camera_hb:RectHitbox2D,layer:number):ServerGameObject[]{
         const layers=[layer-2,layer-1,layer,layer+1,layer+2]
-        const objs=this.game.scene_2d.cells.get_objects_layers(camera_hb,layers)
-        return [...objs,...Object.values(this.game.always_visible)]
+        const objs=this.scene.cells.get_objects_layers(camera_hb,layers)
+        return [...objs,...Object.values(this.scene.always_visible)]
     }
     abstract net_update(general_update:Stream):void
+    after_net_update():void{
+        if(this.real_human){
+            this.real_human.visible_humans=[]
+            this.real_human.visible_humans.length=0
+            if(this.real_human.splash_delay<=0)this.real_human.splashes=[]
+            else this.real_human.splash_delay--
+        }
+    }
 }
 export class Player extends Human{
     username:string=""
@@ -103,7 +131,6 @@ export class Player extends Human{
             time_alive:0,
             score_applyer:[]
         }
-        this.spawn_body=true
     }
     override reset_status(): void {
         super.reset_status()
@@ -156,18 +183,18 @@ export class Player extends Human{
     override down(params: DamageParams): void {
         super.down(params)
         if(params.owner&&params.owner instanceof Player){
-            this.game.feed_messages.push({
+            this.scene.feed_messages.push({
                 killer:(params.reason===DamageReason.Explosion||params.reason===DamageReason.Human)?{
                     id:params.owner.id,
                     kills:params.owner.status.kills,
                 }:undefined,
                 victimId:this.id,
-                used:this.game.definitions.game_objects.keysString[params.source!.idString],
+                used:params.source?this.game.definitions.game_objects.keysString[params.source.idString]:undefined,
                 damage_reason:params.reason,
                 type:FeedMessageType.down,
             })
         }else{
-            this.game.feed_messages.push({
+            this.scene.feed_messages.push({
                 killer:undefined,
                 victimId:this.id,
                 damage_reason:params.reason,
@@ -179,9 +206,8 @@ export class Player extends Human{
     override die(params: DamageParams): void {
         if(this.dead)return
         super.die(params)
-
         if(this.killed_by&&this.killed_by instanceof Player){
-            this.game.feed_messages.push({
+            this.scene.feed_messages.push({
                 killer:{
                     id:this.killed_by.id,
                     kills:this.killed_by.status.kills,
@@ -191,25 +217,17 @@ export class Player extends Human{
                 type:FeedMessageType.kill,
                 damage_reason:params.reason,
             })
-
             if(this.game.statistics){
                 this.game.statistics.items.kills[params.source!.idString]=(this.game.statistics.items.kills[params.source!.idString]??0)+1
             }
         }else{
-            this.game.feed_messages.push({
+            this.scene.feed_messages.push({
                 killer:undefined,
                 victimId:this.id,
                 type:FeedMessageType.kill,
                 damage_reason:params.reason,
             })
         }
-
-        this.game.players.living_players.splice(this.game.players.living_players.indexOf(this),1);
-
-        this.game.modeManager.on_player_die(this)
-        this.game.signals.emit("player_die",{player:this,killer:this.killed_by})
-        this.game.update_data()
-
         if(this.team_data.group)this.team_data.group.dirty=true
     }
     override revive(): void {
@@ -219,7 +237,7 @@ export class Player extends Human{
         if(this.conn&&this.conn.real_human===this){
             this.conn.on_revive(this)
         }
-        this.game.feed_messages.push({
+        this.scene.feed_messages.push({
             type:FeedMessageType.set_name,
             playerId:this.id,
             playerName:this.name
@@ -231,7 +249,7 @@ export class Player extends Human{
     }
     override self_state(full: boolean): SelfStateUpdate {
         const ret=super.self_state(full)
-        ret.money=0
+        ret.kills=this.status.kills
         if(this.team_data.group){
             if(this.team_data.group.dirty||full){
                 ret.dirty.group=true
@@ -258,10 +276,16 @@ export class Player extends Human{
 
         this.input.interaction=i.interact||this.input.interaction
         this.input.reload=i.reload||this.input.reload
-        this.input.swamp_guns=i.swamp_guns||this.input.swamp_guns
+        this.input.swap_guns=i.swap_guns||this.input.swap_guns
         this.input.actions.push(...i.actions)
 
-        this.input.cancel=i.cancel
+        this.input.cancel=i.cancel   
+        
+        for(const a of this.input.actions){
+            if(a.type===InputActionType.spectate){
+                if(this.dead&&this.conn)this.game.modeManager.on_spectate(this.conn,a.val)
+            }
+        }
     }
     proccess_join_packet(jp:JoinPacket){
         this.visual.dirty=true
@@ -273,15 +297,18 @@ export class Player extends Human{
             }
             this.visual.body.tint=jp.skin.body_tint
             this.visual.shirt=this.game.definitions.loadout.getFromNumber(jp.skin.shirt) as LoadoutShirtDef
+            this.visual.legs=this.game.definitions.loadout.getFromNumber(jp.skin.legs) as LoadoutLegDef
+            this.visual.foot=this.game.definitions.loadout.getFromNumber(jp.skin.foot) as LoadoutFootDef
             this.visual.accessorys=[]
             if(jp.skin.female){
-                this.visual.accessorys=[this.game.definitions.loadout.getFromString("hair_bow") as LoadoutAccessoryDef]
+                this.visual.accessorys=[this.game.definitions.loadout.getFromString("white_hair_bow") as LoadoutAccessoryDef]
             }
         }
-        this.visual.wrapping=this.game.definitions.wrapping.valueNumber[jp.wrapping-1]
-        if(jp.badge)this.visual.badge=this.game.definitions.badges.valueNumber[jp.badge]
-        else this.visual.badge=undefined
-        this.visual.emotes.victory=this.game.definitions.emotes.valueNumber[jp.victory_emote-1]
-        this.visual.emotes.death=this.game.definitions.emotes.valueNumber[jp.death_emote-1]
+        this.human_data.alternative_vehicle_control=jp.tank_vehicle_control
+        this.human_data.auto_pickup=jp.auto_pickup
+        this.visual.wrapping=this.game.definitions.wrapping.getFromNumberSafe(jp.wrapping)
+        this.visual.badge=this.game.definitions.badges.getFromNumberSafe(jp.badge)
+        this.visual.emotes.victory=this.game.definitions.game_objects.valueNumber[jp.victory_emote] as EmoteDef|BadgeDef
+        this.visual.emotes.death=this.game.definitions.game_objects.valueNumber[jp.death_emote] as EmoteDef|BadgeDef
     }
 }

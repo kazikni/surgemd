@@ -1,7 +1,56 @@
-import { FontStyle, FontStyleFull } from "../../core/definition/utils.ts";
+import { FontStyle } from "../../core/definition/utils.ts";
 import { Random1,random } from "../../core/math/random.ts";
 import { Numeric } from "../../core/math/utils.ts";
+import { Vec2 } from "../../core/math/vec2.ts";
 import { type ClientGame } from "./game.ts";
+declare global{
+    class TabsContainer extends HTMLElement{
+        switchTab(index:number):void
+    }
+    class SMDEConsole extends HTMLElement{
+        clear():void
+        log(...args:any):void
+        insert(val:{index:number,html:string}):void
+    }
+    class SMDEMenu extends HTMLElement {
+        set_hover(hover:boolean):void
+        close():void
+        rebuild():void
+        add_option(text:string,onclick:(e:PointerEvent)=>void):HTMLElement
+        add_submenu(text:string, menu:SMDEMenu):HTMLElement
+    }
+    class SMDEOptionSubMenu extends HTMLElement{}
+    class SMDEJoystick extends HTMLElement {
+        knob:HTMLDivElement
+        active:boolean
+        center:Vec2
+        value:Vec2
+        pointerId:number
+    }
+    class SMDEWindow extends HTMLElement{
+        movable:boolean
+        moving:boolean
+        dragOffset:Vec2
+        content:HTMLElement
+        add_close_button():HTMLButtonElement
+        add_title():HTMLSpanElement
+        set_size(width:number,height:number):void
+        set_top(val:string):void
+        set_title(val:string):void
+    }
+    class SMDETree extends HTMLElement{
+        items:HTMLElement[]
+        parent_arrow:HTMLElement|null
+        add_option(text:string, elem:HTMLElement, onclick?:(e:any)=>void, index?:number):HTMLElement
+        add_subtree(text:string, tree:SMDETree, onclick?:(e:any)=>void, index?:number):HTMLElement
+        create_item(item:HTMLElement):HTMLDivElement
+
+        refresh():void
+        insert_item(item:HTMLElement, index?:number):HTMLDivElement
+
+        clear():void
+    }
+}
 export interface TweenOptions<T>{
     target: T
     to: Partial<T>
@@ -86,48 +135,46 @@ export class Tween<T> {
         this.game.remove_tween(this as unknown as Tween<unknown>);
     }
 }
-export function HideElement(elem: HTMLElement, useOpacity = false,timeout:number=2000) {
-    if (useOpacity) {
-        elem.style.opacity = "0"
-        elem.style.pointerEvents = "none"
-        elem.style.userSelect = "none"
+export function HideElement(elem:HTMLElement,useOpacity=false,timeout:number=2000) {
+    if(useOpacity){
+        if(elem.style.opacity=="0")return
+        elem.style.opacity="0"
+        elem.style.pointerEvents="none"
+        elem.style.userSelect="none"
         setTimeout(()=>{
             if(elem.style.opacity==="0"){
-                elem.style.display = "none"
-                elem.style.visibility = "hidden"
+                elem.style.display="none"
+                elem.style.visibility="hidden"
             }
         },timeout)
     }else{
-        elem.style.pointerEvents = "none"
-        elem.style.userSelect = "none"
-        elem.style.display = "none"
-        elem.style.visibility = "hidden"
+        if(elem.style.display=="none")return
+        elem.style.pointerEvents="none"
+        elem.style.userSelect="none"
+        elem.style.display="none"
+        elem.style.visibility="hidden"
     }
 }
-export function ShowElement(elem: HTMLElement, useOpacity = false) {
-    elem.style.display = "" 
-    elem.style.pointerEvents = ""
-    elem.style.userSelect = ""
-    elem.style.visibility = "visible"
-    if (useOpacity) {
+export function ShowElement(elem: HTMLElement, useOpacity = false){
+    if(useOpacity){
         requestAnimationFrame(() => {
             elem.style.opacity = "1"
         })
     }
+    elem.style.display = "" 
+    elem.style.pointerEvents = ""
+    elem.style.userSelect = ""
+    elem.style.visibility = "visible"
 }
-export function ToggleElement(elem: HTMLElement, useOpacity = false) {
+export function ToggleElement(elem: HTMLElement, useOpacity = false,value?:boolean) {
     if (useOpacity) {
-        if (elem.style.opacity === "0" || elem.style.visibility === "hidden") {
-            ShowElement(elem, true)
-        } else {
-            HideElement(elem, true)
-        }
+        if(value===undefined)value=elem.style.opacity==="0"||elem.style.visibility==="hidden"
+        if(value) ShowElement(elem, true)
+        else HideElement(elem, true)
     } else {
-        if (elem.style.display === "none") {
-            ShowElement(elem)
-        } else {
-            HideElement(elem)
-        }
+        if(value===undefined)value=elem.style.display === "none"
+        if(value)ShowElement(elem)
+        else HideElement(elem)
     }
 }
 

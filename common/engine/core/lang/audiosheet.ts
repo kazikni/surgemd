@@ -1,4 +1,4 @@
-import { FileManager } from "../definition/file.ts";
+import { type FileManager } from "../definition/file.ts";
 import { Path } from "../math/utils.ts";
 import { Stream } from "../net/stream.ts";
 
@@ -7,8 +7,8 @@ export interface AudioSheet{
     duration:number
     sampleRate:number
     channels:number
-    audio: Uint8Array
-    sounds: Record<string, AudioSheetPart>
+    audio?: Uint8Array
+    sounds: AudioSheetPart[]
 }
 export interface AudioInput {
     name: string
@@ -101,8 +101,8 @@ export const audios={
         }
         const merged=this.concatPCM(decoded)
         const audio=await encoder.encode(merged,output_extension)
-        const sounds: Record<string, AudioSheetPart>={}
-        for(const e of merged.entries)sounds[e.name]=e
+        const sounds:AudioSheetPart[]=[]
+        for(const e of merged.entries)sounds.push(e)
         return {
             codec: "ogg",
             sampleRate: merged.sampleRate,
@@ -117,14 +117,54 @@ export const audios={
         files.sort((a,b) =>a.name.localeCompare(b.name))
         return await this.compile(decoder,encoder,files)
     },
-    write_definitions(stream:Stream,sheet:AudioSheet){
-        stream.write_string_sized(".KSND", 5)
-        .write_uint16(0)
-        .write_float32(sheet.sampleRate)
-        .write_array(Object.keys(sheet.sounds),(v)=>{
-            stream.write_string(v)
-            .write_uint32(sheet.sounds[v].sampleCount)
-            .write_uint32(sheet.sounds[v].startSample)
+    zero():AudioSheet{
+        return {
+            codec:"ogg",
+            channels:0,
+            duration:0,
+            sampleRate:0,
+            sounds:[]
+        }
+    },
+    write_definitions(sheet:AudioSheet,stream:Stream){
+        stream.write_float32(sheet.channels)
+        stream.write_float32(sheet.duration)
+        stream.write_float32(sheet.sampleRate)
+        stream.write_array(sheet.sounds,(v)=>{
+            stream.write_string(v.name,1)
+            .write_uint32(v.sampleCount)
+            .write_uint32(v.startSample)
         },2)
+    },
+    read_definitions(stream:Stream):AudioSheet{
+        const sheet=this.zero()
+        sheet.codec="ogg"
+        sheet.channels=stream.read_float32()
+        sheet.duration=stream.read_float32()
+        sheet.sampleRate=stream.read_float32()
+        sheet.sounds=stream.read_array(()=>{
+            return {
+                name:stream.read_string(1),
+                sampleCount:stream.read_uint32(),
+                startSample:stream.read_uint32(),
+            } as AudioSheetPart
+        },2)
+        return sheet
+    },
+    write(sheet:AudioSheet,stream:Stream){
+        stream.write_string_sized(".KSND", 5)
+        stream.write_uint16(1)
+        this.write_definitions(sheet,stream)
+        stream.write_uint32(sheet.audio?.length??0)
+        if(sheet.audio)stream.write_bytes(sheet.audio)
+    },
+    read(stream:Stream):AudioSheet{
+        const magic=stream.read_string_sized(5)
+        if(magic!==".KSND")console.error("KSND Parsing Error")
+        const version=stream.read_uint16()
+        const sheet=this.read_definitions(stream)
+        const count:number=stream.read_uint32()
+        if(count)sheet.audio=stream.read_bytes(count,true)
+        return sheet
     }
 }

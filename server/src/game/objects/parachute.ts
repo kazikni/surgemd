@@ -31,9 +31,9 @@ export class Parachute extends ServerGameObject{
         this.base_hitbox=new CircleHitbox2D(v2.zero(),3)
         this.position=position
 
-        this.game.pings.push({
+        this.scene.pings.push({
             position:this.position,
-            def:this.game.definitions.ping.getFromString("ping_airdrop").idNumber!,
+            def:this.game.definitions.pings.getFromString("ping_airdrop").idNumber!,
             color:0xffffff,
         })
     }
@@ -44,7 +44,7 @@ export class Parachute extends ServerGameObject{
         this.time+=dt
         if(this.time>=this.parachute_data.lifetime){
             this.time=this.parachute_data.lifetime
-            const obs=this.game.map.add_obstacle(this.parachute_data.spawn_obstacle,this.layer)
+            const obs=this.scene.map.add_obstacle(this.parachute_data.spawn_obstacle,this.layer)
             obs.initialize()
             obs.set_position(this.position)
             const objects:ServerGameObject[]=this.manager.cells.get_objects(obs.hitbox,obs.layer)
@@ -73,9 +73,9 @@ export class Parachute extends ServerGameObject{
                     })
                 }
             }
-            const def=this.game.definitions.synced_particle.getFromString("airdrop_smoke")
+            const def=this.game.definitions.synced_particles.getFromString("airdrop_smoke")
             for(let i=0;i<6;i++){
-                this.game.add_synced_particle(this.position,def,undefined,this.layer)
+                this.scene.add_synced_particle(this.position,def,undefined,this.layer)
             }
             this.destroy()
         }

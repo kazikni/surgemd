@@ -1,6 +1,6 @@
-import { existsSync, rmSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { existsSync, rmSync } from "fs";
+import { dirname, resolve } from "path";
+import { fileURLToPath } from "url";
 import { defineConfig } from "vite";
 import devConfig from "./vite/vite.dev.ts";
 import prodConfig from "./vite/vite.prod.ts";

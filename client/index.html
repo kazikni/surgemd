@@ -32,15 +32,6 @@
             <canvas id="game-canvas" class="game-canvas"></canvas>
             <div id="tiltshift-gfx"></div>
             <div id="game-gui" style="display:none;visibility:none;pointer-events:none;">
-                <div id="game-mobile-gui" style="display: none; pointer-events: none;">
-                    <smde-joystick id="left-joystick"></smde-joystick>
-                    <smde-joystick id="right-joystick"></smde-joystick>
-                    <div id="mobile-action-buttons">
-                        <button id="btn-mobile-interact" class="btn-dark-green"></button>
-                        <button id="btn-mobile-reload" style="display:none;pointer-events: none;" class="btn-dark-green"></button>
-                        <button id="btn-mobile-emotes" class="btn-dark-green"></button>
-                    </div>
-                </div>
                 <div id="help-gui"></div>
                 <div id="bottom-left-container">
                     <div id="action-info" class="ui-panel">
@@ -51,14 +42,15 @@
                         <span id="hand-info-count"></span>
                     </div>
                     <div id="boost-bar-container" class="ui-panel">
+                        <div id="boost-bar-animation"></div>
                         <div id="boost-bar"></div>
-                        <span id="boost-bar-amount">100/100</span>
+                        <span id="boost-bar-amount"></span>
                     </div>
                     <div id="health-bar-container" class="ui-panel">
                         <div id="health-bar-basic-heal"></div>
                         <div id="health-bar-animation"></div>
                         <div id="health-bar"></div>
-                        <span id="health-bar-amount">100/100</span>
+                        <span id="health-bar-amount"></span>
                     </div>
                 </div>
                 <div id="information-container">
@@ -66,6 +58,8 @@
                         <div id="information-killbox"></div>
                         <div id="information-interaction"></div>
                     </div>
+                    <!--<div id="information-hints"></div>-->
+                    <div id="information-global-messages"></div>
                     <div id="debug-show" class="span-text"></div>
                 </div>
                 <div id="bottom-center-container">
@@ -114,25 +108,35 @@
                     <img id="emote-wheel-right" draggable="false" class="emote-wheel-part wheel-part-right"/>
                     <img id="emote-wheel-hover" draggable="false" class="wheel-hover wheel-hover-center"/>
                 </div>
+                <div id="game-mobile-gui" style="display: none; pointer-events: none;">
+                    <smde-joystick id="left-joystick"></smde-joystick>
+                    <smde-joystick id="right-joystick"></smde-joystick>
+                    <div id="mobile-action-buttons">
+                        <button id="btn-mobile-interact"></button>
+                        <button id="btn-mobile-reload"></button>
+                        <button id="btn-mobile-emotes"></button>
+                        <button id="btn-mobile-toggle-map">X</button>
+                    </div>
+                </div>
             </div>
             <div id="normal-gameover-container">
                 <div id="gameover-status-container"></div>
-                <div id="gameover-main-message">Press R To Restart</div>
+                <div id="gameover-main-message"></div>
                 <div id="gameover-buttons">
                     <button id="gameover-menu-btn" class="btn-blue">Return To Menu</button>
-                    <!--<button id="gameover-status-btn" class="btn-blue">Status</button>
-                    <button id="gameover-report-btn" class="btn-blue">Report Player</button>-->
+                    <button id="gameover-spectate-btn" class="btn-blue">Spectate</button>
+                    <button id="gameover-show-status-btn" class="btn-blue">Show Status</button>
                 </div>
             </div>
-            <div id="restart-gameover-container" class="hidden"><span id="go-message">Press R To Restart</span></div>
+            <div id="restart-gameover-container" class="hidden"></div>
         </div>
         <div id="menu">
             <div id="menu-background"></div>
             <div id="menu-options"></div>
             <div id="menu-content"></div>
-            <div id="featured-content-creators" class="span-text"></div>
+            <div id="featured-links" class="span-text"></div>
             <div id="main-social" class="social-links span-text"></div>
-            <p id="game-version" class="span-text">Pre-Beta-9</p>
+            <p id="game-version" class="span-text"></p>
         </div>
         <div id="both-ui">
             <div id="loading-screen">
@@ -141,7 +145,7 @@
                     <p id="loading-screen-span" class="span">Loading...</p>
                 </div>
                 <div id="loading-current" class="loading-background"></div>
-                <div id="loading-minigame">
+                <div id="loading-minigame" style="display: none;">
                     <div id="loading-target"></div>
                     <div id="loading-score">
                         Hits: <span>0</span>
@@ -149,7 +153,7 @@
                 </div>
             </div>
             <div id="initial-screen">
-                <video id="intro-video" playsinline autoplay muted width="640">
+                <video id="intro-video" playsinline muted width="640">
                     <source src="/assets/videos/intro.mp4" type="video/mp4">
                 </video>
             </div>
@@ -158,6 +162,7 @@
             </div>
             <div id="history-overlay"></div>
             <div id="vignetting-gfx"></div>
+            <div id="mouse-emulated"></div>
         </div>
     </body>
 </html>

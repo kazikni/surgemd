@@ -1,27 +1,11 @@
 import { Language } from "../definition/definitions.ts";
-import { type Scene2D } from "../game/game.ts";
 import { random } from "./random.ts";
 import { v2, Vec2 } from "./vec2.ts";
 
 export const halfpi=Math.PI/2
 
 export type ID=number
-export function joinPath(...p: string[]) {
-    return p.join("/").replace(/\/+/g, "/")
-}
-export function splitPath(path:string):string[]{
-    const ret=path.split(/[\\/]/)
-    for(let i=0;i<ret.length;i++){
-        if(ret[i]==""){
-            ret.splice(i,1)
-            i--
-        }
-    }
-    if(ret.length==0){
-        ret.push("")
-    }
-    return ret
-}
+
 export function split_strings_array(text:string):string[]{
     const out:string[]=[]
 
@@ -50,49 +34,69 @@ export function split_strings_array(text:string):string[]{
 
     return out
 }
-export class Path {
-    static join(...parts: string[]): string {
+export const Path={
+   split(path:string):string[]{
+        const ret=path.split(/[\\/]/)
+        for(let i=0;i<ret.length;i++){
+            if(ret[i]==""){
+                ret.splice(i,1)
+                i--
+            }
+        }
+        if(ret.length==0){
+            ret.push("")
+        }
+        return ret
+    },
+    join_simple(...path:string[]){
+        let ret=path.join("/").replace(/\/+/g, "/")
+        if(path[0]=="")ret=ret.substring(1)
+        return ret
+    },
+    join(...parts: string[]): string {
+        if (parts.length === 0) return ""
+        const absolute=parts[0].startsWith("/")||parts[0].startsWith("\\")
         const stack: string[] = []
-
-        const joined = parts
-            .join("/")
-            .replace(/\\/g, "/")
-            .split("/")
-
+        const joined = parts.join("/").replace(/\\/g, "/").split("/")
         for (const part of joined) {
             if (part === "" || part === ".") {
                 continue
             }
-
             if (part === "..") {
                 if (stack.length > 0) {
                     stack.pop()
                 }
                 continue
             }
-
             stack.push(part)
         }
-
-        return "/" + stack.join("/")
-    }
-    static extname(path:string):string{
+        const result=stack.join("/")
+        return absolute?"/"+result:result
+    },
+    extname(path:string):string{
         const content=path.split(".")
         return path.length>1?content[content.length-1]:""
-    }
-    static filename(path:string):string{
+    },
+    filename(path:string):string{
         const content=path.split(".")
         if(content.length>1){
             content.pop()
         }
         return content.join(".")
-    }
-    static basename(path:string):string{
+    },
+    basename(path:string):string{
         const val=path.split("/")
         while(val.length>1&&val[val.length-1]===""){
             val.pop()
         }
         return val[val.length-1]??""
+    },
+    dirname(path:string):string{
+        const val=this.split(path)
+        if(val.length>1){
+            val.pop()
+        }
+        return val.join("/")
     }
 }
 export type Tags=string[]
@@ -203,8 +207,8 @@ export class Clock {
     private frameDuration: number
     private lastFrameTime: number
     accumulator:number=0
-    public timeScale: number
-    public callback: (dt:number)=>void
+    public timeScale:number
+    public callback:(dt:number)=>void
     public intervals:Map<number,(dt:number)=>void>=new Map()
 
     running:boolean=false
@@ -224,7 +228,12 @@ export class Clock {
     }
 
     private interval?:number=undefined
+    timeouts:{c:()=>void,delay:number}[]=[]
 
+    clear(){
+        this.intervals.clear()
+        this.timeouts.length=0
+    }
     add_interval(cb:(dt:number)=>void):number{
         let id=0
         while(this.intervals.has(id)){
@@ -246,6 +255,14 @@ export class Clock {
 
             const dt = (elapsedTime / 1000) * this.timeScale
 
+            for(let i=0;i<this.timeouts.length;i++){
+                this.timeouts[i].delay-=dt
+                if(this.timeouts[i].delay<=0){
+                    this.timeouts[i].c()
+                    this.timeouts.splice(i,1) 
+                    i--
+                }
+            }
             this.callback(dt);
             for (const i of this.intervals.values()) {
                 i(dt);
@@ -267,7 +284,7 @@ export class Clock {
             this.lastFrameTime = performance.now()
             this.interval=setInterval(() => {
                 this.tick()
-            }, this.frameDuration)
+            }, this.frameDuration) as unknown as number
         }
     }
     public startRAF() {
@@ -279,6 +296,14 @@ export class Clock {
             this.frameDuration=1000/this.tps
             self.requestAnimationFrame(this._tick)
         }
+    }
+    add_timeout(callback:()=>void,delay:number):number{
+        if(delay==0){
+            callback()
+            return -1
+        }
+        this.timeouts.push({c:callback,delay:delay})
+        return this.timeouts.length-1
     }
     public stop(){
         this.running=false
@@ -407,7 +432,19 @@ export function cloneDeep<T>(object: T): T {
         }
     })(object)
 }
-
+export function deepFreeze<T>(object:T):T{
+    const seen=new WeakSet<object>()
+    const freeze=(value:any):any=>{
+        if(value===null||typeof value!=="object"||seen.has(value))return value
+        seen.add(value)
+        for(const key of Reflect.ownKeys(value)){
+            const desc=Object.getOwnPropertyDescriptor(value,key)
+            if(desc&&"value" in desc)freeze(desc.value)
+        }
+        return Object.freeze(value)
+    }
+    return freeze(object)
+}
 export type DeepPartial<T> = {
   [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K];
 };
@@ -434,7 +471,7 @@ export function mergeDeep<T>(target: T, ...sources: Array<DeepPartial<T>>): T {
 
     // arrays: choose strategy (replace by default, or concat if desired)
     if (Array.isArray(srcVal)) {
-      if (Array.isArray(tgtVal)) {
+      if (Array.isArray(tgtVal)&&!Object.isFrozen(srcVal)) {
         (target as any)[key] = [...tgtVal, ...srcVal] as any;
       } else {
         (target as any)[key] = [...srcVal] as any;
@@ -443,7 +480,7 @@ export function mergeDeep<T>(target: T, ...sources: Array<DeepPartial<T>>): T {
     }
 
     // objects
-    if (typeof srcVal === "object") {
+    if (typeof srcVal === "object"&&!Object.isFrozen(srcVal)) {
       if (typeof tgtVal === "object" && tgtVal !== null && !Array.isArray(tgtVal)) {
         mergeDeep(tgtVal, srcVal as any);
       } else {
@@ -477,7 +514,7 @@ export function deepEqual(a: any, b: any): boolean {
         return false
     }
 
-    for (const key of keysA) {
+    for(const key of keysA) {
         if (!deepEqual(a[key], b[key])) {
             return false
         }
@@ -820,21 +857,21 @@ export const ValidString={
     }
 }
 export class IPLocation{
-    IP:string
-    Port:number
-    HTTP:boolean
+    ip:string
+    port?:number
+    safe:boolean
     has_prefix:boolean
     aditional:string=""
-    constructor(IP:string,Port:number,HTTP:boolean=false,has_prefix=true,aditional:string=""){
-        this.IP=IP
-        this.Port=Port
-        this.HTTP=HTTP
+    constructor(ip:string,port?:number,safe:boolean=false,has_prefix=true,aditional:string=""){
+        this.ip=ip
+        this.port=port
+        this.safe=safe
         this.has_prefix=has_prefix
         this.aditional=aditional
     }
     toString(prefix:string=""):string{
         return this.has_prefix?
-        `${prefix}${this.HTTP ? "s" : ""}://${this.IP}:${this.Port}${this.aditional}`
+        `${prefix}${this.safe ? "s" : ""}://${this.ip}${this.port===undefined?"":`:${this.port}`}${this.aditional}`
         :`${this.aditional}`
     }
 }

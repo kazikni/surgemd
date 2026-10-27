@@ -18,13 +18,13 @@ export interface DecalInstanceDef{
     tint?:DecalTint
     scale?:number
 }
-export function Decals_Default_Init(decals:Definitions<DecalDef,{}>){
-    decals.insert(
+export function Decals_Default_Init():DecalDef[]{
+    return [
         {
             idString:"explosion_decal",
         },
         {
             idString:"wood_pallet",
         }
-    )
+    ]
 }

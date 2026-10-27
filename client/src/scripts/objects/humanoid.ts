@@ -1,14 +1,11 @@
 import { CircleHitbox2D, ColorM, ease, KeyFrameSpriteDef, model2d, Numeric, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
-import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
+import { MovingBody } from "./moving_body.ts";
 import { GameConstants, GameObjectType, HumanoidVisualData, zIndexes } from "common/scripts/others/constants.ts";
 import { ABParticle2D, AnimatedContainer2D, AnimatedSprite2D, AudioInstance, ClientGame, Container2D, Frame, Shape2D, Sprite2D } from "common/engine/web.ts";
-import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { ClientDecal } from "./client_decal.ts";
 import { DefaultDownedWalkFistRig, DefaultFistRig } from "common/scripts/others/item.ts";
-export type HumanoidPhysicalData=MovingBodyPhysicalData&{
-    scale:number
-}
 export type HumanoidSprites={
     hair:Sprite2D
     body:Sprite2D
@@ -40,8 +37,6 @@ export type HumanoidSprites={
 }
 export type HumanoidAnimation={
     mounth:KeyFrameSpriteDef[]
-    base_left_arm_position:Vec2
-    base_right_arm_position:Vec2
     footsteps?:AudioInstance
 
     walk_speed:number
@@ -58,7 +53,8 @@ export class Humanoid extends MovingBody{
     override number_type: number=GameObjectType.Humanoid
     override string_type: string="humanoid"
 
-    override physical_data: HumanoidPhysicalData
+    scale:number=1
+
     container!:AnimatedContainer2D
     sprites!:HumanoidSprites
 
@@ -68,8 +64,6 @@ export class Humanoid extends MovingBody{
     downed:boolean=false
 
     animation:HumanoidAnimation={
-        base_left_arm_position:v2.zero(),
-        base_right_arm_position:v2.zero(),
         mounth:[],
         walk_cycle:0,
         walk_speed:0,
@@ -88,11 +82,6 @@ export class Humanoid extends MovingBody{
 
     constructor(){
         super()
-        
-        this.physical_data={
-            rotation:0,
-            scale:1
-        }
     }
     override on_create(_args: void): void {
         this.base_hitbox=new CircleHitbox2D(v2(0,0),GameConstants.humanoid.radius)
@@ -104,7 +93,6 @@ export class Humanoid extends MovingBody{
             hair:this.container.add_sprite("hair",{scale:1.5,zIndex:6,hotspot:v2.half_one}),
 
             mounth:this.container.add_animated_sprite("mounth",{hotspot:v2(0.4,0.5),scale:1.5,zIndex:5}),
-
 
             left_arm:this.container.add_container("left_arm"),
             right_arm:this.container.add_container("right_arm"),
@@ -184,14 +172,15 @@ export class Humanoid extends MovingBody{
             this.sprites.shadow.model=model2d.hitbox(this.base_hitbox)
             this.sprites.shadow.color=this.game.world_shadow.color
             this.sprites.shadow.matrix=this.game.world_shadow.matrix
-            this.sprites.shadow.zIndex=this.container.zIndex-0.5
-            this.game.cam2d.add_object(this.sprites.shadow)
+            this.sprites.shadow.zIndex=zIndexes.Humans
+            this.sprites.shadow.layer=this.layer
+            this.scene.camera.add_object(this.sprites.shadow)
         }
     }
 
     override on_tick(dt: number): void {
         super.on_tick(dt)
-        this.container.rotation=this.physical_data.rotation
+        this.container.rotation=this.rotation
         this.container._position.set(this.position.x,this.position.y)
         if(this.sprites.shadow)this.sprites.shadow.position=this.position
     }
@@ -207,7 +196,7 @@ export class Humanoid extends MovingBody{
             this.distance_since_last_footstep+=this.distance_walked
             // Play Footstep Sound And Do Water Riple
             if(this.distance_since_last_footstep>=footstep_distance){
-                const walk_dir:number=old_pos?v2.lookTo(this.position,old_pos):this.physical_data.rotation
+                const walk_dir:number=old_pos?v2.lookTo(this.position,old_pos):this.rotation
                 this.distance_since_last_footstep=0
                 if(this.assets.footstep_sounds){
                     if(this.animation.footsteps)this.animation.footsteps.stop()
@@ -227,15 +216,15 @@ export class Humanoid extends MovingBody{
                     d.sprite.rotation=walk_dir
                     d.lifetime=30
 
-                    const pos=v2(0,(this.footstep_alternate?0.3:-0.3)*this.physical_data.scale)
-                    v2m.rotate_RadAngle(pos,this.physical_data.rotation)
+                    const pos=v2(0,(this.footstep_alternate?0.3:-0.3)*this.scale)
+                    v2m.rotate_RadAngle(pos,this.rotation)
                     d.sprite.position=v2.add(this.position,pos)
-                    this.game.scene_2d.objects.add_object(d,this.layer)
+                    this.scene.objects.add_object(d,this.layer)
 
                     this.footstep_alternate=!this.footstep_alternate
                 }
                 if(Floors[f as FloorType].floor_kind===FloorKind.Liquid){
-                    this.game.particles.add_particle(new ABParticle2D({
+                    this.scene.particles.add_particle(new ABParticle2D({
                         direction:0,
                         frame:{
                             image:"riple",
@@ -311,34 +300,54 @@ export class Humanoid extends MovingBody{
                 this.sprites.right_leg.visible=true
                 switch(this.animation.walk_cycle){
                     case 1:
-                        this.sprites.left_leg.rotation=0.05
-                        this.sprites.right_leg.rotation=3.19
+                        this.sprites.left_leg.rotation=Numeric.lerp_rad(0,0.1,this.animation.walk_time)
+                        this.sprites.right_leg.rotation=Numeric.lerp_rad(Math.PI,Math.PI+0.1,this.animation.walk_time)
+
                         this.sprites.left_leg.position.x=Numeric.lerp(-0.3,-0.45,this.animation.walk_time)
+                        this.sprites.left_leg.position.y=-0.2
+
                         this.sprites.right_leg.position.x=Numeric.lerp(0.3,0.45,this.animation.walk_time)
+                        this.sprites.right_leg.position.y=0.2
+
                         this.sprites.left_leg_foot.position.x=Numeric.lerp(0.05,0.04,this.animation.walk_time)
                         this.sprites.right_leg_foot.position.x=Numeric.lerp(0.05,0,this.animation.walk_time)
                         break
                     case 2:
-                        this.sprites.left_leg.rotation=0.05
-                        this.sprites.right_leg.rotation=3.19
+                        this.sprites.left_leg.rotation=Numeric.lerp_rad(0.1,0,this.animation.walk_time)
+                        this.sprites.right_leg.rotation=Numeric.lerp_rad(Math.PI+0.1,Math.PI,this.animation.walk_time)
+
                         this.sprites.left_leg.position.x=Numeric.lerp(-0.45,-0.3,this.animation.walk_time)
+                        this.sprites.left_leg.position.y=-0.2
+
                         this.sprites.right_leg.position.x=Numeric.lerp(0.45,0.3,this.animation.walk_time)
+                        this.sprites.right_leg.position.y=0.2
+
                         this.sprites.left_leg_foot.position.x=Numeric.lerp(0.04,0.05,this.animation.walk_time)
                         this.sprites.right_leg_foot.position.x=Numeric.lerp(0,0.05,this.animation.walk_time)
                         break
                     case 3:
-                        this.sprites.left_leg.rotation=3.09
-                        this.sprites.right_leg.rotation=-0.05
+                        this.sprites.left_leg.rotation=Numeric.lerp_rad(Math.PI,Math.PI-0.1,this.animation.walk_time)
+                        this.sprites.right_leg.rotation=Numeric.lerp_rad(0,-0.1,this.animation.walk_time)
+
                         this.sprites.left_leg.position.x=Numeric.lerp(0.3,0.45,this.animation.walk_time)
+                        this.sprites.left_leg.position.y=-0.2
+
                         this.sprites.right_leg.position.x=Numeric.lerp(-0.3,-0.45,this.animation.walk_time)
+                        this.sprites.right_leg.position.y=0.2
+
                         this.sprites.left_leg_foot.position.x=Numeric.lerp(0.05,0,this.animation.walk_time)
                         this.sprites.right_leg_foot.position.x=Numeric.lerp(0.05,0.04,this.animation.walk_time)
                         break
                     case 4:
-                        this.sprites.left_leg.rotation=3.09
-                        this.sprites.right_leg.rotation=-0.05
+                        this.sprites.left_leg.rotation=Numeric.lerp_rad(Math.PI-0.1,Math.PI,this.animation.walk_time)
+                        this.sprites.right_leg.rotation=Numeric.lerp_rad(-0.2,0,this.animation.walk_time)
+
                         this.sprites.left_leg.position.x=Numeric.lerp(0.45,0.3,this.animation.walk_time)
+                        this.sprites.left_leg.position.y=-0.2
+
                         this.sprites.right_leg.position.x=Numeric.lerp(-0.45,-0.3,this.animation.walk_time)
+                        this.sprites.right_leg.position.y=0.2
+
                         this.sprites.left_leg_foot.position.x=Numeric.lerp(0,0.05,this.animation.walk_time)
                         this.sprites.right_leg_foot.position.x=Numeric.lerp(0.04,0.05,this.animation.walk_time)
                         break
@@ -364,9 +373,9 @@ export class Humanoid extends MovingBody{
         }
     }
     update_body(){
-        this.container.scale.x=this.physical_data.scale
-        this.container.scale.y=this.physical_data.scale
-        this.base_hitbox=new CircleHitbox2D(v2(0,0),GameConstants.humanoid.radius*this.physical_data.scale)
+        this.container.scale.x=this.scale
+        this.container.scale.y=this.scale
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),GameConstants.humanoid.radius*this.scale)
         if(this.sprites.shadow)this.sprites.shadow.model=model2d.hitbox(this.base_hitbox)
     }
 
@@ -377,7 +386,7 @@ export class Humanoid extends MovingBody{
             this.set_eyes()
         }
     }
-    set_skin(body_def:LoadoutBodyDef,hair:{tint:number,def:LoadoutHairDef}|undefined,eyes_def:LoadoutEyesDef|undefined,shirt_def:LoadoutShirtDef,legs_def:LoadoutLegDef,body_tint:number,accessorys:LoadoutAccessoryDef[]){
+    set_skin(body_def:LoadoutBodyDef,hair:{tint:number,def:LoadoutHairDef,paint?:{tint:number,id:number}}|undefined,eyes_def:LoadoutEyesDef|undefined,shirt_def:LoadoutShirtDef,legs_def:LoadoutLegDef,foot_def:LoadoutFootDef|undefined,body_tint:number,accessorys:LoadoutAccessoryDef[]){
         if(this.visual&&this.visual.body.def===body_def&&this.visual.body.tint===body_tint&&this.visual.hair?.def===hair?.def&&this.visual.hair?.tint===hair?.tint&&this.visual.eyes===eyes_def)return
         this.visual={
             body:{
@@ -388,6 +397,7 @@ export class Humanoid extends MovingBody{
             eyes:eyes_def,
             shirt:shirt_def,
             legs:legs_def,
+            foot:foot_def,
             accessorys
         }
 
@@ -397,8 +407,16 @@ export class Humanoid extends MovingBody{
         const hand_f=body_def.frame?.hand??"human_"+body_def.idString+"_hand"
 
         if(hair){
-            if(hair.def.frame?.front)this.sprites.hair.set_frame(Object.assign({image:"human_"+hair.def.idString+"_front"},hair.def.frame?.front),this.game.resources)
             this.sprites.hair.tint=ColorM.number(hair.tint)
+            this.sprites.hair.child_sprites=undefined
+            if(hair.def.frame?.front){
+                const sub_sprites=[]
+                if(hair.paint&&hair.def.frame.front.paint)sub_sprites.push({image:hair.def.frame.front.paint,tint:hair.paint.tint})
+                this.sprites.hair.set_frame(Object.assign({
+                    image:"human_"+hair.def.idString+"_front",
+                    sub_sprites
+                },hair.def.frame?.front),this.game.resources)
+            }
         }
         if(eyes_def){
             this.assets.eyes=[eyes_def.frame?.base??"human_"+eyes_def.idString+"_1",eyes_def.frame?.blink??"human_"+eyes_def.idString+"_2"]
@@ -425,15 +443,23 @@ export class Humanoid extends MovingBody{
         if(shirt_def.frame?.arm_tint)this.sprites.left_shirt_arm.tint=ColorM.number(shirt_def.frame?.arm_tint)
         if(shirt_def.frame?.arm_tint)this.sprites.right_shirt_arm.tint=ColorM.number(shirt_def.frame?.arm_tint)
 
-        if(legs_def.frame?.leg){
-            this.sprites.left_leg_l.set_frame(legs_def.frame.leg,this.game.resources)
-            this.sprites.right_leg_l.set_frame(legs_def.frame.leg,this.game.resources)
+        if(legs_def.frame){
+            this.sprites.left_leg_l.set_frame(legs_def.frame,this.game.resources)
+            this.sprites.right_leg_l.set_frame(legs_def.frame,this.game.resources)
         }
-        if(legs_def.frame?.foot){
-            this.sprites.left_leg_foot.position=v2(0.05,0)
-            this.sprites.right_leg_foot.position=v2(0.05,0)
-            this.sprites.left_leg_foot.set_frame(legs_def.frame.foot,this.game.resources)
-            this.sprites.right_leg_foot.set_frame(legs_def.frame.foot,this.game.resources)
+        this.sprites.left_leg_foot.set_frame({
+            image:"human_foot_1_1",
+            position:v2(0.05,0),
+            tint:body_tint
+        },this.game.resources)
+        this.sprites.right_leg_foot.set_frame({
+            image:"human_foot_1_1",
+            position:v2(0.05,0),
+            tint:body_tint
+        },this.game.resources)
+        if(foot_def?.frame){
+            this.sprites.left_leg_foot.set_frame(foot_def.frame,this.game.resources)
+            this.sprites.right_leg_foot.set_frame(foot_def.frame,this.game.resources)
         }
 
         this.sprites.left_leg.rotation=0.05

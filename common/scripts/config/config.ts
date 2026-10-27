@@ -1,4 +1,6 @@
-import { HostConfig } from "../../engine/core.ts";
+import { type HostConfig } from "../../engine/core.ts";
+import { KSPRResolutionDefinition, type KSPRDefinition } from "../../engine/core/lang/kspr.ts";
+import { ConnectionLimitConfig } from "../../engine/core/definition/definitions.ts";
 
 export interface GameConfig{
     mode:string
@@ -28,6 +30,7 @@ export interface PlayTimeConfig{
     duration:number
 }
 export interface ApiSettings{
+    game_version:string
     regions:string[]
     play_options:GamePlayOption[]
     database:{
@@ -90,6 +93,7 @@ export interface GameServerConfig{
     ntps:number
     tps:number
 
+    limiter:ConnectionLimitConfig
     region?:{
         name:string
         ip:string
@@ -108,14 +112,10 @@ export interface GameServerConfig{
 export interface ViteServerConfig{
     port:number
     allowed_hosts?:true|string[]
-    spritesheet:{
-        sheets:Record<string,{path:{dir:string,base?:string}[],save_assets?:boolean}>
-        resolutions:{name:string,scale:number}[]
+    kspr:{
+        sheets:Record<string,KSPRDefinition>
+        resolutions:KSPRResolutionDefinition[]
     }
-    audios:{
-        input:string
-        output:string
-    }[]
 }
 export interface ConfigType{
     api: ApiServerConfig
@@ -154,6 +154,11 @@ export function ZeroGameServerConfig():GameServerConfig{
         ntps:32,
         max_games:1,
         use_workers:false,
+        limiter:{
+            enabled:false,
+            maxConnections:5,
+            windowMs:60000,
+        }
     }
 }
 export function ZeroConfig():ConfigType{
@@ -163,11 +168,130 @@ export function ZeroConfig():ConfigType{
         vite:{
             port:3000,
             allowed_hosts:true,
-            spritesheet:{
+            kspr:{
                 resolutions:[],
-                sheets:{}
+                sheets:{},
             },
-            audios:[]
         }
     }
 }
+
+export const game_version="Pre-Beta-10-Snapshot-2"
+
+
+export const FinalCredits=[
+    {
+        role: "Created By",
+        users: "Kazikni / Hugo Mendonça Santana"
+    },
+    {
+        role: "Programmed By",
+        users: "@kazikni"
+    },
+    {
+        role: "Game Designs / Graphics",
+        users: [
+            "@kazikni",
+            "@cheerfulbull_29688",
+            "@wowcps_01_37746",
+            "@endermanking",
+            "@littlethief69",
+            "Suroi.io",
+            "Surviv.io",
+            "Survev.io"
+        ]
+    },
+
+    {
+        role: "Menu Design",
+        users: [
+            "@kazikni",
+            "@namerio"
+        ]
+    },
+
+    {
+        role: "Sound Design",
+        users: [
+            "@kazikni",
+            "@teardwop",
+            "Surviv.io",
+            "Suroi.io",
+            "Free Sounds On Net",
+            "Half-Life",
+            "Postal 2",
+            "Fortnite"
+        ]
+    },
+
+    {
+        role: "Music",
+        users: [
+            "@showusmusic",
+            "@rivals2444",
+            "Wreckfest",
+            "Super Chicken Jumper",
+            "I Wanna Be The Guy",
+            "Various YouTube Music",
+            "NoCopyrightSounds",
+            "Hotline Miami 2",
+            "Five Nights at Freddy's",
+            "StickFight The Game"
+        ]
+    },
+
+    {
+        role: "Lore",
+        users: "@kazikni"
+    },
+
+    {
+        role: "Additional Art",
+        users: [
+            "@kazikni",
+            "@sentido_ss",
+            "@bien.star",
+            "@paoagiota4740"
+        ]
+    },
+
+    {
+        role: "Videos / Trailers",
+        users: [
+            "@kazikni",
+            "@rapxtor_yt"
+        ]
+    },
+
+    {
+        role: "Discord Server",
+        users: [
+            "@kazikni",
+            "@Zahirralt2"
+        ]
+    },
+    {
+        role: "Inspirations",
+        users: [
+            "Surviv.io",
+            "Hotline Miami 1 & 2",
+            "Suroi.io",
+            "Pixel Gun 3D",
+            "Fortnite"
+        ]
+    },
+    {
+        role: "Special Thanks",
+        users: [
+            "Surviv.io creators",
+            "@hasanger",
+            "@1092384",
+            "@sloistice",
+            "@mamoun0",
+            "@leia_uwu",
+            "@guiz3rabrr2466._24385",
+            "@jgpow",
+            "Everyone Who Played",
+        ]
+    }
+]

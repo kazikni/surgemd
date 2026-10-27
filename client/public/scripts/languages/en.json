@@ -28,7 +28,7 @@
             "purple_potion": "Purple Potion",
             "purple_pills": "Purple Pills",
             "small_red_crystal": "Small Red Crystal",
-            "red_soda": "Red Soda",
+            "red_beer": "Red Beer",
             "red_crystal": "Red Crystal",
             "red_pills": "Red Pills",
             "green_soda": "Green Soda",
@@ -54,6 +54,7 @@
             "survival_knife": "Survival Knife",
             "axe": "Axe",
             "crowbar": "Crowbar",
+            "baseball_bat": "Baseball Bat",
             "shovel": "Shovel",
             "sledgehammer": "Sledgehammer",
             "katana": "Katana",
@@ -77,6 +78,7 @@
             "nature_leaf": "Nature Leaf",
             "sprite_ammo": "Sprite Ammo",
             "ghost_bullets": "Ghost Bullets",
+            "incendiary_bullets": "Incendiary Bullets",
             "biggest_magazine": "Biggest Magazine",
             "self_revive": "Self Revive",
 
@@ -92,19 +94,20 @@
             "nuke":"Nuke-333",
             "mini_nuke":"Nuke-126",
             "description": {
-                "12g": "12 Gauge. Used in shotguns",
-                "762mm": "7.62mm used in snipers and AR.",
-                "556mm": "5.56mm used in Snipers and AR. Almost the same thing of 7.62mm",
-                "9mm": "9mm used in Pistols and SMG.",
-                "45acp": "5.56mm used in Snipers and AR. Almost the same thing of 7.62mm",
-                "22lr": "9mm used in Pistols and SMG. Almost the same thing of 9mm",
-                "50cal": "A big ammo. used into pistols, snipers and dmr",
-                "308sub": "Biggerst than a hand. used into pistols, snipers and dmr",
+                "p76": "P-76 aka 12G. Used in shotguns",
+                "c51": "C-51 aka 762mm. used in snipers and AR.",
+                "c45": "C-45 aka 556mm. used in Snipers and AR. Almost the same thing of C-51",
+                "l19": "L-19 aka 9mm.used in Pistols and SMG.",
+                "c22": "C-45 aka 45acp. used in Snipers and AR. Almost the same thing of C-51",
+                "l15": "L-15 aka 22lr. used in Pistols and SMG. Almost the same thing of l19",
+                "p61": "P-61 aka 50bmg. A big ammo. used into pistols, snipers and dmr",
+                "p85": "P-85 aka 308. Biggerst than a hand. used into pistols, snipers and dmr",
                 "explosive_ammo": "Boom Boom Motherfucker!",
                 "gasoline": "A good fuel.",
                 "mana_mm": "Mana-MM I'm tired of creating descriptions. It's already 18:50.",
 
                 "crowbar": "Rise and shine...",
+                "baseball_bat": "Almost No One Plays Baseball Here. But Still Is A Good Weapon",
 
                 "bandage": "A classic bandage.<br>Restores 20 health points.<br>Can only heal up to 75% health.",
                 "medikit": "This small box contains several medical supplies.<br>Restores 100 health points with no healing cap.",
@@ -114,7 +117,7 @@
                 "blue_soda": "A delicious soda.<br>Contains a compound that creates a glass-like barrier around the user.<br>Grants 25 shield up to a maximum of 50%.",
                 "blue_potion": "This bottle was crafted using an ancient method, but its contents use cutting-edge technology.<br>Grants 50 shield.",
                 "blue_pills": "A medicine used by soldiers as a defensive barrier.<br>Features advanced digital technology.<br>Grants 100 shield.",
-                "red_soda": "The recipe for this soda is highly classified.<br>Experts believe it contains an extremely toxic and addictive chemical compound.<br>Grants 50 addiction up to a maximum of 50%.",
+                "red_beer": "A delicius beer<br>Grants 50 addiction up to a maximum of 50%.",
                 "small_red_crystal": "Even this small amount of RQPU can enhance physical abilities, but it is not enough to satisfy the addiction.<br>Grants 25 addiction.",
                 "red_crystal": "This illegal drug can make you incredibly fast and strong, but it is highly addictive.<br>It seems nobody cares much about the law.<br>Grants 50 addiction.",
                 "red_pills": "This drug is capable of ruining someone's life.<br>Fortunately, the police are always fighting drug trafficking.<br>But where do the confiscated drugs go?<br>Grants 100 addiction.",
@@ -137,7 +140,7 @@
             "angry_swearing":"Angry Swearing",
             "very_love":"Very Love",
             "demon":"Demon",
-            "peading":"Peading",
+            "pleading":"Pleading",
 
             "heart":"Heart",
             "skull":"Skull",
@@ -158,14 +161,18 @@
             "aqua_blue":"Aqua Blue"
         },
         "badges":{
-            "stone_1":"Stone-1",
-            "stone_2":"Stone-2",
-            "stone_3":"Stone-3",
+            "stone_1_badge":"Stone-1",
+            "stone_2_badge":"Stone-2",
+            "stone_3_badge":"Stone-3",
 
-            "md":"MD",
-            "campfire":"Campfire"
+            "md_badge":"MD",
+            "campfire_badge":"Campfire"
         },
         "characters": {
+            "mark":"Mark",
+            "maria":"Maria",
+            "mom":"Mom",
+            "dad":"Dad",
             "nick": "Nick",
             "justin": "Justin",
             "shelly": "Shelly",
@@ -176,6 +183,10 @@
             "shelly_dad": "Shelly (Dad)",
             "boy": "Boy",
             "girl": "Girl"
+        },
+        "infobox":{
+            "kill":"You Killed ${victim}<br><p id='infobox-kills'>${kills} Kills</p>",
+            "knock":"You Knockout ${victim}"
         },
         "feed": {
             "join": "${player} Joined",
@@ -204,6 +215,16 @@
                 "dead": "The Leader Are Dead"
             }
         },
+        "global_message":{
+            "deadzone":{
+                "adv_state":{
+                    "0":"Deadzone disabled",
+                    "1":"Deadzone Advancing In",
+                    "2":"Deadzone Waiting For",
+                    "3":"Deadzone Fineshed"
+                }
+            }
+        },
         "leader-wait": "Waiting For A Leader",
         "interact": {
             "loot": "Take ${source}${count}",
@@ -222,6 +243,10 @@
         "gameover": {
             "eliminated-by": "<span id='gameover-eliminated'>Eliminated By</span> ${player}",
             "you-win": "<span id='gameover-you-win'>You Win!</span>",
+            "restart":{
+                "press":"Press \"R\" To Restart",
+                "click":"Click Here To Restart"
+            },
             "messages": {
                 "introductions": {
                     "0": "Hi",
@@ -337,7 +362,9 @@
                 "graphics": "Graphics",
                 "sounds": "Sounds",
                 "ui": "UI",
-                "keybinds": "Keybinds"
+                "keybinds": "Keybinds",
+                "file":"File",
+                "debug": "Debug"
             },
             "loadout": {
                 "character": "Character",
@@ -357,6 +384,9 @@
             "loading-screen": {
                 "load": "Loading: ${text}",
                 "unload": "Unloading: ${text}"
+            },
+            "warnings":{
+                "initial":"<h1>Warning</h1>This game contains content that may be disturbing to some people:</br>Fictional and real illicit drugs.</br>Blood and violence.</br>Firearms and melee weapons.<h1>${version}</h1>This game is not yet complete.<br>This version is just a test.</br>Join our Discord to keep up with news and updates.</br>"
             }
         },
         "settings": {
@@ -364,6 +394,7 @@
                 "region": "Region",
                 "interpolation": "Interpolation",
                 "client_rot": "Client Side Rotation",
+                "tank_vehicle_control":"Tank Vehicle Control",
                 "friendly_fire": "Friendly Fire",
                 "ammo_outline": "Guns Outline As Ammo Type"
             },
@@ -393,6 +424,10 @@
                 "translation": "Translation",
                 "interactive": "Interactive UI",
                 "show_intro": "Show Intro"
+            },
+            "debug":{
+                "ping_emulation": "Ping Emulation",
+                "allow_alt_server": "Allow Alt Servers"
             }
         },
         "keybinds": {
@@ -408,7 +443,7 @@
             "reload": "Reload",
             "interact": "Interact",
             "cancel": "Cancel",
-            "swamp_guns": "Swamp Guns Slot",
+            "swap_guns": "Swap Guns Slot",
             "toggle_full_device": "Minimap Toggle Full",
             "toggle_hide_device": "Hide/Show Minimap",
             "weapon1": "Melee",
@@ -436,7 +471,9 @@
                 "hair_type": "Hair Type",
                 "body_tint": "Body Color",
                 "female": "Is Female",
-                "shirt": "Shirt"
+                "shirt": "Shirt",
+                "legs": "Legs",
+                "shoes": "Shoes"
             },
             "emotes":{
                 "left":"Left",

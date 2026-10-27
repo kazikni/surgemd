@@ -3,6 +3,146 @@ import { type Vec2 } from "./vec2.ts";
 import { type Vec3 } from "./vec3.ts";
 
 export type Matrix=Float32Array
+export type Matrix2=Float32Array
+export const matrix2={
+    default:{
+        identity:new Float32Array([
+            1,0,
+            0,1
+        ])
+    },
+
+    m:{
+        mul(dst:Matrix2,a:Matrix2,b:Matrix2){
+            const a0=a[0],a1=a[1],a2=a[2],a3=a[3]
+            const b0=b[0],b1=b[1],b2=b[2],b3=b[3]
+
+            dst[0]=a0*b0+a2*b1
+            dst[1]=a1*b0+a3*b1
+            dst[2]=a0*b2+a2*b3
+            dst[3]=a1*b2+a3*b3
+        },
+    },
+
+    clone(m:Matrix2):Matrix2{
+        return new Float32Array(m)
+    },
+    identity():Matrix2{
+        return new Float32Array([
+            1,0,
+            0,1
+        ])
+    },
+    projection(v:Vec2):Matrix2{
+        return new Float32Array([
+            2/v.x,0,
+            0,2/v.y
+        ])
+    },
+
+    rotation(angle:RadAngle):Matrix2{
+        const c=Math.cos(angle)
+        const s=Math.sin(angle)
+        return new Float32Array([
+            c,s,
+            -s,c
+        ])
+    },
+
+    scale(v:Vec2):Matrix2{
+        return new Float32Array([
+            v.x,0,
+            0,v.y
+        ])
+    },
+
+    transform(scale:Vec2,rotation:RadAngle):Matrix2{
+        const c=Math.cos(rotation)
+        const s=Math.sin(rotation)
+        return new Float32Array([
+            c*scale.x,s*scale.x,
+            -s*scale.y,c*scale.y
+        ])
+    },
+
+    mul(a:Matrix2,b:Matrix2):Float32Array{
+        const a0=a[0],a1=a[1],a2=a[2],a3=a[3]
+        const b0=b[0],b1=b[1],b2=b[2],b3=b[3]
+
+        return new Float32Array([
+            a0*b0+a2*b1,
+            a1*b0+a3*b1,
+            a0*b2+a2*b3,
+            a1*b2+a3*b3
+        ])
+    },
+
+    transform_point(m:Matrix2,v:Vec2):Vec2{
+        return {
+            x:m[0]*v.x+m[2]*v.y,
+            y:m[1]*v.x+m[3]*v.y
+        }
+    },
+
+    rotate(dst:Matrix2,m:Matrix2,angle:RadAngle){
+        const c=Math.cos(angle)
+        const s=Math.sin(angle)
+        const m0=m[0]
+        const m1=m[1]
+        const m2=m[2]
+        const m3=m[3]
+
+        dst[0]=m0*c+m2*s
+        dst[1]=m1*c+m3*s
+        dst[2]=m2*c-m0*s
+        dst[3]=m3*c-m1*s
+    },
+
+    scale_2d(dst:Matrix2,m:Matrix2,v:Vec2){
+        dst[0]=m[0]*v.x
+        dst[1]=m[1]*v.x
+        dst[2]=m[2]*v.y
+        dst[3]=m[3]*v.y
+    },
+
+    invert(dst:Matrix2,m:Matrix2){
+        const a=m[0]
+        const b=m[1]
+        const c=m[2]
+        const d=m[3]
+        const det=a*d-b*c
+
+        if(Math.abs(det)<1e-8)return false
+
+        const inv=1/det
+
+        dst[0]=d*inv
+        dst[1]=-b*inv
+        dst[2]=-c*inv
+        dst[3]=a*inv
+
+        return true
+    },
+
+    determinant(m:Matrix2):number{
+        return m[0]*m[3]-m[2]*m[1]
+    },
+
+    is_equal(a?:Matrix2,b?:Matrix2){
+        return a===b||(a!==undefined&&b!==undefined&&
+            a[0]===b[0]&&a[1]===b[1]&&
+            a[2]===b[2]&&a[3]===b[3])
+    },
+
+    transpose(dst:Matrix2,m:Matrix2){
+        const m1=m[1]
+        const m2=m[2]
+        dst[0]=m[0]
+        dst[1]=m2
+        dst[2]=m1
+        dst[3]=m[3]
+    }
+}
 export const matrix4={
     default:{
         identity:new Float32Array([
@@ -399,5 +539,14 @@ export const matrix4={
     },
     clone(matrix:Matrix){
         return new Float32Array(matrix)
+    },
+
+    to_matrix2(m:Matrix):Matrix{
+        return new Float32Array([
+            m[0],m[1],
+            m[4],m[5],
+            //m[12],m[13],
+            //0,0
+        ])
     }
 }

@@ -1,3 +1,4 @@
+import { tdm, TDObject, TDType, Vec2TD } from "../lang/td.ts";
 import { random, SeededRandom } from "./random.ts"
 import { Numeric } from "./utils.ts";
 import { v2, v2m, Vec2 } from "./vec2.ts";
@@ -36,19 +37,13 @@ export const Angle=Object.freeze({
         if (a < 0) a += π2
         return a - π
     },
-    side_rad(side:Orientation){
-        switch(side){
-            case 0:
-                return 0
-            case 1:
-                return τ
-            case 2:
-                return π
-            case 3:
-                return -τ
-        }
+    rad2side(angle:RadAngle):Orientation{
+        return ((Math.round(angle/(Math.PI/2))%4)+4)%4 as Orientation
     },
-    side_deg(side:Orientation){
+    side2rad(side:Orientation){
+        return side*Math.PI/2
+    },
+    side2deg(side:Orientation){
         switch(side){
             case 0:
                 return 0
@@ -309,6 +304,13 @@ export const Collision=Object.freeze({
 export interface Rect{
     min:Vec2
     max:Vec2
+}
+export const RectTD:TDObject={
+    type:TDType.object,
+    content:[
+        {name:"min",content:Vec2TD},
+        {name:"max",content:Vec2TD},
+    ]
 }
 function rect_new(min:Vec2,max:Vec2):Rect{
     return {min,max}

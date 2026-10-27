@@ -1,5 +1,6 @@
 import { AccessoryDef } from "common/scripts/definitions/items/accessorys.ts";
 import { type Human } from "../objects/human.ts";
+import { apply_modifiers } from "common/scripts/others/functions.ts";
 
 export interface AccessorySlot{
     droppable:boolean
@@ -55,11 +56,13 @@ export class AccessorysManager{
             }
         }
     }
-    apply_modifiers(h:Human){
+    apply_modifiers(human:Human,base:Record<string,number>){
         for(const s of this.slots){
             if(s.item){
-                if(s.item.modifiers)h.apply_modifiers(s.item.modifiers)
-                s.item.events?.["apply_modifiers"]?.(h)
+                if(s.item.modifiers)apply_modifiers(base,s.item.modifiers)
+
+                const mods=s.item.events?.["apply_modifiers"]?.(human)
+                if(mods)apply_modifiers(base,mods)
             }
         }
     }

@@ -1,22 +1,23 @@
-
-import { ABParticle2D, AudioInstance, ClientParticle2D, Container2D, Sound, Sprite2D, Tween } from "common/engine/web.ts";
+import { ABParticle2D, AudioInstance, ClientParticle2D, Container2D, Container2DObject, Sound, Sprite2D, Tween } from "common/engine/web.ts";
 import { GameObjectType, HumanAnimation, HumanAnimationType, HumanVisualData, zIndexes } from "common/scripts/others/constants.ts"
-import { GameItemType } from "common/scripts/definitions/utils.ts"
+import { GameItemType, GameObjectDefinitionType, ItemQualitySettings } from "common/scripts/definitions/utils.ts"
 import { DualAdditional, GunDef } from "common/scripts/definitions/items/guns.ts"
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts"
 import { DefaultFistRig, FistRig } from "common/scripts/others/item.ts"
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts"
 import { GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { EffectDef, Effects } from "common/scripts/definitions/player/effects.ts";
-import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { StaticBody } from "./static_body.ts";
 import { ConsumingAction } from "common/scripts/definitions/items/consumibles.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
-import { CircleHitbox2D, ColorM, ease, Hitbox2D, Numeric, ParticlesEmitter2D, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, ColorM, ease, Hitbox2D, matrix4, Numeric, ParticlesEmitter2D, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { DefaultHumanModes } from "../defs/human_animations.ts";
 import { Humanoid, HumanoidAnimation, HumanoidAssets, HumanoidSprites } from "./humanoid.ts";
+import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
+export type HumanParticleAnim={lifetime:number,sprite:Container2DObject}
 export class Human extends Humanoid{
     ////////////////////////////
     // Definition             //
@@ -53,6 +54,7 @@ export class Human extends Humanoid{
 
         weapon:Sprite2D
         weapon2:Sprite2D
+        item3:Sprite2D
         muzzle_flash:Sprite2D
         parachute:Sprite2D
         emote_container:Container2D
@@ -74,6 +76,8 @@ export class Human extends Humanoid{
 
         sound_animation:AudioInstance|undefined,
 
+        weapon_time:number
+
         recoil_time:number
         recoil_state:number
         recoil_time_scale:number
@@ -84,10 +88,7 @@ export class Human extends Humanoid{
 
         muzzle_flash_time:number,
 
-        base_muzzle_flash_position:Vec2
-        base_weapon_position:Vec2
-        base_left_arm_position:Vec2
-        base_right_arm_position:Vec2
+        particles:HumanParticleAnim[]
     }={
         emote_tween:undefined as Tween<Vec2>|undefined,
         emote_sound:undefined as AudioInstance|undefined,
@@ -104,20 +105,18 @@ export class Human extends Humanoid{
         recoil_walk:0,
         recoil_type:0,
 
+        weapon_time:0,
+
         cycle_sound_time:undefined as (number|undefined),
 
         muzzle_flash_time:-1,
-
-        base_muzzle_flash_position:v2.zero(),
-        base_weapon_position:v2.zero(),
-        base_left_arm_position:v2.zero(),
-        base_right_arm_position:v2.zero(),
 
         walk_speed:1,
         walk_cycle:0,
         walk_time:0,
 
-        mounth:[]
+        mounth:[],
+        particles:[]
     }
     override assets:{
         weapon_switch_sound?:Sound
@@ -166,6 +165,7 @@ export class Human extends Humanoid{
             parachute:new Sprite2D(),//this.container.add_sprite("parachute",{zIndex:7,hotspot:v2.half_one,visible:false}),
             weapon:this.container.add_sprite("weapon"),
             weapon2:this.container.add_sprite("weapon2"),
+            item3:this.container.add_sprite("item3"),
             emote_container:new Container2D(),
             emote_bg:new Sprite2D(),
             emote_sprite:new Sprite2D(),
@@ -174,13 +174,13 @@ export class Human extends Humanoid{
         this.container.animation_parent=this
         this.container.modes=DefaultHumanModes
 
-        this.container.zIndex=zIndexes.Players
+        this.container.zIndex=zIndexes.Humans
 
-        this.game.cam2d.add_object(this.container)
+        this.scene.camera.add_object(this.container)
         this.sprites.parachute.frame=this.game.resources.get_frame("parachute")
         this.sprites.vest._frame=this.game.resources.get_frame("human_vest")
         this.sprites.vest.sync_rotation=false
-        this.consumible_particles=this.game.particles.add_emiter({
+        this.consumible_particles=this.scene.particles.add_emiter({
             delay:0.2,
             particle:()=>new ABParticle2D({
                 direction:-3.141592/2,
@@ -207,13 +207,14 @@ export class Human extends Humanoid{
         this.sprites.emote_bg.hotspot=v2.half_one
         this.sprites.emote_container.add_child(this.sprites.emote_bg)
         this.sprites.emote_container.add_child(this.sprites.emote_sprite)
-        this.game.cam2d.add_object(this.sprites.emote_container)
+        this.scene.camera.add_object(this.sprites.emote_container)
         this.sprites.emote_container.visible=false
 
         this.set_skin(this.game.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,
             undefined,undefined,
             this.game.definitions.loadout.getFromString("white_shirt") as LoadoutShirtDef,
-            this.game.definitions.loadout.getFromString("jeans_pants") as LoadoutLegDef,
+            this.game.definitions.loadout.getFromString("blue_jeans_pants") as LoadoutLegDef,
+            undefined,
             0xffffff,
             []
         )
@@ -228,18 +229,23 @@ export class Human extends Humanoid{
     override on_layer_set(): void {
         this.container.layer=this.layer
         this.sprites.emote_container.layer=this.layer
+        if(this.sprites.name)this.sprites.name.layer=this.layer
         if(this.sprites.shadow)this.sprites.shadow.layer=this.layer
     }
 
-    on_hitted(position:Vec2,critical:boolean=false,sound?:string,reflected:boolean=false){
-        this.container.callmode("hitted",position,critical,sound,reflected)
+    override can_interact(human: Human): boolean {
+        return (this.downed&&!this.dead&&!human.downed)
+    }
+    on_hitted(position:Vec2,critical:boolean=false,sound?:string,reflected:boolean=false,weight?:number){
+        this.container.callmode("hitted",position,critical,sound,reflected,weight)
     }
     on_die(){
         if(this.dead&&this.container.destroyed)return
         this.dead=true
+        if(this.sprites.name)this.sprites.name.destroy()
         if(this.sprites.shadow)this.sprites.shadow.destroy()
         this.container.callmode("die")
-        this.game.add_timeout(()=>{
+        this.game.clock.add_timeout(()=>{
             this.container.destroy()
             this.destroy()
         },5)
@@ -271,6 +277,7 @@ export class Human extends Humanoid{
     update_weapon(def:WeaponDef|undefined){
         this.sprites.weapon.visible=false
         this.sprites.weapon2.visible=false
+        this.sprites.item3.visible=false
         if(def?.rig_image){
             const replace=this.visual.wrapping?.replace[this.assets.original_hand_frame]
             const tint=def.assets?.world_tint?ColorM.number(def.assets.world_tint):ColorM.default.white
@@ -282,7 +289,7 @@ export class Human extends Humanoid{
             }
             if((def as GameItem).item_type===GameItemType.gun&&(def as GunDef).dual_from){
                 //const original_def=this.game.definitions.guns.getFromString((def as GunDef).dual_from!)
-                const xpos=def.rig_arms?.right?.position.x??this.animation.base_left_arm_position.x
+                const xpos=def.rig_arms?.right?.position.x??0
                 if(def.rig_image){
                     this.sprites.weapon2.visible=true
                     this.sprites.weapon2.tint=tint
@@ -293,22 +300,27 @@ export class Human extends Humanoid{
                 }
 
                 this.sprites.left_arm.visible=true
-                this.sprites.left_arm.rotation=0
+                this.sprites.left_arm.rotation=0.2
                 this.sprites.left_arm.position.x=xpos
                 this.sprites.left_arm.position.y=-(def as GunDef&DualAdditional).dual_offset!
     
                 this.sprites.right_arm.visible=true
-                this.sprites.right_arm.rotation=0
+                this.sprites.right_arm.rotation=-0.2
                 this.sprites.right_arm.position.x=xpos
                 this.sprites.right_arm.position.y=(def as GunDef&DualAdditional).dual_offset!
             }
             if(replace)this.sprites.weapon.transform_frame(replace)
+        }
+        if(def?.item_type===GameItemType.gun&&!(def as GunDef).dual_from&&def!.rig_image2){
+            this.sprites.weapon2.visible=true
+            this.sprites.weapon2.set_frame(def.rig_image2,this.game.resources)
         }
     }
 
     override on_render(_dt: number): void {
     }
     override on_tick(dt:number): void {
+        super.on_tick(dt)
         if(this.sprites.emote_container.visible){
             this.sprites.emote_container.position=this.position
             v2m.add_component(this.sprites.emote_container.position,0,-1.5)
@@ -336,11 +348,18 @@ export class Human extends Humanoid{
             }
         }
         if(this.dead)return
-        super.on_tick(dt)
+        if(this.animation.weapon_time>0)this.animation.weapon_time-=dt
         if(this.sprites.name){
             this.sprites.name.position.x=this.position.x
-            this.sprites.name.position.y=this.position.y+(1*this.physical_data.scale)
+            this.sprites.name.position.y=this.position.y+(1*this.scale)
             this.sprites.name.layer=this.layer
+        }
+        for(let i=0;i<this.animation.particles.length;i++){
+            this.animation.particles[i].lifetime-=dt
+            if(this.animation.particles[i].lifetime<=0){
+                this.animation.particles[i].sprite.destroy()
+                this.animation.particles.splice(i,1)
+            }
         }
         this.tick_footsteps(!this.seat)
         this.sprites.vest.rotation=Numeric.loop(this.sprites.vest.rotation+(1*dt),-3.1415,3.1415)
@@ -350,7 +369,7 @@ export class Human extends Humanoid{
                 if(f.lifetime>=f.def.particles.delay){
                     f.lifetime=0
                     const angle=random.rad()
-                    this.game.particles.add_particle(new ABParticle2D({
+                    this.scene.particles.add_particle(new ABParticle2D({
                         frame:f.def.particles.frame,
 
                         zIndex:zIndexes.Particles,
@@ -361,10 +380,11 @@ export class Human extends Humanoid{
                         layer:this.layer,
     
                         life_time:random.float(1,3),
-                        tint:ColorM.hex("#fff"),
+                        tint:ColorM.default.white,
                         to:{
-                            angle:angle+random.neg_value(6),
-                            tint:ColorM.hex("#fff0"),
+                            angle:f.def.particles.angular_rotation?angle+random.neg_value(6):undefined,
+                            tint:ColorM.default.transparent,
+                            tint_ease:ease.quarticIn
                         }
                     }))
                 }
@@ -418,21 +438,26 @@ export class Human extends Humanoid{
         }
         if(!this.downed){
             if(this.animation.recoil_state!==-1){
-                const recoil_walk=this.animation.recoil_walk
-                this.sprites.muzzle_flash.position.x=Numeric.lerp(this.animation.base_muzzle_flash_position.x,this.animation.base_muzzle_flash_position.x-recoil_walk,this.animation.recoil_time)
+                const pos=v2(Numeric.lerp(0,-this.animation.recoil_walk,this.animation.recoil_time),0)
+                v2m.rotate_RadAngle(pos,this.container.rotation)
+                const matrix=matrix4.translation_2d(pos)
+
+                this.sprites.muzzle_flash.matrix=matrix
+
                 switch(this.animation.recoil_type){
                     case 0:
-                        this.sprites.weapon.position.x=Numeric.lerp(this.animation.base_weapon_position.x,this.animation.base_weapon_position.x-recoil_walk,this.animation.recoil_time)
-                        this.sprites.left_arm.position.x=Numeric.lerp(this.animation.base_left_arm_position.x,this.animation.base_left_arm_position.x-recoil_walk,this.animation.recoil_time)
-                        this.sprites.right_arm.position.x=Numeric.lerp(this.animation.base_right_arm_position.x,this.animation.base_right_arm_position.x-recoil_walk,this.animation.recoil_time)
+                        this.sprites.weapon.matrix=matrix
+                        this.sprites.weapon2.matrix=matrix
+                        this.sprites.left_arm.matrix=matrix
+                        this.sprites.right_arm.matrix=matrix
                         break
                     case 1:
-                        this.sprites.weapon.position.x=Numeric.lerp(this.animation.base_weapon_position.x,this.animation.base_weapon_position.x-recoil_walk,this.animation.recoil_time)
-                        this.sprites.left_arm.position.x=Numeric.lerp(this.animation.base_right_arm_position.x,this.animation.base_right_arm_position.x-recoil_walk,this.animation.recoil_time)
-                        break
+                        this.sprites.weapon.matrix=matrix
+                        this.sprites.right_arm.matrix=matrix
+                       break
                     case 2:
-                        this.sprites.weapon2.position.x=Numeric.lerp(this.animation.base_weapon_position.x,this.animation.base_weapon_position.x-recoil_walk,this.animation.recoil_time)
-                        this.sprites.right_arm.position.x=Numeric.lerp(this.animation.base_right_arm_position.x,this.animation.base_right_arm_position.x-recoil_walk,this.animation.recoil_time)
+                        this.sprites.weapon2.matrix=matrix
+                        this.sprites.left_arm.matrix=matrix
                         break
                 }
                 if(this.animation.recoil_state===0){
@@ -446,6 +471,11 @@ export class Human extends Humanoid{
                     if(this.animation.recoil_time<=0){
                         this.animation.recoil_state=-1
                         this.animation.recoil_time=0
+                        this.sprites.left_arm.matrix=undefined
+                        this.sprites.right_arm.matrix=undefined
+                        this.sprites.weapon.matrix=undefined
+                        this.sprites.weapon2.matrix=undefined
+                        this.sprites.muzzle_flash.matrix=undefined
                     }
                 }
             }
@@ -466,13 +496,14 @@ export class Human extends Humanoid{
                     bus:"humans"
                 })
             }
-            const hb=new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,def.offset,this.physical_data.rotation),def.radius)
+            const hb=new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,def.offset,this.rotation),def.radius)
             const collidibles:GameObject[]=this.manager.cells.get_objects(hb,this.layer)
             for(const c of collidibles){
                 if(!hb.colliding_with(c.hitbox))continue
                 switch(c.number_type){
                     case GameObjectType.Obstacle:
-                    case GameObjectType.Building:{
+                    case GameObjectType.Building:
+                    case GameObjectType.Walls:{
                         if((c as StaticBody).physical_data.no_bullets_collision)continue
                         (c as StaticBody).on_hitted(hb.position,true)
                         break
@@ -481,16 +512,65 @@ export class Human extends Humanoid{
                         if((c as Human).dead||c.id===this.id)continue
                         (c as Human).on_hitted(hb.position,false,def.assets?.hit_sound)
                 }
-            break
+                break
+            }
+        }
+        for(const delay of def.damage_delays??[]){
+            this.game.clock.add_timeout(att,delay)
         }
     }
-    for(const delay of def.damage_delays??[]){
-        this.game.add_timeout(att,delay)
-    }
+    play_casing_particle(def:GunDef,barrel_offset:number=0,position?:Vec2){
+        if(!def.case_particle)return
+        const count=def.case_particle?.count??1
+        const smm=def.case_particle.speed??{min:1,max:2}
+        const dmm=def.case_particle.direction??{min:0,max:1}
+        for(let i=0;i<count;i++){
+            const case_position=v2(this.animation.recoil_state!==-1?-this.animation.recoil_walk*this.animation.recoil_time:0,barrel_offset)
+            v2m.add(case_position,case_position,def.case_particle.position)
+            if(position)v2m.add(case_position,case_position,position)
+            v2m.rotate_RadAngle(case_position,this.rotation)
+            v2m.add(case_position,case_position,this.position)
+            let direction:number=(3.141592/2)+random.float(dmm.min,dmm.max)
+            let rotation_dest:number=random.float(1,10)
+            if(def.case_particle.all_direction&&(i%2!==0)){
+                direction*=-1
+                rotation_dest*=-1
+            }
+            const p=new ABParticle2D({
+                direction:this.rotation+direction,
+                life_time:1,
+                position:case_position,
+                frame:{
+                    image:def.case_particle.frame??"casing_"+def.ammo_type,
+                    hotspot:v2.half_one,
+                    layer:this.layer,
+                    zIndex:zIndexes.CaseParticles
+                },
+                speed:random.float(smm.min,smm.max),
+                angle:this.rotation,
+                scale:2,
+                to:{
+                    angle:this.rotation+rotation_dest,
+                    scale:1,
+                    tint:ColorM.default.transparent,
+                    tint_ease:ease.quarticIn
+                }
+            })
+            this.scene.particles.add_particle(p)
+        }
+        const audio=this.game.resources.get_sound(def.case_particle!.sound??"casing_sound_"+def.ammo_type)
+        if(audio)this.game.clock.add_timeout(()=>{
+            this.game.sounds.play(audio,{
+                position:this.position,
+                max_distance:10,
+                bus:"humans"
+            })
+        },0.75)
     }
     play_fire_animation(def:GunDef,alt:boolean,last:boolean,alt_func:boolean){
         let barrel_offset=def.barrel_offset??0
 
+        this.animation.weapon_time=2
         if(def.recoil_animation){
             this.animation.recoil_time_scale=def.recoil_animation.time_scale
             this.animation.recoil_walk=def.recoil_animation.walk
@@ -515,64 +595,17 @@ export class Human extends Humanoid{
             }
         }
         const barrel_position=v2(def.barrel_length,barrel_offset)
-        v2m.rotate_RadAngle(barrel_position,this.physical_data.rotation)
+        v2m.rotate_RadAngle(barrel_position,this.rotation)
         v2m.add(barrel_position,this.position,barrel_position)
 
-        if(def.gas_particles){
-            for(let i=0;i<def.gas_particles.count;i++){
-                const p=new ABParticle2D({
-                    position:barrel_position,
-                    direction:this.physical_data.rotation+random.float(-def.gas_particles.direction_variation,def.gas_particles.direction_variation),
-                    life_time:def.gas_particles.life_time,
-                    frame:{
-                        image:"gas_smoke_particle",
-                        hotspot:v2.half_one,
-                        layer:this.layer,
-                        zIndex:zIndexes.Particles
-                    },
-                    speed:random.float(def.gas_particles.speed.min,def.gas_particles.speed.max),
-                    scale:0.03,
-                    tint:ColorM.hex("#fff5"),
-                    to:{
-                        tint:ColorM.hex("#fff0"),
-                        scale:random.float(def.gas_particles.size.min,def.gas_particles.size.max)
-                    }
-                })
-                this.game.particles.add_particle(p)
-            }
+        const cicle_time=(def.fire_delay??0)*0.4
+        if(!def.case_particle?.at_begin){
+            this.game.clock.add_timeout(()=>{
+                this.play_casing_particle(def)
+            },cicle_time*1.25)
         }
-        if(def.case_particle&&!def.case_particle.at_begin){
-            const case_position=v2(this.animation.recoil_state!==-1?-this.animation.recoil_walk*this.animation.recoil_time:0,barrel_offset)
-            v2m.add(case_position,case_position,def.case_particle.position)
-            v2m.rotate_RadAngle(case_position,this.physical_data.rotation)
-            v2m.add(case_position,case_position,this.position)
-            const p=new ABParticle2D({
-                direction:this.physical_data.rotation+(3.141592/2)+random.float(0,1),
-                life_time:1,
-                position:case_position,
-                frame:{
-                    image:def.case_particle.frame??"casing_"+def.ammo_type,
-                    hotspot:v2.half_one,
-                    layer:this.layer,
-                    zIndex:zIndexes.Particles
-                },
-                speed:random.float(1,2),
-                angle:this.physical_data.rotation,
-                scale:1.5,
-                to:{
-                    angle:this.physical_data.rotation+random.float(10,15),
-                    scale:0.5
-                }
-            })
-            const audio=this.game.resources.get_sound(def.case_particle!.sound??"casing_sound_"+def.ammo_type)
-            if(audio)this.game.add_timeout(()=>{
-                this.game.sounds.play(audio,{
-                    position:this.position,
-                    max_distance:10,
-                    bus:"humans"
-                })
-            },0.75)
-            this.game.particles.add_particle(p)
+        if(def.assets?.cycle_animation){
+            this.container.play_animation(def.assets.cycle_animation)
         }
 
         let sound:Sound|undefined
@@ -595,13 +628,12 @@ export class Human extends Humanoid{
             })
         }
         if(this.assets.weapon_cycle_sound){
-            this.animation.cycle_sound_time=(def.fire_delay??0)*0.4
+            this.animation.cycle_sound_time=cicle_time
         }
         if(def.muzzle_flash&&!this.sprites.muzzle_flash.visible){
             this.sprites.muzzle_flash.visible=true
             this.sprites.muzzle_flash.frame=this.game.resources.get_frame(def.muzzle_flash.sprite)
             this.sprites.muzzle_flash.position=v2(def.barrel_length,barrel_offset)
-            this.animation.base_muzzle_flash_position=v2(def.barrel_length,barrel_offset)
             this.animation.muzzle_flash_time=Math.min((def.fire_delay??0)*0.9,0.2)
         }
     }
@@ -618,7 +650,8 @@ export class Human extends Humanoid{
                 case HumanAnimationType.Reloading:{
                     if((this.current_weapon as unknown as GameItem).item_type!==GameItemType.gun)break
                     const d=this.current_weapon as GunDef
-                    const sound=(d.reload?.reload_alt&&a.alt_reload)?this.assets.weapon_reload_sound_alt:this.assets.weapon_reload_sound
+                    const reload_alt:boolean=d.reload?.reload_alt!==undefined&&a.alt_reload
+                    const sound=reload_alt?this.assets.weapon_reload_sound_alt:this.assets.weapon_reload_sound
                     if(sound){
                         if(this.animation.sound_animation)this.animation.sound_animation.stop()
                         this.animation.sound_animation=this.game.sounds.play(sound,{
@@ -629,6 +662,17 @@ export class Human extends Humanoid{
                                 this.animation.sound_animation=undefined
                             }
                         })
+                    }
+                    
+                    if(reload_alt&&d.assets?.reload_alt_animation)this.container.play_animation(d.assets.reload_alt_animation)
+                    else if(!reload_alt&&d.assets?.reload_animation)this.container.play_animation(d.assets.reload_animation)
+                    if(d.case_particle?.at_begin){
+                        if(d.dual_from){
+                            this.play_casing_particle(d,undefined,v2(0,-d.dual_offset))
+                            this.play_casing_particle(d,undefined,v2(0,d.dual_offset))
+                        }else{
+                            this.play_casing_particle(d)
+                        }
                     }
                     break
                 }
@@ -784,7 +828,7 @@ export class Human extends Humanoid{
         }
     }
 
-    add_emote(emote:EmoteDef|GameItem){
+    add_emote(emote:EmoteDef|BadgeDef|GameItem){
         const sound=this.game.sounds.play(this.game.resources.get_sound((emote as EmoteDef).use_sound??"emote_play"),{
             position:this.position,
             max_distance: 50,
@@ -801,27 +845,44 @@ export class Human extends Humanoid{
         this.animation.emote_time=2.5
         this.sprites.emote_container.visible=true
         this.sprites.emote_container.scale=v2(0,0)
-        this.sprites.emote_bg.set_frame({
-            image:"emote_background",
-            scale:2
-        },this.game.resources)
         v2m.single(this.sprites.emote_sprite.scale,1)
         let frame=emote.idString
         this.sprites.emote_sprite.rotation=0
-        if((emote as GameItem).item_type!==undefined){
-            const item=(emote as GameItem)
-            if(item.item_type===GameItemType.ammo){
-                v2m.single(this.sprites.emote_sprite.scale,1)
-            }else{
-                v2m.single(this.sprites.emote_sprite.scale,1.75)
+        this.sprites.emote_bg.set_frame({
+            image:"emote_background",
+            tint:0xffffff,
+            scale:2,
+        },this.game.resources)
+        switch(emote.def_type){
+            default:
+                break
+            case GameObjectDefinitionType.emote:{
+                frame="emote_"+frame
+                v2m.single(this.sprites.emote_sprite.scale,2.6)
+                break
             }
-            if(item.item_type===GameItemType.gun||item.item_type===GameItemType.melee){
-                this.sprites.emote_sprite.rotation=-0.523599
+            case GameObjectDefinitionType.item:{
+                if(emote.item_type===GameItemType.ammo){
+                    v2m.single(this.sprites.emote_sprite.scale,1)
+                }else{
+                    v2m.single(this.sprites.emote_sprite.scale,1.75)
+                }
+                if(emote.item_type===GameItemType.gun||emote.item_type===GameItemType.melee){
+                    this.sprites.emote_sprite.rotation=-0.523599
+                }
+                this.sprites.emote_bg.set_frame({
+                    image:"rarity_outline",
+                    tint:ItemQualitySettings[emote.rank].tint
+                },this.game.resources)
+                break
             }
-        }else{
-            frame="emote_"+frame
-            v2m.single(this.sprites.emote_sprite.scale,2.6)
+            case GameObjectDefinitionType.badge:{
+                this.sprites.emote_bg.frame=this.game.resources.get_frame("emote_badge_background")
+                v2m.single(this.sprites.emote_bg.scale,1)
+                v2m.single(this.sprites.emote_sprite.scale,2)
+            }
         }
+
         this.sprites.emote_sprite.frame=this.game.resources.get_frame(frame)
         if(this.animation.emote_tween)this.animation.emote_tween.kill()
         this.animation.emote_tween=this.game.add_tween({
@@ -942,7 +1003,7 @@ export class Human extends Humanoid{
             this.sprites.name=new Sprite2D()
             this.sprites.name.zIndex=zIndexes.UI
             this.sprites.name.hotspot=v2.half_one()
-            this.game.cam2d.add_object(this.sprites.name)
+            this.scene.camera.add_object(this.sprites.name)
         }
         const color=this.game.get_theme_color("primary")
         this.game.resources.render_text(name,60,color,"Russo-One").then((frame)=>{
@@ -956,6 +1017,8 @@ export class Human extends Humanoid{
         const oldMap = new Map(old.map(e => [e.def.idNumber, e]))
         const newMap = new Map(effects.map(e => [e.idNumber, e]))
         const result: {def: EffectDef, lifetime: number}[] = []
+        let removed=false
+        let tint_changed=false
         for(const [id, newEffect] of newMap){
             const oldEffect = oldMap.get(id)
             if(oldEffect){
@@ -965,6 +1028,7 @@ export class Human extends Humanoid{
                 })
             }else{
                 this.container.callmode("effect_added",newEffect)
+                if(newEffect.target?.tint!==undefined)tint_changed=true
                 result.push({
                     def: newEffect,
                     lifetime: 0
@@ -974,7 +1038,12 @@ export class Human extends Humanoid{
         for(const [id, oldEffect] of oldMap){
             if(!newMap.has(id)){
                 this.container.callmode("effect_removed",oldEffect)
+                removed=true
+                if(oldEffect.def.target?.tint!==undefined)tint_changed=true
             }
+        }
+        if(tint_changed&&removed){
+            this.container.tint=ColorM.default.white
         }
         this.effects = result
     }
@@ -982,7 +1051,7 @@ export class Human extends Humanoid{
         if(!this.melee?.reflective)return undefined
         const reflect=this.current_weapon===this.melee?this.melee.reflective!.equipped:this.melee.reflective!.unequipped
         if(!reflect)return undefined
-        return new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,reflect.offset,this.physical_data.rotation),reflect.radius)
+        return new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,reflect.offset,this.rotation),reflect.radius)
     }
     override on_decode_net(stream:Stream,full:boolean): void {
         const [
@@ -1025,7 +1094,7 @@ export class Human extends Humanoid{
 
         this.decode_physical_data(stream,full)
         if(full||physical_dirty){
-            this.physical_data.scale=stream.read_float32()
+            this.scale=stream.read_float32()
             this.update_body()
         }
 
@@ -1048,27 +1117,26 @@ export class Human extends Humanoid{
             //this.update_helmet_health()
         }
         if(loadout_dirty||full){
-            const [has_hair,has_eyes]=stream.read_boolean_group()
             const body_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutBodyDef
-            let hair_def:LoadoutHairDef|undefined
-            let hair_tint:number=0
-            let eyes_def:LoadoutEyesDef|undefined
-            if(has_hair){
-                hair_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutHairDef
-                hair_tint=stream.read_uint32()
-            }
-            if(has_eyes){
-                eyes_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutEyesDef
-            }
+            const hair_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutHairDef|undefined
+            const eyes_def=this.game.definitions.loadout.getFromNumberSafe(stream.read_uint16()) as LoadoutEyesDef|undefined
             const shirt_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutShirtDef
             const legs_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutLegDef
+            const foot_def=this.game.definitions.loadout.getFromNumberSafe(stream.read_uint16()) as LoadoutFootDef|undefined
+            let hair_tint:number=0
+            let hair_paint:{id:number,tint:number}|undefined
+            if(hair_def){
+                hair_tint=stream.read_uint32()
+                const hair_paint_id=stream.read_uint8()
+                if(hair_paint_id)hair_paint={id:hair_paint_id,tint:stream.read_uint32()}
+            }
             const body_tint=stream.read_uint32()
             const accessorys:LoadoutAccessoryDef[]=stream.read_array(()=>{
                 return this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutAccessoryDef
             },1)
-            this.set_skin(body_def,hair_def?{def:hair_def,tint:hair_tint}:undefined,eyes_def,shirt_def,legs_def,body_tint,accessorys)
+            this.set_skin(body_def,hair_def?{def:hair_def,tint:hair_tint,paint:hair_paint}:undefined,eyes_def,shirt_def,legs_def,foot_def,body_tint,accessorys)
             const wrapping=stream.read_uint16()
-            this.visual.wrapping=wrapping>0?this.game.definitions.wrapping.valueNumber[wrapping-1]:undefined
+            this.visual.wrapping=this.game.definitions.wrapping.getFromNumberSafe(wrapping)
         }
         if(has_emote){
             this.add_emote(this.game.definitions.game_objects.valueNumber[stream.read_uint16()] as GameItem|EmoteDef)

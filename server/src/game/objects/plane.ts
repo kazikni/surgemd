@@ -1,5 +1,5 @@
 import { GameObjectType, Layers } from "common/scripts/others/constants.ts";
-import { circle, CircleHitbox2D, Stream, v2, Vec2 } from "common/engine/core.ts";
+import { circle, CircleHitbox2D, random, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { type Human } from "./human.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
@@ -47,14 +47,11 @@ export class Plane extends AirBody {
         if(!this.called&&v2.distance(this.position, this.target_pos) <= 4) {
             switch (this.type) {
                 case 0:
-                    this.game.add_parachute(
-                        this.target_pos,
-                        this.obstacle!,
-                    )
+                    this.scene.add_parachute(this.target_pos,this.obstacle!,)
                     break
                 case 1: {
                     for(let c=0;c<this.count;c++){
-                        const g = this.game.add_grenade(
+                        const g = this.scene.add_grenade(
                             this.radius===0?this.target_pos:circle.random_point_inside(this.target_pos,this.radius),
                             this.grenade_def!,
                             this.owner,
@@ -62,7 +59,7 @@ export class Plane extends AirBody {
                         )
                         g.physical_data.zpos=1
                         g.physical_data.zpos_speed=0
-                        g.physical_data.angular_velocity=Math.random()>=0.5?-1.5:1.5
+                        g.physical_data.angular_velocity=random.neg_value(1.5)
                     }
                     break
                 }

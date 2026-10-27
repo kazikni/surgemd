@@ -27,6 +27,7 @@ export class BottomLeftModule extends UIModule<Game>{
 
     boost_bar_container!:HTMLDivElement
     boost_bar_interior!:HTMLDivElement
+    boost_bar_animation!:HTMLDivElement
     boost_bar_amount!:HTMLSpanElement
 
     downed:boolean=false
@@ -76,7 +77,7 @@ export class BottomLeftModule extends UIModule<Game>{
         this.hand_info_consume_type.onclick=(e)=>{
             const def=this.game.definitions.game_items.keysString[this.hand_info_consume_type.dataset.item_id as string]
             if(!def)return
-            this.game.input.actions.push({type:InputActionType.emote_item,item:def})
+            this.game.input.actions.push({type:InputActionType.emote,id:this.game.definitions.game_objects.keysString[this.hand_info_consume_type.dataset.item_id as string]})
         }
 
         this.action_container = document.querySelector("#action-info") as HTMLDivElement
@@ -90,6 +91,7 @@ export class BottomLeftModule extends UIModule<Game>{
 
         this.boost_bar_container=document.querySelector("#boost-bar-container") as HTMLDivElement
         this.boost_bar_interior=document.querySelector("#boost-bar") as HTMLDivElement
+        this.boost_bar_animation=document.querySelector("#boost-bar-animation") as HTMLDivElement
         this.boost_bar_amount=document.querySelector("#boost-bar-amount") as HTMLSpanElement
 
         this.clear()
@@ -139,9 +141,16 @@ export class BottomLeftModule extends UIModule<Game>{
     }
     render_boost(){
         const p=this.boost/this.max_boost
-        this.boost_bar_interior.style.width =`${p*100}%`
-        this.boost_bar_amount.innerText=`${this.boost}/${this.max_boost}`
-        this.boost_bar_interior.style.backgroundColor=this.boost_def.color
+        if(p===0){
+            HideElement(this.boost_bar_container)
+        }else{
+            ShowElement(this.boost_bar_container)
+            this.boost_bar_interior.style.width =`${p*100}%`
+            this.boost_bar_animation.style.width =`${p*100}%`
+            this.boost_bar_amount.innerText=`${this.boost}/${this.max_boost}`
+            this.boost_bar_interior.style.backgroundColor=this.boost_def.color
+            this.boost_bar_animation.style.backgroundColor=this.boost_def.animation_color
+        }
     }
     override on_clear(): void {
         this.hand_info_count.innerText = ""
@@ -161,14 +170,15 @@ export class BottomLeftModule extends UIModule<Game>{
 
         this.boost=0
         this.max_boost=0
-        this.boost_def=this.game.definitions.boosts.getFromNumber(0)
+        this.boost_def=this.game.definitions.boosts.getFromNumber(1)
 
         this.health_bar_interior.style.width = "100%"
         this.health_bar_animation.style.width = "100%"
         this.health_bar_amount.innerText = "100/100"
         this.health_bar_interior.style.background="linear-gradient(90deg, #fff,#dfdfdf)"
 
-        this.boost_bar_interior.style.width = "0%"
+        this.boost_bar_interior.style.width="0%"
+        this.boost_bar_animation.style.width="0%"
         this.boost_bar_interior.style.backgroundColor = this.boost_def.color
         this.boost_bar_amount.innerText = "0/100"
     }

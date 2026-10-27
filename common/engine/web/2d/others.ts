@@ -1,4 +1,4 @@
-import { Model2D } from "../../core/definition/models.ts";
+import { model2d, Model2D } from "../../core/definition/models.ts";
 import { Color, ColorM } from "../../core/math/color.ts";
 import { Rect } from "../../core/math/geometry.ts";
 import { Matrix, matrix4 } from "../../core/math/matrix.ts";
@@ -22,6 +22,7 @@ export class Grid2D extends Container2DObject{
     fill?:Color
     stroke?:Color
     matrix_index:number=0
+    _temp_matrix: Matrix=matrix4.identity()
 
     _rect:Rect={min:v2.zero(),max:v2.zero}
 
@@ -30,6 +31,7 @@ export class Grid2D extends Container2DObject{
         return this._begin as Vec2
     }
     set begin(val:Vec2){
+        if(val.x===this._begin.x&&val.y===this._begin.y)return
         this._begin.set(val.x,val.y)
         this.dirty_reals=true
     }
@@ -39,6 +41,7 @@ export class Grid2D extends Container2DObject{
         return this._end as Vec2
     }
     set end(val:Vec2){
+        if(val.x===this._end.x&&val.y===this._end.y)return
         this._end.set(val.x,val.y)
         this.dirty_reals=true
     }
@@ -53,17 +56,20 @@ export class Grid2D extends Container2DObject{
             min:min,
             max:max
         }
+
+        this._temp_matrix=matrix4.identity()
+        if(this._real_matrix)matrix4.m.mul(this._temp_matrix,this._real_matrix,this._temp_matrix)
+        matrix4.m.mul(this._temp_matrix,this._temp_matrix,matrix4.transform_2d(this._real_position,this._real_scale,this._real_rotation))
     }
     draw(cam:CamA){
-        this.draw_super()
+        this.draw_super(cam)
         cam.ctx.line_width=this.line_width
         if(this.fill)cam.ctx.stroke_color=this.fill
         if(this.stroke)cam.ctx.stroke_color=this.stroke
 
         cam.ctx.begin_path()
         cam.ctx.grid(this.begin.x,this.begin.y,this.end.x,this.end.y,this.size,this._position)
-        cam.ctx.stroke(cam.matrix[this.matrix_index])
-        cam.ctx.end_path()
+        cam.ctx.stroke(matrix4.mul(cam.matrix[this.matrix_index],this._temp_matrix))
     }
     override get_rect():Rect{
         return this._rect
@@ -80,17 +86,66 @@ export class Shape2D extends Container2DObject {
 
     override update_real(): void {
         super.update_real()
-        matrix4.m.transform_2d(this._temp_matrix,this._real_position,this._real_scale,this._real_rotation)
-        if(this._real_matrix)matrix4.m.mul(this._temp_matrix,this._temp_matrix,this._real_matrix)
+        this._temp_matrix=matrix4.identity()
+        if(this._real_matrix)matrix4.m.mul(this._temp_matrix,this._real_matrix,this._temp_matrix)
+        matrix4.m.mul(this._temp_matrix,this._temp_matrix,matrix4.transform_2d(this._real_position,this._real_scale,this._real_rotation))
     }
 
     override draw(cam: CamA): void {
-        this.draw_super()
+        this.draw_super(cam)
         if (!this.model) {
             return
         }
 
         cam.ctx.fill_color = this.color
         cam.ctx.fill_model(this.model,matrix4.mul(cam.matrix[this.matrix_index],this._temp_matrix))
+    }
+}
+export class WallShape2D extends Container2DObject {
+
+    override object_type = "wall_shape"
+
+    stroke_color: Color = ColorM.default.black
+    stroke_models: Model2D[]=[]
+
+    fill_color: Color = ColorM.default.white
+    fill_models: Model2D[]=[]
+
+    _temp_matrix: Matrix = matrix4.identity()
+
+    matrix_index = 0
+
+    set_wall(position: Vec2[][],width: number,stroke_width?:number){
+        this.stroke_models.length=0
+        this.fill_models.length=0
+        for (const path of position) {
+            if (path.length < 2)continue
+            if(stroke_width){
+                this.fill_models.push(model2d.wall(path,width-stroke_width,undefined,stroke_width/2))
+                this.stroke_models.push(model2d.wall(path,width))
+            }else{
+                this.fill_models.push(model2d.wall(path,width))
+            }
+        }
+    }
+    override update_real(): void {
+        super.update_real()
+        this._temp_matrix=matrix4.identity()
+        if(this._real_matrix)matrix4.m.mul(this._temp_matrix,this._real_matrix,this._temp_matrix)
+        matrix4.m.mul(this._temp_matrix,this._temp_matrix,matrix4.transform_2d(this._real_position,this._real_scale,this._real_rotation))
+    }
+    override draw(cam: CamA): void {
+        this.draw_super(cam)
+        const matrix = matrix4.mul(cam.matrix[this.matrix_index],this._temp_matrix)
+
+        cam.ctx.fill_color=this.stroke_color
+        for(const m of this.stroke_models){
+            cam.ctx.fill_model(m,matrix)
+        }
+
+        cam.ctx.fill_color=this.fill_color
+        for(const m of this.fill_models){
+            cam.ctx.fill_model(m,matrix)
+        }
     }
 }

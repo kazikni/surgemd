@@ -1,4 +1,4 @@
-import { Definition, Definitions } from "../../../engine/core.ts";
+import { Definition } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
 import { GameObjectDefinitionType } from "../utils.ts";
 
@@ -8,8 +8,8 @@ export interface EmoteDef extends Definition{
     use_sound?:string
     block_old_sound?:boolean
 }
-export function Emotes_Default_Init(emotes:Definitions<EmoteDef,{}>){
-    emotes.insert(
+export function Emotes_Default_Init():EmoteDef[]{
+    return [
         // Face
         {idString:"happy",rank:ItemRank.E},
         {idString:"sad",rank:ItemRank.E},
@@ -18,7 +18,7 @@ export function Emotes_Default_Init(emotes:Definitions<EmoteDef,{}>){
         {idString:"angry_swearing",rank:ItemRank.D},
         {idString:"very_love",rank:ItemRank.B},
         {idString:"demon",rank:ItemRank.B},
-        {idString:"peading",rank:ItemRank.B},
+        {idString:"pleading",rank:ItemRank.B},
 
         // Objects
         {idString:"heart",rank:ItemRank.D},
@@ -105,5 +105,5 @@ export function Emotes_Default_Init(emotes:Definitions<EmoteDef,{}>){
         {idString:"flag_uruguay",rank:ItemRank.E},
         {idString:"flag_venezuela",rank:ItemRank.E},
         {idString:"flag_vietnam",rank:ItemRank.E},*/
-    )
+    ]
 }

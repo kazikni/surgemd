@@ -1,6 +1,7 @@
 import { FrameTD, FrameTransformTD, tdm, TDObject, TDType } from "../lang/td.ts";
-import { EaseFunction, mergeDeep, splitPath } from "../math/utils.ts"
-import { type Vec2 } from "../math/vec2.ts"
+import { matrix4, type Matrix } from "../math/matrix.ts";
+import { EaseFunction, mergeDeep, Path } from "../math/utils.ts"
+import { v2, v2m, type Vec2 } from "../math/vec2.ts"
 import { type Stream } from "../net/stream.ts";
 
 export const DefinitionTD:TDObject={
@@ -14,18 +15,18 @@ export interface Definition{
 export class DefinitionsSimple<Type,Base=null>{
     public value:Record<string,Type&Base>
     public valueNumber:Record<number,Type&Base>
-    protected did=0
-    forall?:(obj:Type&Partial<Base>)=>void
-    constructor(forall?:(obj:Type&Partial<Base>)=>void){
+    did=1
+    forall?:(obj:Type&Partial<Base>)=>Type
+    constructor(forall?:(obj:Type&Partial<Base>)=>Type){
         this.value={}
         this.valueNumber={}
         this.forall=forall
     }
     set(val:Type,id:string,n:number|undefined=undefined):number{
-        if(this.forall)this.forall(val as (Type&Partial<Base>))
+        if(this.forall)val=this.forall((val as (Type&Partial<Base>)))
         this.value[id]=val as (Type&Base)
         this.valueNumber[n??this.did]=val as (Type&Base)
-        this.did++;
+        this.did++
         return this.did
     }
     getFromString(id:string):Type{
@@ -35,7 +36,9 @@ export class DefinitionsSimple<Type,Base=null>{
         return this.value[id]
     }
     getFromNumber(id:number):Type{
-        if(!this.valueNumber[id])throw new Error(`idNumber:${id} Dont Exist In Definition`)
+        if(!this.valueNumber[id]){
+            throw new Error(`idNumber:${id} Dont Exist In Definition`)
+        }
         return this.valueNumber[id]
     }
     getFromStringSafe(id:string):Type|undefined{
@@ -53,13 +56,15 @@ export class DefinitionsSimple<Type,Base=null>{
     clear(){
         this.value={}
         this.valueNumber={}
-        this.did=0
+        this.did=1
     }
 }
 export class Definitions<Type extends Definition,Base> extends DefinitionsSimple<Type,Base>{
+    parents?:DefinitionsMerge<any>[]
     insert(...val:Type[]):void{
-        for(const vv of val){
-            if(this.forall)this.forall(vv as (Type&Partial<Base>))
+        for(let vv of val){
+            if(this.forall)vv=this.forall(vv as (Type&Partial<Base>))
+            vv.idNumber=undefined
             this.value[vv.idString]=vv as (Type&Base)
             if(vv.idNumber===undefined){
                 vv.idNumber=this.did
@@ -67,6 +72,9 @@ export class Definitions<Type extends Definition,Base> extends DefinitionsSimple
                 this.did++
             }else{
                 this.valueNumber[vv.idNumber]=vv as (Type&Base)
+            }
+            for(const p of this.parents??[]){
+                p.insert(vv)
             }
         }
     }
@@ -77,6 +85,7 @@ export class Definitions<Type extends Definition,Base> extends DefinitionsSimple
     }
 }
 export class DefinitionsMerge<TP extends Definition>{
+    name:string=""
     valueString:Record<string,TP>={}
     valueNumber:Record<number,TP>={}
     keysString:Record<string,number>={}
@@ -86,7 +95,10 @@ export class DefinitionsMerge<TP extends Definition>{
     }
     insert(...val:TP[]):void{
         for(const vv of val){
-            const idn=Object.keys(this.keysNumber).length
+            const idn=Object.keys(this.keysNumber).length+1
+            if(this.valueString[vv.idString]){
+                console.error(`The ${vv.idString} Already exist at ${this.name} definition merge`)
+            }
             this.valueNumber[idn]=vv
             this.valueString[vv.idString]=vv
             this.keysNumber[idn]=vv.idString
@@ -95,7 +107,7 @@ export class DefinitionsMerge<TP extends Definition>{
     }
     insert_def(def:Record<string,TP>){
         for(const dv of Object.values(def)){
-            const idn=Object.keys(this.keysNumber).length
+            const idn=Object.keys(this.keysNumber).length+1
             this.valueNumber[idn]=dv
             this.valueString[dv.idString]=dv
             this.keysNumber[idn]=dv.idString
@@ -111,7 +123,7 @@ export class DefinitionsMerge<TP extends Definition>{
 }
 export class Tree<Type,Base> extends DefinitionsSimple<Type,Base>{
     childs:Record<string,Tree<Type,Base>>
-    constructor(forall?:(tp:Type&Partial<Base>)=>void){
+    constructor(forall?:(tp:Type&Partial<Base>)=>Type){
         super(forall)
         this.childs={}
     }
@@ -135,7 +147,7 @@ export class Tree<Type,Base> extends DefinitionsSimple<Type,Base>{
     }
     //** mysub/sub/1 */
     get_item(name:string):Type|undefined{
-        const divisions:string[]=splitPath(name)
+        const divisions:string[]=Path.split(name)
         // deno-lint-ignore no-this-alias
         let act:Tree<Type,Base>=this
         for(let i=0;i<divisions.length;i++){
@@ -305,7 +317,7 @@ export interface FrameTransform{
     layer?:number
     visible?:boolean
 }
-export type FrameDef={image?:string}&FrameTransform
+export type FrameDef={image?:string,sub_sprites?:{image:string,tint?:number}[]}&FrameTransform
 export type KeyFrameSpriteDef={
     delay:number
 }&FrameDef
@@ -334,25 +346,32 @@ export type AKeyFrameAction = AKeyFrameSpriteAction
     | AKeyFrameTransformAction
     | AKeyFrameCallMode
 export interface AKeyFrame{
-    actions:AKeyFrameAction[]
+    actions:(AKeyFrameAction|undefined)[]
     time:number
 }
 export function encode_akeyframe(stream:Stream,keyframe:AKeyFrame){
     stream.write_float32(keyframe.time)
     stream.write_array(keyframe.actions,(i)=>{
+        if(!i){
+            stream.write_uint8(0)
+            return
+        }
         switch(i.type){
-            case "sprite":
+            default:
                 stream.write_uint8(0)
+                break
+            case "sprite":
+                stream.write_uint8(1)
                 .write_td(i,FrameTD)
                 .write_string(i.fuser,1)
                 break
             case "transform":
-                stream.write_uint8(1)
+                stream.write_uint8(2)
                 .write_td(i,FrameTransformTD)
                 .write_string(i.fuser,1)
                 break
             case "tween":
-                stream.write_uint8(2)
+                stream.write_uint8(3)
                 .write_string(i.fuser,1)
                 .write_td(i.to,FrameTransformTD)
                 .write_boolean_group(i.yoyo??false,typeof i.ease==="string")
@@ -361,12 +380,9 @@ export function encode_akeyframe(stream:Stream,keyframe:AKeyFrame){
                 }
                 break
             case "callmode":
-                stream.write_uint8(3)
+                stream.write_uint8(4)
                 stream.write_string(i.mode,1)
                 stream.write_any(i.args,2,2)
-                break
-            default:
-                stream.write_uint8(255)
                 break
         }
     },1)
@@ -376,8 +392,9 @@ export function decode_akeyframe(stream:Stream):AKeyFrame{
         time:stream.read_float32(),
         actions:stream.read_array(()=>{
             const type=stream.read_uint8()
+            if(type===0)return
             switch(type){
-                case 0:{
+                case 1:{
                     const val=stream.read_td(FrameTD)
                     return {
                         type:"sprite",
@@ -385,7 +402,7 @@ export function decode_akeyframe(stream:Stream):AKeyFrame{
                         ...val,
                     }
                 }
-                case 1:{
+                case 2:{
                     const val=stream.read_td(FrameTransformTD)
                     return {
                         type:"transform",
@@ -393,7 +410,7 @@ export function decode_akeyframe(stream:Stream):AKeyFrame{
                         ...val,
                     }
                 }
-                case 2:{
+                case 3:{
                     const fuser=stream.read_string(1)
                     const to=stream.read_td(FrameTransformTD)
                     const [yoyo,hasEase]=stream.read_boolean_group()
@@ -409,15 +426,12 @@ export function decode_akeyframe(stream:Stream):AKeyFrame{
                         ease,
                     }
                 }
-                case 3:{
+                case 4:{
                     return {
                         type:"callmode",
                         mode:stream.read_string(1),
                         args:stream.read_any(2,2),
                     }
-                }
-                case 255:{
-                    return undefined
                 }
                 default:
                     throw new Error(`Unknown AKeyFrame action type: ${type}`)
@@ -432,4 +446,47 @@ export interface KDate{
     day:number
     month:number
     year:number
+}
+export type TilemapLayer={tile:number,matrix:Matrix}[]
+
+export type TilemapGenSettings={
+    size:Vec2
+    tilesize:Vec2
+    content:number[]
+    tiles:number[]
+    start?:Vec2
+}
+export type TilemapGenSimpleSettings={tile:number,position?:Vec2}[]
+export const tilemap_layer={
+    generate(gen:TilemapGenSettings):TilemapLayer{
+        const layer:TilemapLayer=[]
+        const valid_tiles=new Set<number>(gen.tiles)
+        for(let y=0;y<gen.size.y;y++){
+            for(let x=0;x<gen.size.x;x++){
+                const tile=gen.content[(y*gen.size.x)+x]
+                if(valid_tiles.has(tile))continue
+                const pos=v2(x*gen.size.x,y*gen.size.y)
+                if(gen.start)v2m.add(pos,pos,gen.start)
+                layer.push({tile:tile,matrix:matrix4.translation_2d(pos)})
+            }
+        }
+        return layer
+    },
+    generate_simple(gen:TilemapGenSimpleSettings){
+        const layer:TilemapLayer=[]
+        for(const tile of gen){
+            const matrix=matrix4.identity()
+            if(tile.position)matrix4.m.translate_2d(matrix,matrix,tile.position)
+            layer.push({tile:tile.tile,matrix:matrix})
+        }
+        return layer
+    }
+}
+export interface ConnectionLimitConfig {
+    enabled: boolean
+
+    windowMs: number
+    maxConnections: number
+    burst?: number
+    onLimit?: "reject" | "close-oldest"
 }

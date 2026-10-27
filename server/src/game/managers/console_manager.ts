@@ -1,57 +1,42 @@
-import { Human } from "../objects/human.ts";
+import { CommandDef, ConsoleContext, ConsoleLogger, GameConsole } from "common/engine/core.ts";
 import { type Game } from "../others/game.ts";
-import { type ServerGameObject } from "../others/gameObject.ts";
-export enum DebugConsoleCommandType{
-    Number,
-    QueryPlayer,
-    PositionOf,
+import { type Human } from "../objects/human.ts";
 
-    Kill,
-    Give,
-    Revive,
-}
-export type DebugConsoleCommand=({
-    type:DebugConsoleCommandType.Number,
-    value:number
-}|{
-    type:DebugConsoleCommandType.QueryPlayer,
-    value:string
-}|{
-    type:DebugConsoleCommandType.PositionOf,
-    object:ServerGameObject[]
-}|{
-    type:DebugConsoleCommandType.Kill|DebugConsoleCommandType.Revive
-    player:DebugConsoleCommand
-}|{
-    type:DebugConsoleCommandType.Give
-    player:DebugConsoleCommand
-    item:DebugConsoleCommand
-    count:DebugConsoleCommand
-})
-export class DebugConsole{
+export interface CommandCTX extends ConsoleContext{
     game:Game
-    constructor(game:Game){
-        this.game=game
-    }
-    /*
-        * Val (String) - Use None To Get By Name. # To Get By Id. @ To AccountId
-    */
-    query_selector_humans(val:string):Human[]{
-        const ret:Human[]=[]
-        const byName=val.charAt(0)
-        for(const p of this.game.humans.humans){
-            if(byName==="@"){
-                if(p.name===val.substring(1,val.length)){
-                    ret.push(p)
+    logger:ConsoleLogger
+    owner?:Human
+}
+const SpawnCMD:CommandDef<CommandCTX>={
+    name:"spawn",
+    childrens:[
+        {
+            name:"item",
+            flags:{
+                item:{
+                    type:"string"
+                },
+                count:{
+                    type:"int",
+                    default:1
                 }
-            }else if(byName==="#"){
-                if(p.id===parseInt(val.substring(1,val.length))){
-                    ret.push(p)
+            },
+            flags_orden:["item"],
+            execute(ctx){
+                const def=ctx.game.definitions.game_items.valueString[ctx.args.item]
+                if(ctx.owner&&def){
+                    ctx.game.scene_2d.add_loot(ctx.owner.position,{item:def,count:ctx.args.count},ctx.owner.layer)
                 }
-            }else if(p.name===val){
-                ret.push(p)
             }
         }
-        return ret
+    ]
+}
+export class DebugConsole<CTX extends CommandCTX=CommandCTX> extends GameConsole<CTX>{
+    constructor(game:Game,ctx?:Partial<CTX>){
+        super({
+            game,
+            ...ctx??{}
+        } as CTX)
+        this.register(SpawnCMD)
     }
 }

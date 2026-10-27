@@ -2,6 +2,7 @@ import { KDate } from "../definition/definitions.ts"
 import { TDType, type TD } from "../lang/td.ts";
 import { PolarMovement } from "../math/geometry.ts"
 import { BaseHitbox2D, CircleHitbox2D, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, PolygonHitbox2D, RectHitbox2D } from "../math/hitbox.ts"
+import { Matrix } from "../math/matrix.ts";
 import { ID } from "../math/utils.ts"
 import { Vec2} from "../math/vec2.ts"
 export abstract class Stream{
@@ -13,6 +14,7 @@ export abstract class Stream{
     abstract get index():number
     abstract set index(val:number)
     abstract get data():Uint8Array
+    abstract set data(val:Uint8Array)
     abstract get buffer():ArrayBufferLike
 
     abstract clear(hard?:boolean):void
@@ -138,7 +140,7 @@ export abstract class Stream{
         return min + (max - min) * val / range;
     }
 
-    write_boolean_group(b0 : boolean, b1?: boolean, b2?: boolean, b3?: boolean,b4?: boolean, b5?: boolean, b6?: boolean, b7?: boolean): this {
+    write_boolean_group(b0?: boolean, b1?: boolean, b2?: boolean, b3?: boolean,b4?: boolean, b5?: boolean, b6?: boolean, b7?: boolean): this {
         return this.write_uint8(
             (b0 ? 1 : 0)
             + (b1 ? 2 : 0)
@@ -164,7 +166,7 @@ export abstract class Stream{
         ]
     }
 
-    write_boolean_group2(b0 : boolean, b1?: boolean, b2?: boolean, b3?: boolean,b4?: boolean, b5?: boolean, b6?: boolean, b7?: boolean,b8?: boolean, b9?: boolean, bA?: boolean, bB?: boolean,bC?: boolean, bD?: boolean, bE?: boolean, bF?: boolean): this {
+    write_boolean_group2(b0?:boolean, b1?: boolean, b2?: boolean, b3?: boolean,b4?: boolean, b5?: boolean, b6?: boolean, b7?: boolean,b8?: boolean, b9?: boolean, bA?: boolean, bB?: boolean,bC?: boolean, bD?: boolean, bE?: boolean, bF?: boolean): this {
         return this.write_uint16(
             (b0 ? 1 : 0)
             + (b1 ? 2 : 0)
@@ -206,7 +208,7 @@ export abstract class Stream{
         ]
     }
     write_boolean_group3(
-        b0 : boolean, b1?: boolean, b2?: boolean, b3?: boolean,
+        b0?: boolean, b1?: boolean, b2?: boolean, b3?: boolean,
         b4?: boolean, b5?: boolean, b6?: boolean, b7?: boolean,
         b8?: boolean, b9?: boolean, bA?: boolean, bB?: boolean,
         bC?: boolean, bD?: boolean, bE?: boolean, bF?: boolean,
@@ -378,7 +380,7 @@ export abstract class Stream{
                 return this
             case "number":
                 this.write_uint8(2)
-                this.write_float32(obj)
+                this.write_float64(obj)
                 return this
             case "string":
                 this.write_uint8(3)
@@ -409,7 +411,7 @@ export abstract class Stream{
             case 1:
                 return this.read_uint8() === 1
             case 2:
-                return this.read_float32()  
+                return this.read_float64()  
             case 3:
                 return this.read_string(bytes2)
             case 4:
@@ -540,7 +542,8 @@ export abstract class Stream{
             case TDType.object: {
                 const obj: Record<string, any>={}
                 for(const field of td.content){
-                    obj[field.name]=this.read_td(field.content)
+                    const val=this.read_td(field.content)
+                    if(val!==undefined)obj[field.name]=val
                 }
                 return obj
             }
@@ -570,8 +573,8 @@ export abstract class Stream{
     }
 
     write_pos2(vector: Vec2):this{
-        this.write_float32(vector.x);
-        this.write_float32(vector.y);
+        this.write_float32(vector.x)
+        this.write_float32(vector.y)
         return this;
     }
     read_pos2(): Vec2 {
@@ -581,6 +584,17 @@ export abstract class Stream{
         };
     }
 
+    write_bpos2(vector: Vec2):this{
+        this.write_float64(vector.x)
+        this.write_float64(vector.y)
+        return this;
+    }
+    read_bpos2(): Vec2 {
+        return {
+            x: this.read_float64(),
+            y: this.read_float64()
+        };
+    }
     write_polar_mov2(move:PolarMovement):this{
         this.write_rad(move.dir)
         this.write_float(move.scale,0,1,1)
@@ -645,6 +659,72 @@ export abstract class Stream{
             year:   this.read_uint16()
         };
     }
+    write_matrix2(matrix:Matrix){
+        this.write_float32(matrix[0])
+        this.write_float32(matrix[1])
+        this.write_float32(matrix[4])
+        this.write_float32(matrix[5])
+        this.write_float32(matrix[12])
+        this.write_float32(matrix[13])
+    }
+    read_matrix2():Matrix{
+        return new Float32Array([
+            this.read_float32(),
+            this.read_float32(),
+            0,0,
+            this.read_float32(),
+            this.read_float32(),
+            0,0,
+            0,0,0,0,
+            this.read_float32(),
+            this.read_float32(),
+            0,0
+        ])
+    }
+    write_matrix4(matrix:Matrix){
+        this.write_float32(matrix[0])
+        this.write_float32(matrix[1])
+        this.write_float32(matrix[2])
+        this.write_float32(matrix[3])
+
+        this.write_float32(matrix[4])
+        this.write_float32(matrix[5])
+        this.write_float32(matrix[6])
+        this.write_float32(matrix[7])
+
+        this.write_float32(matrix[8])
+        this.write_float32(matrix[9])
+        this.write_float32(matrix[10])
+        this.write_float32(matrix[11])
+
+        this.write_float32(matrix[12])
+        this.write_float32(matrix[13])
+        this.write_float32(matrix[14])
+        this.write_float32(matrix[15])
+    }
+    read_matrix4():Matrix{
+        return new Float32Array([
+            this.read_float32(),
+            this.read_float32(),
+            this.read_float32(),
+            this.read_float32(),
+
+            this.read_float32(),
+            this.read_float32(),
+            this.read_float32(),
+            this.read_float32(),
+
+            this.read_float32(),
+            this.read_float32(),
+            this.read_float32(),
+            this.read_float32(),
+
+            this.read_float32(),
+            this.read_float32(),
+            this.read_float32(),
+            this.read_float32(),
+        ])
+    }
 
     static write_uv(stream:Stream,x:number,y:number){
         stream.write_uint16((x*65535+0.5)|0)
@@ -652,8 +732,9 @@ export abstract class Stream{
     }
 
     abstract write_bytes(bytes:Uint8Array):void
-    abstract read_bytes(count:number):void
+    abstract read_bytes(count:number,slice?:boolean):Uint8Array
     abstract lock():void
+    abstract clone():Stream
 }
 export class StaticStream extends Stream{
     _view: DataView;
@@ -691,6 +772,10 @@ export class StaticStream extends Stream{
 
     override get data(): Uint8Array<ArrayBufferLike> {
         return this._u8Array
+    }
+    override set data(val:Uint8Array) {
+        this._view = new DataView(val.buffer)
+        this._u8Array=val
     }
 
     get buffer(): ArrayBufferLike { return this._view.buffer }
@@ -931,10 +1016,16 @@ export class StaticStream extends Stream{
         this.index+=data.length
         if(this.index>this.length)this.length=this.index
     }
-    override read_bytes(size: number): Uint8Array {
-        const out = this._u8Array.subarray(this.index, this.index + size)
+    override read_bytes(size: number,slice:boolean=false): Uint8Array {
+        const out=slice?this._u8Array.slice(this.index, this.index + size):this._u8Array.subarray(this.index, this.index + size)
         this.index += size
         return out
+    }
+    override clone(): Stream {
+        const stream=new StaticStream(this._u8Array.slice().buffer)
+        stream.length=this.length
+        stream.index=this.index
+        return stream
     }
 }
 export class DynamicStream extends Stream{
@@ -988,6 +1079,10 @@ export class DynamicStream extends Stream{
     }
     override get data(): Uint8Array<ArrayBufferLike> {
         return this._u8Array
+    }
+    override set data(val:Uint8Array) {
+        this._view = new DataView(val.buffer)
+        this._u8Array=val
     }
     get buffer(): ArrayBufferLike { return this._view.buffer }
 
@@ -1244,9 +1339,16 @@ export class DynamicStream extends Stream{
         this.index+=data.length
         if(this.index>this.length)this.length=this.index
     }
-    override read_bytes(size: number): Uint8Array {
-        const out = this._u8Array.subarray(this.index, this.index + size)
+    override read_bytes(size: number,slice:boolean=false): Uint8Array {
+        const out=slice?this._u8Array.slice(this.index, this.index + size):this._u8Array.subarray(this.index, this.index + size)
         this.index += size
         return out
+    }
+    override clone(): Stream {
+        const stream=new DynamicStream(this._u8Array.length)
+        stream.write_bytes(this._u8Array.slice())
+        stream.length=this.length
+        stream.index=this.index
+        return stream
     }
 }

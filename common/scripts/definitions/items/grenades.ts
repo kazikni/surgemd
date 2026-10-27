@@ -1,4 +1,5 @@
-import { Definition, Definitions, FrameDef, FrameTransform, MinMax1, TD, tdm, TDType, v2, Vec2 } from "../../../engine/core.ts";
+import { Definition, FrameDef, FrameTransform, MinMax1, TD, tdm, TDType, v2, Vec2 } from "../../../engine/core.ts";
+import { zIndexes } from "../../others/constants.ts";
 import { DefaultFistRig, FistRig, ItemRank, WeaponAssets } from "../../others/item.ts"
 import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export type Airstrike={
@@ -55,6 +56,7 @@ export type GrenadeDef={
 
     description?:string|boolean
 
+    no_collision?:boolean
     explosion?:string
     call_airdrop?:{
         delay:number
@@ -95,6 +97,7 @@ export type GrenadeDef={
     throw_position?:Vec2
     throw_max_speed?:number
 
+    z_index_air?:number
     frames:{
         world:FrameDef
     }
@@ -110,8 +113,8 @@ const GrenadeRig={
     position:DefaultFistRig.right?.position,
     rotation:-0.5
 }
-export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
-    grenades.insert(
+export function Grenades_Default_Init():GrenadeDef[]{
+    return [
         {
             idString:"frag_grenade",
             rank:ItemRank.E,
@@ -130,7 +133,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 allow_hand:true,
                 time:5
             },
-            throw_max_speed:15,
+            throw_max_speed:10,
             frames:{
                 world:{
                     image:"proj_frag"
@@ -157,7 +160,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             fuse:{
                 time:4
             },
-            throw_max_speed:17,
+            throw_max_speed:12,
             rig_arms:DefaultFistRig,
             rig_image:GrenadeRig,
             frames:{
@@ -184,7 +187,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             fuse:{
                 ground:true
             },
-            throw_max_speed:10,
+            throw_max_speed:8,
             frames:{
                 world:{
                     image:"proj_molotov",
@@ -214,7 +217,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 allow_hand:true,
                 time:5
             },
-            throw_max_speed:15,
+            throw_max_speed:10,
             frames:{
                 world:{
                     image:"proj_mirv"
@@ -283,7 +286,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             fuse:{
                 time:20
             },
-            throw_max_speed:20,
+            throw_max_speed:15,
             frames:{
                 world:{
                     image:"proj_blue_flare"
@@ -334,7 +337,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             fuse:{
                 time:4
             },
-            throw_max_speed:20,
+            throw_max_speed:15,
             frames:{
                 world:{
                     image:"proj_red_flare"
@@ -388,7 +391,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             fuse:{
                 time:3
             },
-            throw_max_speed:20,
+            throw_max_speed:15,
             frames:{
                 world:{
                     image:"proj_yellow_flare"
@@ -441,9 +444,11 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             fuse:{
                 ground:true,
             },
+            no_collision:true,
             explosion:"nuke_explosion",
             push_force_resistence:0,
             zindex_set_resistence:true,
+            z_index_air:zIndexes.GrenadeAir2,
             frames:{
                 world:{
                     image:"proj_nuke"
@@ -467,8 +472,10 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             fuse:{
                 ground:true,
             },
+            no_collision:true,
             explosion:"mini_nuke_explosion",
             zindex_set_resistence:true,
+            z_index_air:zIndexes.GrenadeAir2,
             frames:{
                 world:{
                     image:"proj_mini_nuke"
@@ -479,5 +486,5 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             rank:ItemRank.A,
             push_force_resistence:0.1,
         },
-    )
+    ]
 }

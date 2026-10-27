@@ -3,12 +3,12 @@ import { Human } from "../objects/human.ts";
 import { type Game } from "../others/game.ts";
 import { type BotAi } from "../human/ai/simple_bot_ai.ts";
 import { DamageParams } from "../others/utils.ts";
-import { HumanDefinition } from "common/scripts/definitions/utils.ts";
+import { CheckpointContext, DefaultGELvents, Stream } from "common/engine/core.ts";
 export class NPC extends Human{
     ai?:BotAi
     override is_npc: boolean=true
     override on_tick(dt: number): void {
-        if(this.ai)this.ai.AI(dt)
+        if(this.ai)this.ai.update(dt)
         super.on_tick(dt)
     }
     override die(params: DamageParams): void {
@@ -24,8 +24,6 @@ export class HumansManager{
     humans:Human[]=[]
 
     living_npc:NPC[]=[]
-
-    enemies:Record<string,HumanDefinition>={}
     constructor(game:Game){
         this.game=game
     }
@@ -54,12 +52,15 @@ export class HumansManager{
         this.living_npc.length=0
     }
 
-    create_enemy(def: HumanDefinition|string,npc?:NPC): NPC|undefined {
-        if(typeof def === "string")def=this.enemies[def]
-        if(!def)return undefined
-
-        const bot = this.add_npc(npc)
-        bot.set_preset(def)
-        return bot
+    encode_human(human:Human,stream:Stream,ctx:CheckpointContext){
+        stream.write_uint8(human.layer)
+        human.on_encode_checkpoint(stream,ctx)
+        human.emit_event(DefaultGELvents.checkpoint_encode,stream,ctx)
+    }
+    decode_human(human:Human,stream:Stream,ctx:CheckpointContext){
+        const layer=stream.read_uint8()
+        human.manager.set_layer(human,layer)
+        human.on_decode_checkpoint(stream,{coid:{},idco:{}})
+        human.emit_event(DefaultGELvents.checkpoint_decode,stream,ctx)
     }
 }

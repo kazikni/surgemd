@@ -1,18 +1,19 @@
 import { api, API_BASE, api_server, socials } from "../others/config.ts";
-import { ApiSettings, FindGameResult } from "common/scripts/config/config.ts";
+import { ApiSettings, FindGameResult, game_version } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { AudioEngine, Camera2D, GameSave, HideElement,InputManager, ResourcesManager, ShowElement, ShowTab, Sound, SoundController } from "common/engine/web.ts";
-import { CModsManager } from "./modsManager.ts";
+import { AudioEngine, Camera2D, SaveManager, HideElement,InputManager, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, ToggleElement, is_mobile } from "common/engine/web.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
-import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
+import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption, warning_popup } from "../defs/menu.ts";
 import { OnlineMessageCharacter } from "common/scripts/packets/messages.ts";
 import { FileManager, random, TranslationManager } from "common/engine/core.ts";
 import { CutsceneManager } from "common/engine/web/misc/cutscene.ts";
 import { backgrounds, default_cutscene_theme } from "common/scripts/config/background_effect.ts";
 import { BackgroundManager } from "common/engine/web/misc/background.ts";
+import { type DebugConsole } from "./debugConsole.ts";
+import { is_binary, set_full_screen } from "../defs/bin_files.ts";
 export type PopupFunction=(ctx:GamePopupCTX)=>void
-
+interface Partner{name:string,url:string,class?:string}
 export class MenuManager{
     api_settings?:ApiSettings
     account:AccountManager
@@ -23,6 +24,7 @@ export class MenuManager{
     content={
         menuD:document.querySelector("#menu") as HTMLDivElement,
         gameD:document.querySelector("#game") as HTMLDivElement,
+        game_gui:document.querySelector("#game-gui") as HTMLDivElement,
         gameCanvas:document.querySelector("#game-canvas") as HTMLDivElement,
 
         menu_options:document.body.querySelector("#menu-options") as HTMLDivElement,
@@ -51,14 +53,16 @@ export class MenuManager{
         history_content:document.body.querySelector("#history-content") as HTMLDivElement,
 
         main_social:document.body.querySelector("#main-social") as HTMLDivElement,
-        content_creators:document.querySelector("#featured-content-creators") as HTMLDivElement,
+        featured_links:document.querySelector("#featured-links") as HTMLDivElement,
         //team_options_div:document.body.querySelector("#menu-play-teams") as HTMLSelectElement,
 
         menu_background_night:document.querySelector(".night-background") as HTMLDivElement,
         menu_background_day:document.querySelector(".day-background") as HTMLDivElement,
+
+        game_version:document.querySelector("#game-version") as HTMLSpanElement
     }
 
-    save!:GameSave
+    save!:SaveManager
     resources!:ResourcesManager
     translation!:TranslationManager
     sounds!:AudioEngine
@@ -80,13 +84,24 @@ export class MenuManager{
     menu_time_timer:number=0
     menu_time_delay:number=30
 
-    loading_game = {
-        enabled:false,
-        clicks:0,
-        score:0,
-        target_x:0,
-        target_y:0,
+    loading={
+        enabled:true,
+        screens:[] as [string,string,Blob][],
+        game:{
+            enabled:false,
+            clicks:0,
+            score:0,
+            target_x:0,
+            target_y:0,
+        }
     }
+
+    game_version_clicks=0
+    game_version_click_last:number=0
+
+    debug_console_container?:SMDEWindow=new SMDEWindow()
+    debug_console?:any
+    console?:DebugConsole
 
     constructor(definitions:GameDefinition){
         this.params = new URLSearchParams(self.location.search)
@@ -96,13 +111,9 @@ export class MenuManager{
 
         this.submenu_param=!!this.params
 
-        this.content.loading_screen.style.backgroundImage=`url("/assets/img/menu/background/${
-            random.choose(["normal_background","tundra_background_1"])
-        }.png")`
-        this.content.loading_screen.style.opacity="0"
         this.set_loading_current=this.set_loading_current.bind(this)
 
-        this.content.main_social.innerHTML=`
+        let social_links=`
 <a href="${socials.discord}" target="_blank" class="social-link">
     <i class="social-icon discord"></i>
 </a>
@@ -111,10 +122,44 @@ export class MenuManager{
 </a>
 <a href="${socials.github}" target="_blank" class="social-link">
     <i class="social-icon github"></i>
-</a>
-`
-        this.update_content_creators([
-            {name:"Kazikni",url:"https://youtube.com/@kazikni"},
+</a>`
+        if(!is_binary){
+            if(is_mobile()){
+                social_links+=`
+<a href="${socials.android}" target="_blank" class="social-link">
+    <i class="social-icon android"></i>
+</a>`
+            }else if(navigator.userAgent.match(/linux/i)){
+                social_links+=`
+<a href="${socials.linux}" target="_blank" class="social-link">
+    <i class="social-icon linux"></i>
+</a>`
+            }else{
+                social_links+=`
+<a href="${socials.windows}" target="_blank" class="social-link">
+    <i class="social-icon windows"></i>
+</a>`
+            }
+        }
+        this.content.main_social.innerHTML=social_links
+        this.update_featured_links([
+            {
+                name:"Content Creators",
+                class:"btn-blue partner content-creator",
+                content:[
+                    random.choose([
+                        {name:"Kazikni",url:"https://youtube.com/@kazikni"},
+                        {name:"Namerio",url:"https://youtube.com/@namerio1"},
+                    ]),
+                ]
+            },
+            {
+                name:"Partners",
+                class:"btn-blue partner",
+                content:[
+                    {name:"Resurviv.biz",url:"https://resurviv.biz"}
+                ]
+            }
         ])
 
 
@@ -122,8 +167,8 @@ export class MenuManager{
             this.enable_loading_game()
         }
         this.content.loading_target.onclick=()=>{
-            this.loading_game.score++
-            this.content.loading_score.innerText = this.loading_game.score.toString()
+            this.loading.game.score++
+            this.content.loading_score.innerText = this.loading.game.score.toString()
             this.spawn_target()
         }
 
@@ -144,7 +189,7 @@ export class MenuManager{
                     const playTab = this.tabs["play"]
                     if (playTab) {
                         const groupOption = playTab.def.options.find(
-                            o => o.type === "button" && o.subtab === "group"
+                            o=>o?.type==="button"&&o.subtab==="group"
                         )
                         if (groupOption) {
                             this.opt_click_callback(groupOption, playTab)(new MouseEvent("click"))
@@ -160,7 +205,7 @@ export class MenuManager{
             const screen = this.content.initial_screen
             const video = document.getElementById("intro-video") as HTMLVideoElement
 
-            if(!this.save.get_variable("sv_ui_show_intro")){
+            if(!this.save.settings.get_var("ui_show_intro")){
                 screen.style.opacity = "0"
                 finish()
                 return
@@ -186,7 +231,8 @@ export class MenuManager{
                 video.addEventListener("canplaythrough", start, { once: true })
             }
 
-            video.addEventListener("ended",() => {
+            video.addEventListener("ended",async() => {
+                await this.game_popup(warning_popup(this.translation.get("menu.warnings.initial",{"version":game_version})))
                 screen.style.opacity = "0"
                 setTimeout(() => {
                     finish()
@@ -251,6 +297,7 @@ export class MenuManager{
             }
 
             for(const o of t.options){
+                if(!o)continue
                 switch(o.type){
                     case "button":{
                         const btn=document.createElement("button")
@@ -312,7 +359,8 @@ export class MenuManager{
             this.content.menu_options.style.pointerEvents=""
         }
     }
-    async init(input:InputManager,save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,cam2d:Camera2D,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager,music?:SoundController,ambient?:SoundController){
+    async init(input:InputManager,save:SaveManager,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,cam2d:Camera2D,definitions:GameDefinition,transition:TranslationManager){
+        const debug_mode=save.settings.get_var("debug_enabled")
         this.save=save
         this.resources=resources
         this.sounds=sounds
@@ -322,8 +370,6 @@ export class MenuManager{
         this.cam2d.visible=false
         this.start_intro()
 
-        await this.update_api()
-
         this.game_end()
         ShowElement(this.content.menu_options,true)
         if(this.interval===undefined){
@@ -332,19 +378,89 @@ export class MenuManager{
         this.cutscene=new CutsceneManager(resources,sounds,input,transition)
         this.cutscene.initialize(this.content.history_overlay)
         this.cutscene.default_theme=default_cutscene_theme
-        this.cutscene.controllers={
-            music:music!,
-            ambience:ambient!
+
+        this.content.game_version.innerText=game_version+(debug_mode?"-Debug":"")
+        this.content.game_version?.addEventListener("pointerdown",(e)=>{
+            const now=performance.now()
+            if(now-this.game_version_click_last>4000){
+                this.game_version_clicks=0
+            }
+            if(this.game_version_clicks===0){
+                this.game_version_click_last=performance.now()
+            }
+
+            this.game_version_clicks++
+            if(this.game_version_clicks>10){
+                this.save.settings.set_var("debug_enabled",!debug_mode)
+                self.location.reload()
+            }
+        })
+
+        if(save.settings.get_var("graphics_fullscreen"))set_full_screen(true)
+
+        if(debug_mode){
+            this.debug_console_container=new SMDEWindow()
+            this.debug_console_container.className="editor-window debug-console-container"
+            this.debug_console_container.innerHTML='<smde-console id="debug-console"></smde-console>'
+            document.addEventListener("keydown",(ev)=>{
+                if(ev.target&&ev.target instanceof HTMLInputElement)return
+                if(ev.key==="p"||ev.key==="`"||ev.key==="o"){
+                    if(this.debug_console_container!.parentNode){
+                        this.debug_console_container!.remove()
+                    }else{
+                        document.body.appendChild(this.debug_console_container!)
+                        this.debug_console=this.debug_console_container!.querySelector("#debug-console") as SMDEConsole
+                        this.debug_console.clear()
+                        this.debug_console.log("Welcome To Surgemd Console. Type \"/help\" ")
+                    }
+                }
+            })
         }
+        /*this.console=debug_console
+        this.debug_console_container.content.innerHTML='<smde-console id="debug-console"></smde-console>'
+        this.debug_console=document.querySelector("#debug-console") as any
+        if(this.console)this.console.ctx.logger=this.debug_console
+        document.addEventListener("keydown",(ev)=>{
+            if(ev.target&&ev.target instanceof HTMLInputElement)return
+            if(ev.key==="p"||ev.key==="`"||ev.key==="o"){
+                ToggleElement(this.debug_console_container)
+                this.debug_console.clear()
+                this.debug_console.log("Welcome To Surgemd Console. Type \"/help\" ")
+            }
+        })
+        this.debug_console.addEventListener("enter",async(e:CustomEvent)=>{
+            if((e.detail as string).startsWith("/")){
+                e.preventDefault()
+                if(e.target instanceof HTMLInputElement){
+                    e.target.style.pointerEvents="none"
+                }
+                const cmd=(e.detail.substring(1) as string).split(" ")
+                this.debug_console.log("> ",e.detail)
+                const ret=await this.console?.run(cmd)
+                if(!ret?.valid_command)this.console?.ctx.game.input.actions.push({type:InputActionType.command,val:cmd})
+                if(e.target instanceof HTMLInputElement){
+                    e.target.style.pointerEvents=""
+                }
+            }else{
+                e.preventDefault()
+                this.debug_console.log(e.detail)
+            }
+        })*/
     }
-    async reload(definitions:GameDefinition,fs:FileManager,mods?:CModsManager){
-        await MenuInitDefault(this,definitions,fs,this.translation,this.resources,mods)
+    async reload(definitions:GameDefinition,fs:FileManager){
+        await this.update_api()
+        await MenuInitDefault(this,definitions,fs,this.translation,this.resources)
     }
     async update_api(){
         if(api){
             let js=this.api_settings
+            this.set_loading_current("Loading API Settings")
             try{
-                js=await(await fetch(`${API_BASE}/get-settings`)).json()
+                js=await(await fetch(`${API_BASE}/get-settings`,{ signal: AbortSignal.timeout(4000) })).json()
+                if(js?.game_version!==game_version){
+                    js=undefined
+                    await this.game_popup(warning_popup("Invalid Game Version. Please Update the game To play online"))
+                }
             }catch(e){
                 console.log(e)
                 js=undefined
@@ -441,22 +557,53 @@ export class MenuManager{
     
     // Loading Screen
     show_loading_screen(){
-        this.loading_game.enabled=false
+        if(this.loading.enabled)return
+        this.loading.enabled=true
+        this.loading.game.enabled=false
         HideElement(this.content.loading_minigame)
         ShowElement(this.content.loading_screen,true)
         ShowElement(this.content.loading_screen_logo)
+        this.change_loading_screen()
     }
     hide_loading_screen(){
+        if(!this.loading.enabled)return
+        this.loading.enabled=false
+        this.loading.game.enabled=false
         HideElement(this.content.loading_screen,true)
-        this.loading_game.enabled=false
         HideElement(this.content.loading_minigame)
         ShowElement(this.content.loading_screen_logo)
     }
     set_loading_current(text="",unloading:boolean=false){
         this.content.loading_screen_current.innerHTML=`<p class="span-medium">${this.translation.get("menu.loading-screen."+(unloading?"unload":"load"),{text:text})}</p>`
     }
+
+    change_loading_screen(){
+        if(this.loading.screens.length === 0)return
+        const v=random.choose(this.loading.screens)
+        this.content.loading_screen.style.backgroundImage=`url(${v[0]})`
+    }
+    async preload_loading_screens(paths: string[]) {
+        for(const l of this.loading.screens){
+            URL.revokeObjectURL(l[0])
+        }
+        this.loading.screens.length=0
+        for(const path of paths){
+            try {
+                const response = await fetch(path)
+                if (!response.ok) {
+                    throw new Error(`${response.status} ${response.statusText}`)
+                }
+                const b=await response.blob()
+                const url=URL.createObjectURL(b)
+                this.loading.screens.push([url,path,b])
+            } catch (e) {
+                console.warn("Failed to preload loading screen:", path, e)
+                return undefined
+            }
+        }
+    }
     enable_loading_game(){
-        this.loading_game.enabled=true
+        this.loading.game.enabled=true
         ShowElement(document.querySelector("#loading-minigame") as HTMLDivElement,true)
         this.spawn_target()
     }
@@ -568,6 +715,7 @@ export class MenuManager{
     }
     select_character_screen(characters: OnlineMessageCharacter[]): Promise<number> {
         return this.game_popup((ctx) => {
+            HideElement(this.content.game_gui)
             let selected = 0
 
             ctx.parent.innerHTML = `
@@ -629,39 +777,33 @@ export class MenuManager{
 
             button.onclick = () => {
                 ctx.resolve(selected)
+                ShowElement(this.content.game_gui)
             }
 
             update()
         })
     }
-    update_content_creators(content_creators:{name:string,url:string}[]){
-        this.content.content_creators.innerHTML+="<span>Featured Content-Creators</span>"
-        for(const creator of content_creators){
-            this.content.content_creators.innerHTML+=`<div class="btn-blue content-creator" onclick="location.href='${creator.url}'">${creator.name}</div>`
+    update_featured_links(links:{content:Partner[],name:string,class:string}[]=[]){
+        let val=""
+        for(const l of links){
+            if(l.content.length===0)continue
+            val+="<h2>"+l.name+"</h2>"
+            for(const li of l.content){
+                val+=`<div class="${l.class+" "+(li.class??"")}" onclick="location.href='${li.url}'">${li.name}</div>`
+            }
         }
+        this.content.featured_links.innerHTML=val
     }
 
     interval?:any
     update(){
-        /*this.menu_time_timer-=1
-        if(this.menu_time_timer<=0){
-            this.menu_time_timer+=this.menu_time_delay
-            if(this.menu_time_state===0){
-                this.content.menu_background_day.style.opacity="0"
-                this.content.menu_background_night.style.opacity="1"
-                this.menu_time_state=0
-            }else{
-                this.content.menu_background_day.style.opacity="1"
-                this.content.menu_background_night.style.opacity="0"
-                this.menu_time_state=0
-            }
-        }*/
     }
     game_start(){
         ShowElement(this.content.gameD)
         ShowElement(this.content.gameCanvas)
         HideElement(this.content.menuD)
         this.cam2d.visible=true
+        this.input.mouse_emulation=false
         if(this.interval!==undefined){
             clearInterval(this.interval)
             this.interval=undefined
@@ -672,6 +814,7 @@ export class MenuManager{
         HideElement(this.content.gameD)
         HideElement(this.content.gameCanvas)
         this.cam2d.visible=false
+        if(this.input.controller_active)this.input.mouse_emulation=true
         if(this.interval===undefined){
             this.interval=setInterval(this.update.bind(this),1)
         }

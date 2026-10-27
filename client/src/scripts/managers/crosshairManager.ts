@@ -52,7 +52,8 @@ export abstract class CrosshairBase {
     protected spread = 0
     protected dirty = true
 
-    constructor(protected elem: HTMLElement) {}
+    constructor() {}
+    
 
     setSpread(v: number) {
         if (this.spread !== v) {
@@ -65,9 +66,9 @@ export abstract class CrosshairBase {
 
     protected abstract build(): string
 
-    render() {
+    render(elem:HTMLElement) {
         if (!this.dirty) return
-        this.elem.style.cursor = this.build()
+        elem.style.cursor = this.build()
         this.dirty = false
     }
 
@@ -77,8 +78,8 @@ export class StaticCrosshair extends CrosshairBase {
     private time = 0
     rainbow?:boolean
 
-    constructor(elem: HTMLElement,private def: Crosshair){
-        super(elem)
+    constructor(private def: Crosshair){
+        super()
     }
 
     override tick(dt:number){
@@ -103,8 +104,8 @@ export class StaticCrosshair extends CrosshairBase {
     }
 }
 export class DynamicCrosshairCursor extends CrosshairBase {
-    constructor(elem: HTMLElement, private def: Crosshair) {
-        super(elem)
+    constructor(private def: Crosshair) {
+        super()
     }
 
     protected build(): string {
@@ -116,12 +117,12 @@ export class DynamicCrosshairCursor extends CrosshairBase {
 export class CrosshairManager {
     private current?: CrosshairBase
 
-    constructor(private elem: HTMLElement) {}
+    constructor(private elem: HTMLElement=document.documentElement) {}
 
     set(c: CrosshairBase) {
         this.current?.destroy()
         this.current = c
-        this.current.render()
+        this.current.render(this.elem)
     }
 
     setSpread(v: number) {
@@ -131,7 +132,7 @@ export class CrosshairManager {
     tick(dt: number) {
         if (!this.current) return
         this.current.tick(dt)
-        this.current.render()
+        this.current.render(this.elem)
     }
 
     clear(defaultCursor: string) {

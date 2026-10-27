@@ -15,13 +15,18 @@
         }
     },
     "loadout": {
-        "hair": "hair_2",
+        "hair": "hair_5",
         "hair_tint": 2174256,
+        "hair_paint": {
+            "id":1,
+            "tint":15144984
+        },
         "body": "body_1",
         "body_tint": 15771967,
         "eyes": "eyes_2",
         "shirt": "black_shirt",
-        "legs": "jeans_pants",
+        "legs": "blue_jeans_pants",
+        "foot": "black_shoes",
         "accessorys": [],
         "colors": {
             "primary": "#e71818",

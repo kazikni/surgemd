@@ -2,7 +2,7 @@ import { CircleHitbox2D, Stream, Numeric, random, v2, v2m, Vec2 } from "common/e
 import { type Human } from "./human.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { MovingBody } from "./moving_body.ts";
-import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
+import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particles.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type StaticBody } from "./static_body.ts";
 export class SyncedParticlesCreator extends ServerGameObject{
@@ -30,7 +30,7 @@ export class SyncedParticlesCreator extends ServerGameObject{
     override on_tick(dt: number): void {
         this.timer-=dt
         if(this.timer<=0){
-            this.game.add_synced_particle(this.position,this.def,this.owner,this.layer)
+            this.game.scene_2d.add_synced_particle(this.position,this.def,this.owner,this.layer)
 
             this.timer+=this.time
             this.count--
@@ -65,7 +65,9 @@ export class SyncedParticle extends MovingBody {
 
     override on_collided(obj:ServerGameObject,dt:number){
         switch(obj.number_type){
+            case GameObjectType.StaticBody:
             case GameObjectType.Obstacle:
+            case GameObjectType.Walls:
             case GameObjectType.Building:{
                 if((obj as StaticBody).physical_data.stairs.length>0){
                     for(const s of (obj as StaticBody).physical_data.stairs){

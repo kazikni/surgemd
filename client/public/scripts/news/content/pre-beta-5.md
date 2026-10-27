@@ -13,9 +13,9 @@ ___
 ___
 ### Items
 * Smoke Grenade
-* SR25 - 762mm DMR
-* Model94 - 45acp Sniper
-* BLR-81 - 556mm Sniper
+* SR25 - c51 DMR
+* Model94 - c22 Sniper
+* BLR-81 - c45 Sniper
 * 45ACP
 * Blue Flare
 * Red Flare

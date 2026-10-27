@@ -1,4 +1,4 @@
-import { Hitbox2D, Numeric, random, Stream } from "../../engine/core.ts";
+import { BackgroundEDef, BackgroundTransitionType, CutsceneCommand, CutsceneCommandType, Hitbox2D, Numeric, random, Stream } from "../../engine/core.ts";
 import { ObstacleBehaviorDoor } from "../definitions/objects/obstacles.ts";
 import { DeadZoneStage, DeadZoneState, MakeDeadZoneSettings } from "../packets/general_update.ts";
 
@@ -87,15 +87,22 @@ export function loot_table_get_item(item:string,count:number,aditional:LootAditi
         if(itemD.ammo_spawn&&!(aditional.without_ammo||settings.without_ammo)){
             const ammo_def=(game.definitions as GameDefinition).game_items.valueString[(itemD as unknown as GunDef).ammo_spawn?.type??(itemD as unknown as GunDef).ammo_type]
             
-            const data={
+            const data:LootData={
                 item:ammo_def,
                 count:(itemD as GunDef).ammo_spawn!.amount
             }
             if(itemD.dual_from!==undefined)data.count*=2
-            if(settings.include_ammo||aditional.include_ammo){
-                ret[0].aditional=[data]
-            }else{
-                ret.push(data)
+            if(settings.hold_ammo){
+                ret[0].ammo=itemD.reload?.capacity??0
+                data.count-=ret[0].ammo
+            }
+
+            if(data.count>0){
+                if(settings.include_ammo||aditional.include_ammo){
+                    ret[0].aditional=[data]
+                }else{
+                    ret.push(data)
+                }
             }
         }
         return ret
@@ -111,17 +118,76 @@ export function loot_table_get_item(item:string,count:number,aditional:LootAditi
 }
 
 export function encode_loot_data(definitions:GameDefinition,data:LootData,stream:Stream):void{
-    stream.write_boolean_group(data.aditional!==undefined,data.skin!==undefined)
-    .write_uint16(definitions.game_items.keysString[data.item.idString])
+    stream.write_boolean_group(data.aditional!==undefined,data.skin!==undefined,data.ammo!==undefined,typeof data.ammo==="number",data.ammo===true)
+    if(data.ammo!==undefined) if(typeof data.ammo==="number")stream.write_uint16(data.ammo)
+    stream.write_uint16(definitions.game_items.keysString[data.item.idString])
     .write_float32(data.count)
     if(data.skin!==undefined)stream.write_uint8(data.skin)
 }
 export function decode_loot_data(definitions:GameDefinition,stream:Stream):LootData{
-    const [has_aditional,has_skin]=stream.read_boolean_group()
+    const [has_aditional,has_skin,has_ammo,has_ammo_n,ammo_true]=stream.read_boolean_group()
+    let ammo:number|boolean|undefined
+    if(has_ammo){
+        ammo=ammo_true
+        if(has_ammo_n)ammo=stream.read_uint16()
+    }
     return {
         item:definitions.game_items.valueNumber[stream.read_uint16()],
         count:stream.read_float32(),
+        ammo,
         //aditional:has_aditional?stream.read_array(()=>decode_loot_data(definitions,stream),1):undefined,
         skin:has_skin?stream.read_uint8():undefined
+    }
+}
+
+export function make_credits_cutscene(credits:{role:string,users:string|string[]}[]):CutsceneCommand[]{
+    const cred:CutsceneCommand[]=[]
+    
+    for(const c of credits){
+        cred.push({
+            type: CutsceneCommandType.SetContentText,
+            content: [
+                {
+                    value: c.role,
+                    style: "credits_role"
+                },
+                ...(
+                    typeof c.users==="string"?
+                    [{value: c.users,style: "credits"}]:
+                    c.users.map((v)=>({value: v,style: "credits"}))
+                )
+            ]
+        },{
+            type: CutsceneCommandType.Wait,
+            time: 4
+        })
+    }
+    return [
+        ...cred,
+        {
+            type: CutsceneCommandType.SetContentText,
+            content:[]
+        },
+    ]
+}
+export function make_credits_markdown(credits: { role: string, users: string | string[] }[]): string {
+    const lines: string[] = []
+
+    for(const credit of credits){
+        lines.push(`## ${credit.role}`)
+        const users=typeof credit.users==="string"?[credit.users]:credit.users
+
+        for(const user of users){
+            lines.push(`* ${user}`)
+        }
+        lines.push("___")
+    }
+
+    return lines.join("\n").trim()
+}
+export function apply_modifiers(base:Record<string,number>,mods:Record<string,number>){
+    for(const m in mods){
+        if(base[m]===undefined)base[m]=mods[m]
+        else base[m]*=mods[m]
     }
 }

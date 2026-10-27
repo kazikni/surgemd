@@ -19,6 +19,8 @@
 
     width: 100%;
     height: 100%;
+
+    cursor: crosshair;
 }
 #game-canvas{
     position: absolute;
@@ -71,11 +73,11 @@
 
     #health-bar {
         background: linear-gradient(90deg, #fff,#dfdfdf);
-        transition: width ease-in-out 0.2s;
+        transition: width ease-out 0.2s;
     }
     #health-bar-animation {
         background: #ff000066;
-        transition: width ease-out 2s;
+        transition: width ease-out 1.5s;
     }
     #health-bar-amount {
         position: absolute;
@@ -87,14 +89,17 @@
 }
 #boost-bar-container {
     height: 2vh;
+    #boost-bar-animation,
     #boost-bar {
         position: absolute;
         top: 0;
         left: 0;
         height: 100%;
         width: 0%;
-        transition: width ease-in-out 0.2s;
         border-radius: var(--ui-panel-border-radius);
+    }
+    #boost-bar-animation{
+        transition: width ease-out 0.2s;
     }
     #boost-bar-amount {
         position: absolute;
@@ -103,6 +108,10 @@
         left: 103%;
         transform: translateY(-50%);
         border-radius: var(--ui-panel-border-radius);
+    }
+    #boost-bar-animation {
+        background: #ff000066;
+        transition: width ease-out 1s;
     }
 }
 #bottom-left-container{
@@ -171,6 +180,22 @@
 
     pointer-events: none;
 }
+#information-global-messages{
+    display: flex;
+    position: absolute;
+    top: 20%;
+    left: 50%;
+
+    transform: translateX(-50%);
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25vw;
+
+    font-family: "Russo-One";
+    font-size: 1vw;
+
+}
+
 #information-killbox,
 #information-interaction{
     pointer-events: none;
@@ -347,14 +372,15 @@
 
     display:flex;
     flex-direction:column;
-    gap:8px;
+    gap:0.5vh;
 
-    width:300px;
+    width:15vw;
+
+    pointer-events: none;
 
     .group-human{
-        padding:8px;
+        padding:0.5vw;
         height: fit-content;
-
 
         background: var(--ui-panel-background);
         border:var(--ui-panel-border);
@@ -366,22 +392,21 @@
     .group-info{
         display:flex;
         align-items:center;
-        gap:6px;
+        gap:0.25vw;
 
         span{
             font-family:"Russo-One";
             color:var(--ui-theme-tertiary);
         }
         .badge-icon {
-            width: 20px;
-            margin-bottom: -3px;
-            margin-left: 3px;
+            width: 1vw;
+            margin-bottom: -0.2vw;
         }
     }
 
     .member-color{
-        width:14px;
-        height:14px;
+        width:1vw;
+        height:1vw;
         border-radius:50%;
         background:#00ff00;
         flex-shrink:0;
@@ -411,14 +436,14 @@
     }
 
     .health-bar-container{
-        height:15px;
-        margin-top: 5px;
+        height:1.5vh;
+        margin-top: 0.5vh;
     }
     .health-bar{
         background: linear-gradient(90deg, #fff,#dfdfdf);
     }
     .boost-bar-container{
-        height:7px;
-        margin-top: 5px;
+        height:0.75vh;
+        margin-top: 0.5vh;
     }
 }

@@ -1,7 +1,7 @@
 import { HideElement,ShowElement,UIModule } from "common/engine/web.ts"
 import { Game } from "../others/game.ts"
 import { PrivateUpdate } from "common/scripts/packets/update_packet.ts"
-import { PingDef } from "common/scripts/definitions/loadout/ping.ts"
+import { PingDef } from "common/scripts/definitions/loadout/pings.ts"
 import { ColorM, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GeneralUpdate, MapZone } from "common/scripts/packets/general_update.ts";
 type MinimapPing = {
@@ -50,15 +50,39 @@ export class MinimapModule extends UIModule<Game>{
     map_icons_name:Record<string,MinimapIconDef>={}
     map_icons:MinimapIconDef[]=[]
 
+    camera_x:number=0
+    camera_y:number=0
+
+    _mouseup!:(e:MouseEvent)=>void
     override on_init(): void {
         this.canvas=document.body.querySelector("#ui-map") as HTMLCanvasElement
         this.ctx=this.canvas.getContext("2d")!
  
         this.load_icons()
 
-        this.canvas.addEventListener("click",()=>{
+        this.canvas.addEventListener("pointerdown",()=>{
             if(!this.fullscreen)this.toggle_fullscreen()
         })
+        this.canvas.addEventListener("mousedown",(e)=>{
+            if(e.button===2){
+                this.game.ui.begin_emote_wheel(this.game.input_manager.mouse_position,undefined,undefined,this.to_world(v2(e.clientX,e.clientY)),true)
+            }
+        })
+
+        this._mouseup=(e:MouseEvent)=>{
+            if(e.button===2){
+                this.game.ui.end_emote_wheel()
+            }
+        }
+        document.addEventListener("mouseup",this._mouseup)
+        this.toggle_fullscreen(false)
+    }
+    to_world(position:Vec2):Vec2{
+        const rect=this.canvas.getBoundingClientRect()
+        const x=(position.x-rect.left-this.camera_x)/this.scale
+        const y=(position.y-rect.top-this.camera_y)/this.scale
+        const ms=this.game.minimap.meter_size
+        return v2(x/ms,y/ms)
     }
     async load_icons(){
         const base="/assets/img/menu/gui/map/"
@@ -67,9 +91,13 @@ export class MinimapModule extends UIModule<Game>{
         await this.load_map_icon("downed",base+"map_icon_downed.svg")
         await this.load_map_icon("dead",base+"map_icon_dead.svg")
         await this.load_map_icon("drone",base+"map_icon_drone.svg")
+        await this.load_map_icon("danger",base+"map_icon_danger.svg")
 
         await this.load_map_icon("ping_airdrop","/assets/img/menu/gui/map/ping_airdrop.svg")
         await this.load_map_icon("ping_alert","/assets/img/menu/gui/map/ping_alert.svg")
+        await this.load_map_icon("ping_here","/assets/img/menu/gui/map/ping_here.svg")
+        await this.load_map_icon("ping_heal","/assets/img/menu/gui/map/ping_heal.svg")
+        await this.load_map_icon("ping_gift","/assets/img/menu/gui/map/ping_gift.svg")
     }
 
     async load_map_icon(id:string,path:string){
@@ -129,7 +157,7 @@ export class MinimapModule extends UIModule<Game>{
             this.canvas.style.width=`${(45*Math.max(max.x/max.y,0))}vw`
             this.canvas.style.height="45vw"
         }else{
-            const player=this.game.active_entity?.position
+            const player=this.game.scene_2d.camera.position
             if(!player)return
             const playerPos=this.worldToMap(player.x,player.y)
             scale=this.zoom
@@ -140,6 +168,8 @@ export class MinimapModule extends UIModule<Game>{
         }
         this.scale=scale
 
+        this.camera_x=cameraX
+        this.camera_y=cameraY
         ctx.save()
         ctx.translate(cameraX,cameraY)
         ctx.scale(scale,scale)
@@ -204,7 +234,7 @@ export class MinimapModule extends UIModule<Game>{
         this.render_safe_line()
     }
     render_safe_line() {
-        const player = this.game.active_entity?.position
+        const player=this.game.scene_2d.camera.position
         const dz = this.game.dead_zone
         if (!player||!dz) return
 
@@ -339,9 +369,14 @@ export class MinimapModule extends UIModule<Game>{
             }
         }
     }
-    toggle_fullscreen(){
-        this.fullscreen=!this.fullscreen
+    toggle_fullscreen(value:boolean=!this.fullscreen){
+        this.fullscreen=value
         this.canvas.classList.toggle("fullscreen",this.fullscreen)
+
+        if(this.game.ui.mobile_enabled){
+            if(this.fullscreen)ShowElement(this.game.ui.mobile_content.btn_toggle_map)
+            else HideElement(this.game.ui.mobile_content.btn_toggle_map)
+        }
     }
 
     zoom_in(){
@@ -382,7 +417,7 @@ export class MinimapModule extends UIModule<Game>{
         switch(signal){
             case "private":
                 for(const p of (data as PrivateUpdate).pings){
-                    this.add_ping(p.position,this.game.definitions.ping.getFromNumber(p.def),p.color,p.id)
+                    this.add_ping(p.position,this.game.definitions.pings.getFromNumber(p.def),p.color,p.id)
                 }
                 break
             case "general_update":
@@ -415,9 +450,12 @@ export class MinimapModule extends UIModule<Game>{
             HideElement(this.canvas)
         }
     }
-    override on_destroy():void{}
+    override on_destroy():void{
+        document.removeEventListener("mouseup",this._mouseup)
+    }
     override on_clear():void{
         this.pings.length=0
         this.zones.length=0
+        //this.toggle_fullscreen(false)
     }
 }

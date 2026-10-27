@@ -1,4 +1,18 @@
 return (class extends LevelPlayerScript{
+    async initialize_mode(){
+        await this.game.auto_init({
+            mode:"normal",
+            settings:{
+                map:{
+                    def:NormalMap/*{
+                        ...NormalMap,
+                        loot_tables:{...LootTables,...SimpleLootTables}
+                    }*/
+                },
+                events:[]
+            }
+        })
+    }
     on_start(){
         this.game.modeManager.add_enemies([
             {
@@ -9,7 +23,7 @@ return (class extends LevelPlayerScript{
                     "boosts": [
                         {"weight": 7,"def": "adrenaline","value": 0},
                         {"weight": 1,"def": "adrenaline","value": 1},
-                        {"weight": 1,"def": "shield","value": 1}
+                        {"weight": 1,"def": "shield","value": 1},
                     ],
                     "inventory": {
                         "infinity_ammo": true,
@@ -104,11 +118,23 @@ return (class extends LevelPlayerScript{
                                 "weight": 6
                             },
                             {
+                                "item": "aipc39",
+                                "weight": 6
+                            },
+                            {
                                 "item": "spas12",
                                 "weight": 1
                             },
                             {
-                                "item": "model94",
+                                "item": "super_conqueror",
+                                "weight": 1
+                            },
+                            {
+                                "item": "blr81",
+                                "weight": 1
+                            },
+                            {
+                                "item": "rifle_cbc",
                                 "weight": 1
                             },
                             {
@@ -151,19 +177,19 @@ return (class extends LevelPlayerScript{
                             },
                             {
                                 "item": "mp5",
-                                "weight": 7
+                                "weight": 8
                             },
                             {
                                 "item": "ak47",
-                                "weight": 7
+                                "weight": 8
                             },
                             {
                                 "item": "ar15",
-                                "weight": 7
+                                "weight": 8
                             },
                             {
                                 "item": "famas",
-                                "weight": 5
+                                "weight": 6
                             },
                             {
                                 "item": "m1921",
@@ -182,11 +208,11 @@ return (class extends LevelPlayerScript{
                                 "weight": 4
                             },
                             {
-                                "item": "model94",
+                                "item": "super_conqueror",
                                 "weight": 2
                             },
                             {
-                                "item": "sr25",
+                                "item": "m110a2",
                                 "weight": 2
                             },
                             {
@@ -195,6 +221,10 @@ return (class extends LevelPlayerScript{
                             },
                             {
                                 "item": "rifle_cbc",
+                                "weight": 2
+                            },
+                            {
+                                "item": "blr81",
                                 "weight": 2
                             },
                             {
@@ -210,17 +240,24 @@ return (class extends LevelPlayerScript{
                                 "weight": 0.1
                             },
                             {
+                                "item": "m249",
+                                "weight": 0.1
+                            },
+                            {
+                                "item": "xm556",
+                                "weight": 0.1
+                            },
+                            {
                                 "item": "awm",
                                 "weight": 0.1
                             }
                         ],
                         "aitems": {
-                            "12g":20,
-                            "556mm": 140,
-                            "762mm": 140,
-                            "45acp": 140,
-                            "9mm": 20,
-                            "22lr": 200
+                            "p76":20,
+                            "c51": 140,
+                            "c22": 140,
+                            "l19": 150,
+                            "l15": 150,
                         },
                         "items": [
                             [
@@ -240,21 +277,15 @@ return (class extends LevelPlayerScript{
                                 {
                                     "item": "yellow_soda",
                                     "weight": 1
-                                },
-                                {
-                                    "item": "blue_soda",
-                                    "count": 2,
-                                    "weight": 1
                                 }
                             ]
                         ],
                         "iitems": [
                             "scope_2"
                         ]
-                    },
-                    "wrapping":["aqua","shiny","aqua_blue","gradient"]
+                    }
                 },
-                "count": 40
+                "count": 29
             },
             {
                 "def": {
@@ -262,23 +293,29 @@ return (class extends LevelPlayerScript{
                         "kind": "dumb"
                     }
                 },
-                "count": 59
+                "count": 70
             }
         ])
     }
     on_spawn_player(player){
         player.set_preset(this.preset)
     }
-    async on_load(){
-        this.cutscene=await this.load_json("cutscenes/begin.jsonc")
-    }
     async on_begin(){
+        this.cutscene=await this.load_json("cutscenes/begin.jsonc")
         this.preset=await this.level.load_character({"path": "../../characters/nick.jsonc"})
     }
     async on_before(start_with_intro){
-        const cutscene=[]
-        if(start_with_intro)cutscene.push(...this.cutscene)
-        cutscene.push(...this.make_level_intro())
+        const cutscene=[
+        ]
+        if(start_with_intro){
+            cutscene.push(
+                //...this.cutscene,
+                {type:CutsceneCommandType.SetFrame,frame:"/assets/img/menu/loading_screens/normal.png"},
+                {type:CutsceneCommandType.WaitInput},
+                {type:CutsceneCommandType.SetFrame}
+            )
+        }
+        cutscene.push(...this.make_level_intro(),)
         await this.show_cutscene(cutscene)
     }
 })

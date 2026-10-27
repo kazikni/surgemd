@@ -4,7 +4,7 @@ export const Vec2Input:SettingDef={
     labels:["X","Y"],
     placeholders:["0","0"],
     make_value(b,d,e){
-        return v2(parseFloat(b[0]??"0"),parseFloat(b[1]??"0"))
+        return v2(parseFloat(b[0]||"0"),parseFloat(b[1]||"0"))
     },
     make_initial(b,def){
         return b===undefined?b:(Array.isArray(b)?b:[b.x.toString(),b.y.toString()])
@@ -15,7 +15,7 @@ export const RectInput:SettingDef={
     labels:["Min-X","Min-Y","Max-X","Max-Y"],
     placeholders:["0","0","0","0"],
     make_value(b,d,e){
-        return rect(v2(parseFloat(b[0]??"0"),parseFloat(b[1]??"0")),v2(parseFloat(b[2]??"0"),parseFloat(b[3]??"0")))
+        return rect(v2(parseFloat(b[0]||"0"),parseFloat(b[1]||"0")),v2(parseFloat(b[2]||"0"),parseFloat(b[3]||"0")))
     },
     make_initial(b,def){
         return b===undefined?b:(Array.isArray(b)?b:[b.min.x.toString(),b.min.y.toString(),b.max.x.toString(),b.max.y.toString()])
@@ -37,21 +37,24 @@ export const RGBAInput:SettingDef={
         return ColorM.hex2number(b)
     },
     make_initial(b,def){
-        typeof b==="string"?ColorM.hex2number(b):b
+        return ColorM.number2hex(b)
     }
 }
-export const FrameSettings:SettingDef[]=[
-    {type:"input",can_disable:true,name:"Image",var:"image"},
+export const FrameTransformSettings:SettingDef[]=[
     {...Vec2Input,can_disable:true,name:"Position",var:"position"},
     {type:"input",can_disable:true,name:"Rotation",var:"rotation"},
     {type:"input",can_disable:true,name:"Scale",var:"scale"},
     {...Vec2Input,can_disable:true,name:"Scale2",var:"scale2"},
-    {type:"input",can_disable:true,name:"Tint",var:"tint"},
     {type:"range",min:0,max:255,can_disable:true,name:"Alpha",var:"Alpha"},
-    {...Vec2Input,can_disable:true,name:"Hotspot",var:"hotspot"},
     {type:"input",can_disable:true,name:"zIndex",var:"zIndex"},
     {type:"input",can_disable:true,name:"Layer",var:"layer"},
     {type:"toggle",can_disable:true,name:"Visible",var:"visible"},
+]
+export const FrameSettings:SettingDef[]=[
+    {type:"input",can_disable:true,name:"Image",var:"image"},
+    {...Vec2Input,can_disable:true,name:"Hotspot",var:"hotspot"},
+    ...FrameTransformSettings,
+    {...RGBAInput,can_disable:true,name:"Tint",var:"tint"},
 ]
 export type SettingOption={
     name:string
@@ -177,7 +180,7 @@ export function build_setting_input(def: SettingDef,translation: TranslationMana
         row.appendChild(label);
     }
     let input:HTMLElement|undefined
-    let last_value:any=initial
+    let last_value:any
     switch(def.type){
         case "input":{
             const e=document.createElement("input")
@@ -335,6 +338,7 @@ export function build_setting_input(def: SettingDef,translation: TranslationMana
             break
         }
     }
+    if(initial!==undefined)last_value=(def.make_value?def.make_value(initial,def,input):initial)
 
     if(input){
         if(def.can_disable){
@@ -378,8 +382,16 @@ export function build_setting_input(def: SettingDef,translation: TranslationMana
                 wrap.appendChild(txt);
             }
             wrap.appendChild(input);
-            update();
             input=wrap;
+            ;(input as HTMLElement).style.opacity=enable.checked?"":"0.5";
+            const controls=input!.querySelectorAll("input,textarea,select,button");
+            if(controls.length===0){
+                (input as HTMLInputElement).toggleAttribute?.("disabled",!enable.checked);
+            }else{
+                controls.forEach(c=>{
+                    if(c!==enable)(c as HTMLInputElement).disabled=!enable.checked;
+                });
+            }
         }
         ;(input as any).setting_parent=parent
         ;(input as any).setting_def=def

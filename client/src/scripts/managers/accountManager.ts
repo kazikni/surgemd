@@ -1,4 +1,3 @@
-import { ShowTab } from "common/engine/web.ts";
 import { API_BASE } from "../others/config.ts";
 import { type MenuManager } from "./menuManager.ts";
 import { CalculatePlayerLevel, CalculatePlayerLevelProgress} from "common/scripts/others/functions.ts";
@@ -73,7 +72,7 @@ export class AccountManager{
     }
     // deno-lint-ignore no-explicit-any
     set_account_status(status:any){
-        const badge=this.definitions.badges.getFromNumber(0)
+        const badge=this.definitions.badges.getFromNumberSafe(1)
         const dd=document.body.querySelector("#account-sm-status") as HTMLDivElement
             dd.innerHTML=`
 <span class="span" style="text-align:center; align-content:center;" id="coin-status-span">

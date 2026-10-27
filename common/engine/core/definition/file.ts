@@ -1,4 +1,4 @@
-import { Path } from "../mod.ts";
+import { Path } from "../math/utils.ts";
 
 export abstract class FileHandle {
     abstract write(data: Uint8Array): Promise<void>
@@ -7,6 +7,9 @@ export abstract class FileHandle {
     abstract flush(): Promise<void>
 }
 export abstract class FileManager{
+    abstract is_directory(path:string):boolean
+    abstract make_dir(path:string):Promise<void>
+
     abstract read_file(path:string):Promise<string>
     abstract write_file(path:string,content:string):Promise<void>
 
@@ -15,10 +18,32 @@ export abstract class FileManager{
 
     abstract list_dir(path:string):Promise<string[]>
     abstract open(path: string, mode: "r" | "w" | "rw"): Promise<FileHandle>
+
+    abstract exist(path:string):Promise<boolean>
+
+    async list_dir_recursive(path:string,base:string=""):Promise<string[]>{
+        const ret:string[]=[]
+        const files=await this.list_dir(Path.join_simple(base,path))
+        for(const p of files){
+            const name=Path.join_simple(path,p)
+            if(this.is_directory(Path.join_simple(base,name))){
+                ret.push(...await (this.list_dir_recursive(name,base)))
+            }else{
+                ret.push(name)
+            }
+        }
+        return ret
+    }
 }
 
 export class FetchFileManager extends FileManager {
     base:string="/"
+    override async exist(path: string): Promise<boolean> {
+        return true
+    }
+    override is_directory(path: string): boolean {
+        return false
+    }
     async read_file(path: string): Promise<string> {
         const res = await fetch(Path.join(this.base,path))
         if (!res.ok) throw new Error(`read_file failed: ${res.status}`)
@@ -47,6 +72,9 @@ export class FetchFileManager extends FileManager {
         if (!res.ok) throw new Error(`write_fileb failed: ${res.status}`)
     }
     async list_dir(_path: string): Promise<string[]> {
+        throw new Error("list_dir not supported over HTTP")
+    }
+    async make_dir(_path: string): Promise<void> {
         throw new Error("list_dir not supported over HTTP")
     }
     async open(path: string, mode: "r" | "w" | "rw"): Promise<FileHandle> {

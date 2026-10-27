@@ -1,10 +1,11 @@
-import { BuildingCeilingDef, BuildingDef, BuildingObstacles, BuildingPuzzleDef, PuzzleAction, PuzzleCondition } from "common/scripts/definitions/objects/buildings_base.ts";
+import { BuildingCeilingDef, BuildingDef, BuildingObjectObstacle, BuildingPuzzleDef, PuzzleAction, PuzzleCondition } from "common/scripts/definitions/objects/buildings_base.ts";
 import { Angle, Hitbox2D, Stream, NullHitbox2D, Orientation, random, RotationMode, v2, Vec2, CheckpointContext, cloneDeep } from "common/engine/core.ts";
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ScopeChange } from "common/scripts/definitions/utils.ts";
-export type BuildingObstacleChild={type:0,obj:Obstacle,def:BuildingObstacles}
+import { Walls } from "./walls.ts";
+export type BuildingObstacleChild={type:0,obj:Obstacle,def:BuildingObjectObstacle}
 export class BuildingCeiling{
     def:BuildingCeilingDef
     hitbox:Hitbox2D
@@ -267,7 +268,8 @@ export class Building extends StaticBody {
         side:Orientation
 
         hitbox:Hitbox2D
-        spawn_hitbox:Hitbox2D
+        spawn_hitbox?:Hitbox2D
+        interaction_hitbox?:Hitbox2D
     }&StaticBodyPhysicalData={
         dirty:false,
 
@@ -277,11 +279,6 @@ export class Building extends StaticBody {
         spawn_hitbox:new NullHitbox2D(v2.new(0,0)),
         interaction_hitbox:new NullHitbox2D(v2.new(0,0)),
 
-        reflect_bullets:false,
-        no_collision:true,
-        no_pathfinding_collision:false,
-        no_bullets_collision:true,
-        passable_by_bullets:false,
         stairs:[]
     }
 
@@ -297,7 +294,10 @@ export class Building extends StaticBody {
 
     override update_hitbox(): void {
         super.update_hitbox()
-        this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(this.position)
+        if(this.physical_data.interaction_hitbox)this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(this.position)
+        else this.interaction_hitbox=undefined
+        if(this.physical_data.spawn_hitbox)this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(this.position)
+        else this.spawn_hitbox=undefined
     }
     override tick(dt:number):void{
         for(const p in this.puzzles){
@@ -314,16 +314,16 @@ export class Building extends StaticBody {
 
         if(def.hitbox)this.physical_data.hitbox=def.hitbox.clone()
 
-        if(this.def.spawnHitbox){
-            this.physical_data.spawn_hitbox=this.def.spawnHitbox.clone()
-        }else{
-            this.physical_data.spawn_hitbox=this.physical_data.hitbox
-        }
-
         this.allow_tick=this.def.generate.puzzles!==undefined
-        this.physical_data.no_collision=this.def.no_collisions??false
-        this.physical_data.no_bullets_collision=this.def.no_bullet_collision??false
-        this.physical_data.reflect_bullets=this.def.reflect_bullets??false
+        if(this.def.no_collisions)this.physical_data.no_collision=this.def.no_collisions
+        if(this.def.no_spawn_collision)this.physical_data.no_spawn_collision=this.def.no_spawn_collision
+        if(this.def.no_bullet_collision)this.physical_data.no_bullets_collision=this.def.no_bullet_collision
+        if(this.def.is_ghost){
+            this.physical_data.no_bullets_collision=true
+            this.physical_data.no_collision=true
+            this.physical_data.no_spawn_collision=false
+        }
+        this.physical_data.reflect_bullets=this.def.reflect_bullets
 
         this.update_hitbox()
     }
@@ -333,18 +333,17 @@ export class Building extends StaticBody {
         if(this.def.spawnHitbox){
             this.physical_data.spawn_hitbox=this.def.spawnHitbox.transform(undefined,undefined,undefined,side)
         }else{
-            this.physical_data.spawn_hitbox=this.physical_data.hitbox
+            this.physical_data.spawn_hitbox=this.base_hitbox
         }
         this.physical_data.interaction_hitbox=this.physical_data.hitbox.transform(undefined,1.1)
         this.update_hitbox()
     }
     begin_generate(position:Vec2){
         this.position = position
-        this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position)
         for(const p of this.def.generate.puzzles??[]){
             const puzzle=new BuildingPuzzle(this,p)
             this.puzzles[puzzle.id]=puzzle
-            if(p.global)this.game.puzzles[puzzle.id]=puzzle
+            if(p.global)this.scene.puzzles[puzzle.id]=puzzle
         }
     }
     after_generate(){
@@ -367,29 +366,38 @@ export class Building extends StaticBody {
             })
             idx++
         }
+        this.update_hitbox()
         this.manager.cells.update_object(this)
     }
     generate(position: Vec2){
         this.begin_generate(position)
+        const srotation=Angle.side2rad(this.physical_data.side)
 
-        /*for(const f of this.def.floors??[]){
-            const hb=f.hitbox.transform(this.position)
-            const l=this.layer+(f.layer??0)
-            this.game.map.terrain.add_floor(f.type,hb,l)
-        }*/
+        for(const f of this.def.generate.floors??[]){
+            const hb=f.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
+            hb.translate(this.position)
+            this.scene.map.terrain.add_floor({hb:hb,smooth:false,layer:(f.layer??0)+this.layer,type:f.type,visible:f.visible??false})
+        }
         for (const l of this.def.generate.loots ?? []) {
             const items = this.game.get_loot_table(l.table)
             const p = v2.add_with_orientation(this.position, l.position, this.physical_data.side)
             for (const li of items) {
-                this.game.add_loot(p, {item:li.item, count:li.count}, this.layer)
+                this.scene.add_loot(p, li, this.layer)
             }
+        }
+        for(const wall of this.def.generate.walls??[]) {
+            const p = v2.add_with_orientation(this.position, wall.position??v2.zero, this.physical_data.side)
+            const obj=new Walls()
+            this.scene.add_object(obj,this.layer)
+            obj.set_walls(wall,false)
+            obj.set_position(p,Angle.add_orientation(this.physical_data.side,(wall.side??0) as Orientation))
         }
         for (const d of this.def.generate.decals ?? []) {
             const def=this.game.definitions.decals.getFromString(d.def)
             const side=this.physical_data.side
             const p = v2.add_with_orientation(this.position, d.position, side)
-            const rotation=(d.rotation??0)+Angle.side_rad(this.physical_data.side)
-            this.game.add_decal(p,rotation,def,d.tint,d.scale,d.layer)
+            const rotation=(d.rotation??0)+srotation
+            this.scene.add_decal(p,rotation,def,d.tint,d.scale,d.layer)
         }
         for(const o of this.def.generate.obstacles ?? []) {
             const def_name=typeof o.def==="string"?o.def:random.weight2(o.def)!.def
@@ -399,14 +407,14 @@ export class Building extends StaticBody {
             let rotation=o.rotation??0
             switch(def.rotation_mode){
                 case RotationMode.full:
-                    rotation+=Angle.side_rad(this.physical_data.side)
+                    rotation+=srotation
                     break
                 case RotationMode.limited:
                     rotation=Angle.add_orientation(rotation as Orientation,side)
                     break
             }
             const p = v2.add_with_orientation(this.position, o.position, side)
-            const obj=this.game.map.add_obstacle(def,this.layer+(o.layer??0))
+            const obj=this.scene.map.add_obstacle(def,this.layer+(o.layer??0))
             obj.parent=this
             if(o.id)this.objects_ids[o.id]=obj
             obj.initialize(rotation,o.variation,o.skin)
@@ -431,15 +439,19 @@ export class Building extends StaticBody {
             if(o.puzzle_piece){
                 this.puzzles[o.puzzle_piece.id??"main"].add_object(obj,o.puzzle_piece.value)
             }
+            if(o.scale!==undefined){
+                obj.max_scale=o.scale
+                obj.reset_scale()
+            }
 
             this.children.push({obj,def:o,type:0})
         }
-        for (const b of this.def.generate.sub_building ?? []) {
+        for(const b of this.def.generate.sub_building ?? []){
             const def=this.game.definitions.buildings.getFromString(typeof b.def==="string"?b.def:random.weight2(b.def)!.def)
             const side=this.physical_data.side
             const p = v2.add_with_orientation(this.position, b.position, side)
 
-            const obj=this.game.map.add_building(def,this.layer+(b.layer??0))
+            const obj=this.scene.map.add_building(def,this.layer+(b.layer??0))
             obj.init(Angle.add_orientation(side,b.rotation??0))
             obj.generate(p)
         }
@@ -447,7 +459,7 @@ export class Building extends StaticBody {
             if(child.type!==0)continue
             for(const conn of child.def.connections??[]){
                 const connection=this.objects_ids[conn]
-                if(conn)child.obj.connections.push(connection)
+                if(conn)child.obj.connections.push({type:0,obj:connection})
             }
         }
         this.after_generate()

@@ -1,6 +1,6 @@
 import { Rect } from "../math/geometry.ts";
 import { HitboxType2D, type Hitbox2D } from "../math/hitbox.ts"
-import { Matrix, matrix4 } from "../math/matrix.ts";
+import { Matrix } from "../math/matrix.ts";
 import { v2, v2m, Vec2 } from "../math/vec2.ts";
 import { v3, Vec3 } from "../math/vec3.ts";
 
@@ -425,6 +425,70 @@ export const model2d={
             inner,
             outer,
         )
+    },
+    wall(points:Vec2[],width:number,closed=false,final_expand=0):Model2D{
+        if(points.length<2)return this.zero()
+
+        if(!closed&&final_expand>0){
+            const a=points[0]
+            const b=points[1]
+            const d=v2.normalizeSafe(v2.sub(b,a),v2(1,0))
+            points=points.slice()
+            points[0]=v2(a.x+d.x*final_expand,a.y+d.y*final_expand)
+            const z=points.length-1,c=points[z],p=points[z-1],e=v2.normalizeSafe(v2.sub(p,c),v2(1,0))
+            points[z]=v2(c.x+e.x*final_expand,c.y+e.y*final_expand)
+        }
+
+        const half=width*.5,count=points.length
+        const left:Vec2[]=new Array(count),right:Vec2[]=new Array(count)
+
+        const line_intersection=(a:Vec2,ad:Vec2,b:Vec2,bd:Vec2):Vec2|undefined=>{
+            const cross=ad.x*bd.y-ad.y*bd.x
+            if(Math.abs(cross)<.000001)return
+            const dx=b.x-a.x,dy=b.y-a.y,t=(dx*bd.y-dy*bd.x)/cross
+            return v2(a.x+ad.x*t,a.y+ad.y*t)
+        }
+        const segment=(a:Vec2,b:Vec2)=>{
+            const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)
+            if(len<.000001)return{dir:v2(1,0),normal:v2(0,1)}
+            const dir=v2(dx/len,dy/len)
+            return{dir,normal:v2(-dir.y,dir.x)}
+        }
+        for(let i=0;i<count;i++){
+            const current=points[i]
+            if(!closed&&i===0){
+                const s=segment(points[0],points[1])
+                left[i]=v2(current.x+s.normal.x*half,current.y+s.normal.y*half)
+                right[i]=v2(current.x-s.normal.x*half,current.y-s.normal.y*half)
+                continue
+            }
+            if(!closed&&i===count-1){
+                const s=segment(points[count-2],points[count-1])
+                left[i]=v2(current.x+s.normal.x*half,current.y+s.normal.y*half)
+                right[i]=v2(current.x-s.normal.x*half,current.y-s.normal.y*half)
+                continue
+            }
+            const prev=points[(i-1+count)%count],next=points[(i+1)%count],s1=segment(prev,current),s2=segment(current,next)
+            const leftA=v2(current.x+s1.normal.x*half,current.y+s1.normal.y*half),leftB=v2(current.x+s2.normal.x*half,current.y+s2.normal.y*half)
+            const rightA=v2(current.x-s1.normal.x*half,current.y-s1.normal.y*half),rightB=v2(current.x-s2.normal.x*half,current.y-s2.normal.y*half)
+            left[i]=line_intersection(leftA,s1.dir,leftB,s2.dir)??v2((leftA.x+leftB.x)*.5,(leftA.y+leftB.y)*.5)
+            right[i]=line_intersection(rightA,s1.dir,rightB,s2.dir)??v2((rightA.x+rightB.x)*.5,(rightA.y+rightB.y)*.5)
+            const maxMiter=width*4
+            if(v2.distance(current,left[i])>maxMiter){
+                const n=v2.normalizeSafe(v2.add(s1.normal,s2.normal),s1.normal)
+                left[i]=v2(current.x+n.x*half,current.y+n.y*half)
+            }
+            if(v2.distance(current,right[i])>maxMiter){
+                const n=v2.normalizeSafe(v2.add(s1.normal,s2.normal),s1.normal)
+                right[i]=v2(current.x-n.x*half,current.y-n.y*half)
+            }
+        }
+        const vertices:number[]=[],segmentCount=closed?count:count-1
+        for(let i=0;i<segmentCount;i++){
+            const next=(i+1)%count,l0=left[i],r0=right[i],l1=left[next],r1=right[next]
+            vertices.push(l0.x,l0.y,l1.x,l1.y,r0.x,r0.y,r0.x,r0.y,l1.x,l1.y,r1.x,r1.y)
+        }
+        return{vertices:new Float32Array(vertices),tex_coords:new Float32Array()}
     },
     triangulateConvex(polygon: Vec2[], texSize = 32,matrix?:Matrix): Model2D {
         if (!polygon || polygon.length < 3) return { vertices: new Float32Array(0), tex_coords: new Float32Array(0) }

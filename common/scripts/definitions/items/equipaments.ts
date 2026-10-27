@@ -1,15 +1,14 @@
 import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 import { ItemRank } from "../../others/item.ts";
-import { DeepPartial, Definition, Definitions, mergeDeep, TD, tdm, TDType, v2, Vec2, Vec2TD } from "../../../engine/core.ts";
+import { DeepPartial, Definition, mergeDeep, TD, tdm, TDType, v2, Vec2, Vec2TD } from "../../../engine/core.ts";
 import { SideEffectType } from "../player/effects.ts";
-import { HumanModifiers } from "../../others/constants.ts";
 export const equipment_factorys={
     vest_1(id:string,e:DeepPartial<VestDef>={}):VestDef{
         return mergeDeep({
             idString:id+"_vest",
             defence:0,
             level:1,
-            reduction:0.1,
+            reduction:0.15,
             rank:ItemRank.E,
 
             tint:0xffffff
@@ -20,7 +19,7 @@ export const equipment_factorys={
             idString:id+"_vest",
             defence:0,
             level:2,
-            reduction:0.15,
+            reduction:0.225, // 7.5 
             rank:ItemRank.E,
 
             tint:0x556655
@@ -31,7 +30,7 @@ export const equipment_factorys={
             idString:id+"_vest",
             defence:0,
             level:3,
-            reduction:0.2,
+            reduction:0.3,
             rank:ItemRank.E,
 
             special:true,
@@ -43,7 +42,7 @@ export const equipment_factorys={
             idString:id+"_vest",
             defence:0,
             level:4,
-            reduction:0.25,
+            reduction:0.375,
             rank:ItemRank.E,
 
             special:true,
@@ -122,7 +121,7 @@ export interface VestDef extends Definition{
 
     property?:string[]
     events?:Record<string,(e:any)=>void>
-    modifiers?:Partial<HumanModifiers>
+    modifiers?:Record<string,number>
 }
 export const HelmetTD:TD={
     type:TDType.object,
@@ -203,10 +202,10 @@ export interface HelmetDef extends Definition{
 
     property?:string[]
     events?:Record<string,(e:any)=>void>
-    modifiers?:Partial<HumanModifiers>
+    modifiers?:Record<string,number>
 }
-export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
-    helmets.insert(
+export function Helmets_Default_Init():HelmetDef[]{
+    return [
         equipment_factorys.helmet_1("bike",{
             skins:["red_bike_helmet","yellow_bike_helmet","green_bike_helmet"]
         }),
@@ -249,10 +248,10 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
                 }
             }
         })
-    )
+    ]
 }
-export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
-    vests.insert(
+export function Vests_Default_Init():VestDef[]{
+    return [
         //Normals Vest
         equipment_factorys.vest_1("civil"),
         equipment_factorys.vest_2("military"),
@@ -260,5 +259,5 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
         equipment_factorys.vest_4("elite",{
             reflect_bullets:true
         }),
-    )
+    ]
 }

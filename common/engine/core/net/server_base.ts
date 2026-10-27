@@ -1,7 +1,8 @@
 import { ID } from "../math/utils.ts";
 import { BaseGameObject2D, AbstractGame } from "../game/game.ts";
-import { Client, OfflineClientsManager } from "./client.ts";
-
+import { Client, ClientsManager } from "./client.ts";
+export type HandlerFunc = (req: Request, url_path: string[], info: any) => Response | null;
+export type HandlerFuncAsync = (req: Request, url_path: string[], info: any) => Promise<Response | null>;
 //Definitions
 export interface HostConfig {
     port: number
@@ -12,33 +13,22 @@ export interface HostConfig {
 }
 
 export abstract class AbstractServerGame<DefaultGameObject2D extends BaseGameObject2D=BaseGameObject2D> extends AbstractGame<DefaultGameObject2D>{
-    public clients:OfflineClientsManager
+    public clients:ClientsManager
     public allowJoin:boolean
     public id:ID=1
     ticks:number=0
     ntps:number=30
-    constructor(tps:number,clients:OfflineClientsManager,objects:Array<new()=>DefaultGameObject2D>){
+    constructor(tps:number,clients:ClientsManager,objects:Array<new()=>DefaultGameObject2D>){
         super(tps,objects)
         this.allowJoin=true
         this.clients=clients
-
-        setTimeout(this.fpsShow.bind(this),1000)
-    }
-    fpsShow(){
-        if(!this.running)return
-        console.log(`[GAME-${this.id}] TPS:${this.ticks}/${this.tps}`)
-        this.ticks=0
-        setTimeout(this.fpsShow.bind(this),1000)
     }
     override on_stop(): void {
         super.on_stop()
-
-        //clearInterval(this.net_update_interval)
-        //this.net_update_interval=undefined
     }
     private net_tick_delay:number=0
-    override update(dt: number, new_list: boolean=false, destroy_queue: boolean=false): void {
-        super.update(dt,new_list,destroy_queue)
+    override update(dt: number): void {
+        super.update(dt)
         this.ticks++
 
         this.net_tick_delay+=dt
@@ -50,10 +40,7 @@ export abstract class AbstractServerGame<DefaultGameObject2D extends BaseGameObj
     handle_connection(client:Client,username:string):void{
 
     }
-    net_update_interval?:number
     net_update(full:boolean){
-        this.scene_2d.objects.apply_destroy_queue()
-        this.scene_2d.objects.update_to_net()
     }
     override stop(): void {
         super.stop()
@@ -64,7 +51,6 @@ export abstract class AbstractServerGame<DefaultGameObject2D extends BaseGameObj
     override mainloop(rqf?: boolean,auto_mainloop?:boolean): void {
         super.mainloop(rqf,auto_mainloop)
         this.clients.onconnection=this.handle_connection.bind(this)
-        if(this.net_update_interval)this.net_update_interval=setInterval(()=>this.net_update(false),this.ntps)
     }
     update_delay:number=3
 }

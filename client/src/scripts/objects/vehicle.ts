@@ -1,10 +1,12 @@
 import { VehicleDef, WheelDef } from "common/scripts/definitions/objects/vehicles.ts"
 import { Container2D, Sprite2D } from "common/engine/web.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
-import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts"
+import { MovingBody } from "./moving_body.ts"
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { ClientDecal } from "./client_decal.ts";
-import { Numeric, RectHitbox2D, Stream, v2, v2m } from "common/engine/core.ts";
+import { ColorM, HitboxType2D, Numeric, RectHitbox2D, Stream, v2, v2m } from "common/engine/core.ts";
+import { Debug } from "../others/config.ts";
+import { Human } from "./human.ts";
 export class Vehicle extends MovingBody {
     string_type = "vehicle"
     number_type = GameObjectType.Vehicle
@@ -19,18 +21,18 @@ export class Vehicle extends MovingBody {
     distance_since_last_mark:number=0
     tire_stress:number=0
 
-    physical_data:MovingBodyPhysicalData&{direction:number,speed:number} = {
-        rotation: 0,
-        direction: 0,
-        speed: 0,
-    }
+    direction:number=0
+    speed:number=0
 
     override on_create() {
-        this.game.cam2d.add_object(this.container)
+        this.scene.camera.add_object(this.container)
         this.container.add_child(this.main_sprite)
     }
     override on_layer_set(): void {
         this.main_sprite.layer=this.layer
+    }
+    override can_interact(human: Human): boolean {
+        return !human.dead&&this.hitbox.colliding_with(human.hitbox)
     }
 
     set_def(def: VehicleDef) {
@@ -48,10 +50,11 @@ export class Vehicle extends MovingBody {
             const w = def.wheels.defs[i]
             const spr = new Sprite2D()
             spr.frame = this.game.resources.get_frame("wheel")
-            spr.position = v2.clone(w.position)
-            spr.scale = v2(w.scale, w.scale)
-            spr.zIndex = 1
-            spr.hotspot = v2(0.5, 0.5)
+            spr.transform_frame({
+                zIndex:1,
+                hotspot:v2(0.5, 0.5)
+            })
+            spr.set_frame(w,this.game.resources)
 
             this.wheels.push({
                 def:def.wheels.defs[i],
@@ -68,11 +71,11 @@ export class Vehicle extends MovingBody {
 
     override on_tick(dt: number) {
         super.on_tick(dt)
-        const moving = Math.abs(this.physical_data.speed) > 0.1
+        const moving = Math.abs(this.speed) > 0.1
 
         const maxSteer = 35 * (Math.PI / 180)
 
-        let steer = this.physical_data.direction
+        let steer = this.direction
         if (steer > Math.PI) steer -= Math.PI * 2
 
         steer = Numeric.clamp(steer, -maxSteer, maxSteer)
@@ -93,7 +96,7 @@ export class Vehicle extends MovingBody {
                     const stress_resistance=(wheel.def.marks.stress_resistance??1.5)
                     if(stress_resistance>=this.tire_stress)continue
 
-                    const localPos = v2.clone(wheel.def.position)
+                    const localPos = v2.clone(wheel.def.position??v2.zero)
                     v2m.rotate_RadAngle(localPos,this.container.rotation)
 
                     const worldPos = v2.add(this.position,localPos)
@@ -109,15 +112,30 @@ export class Vehicle extends MovingBody {
                         rotation:this.container.rotation,
                         alpha:Numeric.clamp((this.tire_stress-stress_resistance)*0.2,30,255),
                         scale:wheel.def.scale,
+                        scale2:wheel.def.scale2
                     },this.game.resources)
                     d.sprite.transform_frame(wheel.def.marks.frame_transform??{})
-                    this.game.scene_2d.objects.add_object(d,this.layer)
+                    this.scene.objects.add_object(d,this.layer)
                 }
             }
         }
 
         this.container.position = this.position
-        this.container.rotation = this.physical_data.rotation
+        if(this.container.rotation!==this.rotation){
+            if(this.def!.hitbox.type===HitboxType2D.group){
+                this.base_hitbox=this.def!.hitbox.clone()
+                this.base_hitbox.rotate(this.rotation)
+                this.update_hitbox()
+            }
+            this.container.rotation = this.rotation
+        }
+
+        if(Debug.hitbox){
+            this.game.hitboxes_gfx.ctx.begin_path()
+            this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
+            this.game.hitboxes_gfx.ctx.hitbox(this.hitbox)
+            this.game.hitboxes_gfx.ctx.fill()
+        }
     }
     override on_destroy() {
         this.container.destroy()
@@ -126,8 +144,8 @@ export class Vehicle extends MovingBody {
         const [physical_data_dirty,dead]=stream.read_boolean_group()
         if(physical_data_dirty||full)this.decode_physical_data(stream, full)
 
-        this.physical_data.speed=stream.read_float32()
-        this.physical_data.direction=stream.read_rad()
+        this.speed=stream.read_float32()
+        this.direction=stream.read_rad()
         this.tire_stress=stream.read_float32()
 
         if (full) {

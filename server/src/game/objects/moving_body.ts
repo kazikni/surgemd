@@ -22,7 +22,8 @@ export abstract class MovingBody extends ServerGameObject{
         switch(obj.number_type){
             // deno-lint-ignore no-fallthrough
             case GameObjectType.Obstacle:
-            case GameObjectType.Building:{
+            case GameObjectType.Building:
+            case GameObjectType.Walls:{
                 if((obj as StaticBody).physical_data.stairs.length>0){
                     for(const s of (obj as StaticBody).physical_data.stairs){
                         if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,obj.layer+s.dest_layer)
@@ -40,7 +41,7 @@ export abstract class MovingBody extends ServerGameObject{
     }
     override on_tick(dt: number): void {
         const pos = v2.add(this.position, v2.scale(this.physical_data.velocity, dt))
-        this.position = this.game.map.clamp_hitbox(pos, this.hitbox)
+        this.position = this.scene.map.clamp_hitbox(pos, this.hitbox)
         const objs = this.manager.cells.get_objects(this.hitbox, this.layer)
         for (const obj of objs) {
             if (obj.id === this.id) continue

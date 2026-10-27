@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="147.89407"
+   height="147.89407"
+   viewBox="-26 -28 147.89408 147.89408"
+   version="1.1"
+   id="svg6"
+   sodipodi:docname="ping_alert_world.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs10" />
+  <sodipodi:namedview
+     id="namedview8"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="3.653008"
+     inkscape:cx="17.109188"
+     inkscape:cy="44.620762"
+     inkscape:window-width="1920"
+     inkscape:window-height="1008"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg6" />
+  <g
+     id="g290"
+     transform="matrix(2.5788193,0,0,2.5788193,41.048696,44.206334)">
+    <circle
+       cx="2.675"
+       cy="0.67500001"
+       r="26.785"
+       fill="none"
+       stroke="var(--image-fill)"
+       style="stroke:#ffffff;stroke-width:3.77953;stroke-linecap:round;stroke-opacity:1"
+       id="circle2" />
+    <path
+       fill="var(--image-fill)"
+       d="M -1.37,-14.99 H 5.116 V 12.203 H -1.37 Z m -0.276,28.478 h 7.037 v 5.434 h -7.037 z"
+       style="fill:#ffffff;fill-opacity:1;stroke:none"
+       transform="matrix(1.23939,0,0,1.23939,0.354,-1.761)"
+       id="path4" />
+  </g>
+</svg>

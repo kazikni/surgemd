@@ -1,7 +1,6 @@
 import { Collision,OverlapCollision2D, Rect } from "./geometry.ts"
 import { random } from "./random.ts";
 import { Stream } from "../net/stream.ts";
-import { Numeric } from "./utils.ts";
 import { v2, v2m, Vec2 } from "./vec2.ts";
 
 export enum HitboxType2D{
@@ -93,7 +92,7 @@ export abstract class BaseHitbox2D{
     abstract encode(stream:Stream):void
     abstract to_json():JsonHitbox2D
 
-    abstract generate_code(linebreak?:string,divade?:string):string
+    abstract generate_code():string
 
     constructor(){
     }
@@ -167,8 +166,8 @@ export class NullHitbox2D extends BaseHitbox2D{
     static decode(stream:Stream):NullHitbox2D{
         return new NullHitbox2D(stream.read_pos2())
     }
-    generate_code(linebreak?:string,divade?:string):string{
-        return `new NullHitbox2D(${v2.generate_code(this.position,divade)})`
+    generate_code():string{
+        return `new NullHitbox2D(${v2.generate_code(this.position)})`
     }
 }
 export class CircleHitbox2D extends BaseHitbox2D{
@@ -335,8 +334,8 @@ export class CircleHitbox2D extends BaseHitbox2D{
     static decode(stream:Stream):CircleHitbox2D{
         return new CircleHitbox2D(stream.read_pos2(),stream.read_float(0,500,2))
     }
-    generate_code(linebreak?:string,divade:string=", "):string{
-        return `new CircleHitbox2D(${v2.generate_code(this.position)}${divade}${this.radius})`
+    generate_code():string{
+        return `new CircleHitbox2D(${v2.generate_code(this.position)},${this.radius})`
     }
 }
 
@@ -452,7 +451,7 @@ export class RectHitbox2D extends BaseHitbox2D{
         return (point.x>=this.min.x&&point.x<=this.max.x)&&(point.y>=this.min.y&&point.y<=this.max.y)
     }
     override colliding_with_line(a: Vec2, b: Vec2): boolean {
-        let tmin = 0
+        /*let tmin = 0
         let tmax = Number.MAX_VALUE
 
         const eps = 1e-5
@@ -493,7 +492,8 @@ export class RectHitbox2D extends BaseHitbox2D{
             if (tmax > 0 && tmin < dist) return false
         }
 
-        return tmax >= 0 && tmin <= dist
+        return tmax >= 0 && tmin <= dist*/
+        return this.overlap_line(a,b)!=null
     }
     override overlap_line(a: Vec2, b: Vec2): IntersectionRes | null {
         let tmin = 0
@@ -673,8 +673,8 @@ export class RectHitbox2D extends BaseHitbox2D{
     override is_null(): boolean {
       return false
     }
-    generate_code(linebreak?:string,divade:string=", "):string{
-        return `new RectHitbox2D(${v2.generate_code(this.min)}${divade}${v2.generate_code(this.max)})`
+    generate_code():string{
+        return `new RectHitbox2D(${v2.generate_code(this.min)},${v2.generate_code(this.max)})`
     }
 }
 export class HitboxGroup2D extends BaseHitbox2D{
@@ -685,6 +685,21 @@ export class HitboxGroup2D extends BaseHitbox2D{
     constructor(...hitboxes: Hitbox2D[]) {
         super();
         this.hitboxes = hitboxes;
+    }
+    static walls(walls:Vec2[][],width:number):RectHitbox2D[]{
+        const ret:RectHitbox2D[]=[]
+        const half=width*0.5
+        for(const path of walls){
+            for(let i=0;i<path.length-1;i++){
+                const a=path[i],b=path[i+1],dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)
+                if(len<.000001)continue
+                const nx=-dy/len*half,ny=dx/len*half
+                const min=v2(Math.min(a.x+nx,a.x-nx,b.x+nx,b.x-nx),Math.min(a.y+ny,a.y-ny,b.y+ny,b.y-ny))
+                const max=v2(Math.max(a.x+nx,a.x-nx,b.x+nx,b.x-nx),Math.max(a.y+ny,a.y-ny,b.y+ny,b.y-ny))
+                ret.push(new RectHitbox2D(min,max))
+            }
+        }
+        return ret
     }
     override readonly type = HitboxType2D.group
     override colliding_with(that: Hitbox2D): boolean {
@@ -788,6 +803,13 @@ export class HitboxGroup2D extends BaseHitbox2D{
             hb.translate(position,position_angle)
         }
     }
+    rotate(rad:number):void{
+        for(const hb of this.hitboxes){
+            if(hb.type===HitboxType2D.circle){
+                v2m.rotate_RadAngle(hb.position,rad)
+            }
+        }
+    }
     override clone(deep:boolean=true): HitboxGroup2D {
         return new HitboxGroup2D(...(deep?this.hitboxes.map(hitbox => hitbox.clone(true)):this.hitboxes));
     }
@@ -812,11 +834,11 @@ export class HitboxGroup2D extends BaseHitbox2D{
             hitboxes:this.hitboxes.map((v)=>v.to_json()),
         }
     }
-    generate_code(linebreak:string="",divade:string=", "):string{
+    generate_code():string{
         let val="new HitboxGroup2D("
         for(let i=0;i<this.hitboxes.length;i++){
-            if(i>0)val+=divade
-            val+=this.hitboxes[i].generate_code(linebreak,divade)+linebreak
+            if(i>0)val+=","
+            val+=this.hitboxes[i].generate_code()
         }
         return val+")"
     }

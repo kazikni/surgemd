@@ -7,10 +7,6 @@ import { Game, GameData } from "./game.ts";
 export type WorkerMessage=WorkerMessageBase<GameConfig,GameData,GameServerConfig>
 export type GameContainer=AbstractGameContainer<GameData,GameConfig,GameServerConfig,WorkerMessage>
 
-/**
- * Conexao com o servidor da API (matchmaking).
- * O servidor de jogo faz login como uma regiao e responde os pedidos "find_game".
- */
 export class ApiConnection{
     socket?:WebSocket
     logged:boolean=false
@@ -74,10 +70,6 @@ export class ApiConnection{
     }
 }
 
-/**
- * Servidor de jogos: tem varios containers (max_games), cada um roda um Game.
- * Cada container fica em /api/ws/<id>.
- */
 export class GameServer extends AbstractGameServer<GameData,GameConfig,GameServerConfig,WorkerMessage>{
     api_conn?:ApiConnection
     clients_factory:new(packets:PacketsManager)=>ClientsManager
@@ -99,7 +91,6 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig,GameServe
         if(this.limiter.config.enabled)this.limiter.start()
     }
 
-    /** Acha um jogo compativel que ainda aceita players, ou cria um novo */
     async get_game(config?:GameConfig):Promise<GameContainer|undefined>{
         for(const g of this.games.values()){
             if(

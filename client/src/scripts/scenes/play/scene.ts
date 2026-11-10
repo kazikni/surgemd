@@ -2,8 +2,8 @@ import { BaseGELO, BasicSocket, Client, DefaultSignals, SignalManager, WorkerSoc
 import { HideElement, ShowElement } from "common/engine/web.ts";
 import { gelo_instance_type } from "common/scripts/others/constants.ts";
 import { type SimulatedScene } from "common/scripts/game/base.ts";
-import { mode_events, type SI_Mode } from "common/scripts/game/gelo/mode.ts";
-import { type GameSettings, setup_game_scene } from "common/scripts/game/modes/modes.ts";
+import { mode_events, type ModeManager } from "common/scripts/game/modes/mode_manager.ts";
+import { setup_game_scene } from "common/scripts/game/modes/modes.ts";
 import { type SI_Human } from "common/scripts/game/objects/moving_body/human.ts";
 import { LocalPlayerConn } from "common/scripts/game/players/player_conn.ts";
 import { type JoinData, JoinedPacket, JoinPacket } from "common/scripts/net/join_packet.ts";
@@ -22,32 +22,25 @@ export interface PlaySceneDefs{
     gelo:Record<number|string,(...args: any)=>GameGELO>
 }
 
-/** Como o jogo esta rodando */
 export type PlaySceneKind="none"|"self"|"worker"|"online"
 
 export interface SelfGameOptions{
-    /** Modo de jogo (ver common/scripts/game/modes/modes.ts). Padrao: "normal" (battle royale) */
     mode?:string
-    settings?:GameSettings
+    settings?:Record<string,any>
     group_size?:number
 }
 export interface WorkerGameOptions extends SelfGameOptions{
     tps?:number
     ntps?:number
 }
-/** Mensagem que a PlayScene manda para o worker (ver worker.ts) */
 export type PlayWorkerInitMessage={
     type:"init"
     options:WorkerGameOptions
 }
 
-/** Sinais em PlayScene.events */
 export const play_events={
-    /** (human) */
     joined:"joined",
-    /** ({win:boolean}) */
     game_over:"game_over",
-    /** (params) o humano ativo morreu */
     active_die:"active_die",
     disconnected:"disconnected",
     closed:"closed",
@@ -60,32 +53,11 @@ function with_timeout<T>(p:Promise<T>,ms:number,what:string):Promise<T>{
     })
 }
 
-/**
- * Cena de jogo. A mesma cena roda nos 3 modos:
- *
- *   // Online
- *   const game=new PlayScene(app)
- *   await game.connect("ws://localhost:8080/api/ws/0")
- *   await game.join()
- *   app.scene=game
- *
- *   // Local (sem servidor e sem worker: a simulacao roda nesta cena)
- *   await game.self_initialize({mode:"normal",settings:{bots:5}})
- *   await game.join()
- *
- *   // Worker (a simulacao roda num WebWorker, igual ao servidor)
- *   await game.worker_initialize({mode:"normal"})
- *   await game.join()
- *
- *   // Fim
- *   await game.close()
- *   app.scene=app.menu_scene
- */
 export class PlayScene extends GameScene {
     game_div:HTMLDivElement=document.querySelector("#game") as HTMLDivElement
 
     declare map:CC_GameMap
-    mode?:SI_Mode&GameGELO
+    mode?:ModeManager<any,any>
     deadzone?:CC_Deadzone
 
     defs:PlaySceneDefs={
@@ -138,9 +110,6 @@ export class PlayScene extends GameScene {
             case gelo_instance_type.deadzone:
                 this.deadzone=gelo as unknown as CC_Deadzone
                 break
-            case gelo_instance_type.mode:
-                this.mode=gelo as unknown as SI_Mode&GameGELO
-                break
         }
     }
 
@@ -148,11 +117,6 @@ export class PlayScene extends GameScene {
         if(!this.app)throw new Error("PlayScene precisa do app: use new PlayScene(app)")
     }
 
-    // ========================================================================
-    // Modos de conexao
-    // ========================================================================
-
-    /** Modo local: a simulacao roda nesta propria cena (objetos ccs_). */
     async self_initialize(options:SelfGameOptions={}){
         this.require_app()
         await this.close()
@@ -164,12 +128,17 @@ export class PlayScene extends GameScene {
             settings:options.settings??{},
             group_size:options.group_size,
         })
-        mode.on(mode_events.start,()=>{this.info.started=true})
-        mode.on(mode_events.human_die,()=>{this.info.living_count=mode.get_living_count()})
-        mode.on(mode_events.player_join,()=>{this.info.living_count=mode.get_living_count()})
+        this.mode=mode
+        const update=()=>{
+            this.info.started=mode.started
+            this.info.living_count=mode.get_living_count()
+        }
+        mode.on(mode_events.start,update)
+        mode.on(mode_events.player_join,update)
+        mode.on(mode_events.human_die,update)
+        mode.on(mode_events.player_leave,update)
     }
 
-    /** Modo worker: a simulacao roda num WebWorker (mesmo Game do servidor). Objetos ccn_. */
     async worker_initialize(options:WorkerGameOptions={}){
         this.require_app()
         await this.close()
@@ -186,7 +155,6 @@ export class PlayScene extends GameScene {
         })
     }
 
-    /** Modo online: conecta num servidor de jogo. Objetos ccn_. */
     async connect(url:string){
         this.require_app()
         await this.close()
@@ -223,11 +191,6 @@ export class PlayScene extends GameScene {
         await with_timeout(Promise.race([started,disconnected]),this.timeout,"o StartPacket")
     }
 
-    // ========================================================================
-    // Join
-    // ========================================================================
-
-    /** Adiciona o player no jogo (antigo JoinPacket). Retorna o humano ativo. */
     async join(data:JoinData={name:""}):Promise<CC_ActiveHuman|undefined>{
         if(this.kind==="self"){
             if(!this.mode)throw new Error("Jogo local nao inicializado: chame self_initialize() antes")
@@ -236,7 +199,7 @@ export class PlayScene extends GameScene {
                 on_finish:(win)=>this.events.emit(play_events.game_over,{win}),
             })
             this.local_conn=conn
-            const human=this.mode.add_player(conn,data)
+            const human=this.mode.join(conn,data)
             if(!human)return undefined
             this.set_active_human(human as unknown as GameObject)
             this.events.emit(play_events.joined,this.active_human)
@@ -253,7 +216,6 @@ export class PlayScene extends GameScene {
         return this.active_human
     }
 
-    /** Faz um humano virar o humano ativo deste cliente */
     set_active_human(obj:GameObject){
         if(this.active_human===obj as unknown)return
         this.active_human?.release_active()
@@ -283,7 +245,6 @@ export class PlayScene extends GameScene {
         this.try_bind_active()
     }
 
-    /** Estado do humano ativo (vida, boost...). Funciona nos 3 modos. */
     get_active_state():ActiveHumanState|undefined{
         if(this.kind==="self"){
             const h=this.active_human as unknown as SI_Human|undefined
@@ -302,11 +263,6 @@ export class PlayScene extends GameScene {
         return this.active_state
     }
 
-    // ========================================================================
-    // Fechar
-    // ========================================================================
-
-    /** Fecha o jogo (modo "hard"): desconecta, para o worker e limpa a cena. */
     async close(){
         if(this.kind==="none")return
         const client=this.client
@@ -329,6 +285,7 @@ export class PlayScene extends GameScene {
         for(const id of Object.keys(this.gelo.content)){
             this.gelo.unregistry(id)
         }
+        this.mode?.destroy()
         this.mode=undefined
         this.deadzone=undefined
         this.info.started=false
@@ -342,12 +299,15 @@ export class PlayScene extends GameScene {
     override on_set(): void {
         super.on_set()
         ShowElement(this.game_div)
+        ShowElement(this.app.renderer.canvas)
     }
     override on_unset(): void {
         HideElement(this.game_div)
+        HideElement(this.app.renderer.canvas)
     }
 
     override update(dt: number): void {
         super.update(dt,true,true)
+        if(this.kind==="self")this.mode?.tick(dt)
     }
 }

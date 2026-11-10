@@ -1,7 +1,7 @@
 import { CircleCollider2D, Collider2D, gel_events, GELComponent, Polygon2D, PolygonCollider2D, random, Rect, RectCollider2D, SeededRandom, Stream, v2, v2m, Vec2 } from "../../../engine/core.ts";
 import { MapBiomeDef, MapDef, MapObjectGeneration, MapStructureDef } from "../../definitions/maps/base.ts";
 import { ObstacleDef } from "../../definitions/objects/obstacles.ts";
-import { gelo_instance_type, Layers, object_instance_type, ObjectType, Spawn, SpawnMode, SpawnModeType } from "../../others/constants.ts";
+import { gelo_instance_type, Layers, object_instance_type,  Spawn, SpawnMode, SpawnModeType } from "../../others/constants.ts";
 import { FloorType, generate_terrain_shape, River, TerrainManager } from "../../others/terrain.ts";
 import { CommonGELO, CommonPlayScene, SimulatedGELO, SimulatedObject, SimulatedScene, type CommonApplication } from "../base.ts";
 import { type SI_Obstacle } from "../objects/static_body/obstacle.ts";

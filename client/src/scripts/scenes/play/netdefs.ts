@@ -10,10 +10,6 @@ import { ccn_human } from "../../objects/moving_body/human.ts";
 import { ccn_obstacle } from "../../objects/static_body/obstacle.ts";
 import { type PlaySceneDefs } from "./scene.ts";
 
-/**
- * Modos online e worker: os objetos tem visual (cc_) + decodificacao de rede = ccn_.
- * Quem simula e o servidor (ou o worker).
- */
 function obj(component:GELComponent<any>){
     const merged=gel_component.merge_deep(component)
     return ()=>{

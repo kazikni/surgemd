@@ -4,25 +4,12 @@ import { type SI_Human } from "common/scripts/game/objects/moving_body/human.ts"
 import { EmptyInputData, InputActionType, InputPacket, type InputData } from "common/scripts/net/input_packet.ts";
 import { type CC_Human } from "./human.ts";
 
-/**
- * Humano ativo = o humano que o cliente controla.
- *
- * - cc_active_human: marca o humano como ativo (camera segue, le o input do teclado/mouse/controle).
- * - ccs_active_human: modo local. Aplica o input direto no humano (que tem si_human).
- * - ccn_active_human: modos online/worker. Manda o input pelo InputPacket para o servidor.
- *
- * Exemplo (modo local):
- *   human.add_component(cc_active_human)
- *   human.add_component(ccs_active_human)
- */
 export type CC_ActiveHuman=CC_Human&{
     active:{
         zoom:number
-        /** Acoes de um clique (interact, reload...) acumuladas ate o proximo envio */
         pending:InputData
         input_listener?:(e:InputEvent)=>void
     }
-    /** Le o input atual do app e monta um InputData */
     read_input():InputData
     release_active():void
 }
@@ -46,7 +33,6 @@ export const cc_active_human:GELComponent<CC_ActiveHuman>={
                 pending:EmptyInputData(),
             }
         },
-        // O cc_active_human e adicionado num humano que ja esta na cena (add_component chama o create na hora)
         [gel_events.create](){
             if(this.active.input_listener)return
             this.active.input_listener=(e:InputEvent)=>{
@@ -59,8 +45,7 @@ export const cc_active_human:GELComponent<CC_ActiveHuman>={
         [gel_events.tick](dt:number){
             const cam=this.scene.camera
             const t=Numeric.clamp(dt*12,0,1)
-            const target=this.container?this.container.position:this.position
-            cam.position=v2.lerp(cam.position,target,t)
+            cam.position=this.container?this.container.position:this.position
             cam.zoom=Numeric.lerp(cam.zoom,this.active.zoom,t)
         },
         [gel_events.destroy](){
@@ -90,6 +75,7 @@ export const cc_active_human:GELComponent<CC_ActiveHuman>={
                 distance_to_aim:Numeric.clamp(aim_dist/Math.max(this.scene.camera.width*0.5,0.001),0,1),
                 use_weapon:input.active_actions.has("fire"),
                 alt_use_weapon:input.active_actions.has("alt_fire"),
+                interact:input.active_actions.has("interact"),
                 auto_fire:false,
             }
         },
@@ -102,9 +88,6 @@ export const cc_active_human:GELComponent<CC_ActiveHuman>={
     }
 }
 
-/**
- * Modo local: o input vai direto para a simulacao do humano.
- */
 export const ccs_active_human:GELComponent<CC_ActiveHuman&SI_Human>={
     id_string:"ccs_active_human",
     extensions:[cc_active_human],
@@ -116,9 +99,6 @@ export const ccs_active_human:GELComponent<CC_ActiveHuman&SI_Human>={
     },
 }
 
-/**
- * Modo online/worker: o input e mandado para o servidor (o NetPlayerConn aplica no humano de la).
- */
 export type CCN_ActiveHuman=CC_ActiveHuman&{
     scene:{client?:{emit_packet(p:InputPacket):void}}
 }

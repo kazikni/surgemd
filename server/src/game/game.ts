@@ -3,7 +3,7 @@ import { type GameDataBase, type ServerGameApplication } from "common/engine/ser
 import { type GameConfig } from "common/scripts/config/config.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { type CommonApplication } from "common/scripts/game/base.ts";
-import { mode_events } from "common/scripts/game/gelo/mode.ts";
+import { mode_events } from "common/scripts/game/modes/mode_manager.ts";
 import { setup_game_scene } from "common/scripts/game/modes/modes.ts";
 import { NetPlayerConn } from "./net_player_conn.ts";
 import { simulation_defs, SimulationDefs, SimulationScene } from "./scene.ts";
@@ -23,16 +23,6 @@ export interface GameAppConfig{
     }
 }
 
-/**
- * Um jogo rodando no servidor (ou dentro de um WebWorker).
- * E uma Application cuja cena e uma SimulationScene. Nao tem nada de render/DOM.
- *
- * Fluxo:
- *  - init(config): monta o modo, gera o mapa e a deadzone
- *  - mainloop(): comeca o clock (tps)
- *  - handle_connection(client): cria um NetPlayerConn para cada cliente
- *  - a cada 1/ntps segundos: net_tick() manda os UpdatePackets
- */
 export class Game extends AbstractApplication implements ServerGameApplication,CommonApplication{
     id:number=0
     definitions:GameDefinition=new GameDefinition()
@@ -82,7 +72,7 @@ export class Game extends AbstractApplication implements ServerGameApplication,C
         const mode=this.sim.mode
         return {
             running:this.running&&!!mode&&!mode.closed,
-            can_join:!!mode&&mode.can_join(),
+            can_join:!!mode&&mode.is_open(),
             started:!!mode&&mode.started,
             living_count:mode?mode.get_living_count():0,
         }
@@ -92,13 +82,16 @@ export class Game extends AbstractApplication implements ServerGameApplication,C
     }
 
     handle_connection(client:Client,username:string){
-        if(!this.initialized||!this.sim.mode.can_join()){
+        if(!this.initialized||!this.sim.mode.is_open()){
             client.disconnect()
             return
         }
         const conn=new NetPlayerConn(this,client)
         conn.username=username
-        this.sim.mode.connect(conn)
+        if(!this.sim.mode.connect(conn)){
+            client.disconnect()
+            return
+        }
         conn.send_start()
     }
 
@@ -108,13 +101,12 @@ export class Game extends AbstractApplication implements ServerGameApplication,C
         this.net_timer+=dt
         if(this.net_timer>=1/this.ntps){
             this.net_timer-=1/this.ntps
-            // Evita acumular atraso se o servidor travar
             if(this.net_timer>1/this.ntps)this.net_timer=0
             this.net_tick()
         }
     }
     net_tick(){
-        this.sim.mode.net_update_conns()
+        this.sim.mode.net_update()
         this.sim.net_update()
         this.sim.objects.apply_destroy_queue()
     }

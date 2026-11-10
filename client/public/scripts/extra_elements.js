@@ -85,87 +85,6 @@ class SMDEConsole extends HTMLElement{
         this.output.innerHTML=content.slice(0,index)+html+content.slice(index)
     }
 }
-
-class SMDEMenu extends HTMLElement {
-    constructor(){
-        super()
-        this._connected=false
-        this.hover=false
-    }
-    get innerHTML(){
-        return super.innerHTML
-    }
-    set innerHTML(val){
-        super.innerHTML=val
-        if(this._connected){
-            this.rebuild()
-        }
-    }
-
-    set_hover(hover){
-        this.hover=hover
-        if(this.parent_menu){
-            this.parent_menu.set_hover(hover)
-        }
-    }
-    close(){
-        if(this.parent_menu){
-            return this.parent_menu.close()
-        }
-        const event = new CustomEvent("close",{
-            bubbles: true,
-            cancelable: true
-        })
-        const canClose = this.dispatchEvent(event)
-        if(canClose)this.remove()
-    }
-    connectedCallback(){
-        this._connected=true
-        this.rebuild()
-        this.addEventListener("mouseenter",(e)=>this.set_hover(true))
-        this.addEventListener("mouseleave",(e)=>this.set_hover(false))
-    }
-    rebuild(){
-    }
-    /**
-     * 
-     * @param {string} text 
-     * @param {(event:MouseEvent)=>void} onclick 
-     */
-    add_option(text,onclick=(_e)=>{}){
-        const node=document.createElement("smde-option")
-        node.innerText=text
-        node.addEventListener("click",(e)=>{
-            onclick(e)
-            this.close()
-        })
-        this.appendChild(node)
-        return node
-    }
-    /**
-     * 
-     * @param {string} text
-     * @param {Menu} menu
-     * @param {(event:MouseEvent)=>void} onclick
-     */
-    add_submenu(text, menu){
-        menu.parent_menu=this
-        const option = document.createElement("smde-option-submenu")
-        const label = document.createElement("div")
-        label.textContent = text
-        option.appendChild(label)
-        option.appendChild(menu)
-        this.appendChild(option)
-        return option
-    }
-}
-class SMDEOptionSubMenu extends HTMLElement{
-    constructor(){
-        super()
-    }
-    connectedCallback(){
-    }
-}
 class SMDEJoystick extends HTMLElement {
     constructor() {
         super();
@@ -451,7 +370,5 @@ class SMDETree extends HTMLElement{
 customElements.define("smde-joystick", SMDEJoystick);
 customElements.define("smde-console",SMDEConsole)
 customElements.define('tabs-container', TabsContainer)
-customElements.define("smde-menu", SMDEMenu)
-customElements.define("smde-option-submenu", SMDEOptionSubMenu)
 customElements.define("smde-window", SMDEWindow)
 customElements.define("smde-tree",SMDETree)

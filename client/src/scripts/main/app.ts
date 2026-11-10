@@ -1,5 +1,5 @@
 import { ClientApplication, Renderer } from "common/engine/web.ts"
-import { api, api_server, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues, Debug_Colliders, sources } from "./config.ts"
+import { api, api_server, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues, sources } from "./config.ts"
 import { LoadingScreenScene } from "../scenes/loading_screen.ts";
 import { MenuScene } from "../scenes/menu/scene.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts"
@@ -12,7 +12,6 @@ import { play_events, PlayScene, type PlaySceneKind, type WorkerGameOptions } fr
 import { type JoinData } from "common/scripts/net/join_packet.ts";
 
 export type PlayOptions=WorkerGameOptions&{
-    /** Endereco do servidor (modo online) */
     url?:string
     join?:JoinData
 }
@@ -102,23 +101,19 @@ export class Application extends ClientApplication implements CommonApplication{
 
         //this.scene=this.menu_scene
 
-        // Por enquanto (sem UI) o jogo comeca direto. Escolha o modo pela URL:
-        //   ?play=self               -> local, sem servidor/worker (padrao)
-        //   ?play=worker             -> simulacao num WebWorker
+        //   ?play=self               -> local, with servidor/worker
+        //   ?play=worker             -> simulation in a WebWorker
         //   ?play=online&server=ws://localhost:8080/api/ws/0
-        //   &bots=5                  -> bots no battle royale (self/worker)
         const params=new URLSearchParams(location.search)
         const kind=(params.get("play")??"self") as Exclude<PlaySceneKind,"none">
         await this.play(kind,{
             url:params.get("server")??undefined,
             settings:{
-                bots:Number(params.get("bots")??5),
                 map:{def:params.get("map")??"normal"},
             },
         })
     }
 
-    /** Entra num jogo (local, worker ou online) e troca para a cena do jogo */
     async play(kind:Exclude<PlaySceneKind,"none">,options:PlayOptions={}){
         const game=this.play_scene
         switch(kind){
@@ -140,7 +135,6 @@ export class Application extends ClientApplication implements CommonApplication{
         })
         this.scene=game
     }
-    /** Sai do jogo atual e volta para o menu */
     async leave_game(){
         await this.play_scene.close()
         this.scene=this.menu_scene

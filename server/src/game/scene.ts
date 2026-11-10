@@ -2,8 +2,7 @@ import { BaseGELO, BaseSceneObject2D, CheckpointSettings, gel_component, GELComp
 import { type CommonApplication, type SimulatedScene } from "common/scripts/game/base.ts";
 import { si_deadzone, type SI_Deadzone } from "common/scripts/game/gelo/deadzone.ts";
 import { si_gamemap, type SI_GameMap } from "common/scripts/game/gelo/map.ts";
-import { type SI_Mode } from "common/scripts/game/gelo/mode.ts";
-import { get_game_mode } from "common/scripts/game/modes/modes.ts";
+import { type ModeManager } from "common/scripts/game/modes/mode_manager.ts";
 import { si_loot } from "common/scripts/game/objects/loot.ts";
 import { si_human } from "common/scripts/game/objects/moving_body/human.ts";
 import { si_obstacle } from "common/scripts/game/objects/static_body/obstacle.ts";
@@ -40,10 +39,6 @@ function gelo(component:GELComponent<any>){
     }
 }
 
-/**
- * Objetos da simulacao "pura" (servidor e worker): so componentes si_ (simulacao + net_encode).
- * Para adicionar um objeto novo no servidor, registre ele aqui.
- */
 export const simulation_defs:SimulationDefs={
     objects:{
         [object_instance_type.human]:obj(si_human),
@@ -53,23 +48,13 @@ export const simulation_defs:SimulationDefs={
     gelo:{
         [gelo_instance_type.map]:gelo(si_gamemap),
         [gelo_instance_type.deadzone]:gelo(si_deadzone),
-        // O modo e escolhido pelo nome (config.mode), ver common/scripts/game/modes/modes.ts
-        [gelo_instance_type.mode]:(name?:string)=>{
-            const g=new ServerGELO()
-            g.add_component(gel_component.merge_deep(get_game_mode(name)))
-            return g
-        },
     },
 }
 
-/**
- * Cena de simulacao usada pelo servidor e pelo worker.
- * Nao tem nada de render: so objetos, gelos, mapa, deadzone e modo.
- */
 export class SimulationScene extends Scene2D<ServerObject,ServerGELO> implements SimulatedScene{
     declare app:CommonApplication
     map!:SI_GameMap&ServerGELO
-    mode!:SI_Mode&ServerGELO
+    mode!:ModeManager<any,any>
     deadzone?:SI_Deadzone&ServerGELO
 
     defs:SimulationDefs
@@ -87,21 +72,17 @@ export class SimulationScene extends Scene2D<ServerObject,ServerGELO> implements
         return this.defs.gelo[type]?.(...args)
     }
 
-    /**
-     * A simulacao nao limpa os dirty a cada tick: isso so acontece no net tick (Game.net_tick),
-     * depois que os pacotes foram mandados.
-     */
     override update(dt:number):void{
         super.update(dt,false,false)
+        this.mode?.tick(dt)
     }
 
-    /** Salva objetos (com ids) + dados do modo (times, vidas, dinheiro...) */
     override make_checkpoint(stream:Stream,settings:CheckpointSettings={}){
         this.objects.encode_checkpoint(stream,{save_id:true,...settings})
-        this.mode.encode_mode_checkpoint(stream)
+        this.mode.encode_checkpoint(stream)
     }
     override load_checkpoint(stream:Stream){
         this.objects.proccess_checkpoint(stream)
-        this.mode.decode_mode_checkpoint(stream)
+        this.mode.decode_checkpoint(stream)
     }
 }

@@ -8,15 +8,8 @@ import { type DamageParams } from "common/scripts/others/constants.ts";
 import { type Game } from "./game.ts";
 import { type ServerObject } from "./scene.ts";
 
-/** Metade do tamanho da area que o player enxerga (em metros) */
 export const PlayerViewSize=v2(26,16)
 
-/**
- * PlayerConn de um cliente conectado por rede (WebSocket) ou por WebWorker.
- * - Recebe JoinPacket -> pede pro ModeManager adicionar o player
- * - Recebe InputPacket -> aplica no humano controlado
- * - net_update() -> manda o UpdatePacket com os objetos que o player ve
- */
 export class NetPlayerConn extends PlayerConn{
     game:Game
     client:Client
@@ -57,7 +50,7 @@ export class NetPlayerConn extends PlayerConn{
     on_join(p:JoinPacket){
         const mode=this.game.sim.mode
         if(this.human&&!this.human.dead)return
-        const h=mode.add_player(this,p.data)
+        const h=mode.join(this,p.data)
         if(!h){
             this.client.disconnect()
             return

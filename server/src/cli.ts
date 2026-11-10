@@ -1,4 +1,4 @@
-import { ClientsManager, CommandDef, ConsoleContext, FileManager, AppConsole, PacketsManager, parseJSONC, StaticStream } from "common/engine/core.ts";
+import { ClientsManager, ConsoleContext, FileManager, AppConsole, PacketsManager, parseJSONC, StaticStream } from "common/engine/core.ts";
 import { KSPRImageFormat,kspr } from "common/engine/core/lang/kspr.ts";
 import { make_packet_manager } from "common/scripts/net/packet_manager.ts";
 import { Game } from "./game/game.ts";
@@ -121,7 +121,6 @@ export async function main(args:string[],default_worker_file:string,fs:FileManag
                 }
             },
             {
-                // Servidor completo (varios jogos + conexao com a API): deno task dev:game
                 name:"start",
                 flags:{
                     "config-file":{type:"string",default:"./config"},

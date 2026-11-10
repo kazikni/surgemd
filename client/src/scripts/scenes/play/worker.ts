@@ -24,6 +24,5 @@ self.addEventListener("message",async (e:MessageEvent)=>{
     })
     game.mainloop()
 
-    // Conecta a pagina como um cliente do jogo
     clients.fake_connect_other_s(new WorkerSocket(self as unknown as Worker))
 })

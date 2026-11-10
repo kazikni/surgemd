@@ -28,7 +28,6 @@ export type C_Obstacle=C_StaticBody&{
     die():void
 
     encode_obstacle(stream:Stream,full:boolean):void
-    /** Retorna true se o obstaculo morreu agora */
     decode_obstacle(stream:Stream,full:boolean):boolean
 }
 
@@ -59,10 +58,12 @@ export const c_obstacle:GELComponent<C_Obstacle>={
                     dead:false
                 }
             }
+            this.physical.no_collision=this.def.no_collision??false
+            this.physical.no_projectile_collision=this.def.no_bullets_collision??false
+
             this.emit_event(obstacle_events.set_definition,def)
         },
         set_physical(_position?:Vec2,_scale?:number,_rotation?:number){
-            // Sem visual na simulacao pura. O cliente (cc_obstacle) sobrescreve.
         },
         die(){
             if(!this.health||this.health.dead)return
@@ -137,6 +138,11 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
             this.set_position(position)
             if(dead)this.die()
         },
+        [obstacle_events.set_definition]:function(def:ObstacleDef){
+            this.physical.no_spawn_collision=this.def.no_spawn_collision
+            this.physical.no_pathfinding_collision=this.def.no_pathfinding_collision
+            this.physical.passable_by_projectiles=def.passable_by_bullets
+        }
     },
     methods:{
         init(rotation?:number,scale?:number,variation?:number,parent_side:Orientation=0):void{

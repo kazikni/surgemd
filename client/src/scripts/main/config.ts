@@ -182,7 +182,7 @@ export const ConfigDefaultActions={
     },
     "message":{
         buttons:[],
-        keys:[Key.T]
+        keys:[Key.Enter]
     },
     "comunication_mode":{
         buttons:[GamepadButtonID.DPAD_Up],
@@ -202,7 +202,7 @@ export const ConfigDefaultActions={
     },
     "swap_guns":{
         buttons:[GamepadButtonID.R3],
-        keys:[Key.F]
+        keys:[Key.T]
     },
     "toggle_full_device":{
         buttons:[GamepadButtonID.Start],

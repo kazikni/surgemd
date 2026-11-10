@@ -12,29 +12,14 @@ import { Floors, FloorType } from "../../../others/terrain.ts";
 import { C_Humanoid_Visual, c_humanoid_visual, humanoid_events, si_humanoid_visual, SI_Humanoid_Visual } from "./humanoid.ts";
 import { c_moving_body, C_MovingBody, si_moving_body, SI_MovingBody } from "./moving_body.ts";
 
-/**
- * Human = player quase completo: fisica humana, vida/boost, knockout/downed, inventario e input.
- * Serve tanto para players quanto para bots, npcs e bosses humanos.
- * O humano NAO sabe se e player: isso e do ModeManager (time, vidas, dinheiro) e do PlayerConn (quem controla).
- *
- * Estados:
- * - knocked: nocauteado (parte fisica/gameplay). Precisa ser levantado (help_up) ou morre.
- * - downed: deitado (parte visual). E verdadeiro quando knocked, ou quando o humano foi derrubado
- *   temporariamente (lay_down, ex: atropelado).
- * - swimming: em agua profunda. O visual reaproveita a animacao de downed.
- */
 export const human_events={
     update_modifiers:humanoid_events.last+1,
     tick_physics:humanoid_events.last+2,
-    /** (params:DamageParams) */
     knocked:humanoid_events.last+3,
     help_up:humanoid_events.last+4,
-    /** (params:DamageParams) */
     die:humanoid_events.last+5,
     revive:humanoid_events.last+6,
-    /** Algum estado (dead/knocked/downed/swimming) mudou. No cliente e emitido no net_decode. */
     state_changed:humanoid_events.last+7,
-    /** (params:DamageParams,health_damage:number,shield_damage:number) */
     damaged:humanoid_events.last+8,
     last:humanoid_events.last+9,
 }
@@ -135,7 +120,6 @@ export const c_human:GELComponent<C_Human>={
 export interface HumanHealth{
     value:number
     max:number
-    /** Segundos de invencibilidade restantes */
     invencibility:number
 }
 export interface HumanBoost{
@@ -159,10 +143,8 @@ export type SI_Human=C_Human&SI_MovingBody&SI_Humanoid_Visual&{
 
     physical:{
         movement_locked:boolean
-        /** Velocidade extra (empurroes, explosoes, atropelamento) */
         secondary_velocity:Vec2
         secondary_acceleration:number
-        /** Tempo restante deitado (atropelado, etc). Diferente do knocked. */
         down_timer:number
         current_floor:FloorType
         dirty:boolean
@@ -244,22 +226,18 @@ export const si_human:GELComponent<SI_Human>={
         [gel_events.tick](dt:number){
             if(this.dead)return
 
-            // Modifiers
             this.modifiers={}
             apply_modifiers(this.modifiers,this.temp_modifiers)
             if(this.boost.def.se?.update_modifiers)apply_modifiers(this.modifiers,this.boost.def.se.update_modifiers(this))
             this.emit_event(human_events.update_modifiers,this.modifiers)
 
-            // Health / Boost
             if(this.health.invencibility>0)this.health.invencibility=Math.max(this.health.invencibility-dt,0)
             if(this.boost.def.se?.tick)this.boost.def.se.tick(dt,this)
 
-            // Floor
             const floor=this.scene.map.terrain.get_floor_type(this.position,this.layer,this.scene.map.default_floor) as FloorType
             this.physical.current_floor=floor
             const swimming=Floors[floor]?.deep===true
 
-            // Downed (visual) = knocked ou deitado temporariamente
             if(this.physical.down_timer>0)this.physical.down_timer=Math.max(this.physical.down_timer-dt,0)
             const downed=this.knocked||this.physical.down_timer>0
 
@@ -310,7 +288,6 @@ export const si_human:GELComponent<SI_Human>={
             this.input.alt_use_weapon=data.alt_use_weapon
             this.input.distance_to_aim=data.distance_to_aim
 
-            // Acoes de "um tick" acumulam ate o tick_input consumir
             this.input.interact=data.interact||this.input.interact
             this.input.reload=data.reload||this.input.reload
             this.input.swap_guns=data.swap_guns||this.input.swap_guns
@@ -353,7 +330,7 @@ export const si_human:GELComponent<SI_Human>={
         tick_physics(current_floor:FloorType,dt:number){
             const floor=Floors[current_floor]
             const slow=this.downed||this.swimming
-            let acceleration=40*(slow?0.2:floor.acceleration)
+            let acceleration=15*(slow?0.2:floor.acceleration)
             acceleration=Numeric.dt_expo_inter(acceleration,dt)
 
             if(!this.physical.movement_locked){
@@ -365,7 +342,6 @@ export const si_human:GELComponent<SI_Human>={
                 v2m.lerp(this.physical.velocity,move,acceleration)
 
                 if(slow){
-                    // Deitado/nadando: vira devagar para a direcao do movimento
                     if(this.input.movement.scale>0)this.rotation=Numeric.lerp_rad(this.rotation,this.input.movement.dir,Numeric.dt_expo_inter(1,dt))
                 }else{
                     this.rotation=this.input.rotation
@@ -374,7 +350,6 @@ export const si_human:GELComponent<SI_Human>={
                 this.physical.velocity=v2.zero()
             }
 
-            // Velocidade secundaria (empurroes)
             if(v2.len(this.physical.secondary_velocity)>0.07){
                 v2m.add(this.physical.velocity,this.physical.velocity,this.physical.secondary_velocity)
                 v2m.lerp(this.physical.secondary_velocity,v2.zero,acceleration*this.physical.secondary_acceleration)
@@ -499,7 +474,6 @@ export const si_human:GELComponent<SI_Human>={
             .write_float32(this.physical.down_timer)
             .write_float32(this.scale)
             this.encode_visual(stream)
-            // Inventario basico (armas e itens de quantidade)
             const weapons:Record<string,string>={}
             for(const k in this.inventory.weapons){
                 const w=this.inventory.weapons[k]
@@ -542,9 +516,4 @@ export const si_human:GELComponent<SI_Human>={
             this.emit_event(human_events.state_changed)
         },
     }
-}
-
-/** Dano padrao de deadzone */
-export function deadzone_damage(amount:number):DamageParams{
-    return {amount,reason:DamageReason.Deadzone}
 }

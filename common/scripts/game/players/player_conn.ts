@@ -1,25 +1,14 @@
 import { Numeric, random, v2 } from "../../../engine/core.ts";
 import { type JoinData } from "../../net/join_packet.ts";
 import { type DamageParams } from "../../others/constants.ts";
-import { type SI_Mode } from "../gelo/mode.ts";
+import { type ModeManager } from "../modes/mode_manager.ts";
 import { type SI_Human } from "../objects/moving_body/human.ts";
 
-/**
- * PlayerConn transforma um humano em "player": ele controla o humano (input), e cuida da comunicacao.
- *
- * - Os humanos sao todos iguais (player, bot, npc). Quem diz o que cada humano e, e o ModeManager.
- * - O PlayerConn so diz QUEM controla aquele humano.
- *
- * Implementacoes:
- * - LocalPlayerConn: modo local (self). O input e aplicado direto pelo componente ccs_active_human.
- * - BotPlayerConn: bot simples controlado por IA.
- * - NetPlayerConn (server/src/game/net_player_conn.ts): online/worker, recebe InputPacket e manda UpdatePacket.
- */
 export abstract class PlayerConn{
     private static _next_id=1
 
     id:number
-    mode?:SI_Mode
+    mode?:ModeManager<any,any>
     human?:SI_Human
     join?:JoinData
 
@@ -44,15 +33,12 @@ export abstract class PlayerConn{
         this.spectating=true
     }
 
-    /** Chamado pelo ModeManager */
     on_human_knocked(_params:DamageParams):void{}
     on_human_die(_params:DamageParams):void{}
     on_game_start():void{}
     on_game_finish(_win:boolean):void{}
 
-    /** Chamado todo tick pelo ModeManager */
     tick(_dt:number):void{}
-    /** Chamado a cada net tick (ntps) no servidor/worker */
     net_update():void{}
 
     disconnect(){
@@ -66,9 +52,6 @@ export type LocalPlayerConnCallbacks={
     on_die?:(params:DamageParams)=>void
     on_finish?:(win:boolean)=>void
 }
-/**
- * Player do modo local (self). Nao tem rede: o input vem do ccs_active_human.
- */
 export class LocalPlayerConn extends PlayerConn{
     callbacks:LocalPlayerConnCallbacks
     constructor(callbacks:LocalPlayerConnCallbacks={},id?:number){
@@ -83,10 +66,6 @@ export class LocalPlayerConn extends PlayerConn{
     }
 }
 
-/**
- * Bot bem simples: anda aleatoriamente e foge da deadzone.
- * Serve de base para IAs mais complexas (estender e sobrescrever o tick).
- */
 export class BotPlayerConn extends PlayerConn{
     override is_bot: boolean=true
 

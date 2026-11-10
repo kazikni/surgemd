@@ -259,6 +259,7 @@ export const si_deadzone: GELComponent<SI_Deadzone> = {
     },
     methods:{
         reset(){
+            if(this.config.stages)this.stages=this.config.stages
             const center=v2.scale(this.scene.map.size,0.5)
             const initial_radius=this.aspect*80
 

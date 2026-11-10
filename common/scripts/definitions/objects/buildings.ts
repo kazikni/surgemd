@@ -1,4 +1,4 @@
-import { ColorM, DeepPartial, HitboxGroup2D, mergeDeep, RectHitbox2D, smrf, tilemap_layer, v2 } from "../../../engine/core.ts";
+import { ColorM, DeepPartial, ColliderGroup2D, mergeDeep, RectCollider2D, smrf, tilemap_layer, v2 } from "../../../engine/core.ts";
 import { Spawn, zIndexes } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { hit_sounds } from "../utils.ts";
@@ -19,11 +19,11 @@ export const buildings_factory={
         }={}){
             const min=v2(-2.24,-1)
             const max=v2(2.44,1)
-            const rect=new RectHitbox2D(min,max)
+            const rect=new RectCollider2D(min,max)
             return mergeDeep({
-                idString:id,
+                id_string:id,
                 is_ghost:true,
-                hitbox:rect,
+                collider:rect,
                 floor_smrf:[
                     {content:smrf.parse(`bp;rect -2.44 -1 2.44 1;ss f ${ColorM.number2hex(tint)};fill`)}
                 ],
@@ -43,7 +43,7 @@ export const buildings_factory={
                         },
                         positions:[[v2(max.x,min.y),v2(min.x,min.y),v2(min.x,max.y),v2(max.x,max.y)]]
                     }],
-                    floors:[{hitbox:rect,type:FloorType.Metal}]
+                    floors:[{collider:rect,type:FloorType.Metal}]
                 },
                 ceiling:[
                     {
@@ -51,7 +51,7 @@ export const buildings_factory={
                             image:settings.ceiling??"container_ceiling_1",
                             tint:tint
                         },
-                        hitbox:new RectHitbox2D(min,max),
+                        collider:new RectCollider2D(min,max),
                         scope_change:{}
                     }
                 ],
@@ -66,10 +66,10 @@ export const buildings_factory={
         }={}){
             const min=v2(-2.43,-1)
             const max=v2(2.43,1)
-            const rect=new RectHitbox2D(min,max)
+            const rect=new RectCollider2D(min,max)
             return mergeDeep({
-                idString:id,
-                hitbox:rect,
+                id_string:id,
+                collider:rect,
                 is_ghost:true,
                 floor_smrf:[
                     {content:smrf.parse(`bp;rect -2.44 -1 2.44 1;ss f ${ColorM.number2hex(tint)};fill`)}
@@ -89,7 +89,7 @@ export const buildings_factory={
                         },
                         positions:[[v2(min.x,min.y),v2(max.x,min.y)],[v2(min.x,max.y),v2(max.x,max.y)]]
                     }],
-                    floors:[{hitbox:rect,type:FloorType.Metal}]
+                    floors:[{collider:rect,type:FloorType.Metal}]
                 },
                 ceiling:[
                     {
@@ -97,7 +97,7 @@ export const buildings_factory={
                             image:settings.ceiling??"container_ceiling_2",
                             tint:tint
                         },
-                        hitbox:new RectHitbox2D(min,max),
+                        collider:new RectCollider2D(min,max),
                         scope_change:{}
                     }
                 ]
@@ -138,43 +138,43 @@ export const buildings_factory={
         const height=settings.height??0.83
         const wall_size=settings.wall_size??0.14
         const floor=settings.floor??id+"_floor"
-        const spawn_hb=new RectHitbox2D(v2(-width,-height),v2(width,height))
+        const spawn_hb=new RectCollider2D(v2(-width,-height),v2(width,height))
         return [
             mergeDeep({
-                idString:id+"_down",
-                hitbox:RectHitbox2D.wall_enabled(v2(-width,-height),v2(width,height),{
+                id_string:id+"_down",
+                collider:RectCollider2D.wall_enabled(v2(-width,-height),v2(width,height),{
                     bottom:true,
                     top:true,
                     left:false,
                     right:true
                 },wall_size),
-                spawnHitbox:spawn_hb,
+                spawnCollider:spawn_hb,
                 floor_image:[
                     {image:floor+"_1",zIndex:zIndexes.BuildingsFloor3}
                 ],
                 generate:{
                     stair_data:[{
-                        hitbox:RectHitbox2D.centered(v2(0.69,0),v2(0.01,1.5)),
+                        collider:RectCollider2D.centered(v2(0.69,0),v2(0.01,1.5)),
                         dest:-1,
                     }]
                 }
             },settings.bottom??{},settings.both??{}),
             mergeDeep({
-                idString:id+"_up",
-                hitbox:RectHitbox2D.wall_enabled(v2(-width,-height),v2(width,height),{
+                id_string:id+"_up",
+                collider:RectCollider2D.wall_enabled(v2(-width,-height),v2(width,height),{
                     bottom:true,
                     top:true,
                     left:false,
                     right:true
                 },wall_size),
-                spawnHitbox:spawn_hb,
+                spawnCollider:spawn_hb,
                 floor_image:[
                     {image:floor+"_2",zIndex:zIndexes.BuildingFloor1,scale:4},
                     {image:floor+"_1"},
                 ],
                 generate:{
                     stair_data:[{
-                        hitbox:RectHitbox2D.centered(v2(0.69,0),v2(0.01,1.5)),
+                        collider:RectCollider2D.centered(v2(0.69,0),v2(0.01,1.5)),
                         dest:1,
                     }]
                 }
@@ -188,10 +188,10 @@ export const buildings_factory={
     }={}):BuildingDef[]{
         const min=v2(-2.76,-2.76)
         const max=v2(2.76,2.76)
-        const rect=new RectHitbox2D(v2(-2.65,-2.65),v2(2.65,2.65))
+        const rect=new RectCollider2D(v2(-2.65,-2.65),v2(2.65,2.65))
         return [
             mergeDeep({
-                idString:id,
+                id_string:id,
                 generate:{
                     sub_building:[
                         {
@@ -208,10 +208,10 @@ export const buildings_factory={
                     ],
                 },
                 is_ghost:true,
-                hitbox:RectHitbox2D.centered(v2(0,0),v2(1,1)),
+                collider:RectCollider2D.centered(v2(0,0),v2(1,1)),
             },settings.top??{}),
             mergeDeep({
-                idString:id+"_bottom",
+                id_string:id+"_bottom",
                 floor_image:[
                     {image:"small_bunker_floor_bg",scale:4.4,zIndex:zIndexes.BuildingFloor1,alpha:221},
                     {image:"small_bunker_floor_1",zIndex:zIndexes.BuildingsFloor2},
@@ -223,7 +223,7 @@ export const buildings_factory={
                             position:v2(0,0),
                             scale:2.15,
                         },
-                        hitbox:new RectHitbox2D(v2(-2.65,-2.65),v2(2.65,2.65)),
+                        collider:new RectCollider2D(v2(-2.65,-2.65),v2(2.65,2.65)),
                         scope_change:{}
                     }
                 ],
@@ -255,7 +255,7 @@ export const buildings_factory={
                         }
                     ]
                 },
-                hitbox:rect,
+                collider:rect,
                 is_ghost:true,
             },settings.bottom??{})
         ]
@@ -270,7 +270,7 @@ export const buildings_factory={
             const walls_tint=settings.walls_tint??1
             const doors_tint=settings.doors_tint??walls_tint
             return mergeDeep({
-                idString:id,
+                id_string:id,
                 is_ghost:true,
                 ceiling:[
                     {
@@ -294,7 +294,7 @@ export const buildings_factory={
                                 tint:0x656877,
                             }
                         },
-                        hitbox:new RectHitbox2D(v2(-1.75,-1.55),v2(1.75,1.55)),
+                        collider:new RectCollider2D(v2(-1.75,-1.55),v2(1.75,1.55)),
                         scope_change:{}
                     }
                 ],
@@ -354,7 +354,7 @@ export const buildings_factory={
                         ...(settings.content??[])
                     ],
                 },
-                hitbox:RectHitbox2D.centered(v2(0,0),v2(3.5,3.1)),
+                collider:RectCollider2D.centered(v2(0,0),v2(3.5,3.1)),
             },settings.b??{})
         },
         small_house_1(id:string,settings:{
@@ -371,17 +371,17 @@ export const buildings_factory={
             const min=v2(-7.5,-6.75)
             const max=v2(7.5,6.75)
             return mergeDeep({
-                idString:id,
-                spawnHitbox:new RectHitbox2D(v2(-7.7,-7),v2(7.7,7)),
-                hitbox:new HitboxGroup2D(
-                    new RectHitbox2D(min,v2(max.x,min.y+wall_size)),
-                    new RectHitbox2D(min,v2(min.x+wall_size,min.y+0.9)),
-                    new RectHitbox2D(v2(min.x,min.y+2.32),v2(min.x+wall_size,max.y)),
+                id_string:id,
+                spawnCollider:new RectCollider2D(v2(-7.7,-7),v2(7.7,7)),
+                collider:new ColliderGroup2D(
+                    new RectCollider2D(min,v2(max.x,min.y+wall_size)),
+                    new RectCollider2D(min,v2(min.x+wall_size,min.y+0.9)),
+                    new RectCollider2D(v2(min.x,min.y+2.32),v2(min.x+wall_size,max.y)),
 
-                    new RectHitbox2D(v2(max.x-wall_size,min.y),v2(max.x,max.y-2.45)),
-                    new RectHitbox2D(v2(max.x-wall_size,max.y-1.05),v2(max.x,max.y)),
+                    new RectCollider2D(v2(max.x-wall_size,min.y),v2(max.x,max.y-2.45)),
+                    new RectCollider2D(v2(max.x-wall_size,max.y-1.05),v2(max.x,max.y)),
 
-                    new RectHitbox2D(v2(min.x,max.y-wall_size),v2(max.x,max.y)),
+                    new RectCollider2D(v2(min.x,max.y-wall_size),v2(max.x,max.y)),
                 ),
                 floor_image:[
                     {
@@ -391,7 +391,7 @@ export const buildings_factory={
                 ceiling:[
                     {
                         frame:{image:"small_house_1_ceiling"},
-                        hitbox:new RectHitbox2D(min,max),
+                        collider:new RectCollider2D(min,max),
                         scope_change:{}
                     }
                 ],
@@ -558,11 +558,11 @@ export const buildings_factory={
         ceiling?:string,
         b?:DeepPartial<BuildingDef>
     }={}){
-        const rect=new RectHitbox2D(v2(-11.7,-5),v2(11.7,5))
+        const rect=new RectCollider2D(v2(-11.7,-5),v2(11.7,5))
         return mergeDeep({
-            idString:id,
+            id_string:id,
             is_ghost:true,
-            hitbox: rect,
+            collider: rect,
             assets:{
                 particles:{
                     particle:"metal_particle",
@@ -587,7 +587,7 @@ export const buildings_factory={
                     //{def:"storehouse_floor"}
                 ],
                 floors:[
-                    {hitbox:rect,type:FloorType.Metal}
+                    {collider:rect,type:FloorType.Metal}
                 ]
             },
             floor_image:[
@@ -597,7 +597,7 @@ export const buildings_factory={
             ceiling:[
                 {
                     frame:{image:settings.ceiling??"storehouse_ceiling_1",scale:2.5},
-                    hitbox:new RectHitbox2D(v2(-9.3,-4.8),v2(9.3,4.8)),
+                    collider:new RectCollider2D(v2(-9.3,-4.8),v2(9.3,4.8)),
                     scope_change:{}
                 }
             ]
@@ -628,7 +628,7 @@ export function Buildings_Default_Init():BuildingDef[]{
                         image:"small_iron_stairs_ceiling_1",
                         position:v2(0,0),
                     },
-                    hitbox:new RectHitbox2D(v2(-0.83,-0.83),v2(0.83,0.83)),
+                    collider:new RectCollider2D(v2(-0.83,-0.83),v2(0.83,0.83)),
                     scope_change:{}
                 }]
             },
@@ -639,7 +639,7 @@ export function Buildings_Default_Init():BuildingDef[]{
                         position:v2(0,0),
                         rotation:0
                     },
-                    hitbox:new RectHitbox2D(v2(-0.83,-0.83),v2(0.83,0.83)),
+                    collider:new RectCollider2D(v2(-0.83,-0.83),v2(0.83,0.83)),
                     scope_change:{}
                 }]
             },
@@ -679,8 +679,8 @@ export function Buildings_Default_Init():BuildingDef[]{
 
         // Meat Bunker
         {
-            idString: 'bunker_2_bottom',
-            hitbox: new RectHitbox2D(v2(-8.25,-3.02),v2(8.25,3.02)),
+            id_string: 'bunker_2_bottom',
+            collider: new RectCollider2D(v2(-8.25,-3.02),v2(8.25,3.02)),
             is_ghost:true,
             floor_image: [/*{
                 image: "small_bunker_floor_bg",
@@ -719,7 +719,7 @@ export function Buildings_Default_Init():BuildingDef[]{
                         scale:2.15,
                         rotation:Math.PI
                     },
-                    hitbox: new RectHitbox2D(v2(-8.25,-3.02),v2(8.25,3.02)),
+                    collider: new RectCollider2D(v2(-8.25,-3.02),v2(8.25,3.02)),
                     scope_change:{}
                 },
                 {
@@ -729,10 +729,10 @@ export function Buildings_Default_Init():BuildingDef[]{
                         scale:2.15,
                         rotation:Math.PI
                     },
-                    hitbox: new RectHitbox2D(v2(-8.25,-3.02),v2(8.25,3.02)),
+                    collider: new RectCollider2D(v2(-8.25,-3.02),v2(8.25,3.02)),
                 },
                 {
-                    hitbox:new RectHitbox2D(v2(2.6,-2.83),v2(8.25,2.83)),
+                    collider:new RectCollider2D(v2(2.6,-2.83),v2(8.25,2.83)),
                     frame:{
                         position:v2(5.3,0),
                         image: "small_bunker_ceiling_1",
@@ -864,7 +864,7 @@ export function Buildings_Default_Init():BuildingDef[]{
         mergeDeep(buildings_factory.house.shed("bunker_2",{
             walls_tint:2,
         }),{
-            idString:"bunker_2",
+            id_string:"bunker_2",
             generate:{
                 sub_building:[
                     {def:"bunker_2_bottom",position:v2(-3.47,0),layer:-1,rotation:3},
@@ -946,8 +946,8 @@ export function Buildings_Default_Init():BuildingDef[]{
         }),
         //Watchtower
         {
-            idString: "watchtower_top",
-            hitbox: new RectHitbox2D(v2(-7,-7),v2(7,7)),
+            id_string: "watchtower_top",
+            collider: new RectCollider2D(v2(-7,-7),v2(7,7)),
             is_ghost:true,
             floor_smrf:[
                 {content:smrf.parse(`bp;rect -7.1 -7.1 7.1 7.1;ss f #656877 s #4c515a sw 0.1;fill;`)}
@@ -960,7 +960,7 @@ export function Buildings_Default_Init():BuildingDef[]{
                         scale:3.12,
                         rotation:Math.PI
                     },
-                    hitbox: new RectHitbox2D(v2(-3.85,-3.85),v2(3.85,3.85)),
+                    collider: new RectCollider2D(v2(-3.85,-3.85),v2(3.85,3.85)),
                     scope_change:{}
                 }
             ],
@@ -1076,16 +1076,16 @@ export function Buildings_Default_Init():BuildingDef[]{
                     }
                 }],
                 floors: [{
-                    hitbox: new RectHitbox2D(v2(-7,-7),v2(7,7)),
+                    collider: new RectCollider2D(v2(-7,-7),v2(7,7)),
                     type:FloorType.Metal,
                     visible:true,
                 }]
             }
         },
         {
-            idString:"watchtower",
-            hitbox: new RectHitbox2D(v2(-5,-5),v2(5,5)),
-            spawnHitbox: new RectHitbox2D(v2(-7,-7),v2(7,7)),
+            id_string:"watchtower",
+            collider: new RectCollider2D(v2(-5,-5),v2(5,5)),
+            spawnCollider: new RectCollider2D(v2(-7,-7),v2(7,7)),
             reflect_bullets:true,
             generate:{
                 obstacles: [{
@@ -1120,7 +1120,7 @@ export function Buildings_Default_Init():BuildingDef[]{
             }
         },
         {
-            idString:"puzzle_test",
+            id_string:"puzzle_test",
             generate:{
                 loots:[{
                     position:v2(3,0),

@@ -1,11 +1,10 @@
 import { AKeyFrame, FrameTransform } from "../../core/definition/definitions.ts"
 import { AnimatedSprite2D, Sprite2D } from "./sprite.ts"
-import { Tween } from "../misc/utils.ts"
-import { type ClientGame } from "../misc/game.ts"
+import { ClientApplication } from "../misc/app.ts"
 import { ResourcesManager } from "../resources/resources.ts"
 import { Container2D } from "./container.ts";
 import { Container2DObject } from "./base.ts";
-import { ease, EaseFunction } from "../../core/math/utils.ts";
+import { ease, EaseFunction, type Tween } from "../../core/math/utils.ts";
 export type AnimationInstance = {
     loop: boolean
     enabled: boolean
@@ -23,14 +22,14 @@ export class AnimatedContainer2D extends Container2D{
     override _has_update: boolean=true
 
     current_animations:AnimationInstance[]=[]
-    game:ClientGame
+    app:ClientApplication
 
     modes:Record<string,AnimatedContainerModeCallback>={}
     animation_parent?:any
 
-    constructor(game:ClientGame){
+    constructor(app:ClientApplication){
         super()
-        this.game=game
+        this.app=app
     }
     stop_all_animations(){
         for(const a of this.current_animations){
@@ -90,7 +89,7 @@ export class AnimatedContainer2D extends Container2D{
                     case "sprite":{
                         const spr=this.get_object(action.fuser)
                         if(spr instanceof Sprite2D){
-                            spr.set_frame(action,this.game.resources)
+                            spr.set_frame(action,this.app.resources)
                         }else{
                             spr.transform_frame(action)
                         }
@@ -106,7 +105,7 @@ export class AnimatedContainer2D extends Container2D{
                         if(kf.time>0){
                             const ease_func:EaseFunction|undefined=typeof action.ease==="string"?(ease as Record<string,EaseFunction>)[action.ease]:action.ease
                             if(action.to.position){
-                                a.tweens.push(this.game.add_tween({
+                                a.tweens.push(this.app.clock.add_tween({
                                     duration:kf.time,
                                     target:fuser.position,
                                     yoyo:action.yoyo,
@@ -115,7 +114,7 @@ export class AnimatedContainer2D extends Container2D{
                                 }))
                             }
                             if(action.to.hotspot&&fuser instanceof Sprite2D){
-                                a.tweens.push(this.game.add_tween({
+                                a.tweens.push(this.app.clock.add_tween({
                                     duration:kf.time,
                                     target:fuser.hotspot,
                                     yoyo:action.yoyo,
@@ -124,7 +123,7 @@ export class AnimatedContainer2D extends Container2D{
                                 }))
                             }
                             if(action.to.rotation!==undefined){
-                                a.tweens.push(this.game.add_tween({
+                                a.tweens.push(this.app.clock.add_tween({
                                     duration:kf.time,
                                     target:fuser,
                                     yoyo:action.yoyo,

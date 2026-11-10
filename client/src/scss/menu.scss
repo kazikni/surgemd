@@ -80,8 +80,8 @@
         display: flex;
         align-items: center;
         padding: 16px;
-        perspective: 5000px;
         transform-style: preserve-3d;
+        perspective: 3000px;
         font-size: 2vw;
 
         #loading-screen-logo {
@@ -91,7 +91,7 @@
             background-size: cover;
             background-position: center;
 
-            animation: rotating 0.7s infinite alternate linear;
+            animation: loading-logo-rotating 2s infinite linear;
         }
     }
 
@@ -135,12 +135,12 @@
     }
 }
 
-@keyframes rotating {
-    from {
-        transform: rotateY(0deg);
+@keyframes loading-logo-rotating {
+    0%{
+        transform: rotateX(-10deg) rotateY(-90deg);
     }
-    to {
-        transform: rotateY(90deg);
+    100% {
+        transform: rotateX(-10deg) rotateY(90deg);
     }
 }
 #account-status{

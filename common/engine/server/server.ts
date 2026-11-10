@@ -1,7 +1,8 @@
+import { AbstractApplication } from "../core/app/app.ts";
 import { ConnectionLimitConfig } from "../core/definition/definitions.ts";
 import { FileManager } from "../core/definition/file.ts";
 import { ClientsManager } from "../core/net/client.ts";
-import { AbstractServerGame, HandlerFunc, HandlerFuncAsync } from "../core/net/server_base.ts";
+import { HandlerFunc, HandlerFuncAsync } from "../core/net/server_base.ts";
 export type server_factory=(new(port:number,ssl?:boolean,certFile?:string,keyFile?:string)=>Server)
 export class ConnectionLimiter {
     private map = new Map<string, {
@@ -162,7 +163,7 @@ export abstract class AbstractGameContainer<
     abstract get_address():string
 }
 export abstract class AbstractSelfGameContainer<
-    Game extends AbstractServerGame<any>,
+    Game extends AbstractApplication<any>,
     GameData extends GameDataBase,
     GameConfig,
     MainConfig,

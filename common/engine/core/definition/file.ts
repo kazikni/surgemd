@@ -7,7 +7,8 @@ export abstract class FileHandle {
     abstract flush(): Promise<void>
 }
 export abstract class FileManager{
-    abstract is_directory(path:string):boolean
+    abstract is_directory(path:string):Promise<boolean>
+    abstract is_file(path:string):Promise<boolean>
     abstract make_dir(path:string):Promise<void>
 
     abstract read_file(path:string):Promise<string>
@@ -20,13 +21,14 @@ export abstract class FileManager{
     abstract open(path: string, mode: "r" | "w" | "rw"): Promise<FileHandle>
 
     abstract exist(path:string):Promise<boolean>
+    abstract remove(path:string):Promise<void>
 
     async list_dir_recursive(path:string,base:string=""):Promise<string[]>{
         const ret:string[]=[]
         const files=await this.list_dir(Path.join_simple(base,path))
         for(const p of files){
             const name=Path.join_simple(path,p)
-            if(this.is_directory(Path.join_simple(base,name))){
+            if(await this.is_directory(Path.join_simple(base,name))){
                 ret.push(...await (this.list_dir_recursive(name,base)))
             }else{
                 ret.push(name)
@@ -41,8 +43,11 @@ export class FetchFileManager extends FileManager {
     override async exist(path: string): Promise<boolean> {
         return true
     }
-    override is_directory(path: string): boolean {
+    override async is_directory(path: string): Promise<boolean> {
         return false
+    }
+    override is_file(path: string): Promise<boolean> {
+      throw new Error("Method not implemented.");
     }
     async read_file(path: string): Promise<string> {
         const res = await fetch(Path.join(this.base,path))
@@ -66,7 +71,7 @@ export class FetchFileManager extends FileManager {
     async write_fileb(path: string, content: Uint8Array): Promise<void> {
         const res = await fetch(Path.join(this.base,path), {
             method: "PUT",
-            body: content,
+            body: content as BodyInit,
             headers: { "Content-Type": "application/octet-stream" }
         })
         if (!res.ok) throw new Error(`write_fileb failed: ${res.status}`)
@@ -79,5 +84,46 @@ export class FetchFileManager extends FileManager {
     }
     async open(path: string, mode: "r" | "w" | "rw"): Promise<FileHandle> {
         throw new Error("FetchFileManager Dont Support Open")
+    }
+    override remove(path: string): Promise<void> {
+      throw new Error("Method not implemented.");
+    }
+}
+export class NullFileManager extends FileManager{
+    override is_file(path: string): Promise<boolean> {
+      throw new Error("Method not implemented.");
+    }
+    constructor(){
+        super()
+    }
+    is_directory(path: string): Promise<boolean> {
+        throw new Error("Method not implemented.");
+    }
+    make_dir(path: string): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    read_file(path: string): Promise<string> {
+        throw new Error("Method not implemented.");
+    }
+    write_file(path: string, content: string): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    read_fileb(path: string): Promise<Uint8Array> {
+        throw new Error("Method not implemented.");
+    }
+    write_fileb(path: string, content: Uint8Array): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    list_dir(path: string): Promise<string[]> {
+        throw new Error("Method not implemented.");
+    }
+    open(path: string, mode: "r" | "w" | "rw"): Promise<FileHandle> {
+        throw new Error("Method not implemented.");
+    }
+    exist(path: string): Promise<boolean> {
+        throw new Error("Method not implemented.");
+    }
+    override remove(path: string): Promise<void> {
+      throw new Error("Method not implemented.");
     }
 }

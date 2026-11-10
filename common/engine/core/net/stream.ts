@@ -1,7 +1,7 @@
 import { KDate } from "../definition/definitions.ts"
 import { TDType, type TD } from "../lang/td.ts";
 import { PolarMovement } from "../math/geometry.ts"
-import { BaseHitbox2D, CircleHitbox2D, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, PolygonHitbox2D, RectHitbox2D } from "../math/hitbox.ts"
+import { BaseCollider2D, CircleCollider2D, Collider2D, ColliderGroup2D, ColliderType2D, NullCollider2D, PolygonCollider2D, RectCollider2D } from "../math/collider.ts"
 import { Matrix } from "../math/matrix.ts";
 import { ID } from "../math/utils.ts"
 import { Vec2} from "../math/vec2.ts"
@@ -392,9 +392,9 @@ export abstract class Stream{
                     this.write_array(obj, (v) => this.write_any(v,bytes1,bytes2), bytes1)
                     return this
                 }
-                if(obj instanceof BaseHitbox2D){
+                if(obj instanceof BaseCollider2D){
                     this.write_uint8(6)
-                    this.write_hitbox(obj as Hitbox2D)
+                    this.write_collider(obj as Collider2D)
                     return this
                 }
                 this.write_uint8(5)
@@ -419,7 +419,7 @@ export abstract class Stream{
             case 5:
                 return this.read_string_dict(_s => this.read_any(bytes1,bytes2),bytes1,bytes2)
             case 6:
-                return this.read_hitbox()
+                return this.read_collider()
         }
         throw new Error("Invalid type in readObject")
     }
@@ -616,23 +616,23 @@ export abstract class Stream{
     }
 
     
-    write_hitbox(hb:Hitbox2D){
+    write_collider(hb:Collider2D){
         this.write_uint8(hb.type)
         hb.encode(this)
         return this
     }
-    read_hitbox():Hitbox2D{
-        switch(this.read_uint8() as HitboxType2D){
-            case HitboxType2D.circle:
-                return CircleHitbox2D.decode(this)
-            case HitboxType2D.rect:
-                return RectHitbox2D.decode(this)
-            case HitboxType2D.group:
-                return HitboxGroup2D.decode(this)
-            case HitboxType2D.polygon:
-                return PolygonHitbox2D.decode(this)
-            case HitboxType2D.null:
-                return NullHitbox2D.decode(this)
+    read_collider():Collider2D{
+        switch(this.read_uint8() as ColliderType2D){
+            case ColliderType2D.circle:
+                return CircleCollider2D.decode(this)
+            case ColliderType2D.rect:
+                return RectCollider2D.decode(this)
+            case ColliderType2D.group:
+                return ColliderGroup2D.decode(this)
+            case ColliderType2D.polygon:
+                return PolygonCollider2D.decode(this)
+            case ColliderType2D.null:
+                return NullCollider2D.decode(this)
         }
     }
 

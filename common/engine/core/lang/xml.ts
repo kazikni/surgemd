@@ -3,6 +3,7 @@ import { v2, Vec2 } from "../math/vec2.ts";
 import { Stream } from "../net/stream.ts";
 
 export type XMLNode = {
+    parent?:XMLNode
     tag: string
     attrs: Record<string, string>
     children: (XMLNode | string)[]
@@ -16,8 +17,25 @@ function attrsToString(attrs?: Record<string,string>) {
 }
 
 export const kxml = Object.freeze({
-    el(tag: string, attrs?: Record<string,string>, children?: (XMLNode|string)[]): XMLNode {
-        return { tag, attrs:attrs??{}, children:children??[] }
+    ENTITIES:{amp:"&",lt:"<",gt:">",quot:'"',apos:"'"} as Record<string,string>,
+    _escape_text(s:string):string{
+        return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    },
+    _escape_attr(s:string):string{
+        return this._escape_text(s).replace(/"/g,"&quot;")
+    },
+    _unescape_xml(s:string):string{
+        return s.replace(/&(#x[0-9a-fA-F]+|#\d+|\w+);/g,(m,e:string)=>{
+            if(e[0]==="#"){
+                const code=e[1]==="x"||e[1]==="X"?parseInt(e.slice(2),16):parseInt(e.slice(1),10)
+                return Number.isNaN(code)||code>0x10FFFF?m:String.fromCodePoint(code)
+            }
+            return this.ENTITIES[e]??m
+        })
+    },
+
+    el(tag: string, attrs?: Record<string,string>, children?: (XMLNode|string)[],text?:string): XMLNode {
+        return { tag, attrs:attrs??{}, children:children??[]}
     },
     append:{
         attrs(node: XMLNode, ...attrsList: Record<string,string>[]) {
@@ -28,6 +46,7 @@ export const kxml = Object.freeze({
         },
         childs(root: XMLNode, ...children:(XMLNode|string)[]) {
             for(const c of children){
+                if(typeof c!=="string")c.parent=root
                 root.children.push(c)
             }
         },
@@ -43,14 +62,11 @@ export const kxml = Object.freeze({
                 children:root.children
             }
         },
-        childs(root: XMLNode, ...children:(XMLNode|string)[]) {
-            return {
-                tag:root.tag,
-                attrs:root.attrs,
-                children:[root.children,...children]
-            }
+        childs(root:XMLNode,...children:(XMLNode|string)[]):XMLNode{
+            return {...root,children:[...root.children,...children]}
         },
     },
+
     encode(node: XMLNode|string, stream: Stream): Stream {
         if (typeof node === "string") {
             stream.write_uint8(2)
@@ -103,93 +119,149 @@ export const kxml = Object.freeze({
             children
         }
     },
-    parse(xml: string): XMLNode {
-        let i = 0
-        function skipWhitespace() {
-            while (/\s/.test(xml[i])) i++
+
+    parse(xml:string):XMLNode{
+        let i=0
+        const fail=(msg:string):never=>{
+            const line=xml.slice(0,i).split("\n").length
+            throw new Error(`kxml.parse: ${msg} (line ${line}, pos ${i})`)
         }
-        function parseAttrs(): Record<string,string> {
-            const attrs: Record<string,string> = {}
-            while (true) {
-                skipWhitespace()
-                if (xml[i] === ">" || xml[i] === "/") break
-                let name = ""
-                while (/[^\s=]/.test(xml[i])) {
-                    name += xml[i++]
+        const is_space=(c:string)=>c===" "||c==="\n"||c==="\t"||c==="\r"
+        const skip_ws=()=>{while(i<xml.length&&is_space(xml[i]))i++}
+        const starts=(s:string)=>xml.startsWith(s,i)
+        const skip_until=(end:string)=>{
+            const at=xml.indexOf(end,i)
+            if(at<0)fail(`unterminated, expected "${end}"`)
+            i=at+end.length
+        }
+        // comentários, <?xml ?> e <!DOCTYPE>
+        const skip_misc=():boolean=>{
+            if(starts("<!--")){i+=4;skip_until("-->");return true}
+            if(starts("<?")){i+=2;skip_until("?>");return true}
+            if(starts("<!DOCTYPE")){skip_until(">");return true}
+            return false
+        }
+        const read_name=():string=>{
+            const start=i
+            while(i<xml.length&&!is_space(xml[i])&&xml[i]!==">"&&xml[i]!=="/"&&xml[i]!=="=")i++
+            if(i===start)fail("expected a name")
+            return xml.slice(start,i)
+        }
+        const parse_attrs=():Record<string,string>=>{
+            const attrs:Record<string,string>={}
+            while(true){
+                skip_ws()
+                if(i>=xml.length)fail("unexpected end inside tag")
+                if(xml[i]===">"||xml[i]==="/")break
+                const name=read_name()
+                skip_ws()
+                if(xml[i]==="="){
+                    i++
+                    skip_ws()
+                    const quote=xml[i]
+                    if(quote!=='"'&&quote!=="'")fail("expected quote around attribute value")
+                    i++
+                    const end=xml.indexOf(quote,i)
+                    if(end<0)fail("unterminated attribute value")
+                    attrs[name]=this._unescape_xml(xml.slice(i,end))
+                    i=end+1
+                }else{
+                    attrs[name]="" // atributo sem valor
                 }
-                skipWhitespace()
-                i++
-                skipWhitespace()
-                const quote = xml[i++]
-                let value = ""
-                while (xml[i] !== quote) {
-                    value += xml[i++]
-                }
-                i++
-                attrs[name] = value
             }
             return attrs
         }
-        function parseNode(): XMLNode {
-            skipWhitespace()
+        const parse_element=():XMLNode=>{
+            i++ // <
+            const tag=read_name()
+            const attrs=parse_attrs()
 
-            if (xml[i] !== "<") {
-                let text = ""
-                while (xml[i] !== "<") {
-                    text += xml[i++]
+            if(xml[i]==="/"){ // <tag />
+                i++
+                if(xml[i]!==">")fail("expected '>'")
+                i++
+                return {tag,attrs,children:[]}
+            }
+            i++ // >
+
+            const children:(XMLNode|string)[]=[]
+            let text=""
+            const flush=()=>{
+                const t=text.trim()
+                if(t)children.push(t)
+                text=""
+            }
+
+            while(true){
+                if(i>=xml.length)fail(`unclosed <${tag}>`)
+
+                if(xml[i]!=="<"){
+                    const end=xml.indexOf("<",i)
+                    const stop=end<0?xml.length:end
+                    text+=this._unescape_xml(xml.slice(i,stop))
+                    i=stop
+                    continue
                 }
-                return text.trim() as any
-            }
-            i++
-            let tag = ""
-            while (/[^\s>/]/.test(xml[i])) {
-                tag += xml[i++]
-            }
-            const attrs = parseAttrs()
-            if (xml[i] === "/") {
-                i += 2
-                return { tag, attrs, children: [] }
-            }
-            i++
-            const children: (XMLNode|string)[] = []
-
-            while(true) {
-                skipWhitespace()
-                if (xml[i] === "<" && xml[i+1] === "/") {
-                    i += 2
-                    while (xml[i] !== ">") i++
+                if(starts("</")){
+                    i+=2
+                    const name=read_name()
+                    if(name!==tag)fail(`expected </${tag}> but found </${name}>`)
+                    skip_ws()
+                    if(xml[i]!==">")fail("expected '>'")
                     i++
-                    break
+                    flush()
+                    return {tag,attrs,children}
                 }
+                if(starts("<![CDATA[")){
+                    i+=9
+                    const at=xml.indexOf("]]>",i)
+                    if(at<0)fail("unterminated CDATA")
+                    text+=xml.slice(i,at)
+                    i=at+3
+                    continue
+                }
+                if(skip_misc())continue
 
-                const child = parseNode()
-                if (typeof child === "string") {
-                    if (child > 0) children.push(child)
-                } else {
-                    children.push(child)
-                }
+                flush()
+                children.push(parse_element())
             }
-
-            return { tag, attrs, children }
         }
 
-        return parseNode()
+        while(true){skip_ws();if(!skip_misc())break}
+        if(xml[i]!=="<")fail("expected root element")
+        const root=parse_element()
+        while(true){skip_ws();if(!skip_misc())break}
+        if(i<xml.length)fail("unexpected content after root element")
+        return root
     },
-    stringify(node: XMLNode): string {
-        const attrs = attrsToString(node.attrs)
-        const children = node.children
-            ? node.children.map(c => typeof c === "string" ? c : kxml.stringify(c)).join("")
-            : ""
 
-        return `<${node.tag}${attrs ? " " + attrs : ""}>${children}</${node.tag}>`
+    stringify(node:XMLNode,mini:boolean=true,indent:string="  ",depth:number=0):string{
+        const attrs=attrsToString(node.attrs)
+        const open=`<${node.tag}${attrs?" "+attrs:""}`
+        const children=node.children??[]
+
+        if(children.length===0)return mini?`${open}/>`:`${open}/>`
+
+        const render=(c:XMLNode|string,d:number)=>typeof c==="string"?this._escape_text(c):this.stringify(c,mini,indent,d)
+
+        if(mini)return `${open}>${children.map(c=>render(c,0)).join("")}</${node.tag}>`
+
+        if(children.every(c=>typeof c==="string")){
+            return `${open}>${children.map(c=>render(c,0)).join("")}</${node.tag}>`
+        }
+
+        const pad=indent.repeat(depth+1)
+        const lines=children.map(c=>pad+render(c,depth+1))
+        return `${open}>\n${lines.join("\n")}\n${indent.repeat(depth)}</${node.tag}>`
     },
+
     clone(node: XMLNode): XMLNode {
         return {
             tag: node.tag,
             attrs: node.attrs ? { ...node.attrs } : {},
             children: node.children?.map(c =>
                 typeof c === "string" ? c : kxml.clone(c)
-            )
+            ),
         }
     },
     get_node_by_tag(root:XMLNode,tag:string):XMLNode|undefined{
@@ -198,37 +270,32 @@ export const kxml = Object.freeze({
         }
         return undefined
     },
-    get_node_by_id(root:XMLNode,id:string):XMLNode|undefined{
+    get_node_by_attr(root:XMLNode,attr:string,value:string):XMLNode|undefined{
         for(const n of root.children??[]){
-            if(typeof n!=="string"&&n.attrs[id]===id)return n
+            if(typeof n!=="string"&&n.attrs[attr]===value)return n
         }
         return undefined
     },
-    get_node_by_tag_deep(root:XMLNode,tag:string):XMLNode|undefined{
-        for(const n of root.children??[]){
-            if(typeof n!=="string"&&n.tag===tag)return n
+    
+    query_selector_attr(root:XMLNode,attr:string,value:string):XMLNode|undefined{
+        for(const node of root.children??[]){
+            if(typeof node==="string")continue
+            if(node.attrs[attr]===value)return node
+            const found=kxml.query_selector_attr(node,attr,value)
+            if(found)return found
         }
         return undefined
     },
     query_selector(root:XMLNode,item:string):XMLNode|undefined{
-        if(item.startsWith("#")){
-            const id=item.substring(1)
-            for(const node of root.children??[]){
-                if(typeof node!=="string"){
-                    if(node.attrs[id]===id)return node
-                    const ret=this.query_selector(root,item)
-                    if(ret!==undefined)return ret
-                }
-            }
-        }else{
-            for(const node of root.children??[]){
-                if(typeof node!=="string"){
-                    if(node.tag===item)return node
-                    const ret=this.query_selector(root,item)
-                    if(ret!==undefined)return ret
-                }
-            }
+        const by_id=item.startsWith("#")
+        const key=by_id?item.substring(1):item
+        for(const node of root.children??[]){
+            if(typeof node==="string")continue
+            if(by_id?node.attrs.id===key:node.tag===key)return node
+            const found=kxml.query_selector(node,item)
+            if(found)return found
         }
+        return undefined
     },
     svg:Object.freeze({
         create:{

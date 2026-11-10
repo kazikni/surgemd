@@ -5,7 +5,7 @@ import { SideEffectType } from "../player/effects.ts";
 export const equipment_factorys={
     vest_1(id:string,e:DeepPartial<VestDef>={}):VestDef{
         return mergeDeep({
-            idString:id+"_vest",
+            id_string:id+"_vest",
             defence:0,
             level:1,
             reduction:0.15,
@@ -16,7 +16,7 @@ export const equipment_factorys={
     },
     vest_2(id:string,e:DeepPartial<VestDef>={}):VestDef{
         return mergeDeep({
-            idString:id+"_vest",
+            id_string:id+"_vest",
             defence:0,
             level:2,
             reduction:0.225, // 7.5 
@@ -27,7 +27,7 @@ export const equipment_factorys={
     },
     vest_3(id:string,e:DeepPartial<VestDef>={}):VestDef{
         return mergeDeep({
-            idString:id+"_vest",
+            id_string:id+"_vest",
             defence:0,
             level:3,
             reduction:0.3,
@@ -39,7 +39,7 @@ export const equipment_factorys={
     },
     vest_4(id:string,e:DeepPartial<VestDef>={}):VestDef{
         return mergeDeep({
-            idString:id+"_vest",
+            id_string:id+"_vest",
             defence:0,
             level:4,
             reduction:0.375,
@@ -52,7 +52,7 @@ export const equipment_factorys={
 
     helmet_1(id:string,e:DeepPartial<HelmetDef>={}):HelmetDef{
         return mergeDeep({
-            idString:id+"_helmet",
+            id_string:id+"_helmet",
             defence:0,
             level:1,
             reduction:0.1,
@@ -62,7 +62,7 @@ export const equipment_factorys={
     },
     helmet_2(id:string,e:DeepPartial<HelmetDef>={}):HelmetDef{
         return mergeDeep({
-            idString:id+"_helmet",
+            id_string:id+"_helmet",
             defence:0,
             level:2,
             reduction:0.15,
@@ -72,7 +72,7 @@ export const equipment_factorys={
     },
     helmet_3(id:string,e:DeepPartial<HelmetDef>={}):HelmetDef{
         return mergeDeep({
-            idString:id+"_helmet",
+            id_string:id+"_helmet",
             defence:0,
             level:3,
             reduction:0.2,
@@ -83,7 +83,7 @@ export const equipment_factorys={
     },
     helmet_4(id:string,e:DeepPartial<HelmetDef>={}):HelmetDef{
         return mergeDeep({
-            idString:id+"_helmet",
+            id_string:id+"_helmet",
             defence:0,
             level:4,
             reduction:0.25,
@@ -94,7 +94,7 @@ export const equipment_factorys={
     },
     helmet_5(id:string,e:DeepPartial<HelmetDef>={}):HelmetDef{
         return mergeDeep({
-            idString:id+"_helmet",
+            id_string:id+"_helmet",
             defence:0,
             level:5,
             reduction:0.3,

@@ -334,6 +334,8 @@ export class SoundController {
     voice?: AudioInstance
     volume:number=1
 
+    destroyed:boolean=false
+
     constructor(public engine: AudioEngine,bus?: string) {
         this.bus = bus
     }
@@ -475,6 +477,12 @@ export class AudioEngine {
         return oldest
     }
     update() {
+        for(const c in this.controllers){
+            if(this.controllers[c]?.destroyed){
+                this.controllers[c].stop(true)
+                delete this.controllers[c]
+            }
+        }
         for(const v of this.voices){
             v.update()
         }

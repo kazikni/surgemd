@@ -39,7 +39,7 @@ export class Camera2D{
     height = 1;
     size:Vec2=v2.one()
 
-    meter_size: number = 100
+    meter_size:number=100
     aspect:number=1
 
     position = v2(0, 0)
@@ -66,18 +66,6 @@ export class Camera2D{
         this.ctx=renderer.create_context()
     }
 
-    topdown={
-        perspective:1,
-        parallax:1
-    }
-
-    get_topdown_perspective_2d(matrix:Matrix,object_position: Vec2,parallax: number,z_distance: number):void{
-        const baseParallax=parallax*this.topdown.parallax
-
-        const effectiveParallax=1-(1-baseParallax)
-
-        matrix4.m.topdown_perspective_2d(matrix,this.position,effectiveParallax,z_distance)
-    }
     get_rect():Rect{
         if(this.center_pos){
             const sizeH=v2(this.width,this.height)
@@ -109,7 +97,7 @@ export class Camera2D{
         if(this.aspect_lock){
             const referenceAspect=this.reference_width/this.reference_height
             const referenceWidth=this.reference_width/this.meter_size
-            const referenceHeight=this.reference_height / this.meter_size
+            const referenceHeight=this.reference_height/this.meter_size
             if (screenAspect>=referenceAspect) {
                 this.height=referenceHeight/this._zoom
                 this.width=this.height*screenAspect
@@ -205,12 +193,15 @@ export class Camera2D{
             this.container.dirty_zindex=true
         }
         if(this.visible)this.container.draw(cam)
-        this.ctx.render(this.renderer)
-        this.ctx.clear()
 
         for(const a of this.after_draw){
             a(cam)
         }
+    }
+
+    render(){
+        this.ctx.render(this.renderer)
+        this.ctx.clear()
     }
 
     clear(){

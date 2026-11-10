@@ -234,6 +234,7 @@ export type InputControllerChanged = {
 }
 export type InputEvent = InputKeyEvent|InputActionEvent|InputAxisEvent|InputMouseMoveEvent|InputControllerChanged
 export class InputManager {
+    element!:HTMLElement
     listener = new SignalManager()
 
     focus = true
@@ -281,6 +282,7 @@ export class InputManager {
         this.camera=camera
     }
     bind(canvas: HTMLCanvasElement,elem: HTMLElement = document.body) {
+        this.element=canvas
         elem.tabIndex = 1
         elem.addEventListener("keydown",this.on_key_down())
         elem.addEventListener("keyup",this.on_key_up())
@@ -291,6 +293,7 @@ export class InputManager {
     }
     emit(event: InputEvent) {
         this.listener.emit(event.type, event)
+        this.listener.emit("input_event",event)
     }
     private on_key_down(){
         return (e: KeyboardEvent) => {
@@ -354,11 +357,11 @@ export class InputManager {
         }
     }
     private on_pointer_move(e: PointerEvent) {
-        if(!this.focus||!this.camera)return
-        const rect=this.camera.renderer.canvas.getBoundingClientRect()
-
+        if(!this.focus||!this.element)return
+        const rect=this.element.getBoundingClientRect()
         this.real_mouse_position = v2(e.clientX-rect.left,e.clientY-rect.top)
 
+        if(!this.camera)return
         const canvas = this.camera.renderer.canvas
         const scale = v2(canvas.width / rect.width,canvas.height / rect.height)
 

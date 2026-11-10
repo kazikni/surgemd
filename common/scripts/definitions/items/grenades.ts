@@ -116,7 +116,7 @@ const GrenadeRig={
 export function Grenades_Default_Init():GrenadeDef[]{
     return [
         {
-            idString:"frag_grenade",
+            id_string:"frag_grenade",
             rank:ItemRank.E,
 
             explosion:"frag_grenade_explosion",
@@ -144,7 +144,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             rig_image:GrenadeRig,
         },
         {
-            idString:"smoke_grenade",
+            id_string:"smoke_grenade",
             rank:ItemRank.E,
 
             explosion:"smoke_grenade_explosion",
@@ -171,7 +171,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             speed_mod:1,
         },
         {
-            idString:"molotov",
+            id_string:"molotov",
             rank:ItemRank.D,
 
             explosion:"molotov_explosion",
@@ -200,7 +200,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
         },
         //Mirv
         {
-            idString:"mirv_grenade",
+            id_string:"mirv_grenade",
             rank:ItemRank.C,
 
             explosion:"mirv_grenade_explosion",
@@ -227,7 +227,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             rig_image:GrenadeRig,
         },
         {
-            idString:"submirv_grenade",
+            id_string:"submirv_grenade",
             rank:ItemRank.E,
             explosion:"submirv_grenade_explosion",
             gravity:3,
@@ -250,7 +250,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             rig_image:GrenadeRig,
         },
         {
-            idString:"blue_flare",
+            id_string:"blue_flare",
             rank:ItemRank.A,
             description:true,
             explosion:"blue_flare_explosion",
@@ -297,7 +297,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             rig_image:GrenadeRig,
         },
         {
-            idString:"red_flare",
+            id_string:"red_flare",
             rank:ItemRank.A,
             description:true,
             explosion:"red_flare_explosion",
@@ -348,7 +348,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             rig_image:GrenadeRig,
         },
         {
-            idString:"yellow_flare",
+            id_string:"yellow_flare",
             rank:ItemRank.A,
             description:true,
             explosion:"yellow_flare_explosion",
@@ -402,7 +402,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             rig_image:GrenadeRig,
         },
         {
-            idString:"m79_grenade",
+            id_string:"m79_grenade",
             rank:ItemRank.E,
 
             explosion:"m79_grenade_explosion",
@@ -431,7 +431,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             rig_image:GrenadeRig,
         },
         {
-            idString:"nuke",
+            id_string:"nuke",
             gravity:0.2,
             radius:0.6,
             zBaseScale:1,
@@ -459,7 +459,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             rank:ItemRank.S
         },
         {
-            idString:"mini_nuke",
+            id_string:"mini_nuke",
             gravity:1.1,
             radius:0.6,
             zBaseScale:1,

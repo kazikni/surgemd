@@ -1,10 +1,8 @@
 import { FloorType, RiversDef } from "../../others/terrain.ts";
 import { LootAditional, SpawnMode, type Layers } from "../../others/constants.ts";
-import { Hitbox2D, LootTable, Orientation, Random1, Rect,  tdm,  Vec2, WeightDefinition } from "../../../engine/core.ts";
+import { Collider2D, LootTable, Orientation, Random1, Rect,  tdm,  Vec2, WeightDefinition } from "../../../engine/core.ts";
 import { GameDefinition, type GameADefinitions } from "../game_defs.ts";
-
-import { type GameMap } from "../../../../server/src/game/others/map.ts"
-import { type MapRegion } from "../../packets/map_message.ts";
+import { MapRegion, SI_GameMap_CData } from "../../game/gelo/map.ts";
 
 export type MapObjectGeneration={def:string|(WeightDefinition&{def:string})[],count:Random1,layer?:Layers,spawn?:SpawnMode}
 export interface TerrainLayerDef {
@@ -141,7 +139,7 @@ export interface MapDef{
         base_tint?:number
         spawn?:MapObjectGeneration[]
         islands?:IslandDef[]
-        callback?:(map:GameMap)=>void
+        callback?:(map:SI_GameMap_CData)=>void
         objects?:{
             buildings?:MapObjectBuilding[]
             items?:MapObjectItem[]
@@ -157,5 +155,5 @@ export interface MapDef{
     deadzone_initial_size?:number
 }
 export interface CounterMapDef extends MapDef{
-    spawn:Hitbox2D[]
+    spawn:Collider2D[]
 }

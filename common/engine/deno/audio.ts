@@ -1,4 +1,4 @@
-import { AudioInput, DecodedAudio } from "../core/lang/audiosheet.ts";
+import { type AudioInput, type DecodedAudio } from "../core/lang/audiosheet.ts";
 async function runFFmpeg(executable: string,args: string[],stdin?: Uint8Array):Promise<Uint8Array> {
     const child = new Deno.Command(executable, {args,stdin: stdin ? "piped" : "null",stdout: "piped",stderr: "piped"}).spawn()
     const stdinTask = (async () => {

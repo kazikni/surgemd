@@ -1,41 +1,12 @@
-import { Language } from "../definition/definitions.ts";
 import { random } from "./random.ts";
-import { v2, Vec2 } from "./vec2.ts";
 
 export const halfpi=Math.PI/2
 
 export type ID=number
 
-export function split_strings_array(text:string):string[]{
-    const out:string[]=[]
 
-    let current=""
-    let quote=""
-
-    for(let i=0;i<text.length;i++){
-        const c=text[i]
-
-        if(!quote){
-            if(c==="\""||c==="'"){
-                quote=c
-                current=""
-            }
-            continue
-        }
-
-        if(c===quote){
-            out.push(current)
-            quote=""
-            continue
-        }
-
-        current+=c
-    }
-
-    return out
-}
 export const Path={
-   split(path:string):string[]{
+    split(path:string):string[]{
         const ret=path.split(/[\\/]/)
         for(let i=0;i<ret.length;i++){
             if(ret[i]==""){
@@ -97,32 +68,57 @@ export const Path={
             val.pop()
         }
         return val.join("/")
-    }
-}
-export type Tags=string[]
-export function hasTag(tags:Tags,tag:string):boolean{
-    return tags.includes(tag)
-}
-export function hasTags(tags1:Tags,tags2:Tags):boolean{
-    for(const t of tags1){
-        if (tags2.includes(t)){
-            return true
-        }
-    }
-    return false
-}
-export function combineWithoutEqual<T>(...arrays: T[][]): T[] {
-    const resultado: T[] = []
+    },
+    strings_array(text:string):string[]{
+        const out:string[]=[]
 
-    for (const array of arrays) {
-        for (const elemento of array) {
-            if (!resultado.includes(elemento)) {
-                resultado.push(elemento)
+        let current=""
+        let quote=""
+
+        for(let i=0;i<text.length;i++){
+            const c=text[i]
+            if(!quote){
+                if(c==="\""||c==="'"){
+                    quote=c
+                    current=""
+                }
+                continue
             }
+            if(c===quote){
+                out.push(current)
+                quote=""
+                continue
+            }
+            current+=c
         }
-    }
 
-    return resultado
+        return out
+    },
+    relative(from: string, to: string): string {
+        const fromParts = this.split(this.join(from))
+        const toParts = this.split(this.join(to))
+
+        const fromAbsolute = from.startsWith("/") || from.startsWith("\\")
+        const toAbsolute = to.startsWith("/") || to.startsWith("\\")
+
+        if (fromAbsolute !== toAbsolute) {
+            return to
+        }
+
+        let common=0
+        while(common<fromParts.length&&common<toParts.length&&fromParts[common]===toParts[common]){
+            common++
+        }
+
+        const result: string[] = []
+        for (let i = common; i < fromParts.length; i++) {
+            result.push("..")
+        }
+        for (let i = common; i < toParts.length; i++) {
+            result.push(toParts[i])
+        }
+        return result.join("/") || "."
+    }
 }
 
 export class SignalManager {
@@ -134,11 +130,12 @@ export class SignalManager {
     }
 
     // deno-lint-ignore ban-types
-    on(signal: string, callback: Function): void {
+    on(signal: string, callback: Function): Function {
         if (!this.listeners.has(signal)) {
             this.listeners.set(signal, [])
         }
         this.listeners.get(signal)!.push(callback)
+        return callback
     }
 
     // deno-lint-ignore ban-types
@@ -203,13 +200,97 @@ export class TicksProfiler {
         this.data[id].start=0
     }
 }
+
+export interface TweenOptions<T>{
+    target: T
+    to: Partial<T>
+    duration: number
+    ease?: (x: number) => number
+    yoyo?: boolean
+    infinite?: boolean
+    onUpdate?: () => void
+    onComplete?: () => void
+}
+export class Tween<T> {
+    readonly clock: Clock;
+
+    tick:number=0
+
+    readonly target: T;
+    readonly duration: number;
+
+    startValues: Record<string, number> = {};
+    endValues: Record<string, number> = {};
+
+    readonly ease: (x: number) => number;
+
+    yoyo: boolean;
+    infinite: boolean;
+
+    readonly onUpdate?: () => void;
+    readonly onComplete?: () => void;
+
+    constructor(clock:Clock,config: TweenOptions<T>) {
+        this.clock=clock;
+        this.target = config.target;
+        for (const key in config.to) {
+            this.startValues[key] = config.target[key] as number;
+            this.endValues[key] = config.to[key] as number;
+        }
+
+        this.duration = config.duration;
+        this.ease = config.ease ?? (t => t);
+        this.yoyo = config.yoyo ?? false;
+        this.infinite = config.infinite ?? false;
+        this.onUpdate = config.onUpdate;
+        this.onComplete = config.onComplete;
+    }
+
+    update(dt:number): void {
+        this.tick+=dt
+
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        if(this.target.destroyed){
+            this.kill();
+            this.onComplete?.();
+            return
+        }
+
+        const interpFactor = Numeric.clamp(this.tick / this.duration, 0, 1);
+        for (const key in this.startValues) {
+            const startValue = this.startValues[key];
+            const endValue = this.endValues[key];
+
+            (this.target[key as keyof T] as number) = Numeric.lerp(startValue, endValue, this.ease(interpFactor));
+        }
+        this.onUpdate?.();
+
+        if (this.tick>=this.duration) {
+            if (this.yoyo) {
+                this.yoyo = this.infinite;
+                this.tick=0;
+                [this.startValues, this.endValues] = [this.endValues, this.startValues];
+            } else {
+                this.kill();
+                this.onComplete?.();
+            }
+        }
+    }
+
+    kill(): void {
+        this.clock.remove_tween(this as unknown as Tween<unknown>);
+    }
+}
 export class Clock {
     private frameDuration: number
     private lastFrameTime: number
-    accumulator:number=0
-    public timeScale:number
+    public time_scale:number
     public callback:(dt:number)=>void
+
     public intervals:Map<number,(dt:number)=>void>=new Map()
+    readonly tweens = new Set<Tween<unknown>>();
+    timeouts:{c:()=>void,delay:number}[]=[]
 
     running:boolean=false
     tps:number=60
@@ -220,7 +301,7 @@ export class Clock {
         this.frameDuration = 1000 / targetFPS
         this.tps=targetFPS
         this.lastFrameTime = Date.now()
-        this.timeScale = timeScale
+        this.time_scale = timeScale
         this.callback = callback
         this.tick = this.tick.bind(this)
 
@@ -228,7 +309,6 @@ export class Clock {
     }
 
     private interval?:number=undefined
-    timeouts:{c:()=>void,delay:number}[]=[]
 
     clear(){
         this.intervals.clear()
@@ -253,7 +333,7 @@ export class Clock {
             const elapsedTime = currentTime - this.lastFrameTime;
             this.lastFrameTime = currentTime
 
-            const dt = (elapsedTime / 1000) * this.timeScale
+            const dt=(elapsedTime/1000)*this.time_scale
 
             for(let i=0;i<this.timeouts.length;i++){
                 this.timeouts[i].delay-=dt
@@ -262,6 +342,9 @@ export class Clock {
                     this.timeouts.splice(i,1) 
                     i--
                 }
+            }
+            for(const v of this.tweens){
+                v.update(dt)
             }
             this.callback(dt);
             for (const i of this.intervals.values()) {
@@ -273,6 +356,7 @@ export class Clock {
     _tick(){
         if(this.running){
             this.tick()
+            //@ts-ignore
             self.requestAnimationFrame(this._tick)
         }
     }
@@ -294,9 +378,11 @@ export class Clock {
             this._tick=this._tick.bind(this)
             this.lastFrameTime = performance.now()
             this.frameDuration=1000/this.tps
+            //@ts-ignore
             self.requestAnimationFrame(this._tick)
         }
     }
+
     add_timeout(callback:()=>void,delay:number):number{
         if(delay==0){
             callback()
@@ -304,6 +390,15 @@ export class Clock {
         }
         this.timeouts.push({c:callback,delay:delay})
         return this.timeouts.length-1
+    }
+
+    remove_tween(tween: Tween<unknown>): void {
+        this.tweens.delete(tween);
+    }
+    add_tween<T>(config:TweenOptions<T>){
+        const t=new Tween(this,config)
+        this.tweens.add(t)
+        return t
     }
     public stop(){
         this.running=false
@@ -631,76 +726,9 @@ export function apply_mixins(derivedCtor: any, baseCtors: any[]) {
     }); 
 }
 
-export class WebPath{
-    IP:string
-    Port:number
-    HTTP:boolean
-    constructor(IP:string,Port:number,HTTP:boolean=false){
-        this.IP=IP
-        this.Port=Port
-        this.HTTP=HTTP
-    }
-    toString():string{
-        return `${this.HTTP ? "s" : ""}://${this.IP}:${this.Port}`
-    }
-}
-
 // deno-lint-ignore ban-types
 export function getEnumValues<E extends Object>(enumObject: E): (E[keyof E])[] {
     return Object.values(enumObject).filter(value => typeof value === 'number') as E[keyof E][]
-}
-// deno-lint-ignore ban-types
-export async function loadJson<val extends {}>(path:string):Promise<val>{
-    return await(await(fetch(path))).json()
-}
-export const loadScene2D=loadJson<Scene2D>
-export const loadLanguage=loadJson<Language>
-export function getPatterningShape(
-    spawnCount: number,
-    radius: number
-): Vec2[] {
-    const makeSimpleShape = (points: number) => {
-        const tauFrac = Math.PI / points;
-        return (radius: number, offset = 0): Vec2[] => Array.from(
-            { length: points },
-            (_, i)=>v2.from_RadAngle(i * tauFrac + offset, radius)
-        );
-    };
-
-    const [
-        makeTriangle,
-        makeSquare,
-        makePentagon,
-        makeHexagon
-    ] = [3, 4, 5, 6].map(makeSimpleShape);
-
-    switch (spawnCount) {
-        case 1: return [v2(0, 0)];
-        case 2: return [
-            v2(0, radius),
-            v2(0, -radius)
-        ];
-        case 3: return makeTriangle(radius);
-        case 4: return [v2(0, 0), ...makeTriangle(radius)];
-        case 5: return [v2(0, 0), ...makeSquare(radius)];
-        case 6: return [v2(0, 0), ...makePentagon(radius)];
-        case 7: return [v2(0, 0), ...makeHexagon(radius, halfpi)];
-        case 8: return [
-            v2(0, 0),
-            ...makeTriangle(radius / 2),
-            ...makeSquare(radius, halfpi)
-        ];
-        case 9: return [
-            v2(0, 0),
-            ...makeTriangle(radius / 2),
-            ...makePentagon(radius)
-        ];
-    }
-
-    return [
-        ...getPatterningShape(spawnCount - 6, radius * 3 / 4),
-        ...makeHexagon(radius, halfpi)
-    ];
 }
 type ExpoSpec = number | [number, number][]
 export const Numeric={

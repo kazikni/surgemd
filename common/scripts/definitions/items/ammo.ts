@@ -35,7 +35,7 @@ export function Ammos_Default_Init():AmmoDef[]{
     return [
         //Main
         {
-            idString:"p76",
+            id_string:"p76",
             name:"P-76",
             ammoType:"p76",
             description:true,
@@ -46,7 +46,7 @@ export function Ammos_Default_Init():AmmoDef[]{
             rank:ItemRank.E
         },
         {
-            idString:"c51",
+            id_string:"c51",
             name:"C-51",
             ammoType:"c51",
             description:true,
@@ -56,7 +56,7 @@ export function Ammos_Default_Init():AmmoDef[]{
             rank:ItemRank.E
         },
         {
-            idString:"c45",
+            id_string:"c45",
             name:"C-45",
             ammoType:"c45",
             description:true,
@@ -66,7 +66,7 @@ export function Ammos_Default_Init():AmmoDef[]{
             rank:ItemRank.E
         },
         {
-            idString:"c22",
+            id_string:"c22",
             name:"C-22",
             ammoType:"c22",
             description:true,
@@ -76,7 +76,7 @@ export function Ammos_Default_Init():AmmoDef[]{
             rank:ItemRank.E
         },
         {
-            idString:"l19",
+            id_string:"l19",
             name:"L-19",
             ammoType:"l19",
             description:true,
@@ -86,7 +86,7 @@ export function Ammos_Default_Init():AmmoDef[]{
             rank:ItemRank.E
         },
         {
-            idString:"l15",
+            id_string:"l15",
             name:"L-15",
             ammoType:"l15",
             description:true,
@@ -98,7 +98,7 @@ export function Ammos_Default_Init():AmmoDef[]{
 
         //Exotic
         {
-            idString:"p61",
+            id_string:"p61",
             name:"P-61",
             ammoType:"p61",
             description:true,
@@ -108,7 +108,7 @@ export function Ammos_Default_Init():AmmoDef[]{
             rank:ItemRank.B
         },
         {
-            idString:"p85",
+            id_string:"p85",
             name:"P-85",
             ammoType:"p85",
             description:true,
@@ -119,7 +119,7 @@ export function Ammos_Default_Init():AmmoDef[]{
             rank:ItemRank.A
         },
         {
-            idString:"explosive_ammo",
+            id_string:"explosive_ammo",
             ammoType:"explosive_ammo",
             description:true,
             defaultTrail:0x616d61,
@@ -128,7 +128,7 @@ export function Ammos_Default_Init():AmmoDef[]{
             rank:ItemRank.S
         },
         {
-            idString:"gasoline",
+            id_string:"gasoline",
             ammoType:"gasoline",
             description:true,
             defaultTrail:0xefef33,
@@ -138,7 +138,7 @@ export function Ammos_Default_Init():AmmoDef[]{
             rank:ItemRank.A
         },
         {
-            idString:"mana_mm",
+            id_string:"mana_mm",
             ammoType:"mana",
             description:true,
             defaultTrail:0x889fcb,

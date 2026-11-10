@@ -1,4 +1,4 @@
-import { Angle, DegAngle, Orientation, PolarMovement, RadAngle } from "./geometry.ts"
+import { Angle, type DegAngle, type Orientation, type PolarMovement, type RadAngle } from "./geometry.ts"
 import { type Matrix } from "./matrix.ts";
 import { random, SeededRandom } from "./random.ts"
 

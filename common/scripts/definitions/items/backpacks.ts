@@ -30,7 +30,7 @@ export const BackpackTD:TD={
 export function Backpacks_Default_Init():BackpackDef[]{
     return [
         {
-            idString:"null_pack",
+            id_string:"null_pack",
             level:0,
             max:{
                 "p76":20,
@@ -80,7 +80,7 @@ export function Backpacks_Default_Init():BackpackDef[]{
             slots:4,
         },
         {
-            idString:"basic_pack",
+            id_string:"basic_pack",
             level:1,
             max:{
                 "p76":40,
@@ -99,7 +99,7 @@ export function Backpacks_Default_Init():BackpackDef[]{
             slots:5,
         },
         {
-            idString:"military_pack",
+            id_string:"military_pack",
             level:2,
             max:{
                 "p76":60,
@@ -118,7 +118,7 @@ export function Backpacks_Default_Init():BackpackDef[]{
             slots:6,
         },
         {
-            idString:"tactical_pack",
+            id_string:"tactical_pack",
             level:3,
             special:true,
             max:{

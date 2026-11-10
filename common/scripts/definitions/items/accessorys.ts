@@ -28,14 +28,14 @@ export function AccessoryDropLootFromObstacle(table:string){
     return (e:any)=>{
         const loot=e.human.game.get_loot_table(table)
         for(const l of loot){
-            e.human.scene.add_loot(e.obstacle.hitbox.random_point(),{item:l.item,count:l.count},e.obstacle.layer)
+            e.human.scene.add_loot(e.obstacle.collider.random_point(),{item:l.item,count:l.count},e.obstacle.layer)
         }
     }
 }
 export function Accessorys_Default_Init():AccessoryDef[]{
     return [
         {
-            idString:"rip_ammo",
+            id_string:"rip_ammo",
             rank:ItemRank.A,
             events:{
                 "gun_shoot":(e)=>{
@@ -60,7 +60,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
             },
         },
         {
-            idString:"high_quality_projectiles",
+            id_string:"high_quality_projectiles",
             rank:ItemRank.A,
             events:{
                 "gun_shoot":(e)=>{
@@ -70,7 +70,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
             }
         },
         {
-            idString:"first_last_great",
+            id_string:"first_last_great",
             rank:ItemRank.A,
             events:{
                 "gun_shoot":(e)=>{
@@ -84,7 +84,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
             }
         },
         {
-            idString:"good_reflective_bullet",
+            id_string:"good_reflective_bullet",
             rank:ItemRank.A,
             events:{
                 "bullet_reflect":(e)=>{
@@ -99,7 +99,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
             }
         },
         {
-            idString:"hp_bullets",
+            id_string:"hp_bullets",
             rank:ItemRank.S,
             events:{
                 "gun_shoot":(e)=>{
@@ -109,7 +109,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
             }
         },
         {
-            idString:"ghost_bullets",
+            id_string:"ghost_bullets",
             rank:ItemRank.A,
             events:{
                 "gun_shoot":(e)=>{
@@ -121,7 +121,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
             }
         },
         {
-            idString:"incendiary_bullets",
+            id_string:"incendiary_bullets",
             rank:ItemRank.A,
             events:{
                 "gun_shoot":(e)=>{
@@ -138,7 +138,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
         },
 
         {
-            idString:"liquid_insanity",
+            id_string:"liquid_insanity",
             rank:ItemRank.A,
             events:{
                 "kill":(e)=>{
@@ -153,7 +153,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
             }
         },
         {
-            idString:"pygmy_necklace",
+            id_string:"pygmy_necklace",
             rank:ItemRank.A,
             modifiers:{
                 size:0.75,
@@ -161,14 +161,14 @@ export function Accessorys_Default_Init():AccessoryDef[]{
             },
         },
         {
-            idString:"lucky_coin",
+            id_string:"lucky_coin",
             rank:ItemRank.A,
             events:{
                 "obstacle_destroy":AccessoryDropLootFromObstacle("normal_loot")
             }
         },
         {
-            idString:"nature_leaf",
+            id_string:"nature_leaf",
             rank:ItemRank.A,
             events:{
                 "damage":(e)=>{
@@ -182,7 +182,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
         },
 
         {
-            idString:"sprite_ammo",
+            id_string:"sprite_ammo",
             rank:ItemRank.A,
             property:["infinity_ammo"],
             events:{
@@ -195,7 +195,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
             }
         },
         {
-            idString:"biggest_magazine",
+            id_string:"biggest_magazine",
             rank:ItemRank.A,
             property:["extended_capacity"],
             events:{
@@ -208,7 +208,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
             }
         },
         {
-            idString:"self_revive",
+            id_string:"self_revive",
             rank:ItemRank.A,
             property:["self_revive"],
             events:{
@@ -221,7 +221,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
             }
         },
         {
-            idString:"all_reflect",
+            id_string:"all_reflect",
             rank:ItemRank.A,
             events:{
                 "gun_shoot":(e)=>{

@@ -63,7 +63,7 @@ ___
 * Some Balance Changes
 * Some Loot Table Changes
 * Some Sprites Changes
-* Some Hitboxes Changes
+* Some Collideres Changes
 * Send item emote now show the rarity of the item
 * PKP and M2-2 now support wrapping
 ___

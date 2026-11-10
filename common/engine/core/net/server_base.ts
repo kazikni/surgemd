@@ -1,5 +1,5 @@
 import { ID } from "../math/utils.ts";
-import { BaseGameObject2D, AbstractGame } from "../game/game.ts";
+import { BaseSceneObject2D } from "../app/app.ts";
 import { Client, ClientsManager } from "./client.ts";
 export type HandlerFunc = (req: Request, url_path: string[], info: any) => Response | null;
 export type HandlerFuncAsync = (req: Request, url_path: string[], info: any) => Promise<Response | null>;
@@ -12,7 +12,7 @@ export interface HostConfig {
     key?: string
 }
 
-export abstract class AbstractServerGame<DefaultGameObject2D extends BaseGameObject2D=BaseGameObject2D> extends AbstractGame<DefaultGameObject2D>{
+/*export abstract class AbstractServerGame<SceneObject extends BaseSceneObject2D=BaseSceneObject2D> extends AbstractApplication<DefaultGameObject2D>{
     public clients:ClientsManager
     public allowJoin:boolean
     public id:ID=1
@@ -53,4 +53,4 @@ export abstract class AbstractServerGame<DefaultGameObject2D extends BaseGameObj
         this.clients.onconnection=this.handle_connection.bind(this)
     }
     update_delay:number=3
-}
+}*/

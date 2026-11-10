@@ -1,4 +1,4 @@
-import { tdm, TDObject, TDType, Vec2TD } from "../lang/td.ts";
+import { TDObject, TDType, Vec2TD } from "../lang/td.ts";
 import { random, SeededRandom } from "./random.ts"
 import { Numeric } from "./utils.ts";
 import { v2, v2m, Vec2 } from "./vec2.ts";

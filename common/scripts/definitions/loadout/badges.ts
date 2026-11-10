@@ -9,11 +9,11 @@ export interface BadgeDef extends Definition{
 
 export function Badges_Default_Init():BadgeDef[]{
     return [
-        {idString:"stone_1", rank:ItemRank.E},
-        {idString:"stone_2", rank:ItemRank.E},
-        {idString:"stone_3", rank:ItemRank.E},
+        {id_string:"stone_1", rank:ItemRank.E},
+        {id_string:"stone_2", rank:ItemRank.E},
+        {id_string:"stone_3", rank:ItemRank.E},
 
-        {idString:"md", rank:ItemRank.S},
-        {idString:"campfire", rank:ItemRank.D},
+        {id_string:"md", rank:ItemRank.S},
+        {id_string:"campfire", rank:ItemRank.D},
     ]
 }

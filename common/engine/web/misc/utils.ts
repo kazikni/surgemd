@@ -1,8 +1,6 @@
 import { FontStyle } from "../../core/definition/utils.ts";
 import { Random1,random } from "../../core/math/random.ts";
-import { Numeric } from "../../core/math/utils.ts";
 import { Vec2 } from "../../core/math/vec2.ts";
-import { type ClientGame } from "./game.ts";
 declare global{
     class TabsContainer extends HTMLElement{
         switchTab(index:number):void
@@ -12,14 +10,6 @@ declare global{
         log(...args:any):void
         insert(val:{index:number,html:string}):void
     }
-    class SMDEMenu extends HTMLElement {
-        set_hover(hover:boolean):void
-        close():void
-        rebuild():void
-        add_option(text:string,onclick:(e:PointerEvent)=>void):HTMLElement
-        add_submenu(text:string, menu:SMDEMenu):HTMLElement
-    }
-    class SMDEOptionSubMenu extends HTMLElement{}
     class SMDEJoystick extends HTMLElement {
         knob:HTMLDivElement
         active:boolean
@@ -51,90 +41,93 @@ declare global{
         clear():void
     }
 }
-export interface TweenOptions<T>{
-    target: T
-    to: Partial<T>
-    duration: number
-    ease?: (x: number) => number
-    yoyo?: boolean
-    infinite?: boolean
-    onUpdate?: () => void
-    onComplete?: () => void
-}
-export class Tween<T> {
-    readonly game: ClientGame<any>;
-
-    tick:number=0
-
-    readonly target: T;
-    readonly duration: number;
-
-    startValues: Record<string, number> = {};
-    endValues: Record<string, number> = {};
-
-    readonly ease: (x: number) => number;
-
-    yoyo: boolean;
-    infinite: boolean;
-
-    readonly onUpdate?: () => void;
-    readonly onComplete?: () => void;
-
-    constructor(
-        game: ClientGame<any>,
-        config: TweenOptions<T>
-    ) {
-        this.game = game;
-        this.target = config.target;
-        for (const key in config.to) {
-            this.startValues[key] = config.target[key] as number;
-            this.endValues[key] = config.to[key] as number;
-        }
-
-        this.duration = config.duration;
-        this.ease = config.ease ?? (t => t);
-        this.yoyo = config.yoyo ?? false;
-        this.infinite = config.infinite ?? false;
-        this.onUpdate = config.onUpdate;
-        this.onComplete = config.onComplete;
+export class SMDE_Menu extends HTMLElement {
+    parent_menu?:SMDE_Menu
+    _connected:boolean
+    hover:boolean
+    constructor(){
+        super()
+        this._connected=false
+        this.hover=false
     }
-
-    update(dt:number): void {
-        this.tick+=dt
-
-        // deno-lint-ignore ban-ts-comment
-        //@ts-ignore
-        if(this.target.destroyed){
-            this.kill();
-            this.onComplete?.();
-            return
-        }
-
-        const interpFactor = Numeric.clamp(this.tick / this.duration, 0, 1);
-        for (const key in this.startValues) {
-            const startValue = this.startValues[key];
-            const endValue = this.endValues[key];
-
-            (this.target[key as keyof T] as number) = Numeric.lerp(startValue, endValue, this.ease(interpFactor));
-        }
-        this.onUpdate?.();
-
-        if (this.tick>=this.duration) {
-            if (this.yoyo) {
-                this.yoyo = this.infinite;
-                this.tick=0;
-                [this.startValues, this.endValues] = [this.endValues, this.startValues];
-            } else {
-                this.kill();
-                this.onComplete?.();
-            }
+    get innerHTML(){
+        return super.innerHTML
+    }
+    set innerHTML(val){
+        super.innerHTML=val
+        if(this._connected){
+            this.rebuild()
         }
     }
 
-    kill(): void {
-        this.game.remove_tween(this as unknown as Tween<unknown>);
+    set_hover(hover:boolean){
+        this.hover=hover
+        if(this.parent_menu){
+            this.parent_menu.set_hover(hover)
+        }
+    }
+    close():void{
+        if(this.parent_menu){
+            return this.parent_menu.close()
+        }
+        const event = new CustomEvent("close",{
+            bubbles: true,
+            cancelable: true
+        })
+        const canClose = this.dispatchEvent(event)
+        if(canClose)this.remove()
+    }
+    connectedCallback(){
+        this._connected=true
+        this.rebuild()
+        this.addEventListener("mouseenter",(e)=>this.set_hover(true))
+        this.addEventListener("mouseleave",(e)=>this.set_hover(false))
+    }
+    rebuild(){
+    }
+    /**
+     * 
+     * @param {string} text 
+     * @param {(event:MouseEvent)=>void} onclick 
+     */
+    add_option(text:string,onclick=(_e:MouseEvent)=>{}){
+        const node=document.createElement("smde-option")
+        node.innerText=text
+        node.addEventListener("click",(e)=>{
+            onclick(e)
+            this.close()
+        })
+        this.appendChild(node)
+        return node
+    }
+    /**
+     * 
+     * @param {string} text
+     * @param {Menu} menu
+     * @param {(event:MouseEvent)=>void} onclick
+     */
+    add_submenu(text:string, menu:SMDE_Menu){
+        menu.parent_menu=this
+        const option = document.createElement("smde-option-submenu")
+        const label = document.createElement("div")
+        label.textContent = text
+        option.appendChild(label)
+        option.appendChild(menu)
+        this.appendChild(option)
+        return option
     }
 }
+export class SMDE_OptionSubMenu extends HTMLElement{
+    constructor(){
+        super()
+    }
+    connectedCallback(){
+    }
+}
+
+customElements.define("smde-menu", SMDE_Menu)
+customElements.define("smde-option-submenu", SMDE_OptionSubMenu)
+
 export function HideElement(elem:HTMLElement,useOpacity=false,timeout:number=2000) {
     if(useOpacity){
         if(elem.style.opacity=="0")return

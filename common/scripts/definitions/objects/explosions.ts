@@ -104,7 +104,7 @@ export const explosions_decals={
 export const explostion_factory={
     flare_explosion(id:string,tint:string){
         return {
-            idString:id,
+            id_string:id,
             tint:tint,
             push_force:0,
             size:{
@@ -123,7 +123,7 @@ export const explostion_factory={
 export function Explosions_Default_Init():ExplosionDef[]{
     return [
         {
-            idString:"barrel_explosion",
+            id_string:"barrel_explosion",
             tint:"#9c3932",
             size:{
                 begin:2,
@@ -164,7 +164,7 @@ export function Explosions_Default_Init():ExplosionDef[]{
             cam_shake:explosion_cam_shakes.normal
         },
         {
-            idString:"frag_grenade_explosion",
+            id_string:"frag_grenade_explosion",
             tint:"#9c3932",
             size:{
                 begin:2,
@@ -206,7 +206,7 @@ export function Explosions_Default_Init():ExplosionDef[]{
             cam_shake:explosion_cam_shakes.normal
         },
         {
-            idString:"smoke_grenade_explosion",
+            id_string:"smoke_grenade_explosion",
             tint:"#355",
             size:{
                 begin:0,
@@ -226,7 +226,7 @@ export function Explosions_Default_Init():ExplosionDef[]{
             cam_shake:explosion_cam_shakes.small
         },
         {
-            idString:"molotov_explosion",
+            id_string:"molotov_explosion",
             tint:"#ff7b00",
             size:{
                 begin:1,
@@ -244,7 +244,7 @@ export function Explosions_Default_Init():ExplosionDef[]{
             cam_shake:explosion_cam_shakes.normal,
         },
         {
-            idString:"mirv_grenade_explosion",
+            id_string:"mirv_grenade_explosion",
             tint:"#9c3932",
             size:{
                 begin:2,
@@ -293,7 +293,7 @@ export function Explosions_Default_Init():ExplosionDef[]{
             cam_shake:explosion_cam_shakes.normal,
         },
         {
-            idString:"submirv_grenade_explosion",
+            id_string:"submirv_grenade_explosion",
             tint:"#9c3932",
             size:{
                 begin:1,
@@ -338,7 +338,7 @@ export function Explosions_Default_Init():ExplosionDef[]{
         explostion_factory.flare_explosion("red_flare_explosion","#ca0819"),
         explostion_factory.flare_explosion("yellow_flare_explosion","#f6dc1b"),
         {
-            idString:"rocket_explosion",
+            id_string:"rocket_explosion",
             tint:"#9c3932",
             size:{
                 begin:2,
@@ -380,7 +380,7 @@ export function Explosions_Default_Init():ExplosionDef[]{
             cam_shake:explosion_cam_shakes.normal,
         },
         {
-            idString:"m79_grenade_explosion",
+            id_string:"m79_grenade_explosion",
             tint:"#9c3932",
             size:{
                 begin:2,
@@ -422,7 +422,7 @@ export function Explosions_Default_Init():ExplosionDef[]{
             cam_shake:explosion_cam_shakes.normal,
         },
         {
-            idString:"nuke_explosion",
+            id_string:"nuke_explosion",
             tint:"#9c3932",
             size:{
                 begin:5,
@@ -446,7 +446,7 @@ export function Explosions_Default_Init():ExplosionDef[]{
             cam_shake:explosion_cam_shakes.big,
         },
         {
-            idString:"mini_nuke_explosion",
+            id_string:"mini_nuke_explosion",
             tint:"#f6dc1b",
             size:{
                 begin:2,

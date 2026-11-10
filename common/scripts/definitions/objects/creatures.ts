@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { CircleHitbox2D, Definition, Definitions, Hitbox2D,  Stream, Numeric, random, v2, Vec2 } from "../../../engine/core.ts";
+import { CircleCollider2D, Definition, Definitions, Collider2D,  Stream, Numeric, random, v2, Vec2 } from "../../../engine/core.ts";
 import { LootTable, SpawnMode } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
 export type CreatureDef={
@@ -9,8 +9,8 @@ export type CreatureDef={
     health:number
 
     spawn?:SpawnMode
-    spawn_hitbox?:Hitbox2D
-    hitbox:Hitbox2D
+    spawn_collider?:Collider2D
+    collider:Collider2D
 
     on_start?:(creature:any,params:any,client_side:boolean)=>void
     on_damage?:(params:any,client_side:boolean)=>void
@@ -98,9 +98,9 @@ export const PacifictCreature1 = {
 export function Creatures_Default_Init():CreatureDef[]{
     return [
         {
-            idString:"chicken",
+            id_string:"chicken",
             health:50,
-            hitbox:new CircleHitbox2D(v2(0,0),0.25),
+            collider:new CircleCollider2D(v2(0,0),0.25),
             ai:{
                 speed:0.5,
                 walk_time:3,
@@ -124,9 +124,9 @@ export function Creatures_Default_Init():CreatureDef[]{
             }
         },
         {
-            idString:"pig",
+            id_string:"pig",
             health:50,
-            hitbox:new CircleHitbox2D(v2(0,0),0.25),
+            collider:new CircleCollider2D(v2(0,0),0.25),
             ai:{
                 speed:0.5,
                 walk_time:3,

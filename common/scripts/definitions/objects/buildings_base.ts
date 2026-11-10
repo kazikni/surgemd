@@ -1,4 +1,4 @@
-import { Definition, FrameDef, FrameTD, FrameTransform, Hitbox2D, Random1, Rect, tdm, TDObject, TDType, TilemapLayer, Vec2, Vec2TD, WeightDefinition } from "../../../engine/core.ts";
+import { Definition, FrameDef, FrameTD, FrameTransform, Collider2D, Random1, Rect, tdm, TDObject, TDType, TilemapLayer, Vec2, Vec2TD, WeightDefinition } from "../../../engine/core.ts";
 import { SMRF } from "../../../engine/core/lang/context_command.ts";
 import { SpawnMode } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
@@ -61,7 +61,7 @@ export const BuildingClientTD: TDObject = {
         { name: "no_bullet_collision", content: tdm.boolean },
         { name: "is_ghost", content: tdm.boolean },
 
-        { name: "hitbox", content: tdm.any },
+        { name: "collider", content: tdm.any },
         
         // Ceiling
         {
@@ -76,7 +76,7 @@ export const BuildingClientTD: TDObject = {
                         content: [
                             { name: "frame", content: FrameTD },
                             { name: "variations", content: tdm.any },
-                            { name: "hitbox", content: tdm.any },
+                            { name: "collider", content: tdm.any },
 
                             {
                                 name: "below",
@@ -181,7 +181,7 @@ export const BuildingTD: TDObject={
     type:TDType.object,
     content:[
         ...BuildingClientTD.content,
-        { name: "spawnHitbox", content: tdm.any },
+        { name: "spawnCollider", content: tdm.any },
         { name: "spawnMode", content: tdm.any },
         { name: "reflect_bullets", content: tdm.boolean },
         { name: "no_spawn_collision", content: tdm.boolean },
@@ -256,7 +256,7 @@ export const BuildingTD: TDObject={
                                 content: {
                                     type: TDType.object,
                                     content: [
-                                        { name: "hitbox", content: tdm.any },
+                                        { name: "collider", content: tdm.any },
                                         { name: "type", content: tdm.uint8 },
                                         { name: "layer", content: tdm.int8_onu },
                                     ]
@@ -275,7 +275,7 @@ export const BuildingTD: TDObject={
                                 content: {
                                     type: TDType.object,
                                     content: [
-                                        { name: "hitbox", content: tdm.any },
+                                        { name: "collider", content: tdm.any },
                                         { name: "dest", content: tdm.uint8 },
                                     ]
                                 }
@@ -290,7 +290,7 @@ export const BuildingTD: TDObject={
 export type BuildingCeilingDef={
     frame:FrameDef
     variations?:number[]
-    hitbox:Hitbox2D
+    collider:Collider2D
     below?:{
         deenabled?:boolean
         duration?:number
@@ -412,7 +412,7 @@ export type PuzzleAction={
     type:"check_fail"
 }
 export interface BuildingPuzzleDef{
-    idString?:string // Default = "main"
+    id_string?:string // Default = "main"
     global?:boolean
     code?:{
         value?:string
@@ -444,15 +444,15 @@ export interface BuildingDef extends Definition{
         decals?:BuildingObjectDecal[]
         sub_building?:BuildingObjectSubBuilding[]
         loots?:BuildingObjectLoot[]
-        floors?:{hitbox:Hitbox2D,type:FloorType,visible?:boolean,layer?:number}[]
+        floors?:{collider:Collider2D,type:FloorType,visible?:boolean,layer?:number}[]
         stair_data?:{
-            hitbox:Hitbox2D
+            collider:Collider2D
             dest:number
         }[]
         puzzles?:BuildingPuzzleDef[]
     }
-    spawnHitbox?:Hitbox2D
-    hitbox?:Hitbox2D
+    spawnCollider?:Collider2D
+    collider?:Collider2D
     spawnMode?:SpawnMode
     assets?:{
         sounds?:HitSoundsDef

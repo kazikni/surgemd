@@ -135,8 +135,8 @@ export class GameDefinition{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.gun
         if(i.dual&&!i.dual_from){
-            const dd=mergeDeep({},i,i.dual,{dual_from:i.idString}) as GunDef
-            dd.idString=dd.idString+"_dual"
+            const dd=mergeDeep({},i,i.dual,{dual_from:i.id_string}) as GunDef
+            dd.id_string=dd.id_string+"_dual"
             this.guns.insert(dd)
         }
         return i
@@ -158,14 +158,14 @@ export class GameDefinition{
         b.def_type=GameObjectDefinitionType.badge
         return {
             ...b,
-            idString:b.idString+"_badge"
+            id_string:b.id_string+"_badge"
         }
     })
     emotes=new Definitions<EmoteDef,{}>((e)=>{
         e.def_type=GameObjectDefinitionType.emote
         return {
             ...e,
-            idString:e.idString
+            id_string:e.id_string
         }
     })
     wrapping=new Definitions<WrappingDef,{}>()
@@ -173,7 +173,7 @@ export class GameDefinition{
         return {
             ...e,
             def_type:GameObjectDefinitionType.ping,
-            idString:"ping_"+e.idString,
+            id_string:"ping_"+e.id_string,
         }
     })
 
@@ -195,6 +195,8 @@ export class GameDefinition{
     game_items=new DefinitionsMerge<GameItem>()
     game_objects=new DefinitionsMerge<GameObjectDef>()
     valueString: any;
+
+    default_definitions=DefaultDefinitions
 
     constructor(){
         this.game_objects.name="game_objects"
@@ -232,12 +234,9 @@ export class GameDefinition{
         this.game_items.clear()
         this.game_objects.clear()
     }
-    init_default(){
-        this.add_definitions(DefaultDefinitions)
-    }
     reset(){
         this.clear()
-        this.init_default()
+        this.add_definitions(this.default_definitions)
     }
     add_definitions(mm:GameADefinitions){
         for(const c in mm.items){

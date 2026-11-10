@@ -1,4 +1,4 @@
-import { CircleHitbox2D, Definition, Definitions, FrameDef, Hitbox2D, mergeDeep, v2 } from "../../../engine/core.ts";
+import { CircleCollider2D, Definition, Definitions, FrameDef, Collider2D, mergeDeep, v2 } from "../../../engine/core.ts";
 import { zIndexes } from "../../others/constants.ts";
 import { SideEffect, SideEffectType } from "../player/effects.ts";
 import { ScopeChange } from "../utils.ts";
@@ -9,7 +9,7 @@ export interface SyncedParticleDef extends Definition{
     side_effect?:SideEffect[]
     no_hit_owner?:boolean
     single_use?:boolean
-    hitbox?:Hitbox2D
+    collider?:Collider2D
     scope_change?:ScopeChange
     movement?:({
         type:"walk"
@@ -57,11 +57,11 @@ export interface SyncedParticleDef extends Definition{
 export const synsed_particles_factory={
     spray(id:string,tint:number,side_effect:SideEffect[]=[]):SyncedParticleDef{
         return mergeDeep({
-            idString:id,
+            id_string:id,
             lifetime:1,
             no_hit_owner:true,
             single_use:true,
-            hitbox:new CircleHitbox2D(v2.zero,0.5),
+            collider:new CircleCollider2D(v2.zero,0.5),
             side_effect:side_effect,
             frame:{
                 image:"firing_particle",
@@ -104,7 +104,7 @@ export const synsed_particles_factory={
 export function SyncedParticles_Default_Init():SyncedParticleDef[]{
     return [
         {
-            idString:"smoke",
+            id_string:"smoke",
             lifetime:33,
             scope_change:{},
             frame:{
@@ -145,7 +145,7 @@ export function SyncedParticles_Default_Init():SyncedParticleDef[]{
             }
         },
         {
-            idString:"airdrop_smoke",
+            id_string:"airdrop_smoke",
             lifetime:1.5,
             frame:{
                 image:"smoke_particle",
@@ -176,10 +176,10 @@ export function SyncedParticles_Default_Init():SyncedParticleDef[]{
         },
 
         {
-            idString:"m2_2_fire",
+            id_string:"m2_2_fire",
             lifetime:1.5,
             no_hit_owner:true,
-            hitbox:new CircleHitbox2D(v2.zero,0.5),
+            collider:new CircleCollider2D(v2.zero,0.5),
             side_effect:[
                 {
                     type:SideEffectType.AddEffect,
@@ -229,9 +229,9 @@ export function SyncedParticles_Default_Init():SyncedParticleDef[]{
             }
         },
         {
-            idString:"molotov_fire",
+            id_string:"molotov_fire",
             lifetime:33,
-            hitbox:new CircleHitbox2D(v2.zero,0.5),
+            collider:new CircleCollider2D(v2.zero,0.5),
             side_effect:[
                 {
                     type:SideEffectType.AddEffect,

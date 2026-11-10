@@ -1,5 +1,4 @@
 import { ClientsManager } from "../core/net/client.ts";
-import { AbstractServerGame } from "../core/net/server_base.ts";
 import { type ConnectionLimiter, Server, server_factory, WorkerMsg } from "./server.ts";
 
 export abstract class SelfGameWorker<

@@ -42,10 +42,6 @@ export interface WallsDef{
     reflect_bullets?:boolean
     passable_by_bullets?:boolean
 
-    position?:Vec2
-    layer?:number
-    side?:number
-
     positions:Vec2[][]
     width?:number
     stroke_width?:number

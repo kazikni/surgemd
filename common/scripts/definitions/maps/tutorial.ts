@@ -1,4 +1,4 @@
-import { HitboxGroup2D, RectHitbox2D, v2 } from "../../../engine/core.ts";
+import { ColliderGroup2D, RectCollider2D, v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
 import { type MapDef } from "./base.ts";
@@ -16,9 +16,9 @@ export const TutorialMap:MapDef={
         objects:{
             buildings:[
                 {
-                    idString: 'part_1',
+                    id_string: 'part_1',
                     reflect_bullets:true,
-                    hitbox: new HitboxGroup2D(new RectHitbox2D(v2(-3.7699999809265137, -4.75), v2(-3.5399999618530273, 4.75)), new RectHitbox2D(v2(3.5399999618530273, -4.75), v2(3.7699999809265137, 4.75)), new RectHitbox2D(v2(-3.5399999618530273, 4.539999961853027), v2(3.7699999809265137, 4.75)), new RectHitbox2D(v2(-3.5399999618530273, -4.75), v2(-0.6100000143051147, -4.539999961853027)), new RectHitbox2D(v2(0.8199999928474426, -4.75), v2(3.5399999618530273, -4.539999961853027))),
+                    collider: new ColliderGroup2D(new RectCollider2D(v2(-3.7699999809265137, -4.75), v2(-3.5399999618530273, 4.75)), new RectCollider2D(v2(3.5399999618530273, -4.75), v2(3.7699999809265137, 4.75)), new RectCollider2D(v2(-3.5399999618530273, 4.539999961853027), v2(3.7699999809265137, 4.75)), new RectCollider2D(v2(-3.5399999618530273, -4.75), v2(-0.6100000143051147, -4.539999961853027)), new RectCollider2D(v2(0.8199999928474426, -4.75), v2(3.5399999618530273, -4.539999961853027))),
                     floor_image: [{"image":"military_rest_room_floor",scale:3}],
                     generate:{
                         obstacles:[{"def":"metal_door","id":2,"position":{"x":-0.6299999952316284,"y":-4.650000095367432},"rotation":0,"variation":7},{"def":"green_button","id":1,"position":{"x":-0.8,"y":-4.7},"rotation":3},{"def":"small_bed","position":{"x":2.5,"y":3},"rotation":0,"variation":2},{"def":"small_bed","position":{"x":-2.5,"y":3},"rotation":0,"variation":2},{"def":"small_bed","position":{"x":-2.5,"y":-3},"rotation":2,"variation":2},{"def":"small_bed","position":{"x":2.5,"y":-3},"rotation":2,"variation":2},{"def":"large_drawer","position":{"x":3.0799999237060547,"y":0},"rotation":2},{"def":"large_drawer","position":{"x":-3.0799999237060547,"y":0},"rotation":0}],
@@ -36,7 +36,7 @@ export const TutorialMap:MapDef={
                     },
                 },
                 {
-                    idString:"main_structure",
+                    id_string:"main_structure",
                     generate:{
                         sub_building:[
                             {def:"part_1",position:v2(10,50),rotation:0},
@@ -53,7 +53,7 @@ export const TutorialMap:MapDef={
                         ],
                         puzzles:[
                             /*{
-                                idString:"puzzle_2",
+                                id_string:"puzzle_2",
                                 complete_conditions:[
                                     {type:"break",id:1},
                                 ],

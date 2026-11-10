@@ -71,7 +71,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
     return [
         {
             item:LoadoutItemKind.Body,
-            idString:"body_1",
+            id_string:"body_1",
             rank:ItemRank.E,
             frame:{
                 hand:"human_hand_1",
@@ -85,7 +85,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         //Hairs
         {
             item:LoadoutItemKind.Hair,
-            idString:"hair_1",
+            id_string:"hair_1",
             rank:ItemRank.E,
             frame:{
                 front:{
@@ -95,7 +95,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         },
         {
             item:LoadoutItemKind.Hair,
-            idString:"hair_2",
+            id_string:"hair_2",
             rank:ItemRank.E,
             frame:{
                 front:{
@@ -105,7 +105,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         },
         {
             item:LoadoutItemKind.Hair,
-            idString:"hair_3",
+            id_string:"hair_3",
             rank:ItemRank.E,
             frame:{
                 front:{
@@ -115,7 +115,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         },
         {
             item:LoadoutItemKind.Hair,
-            idString:"hair_4",
+            id_string:"hair_4",
             rank:ItemRank.E,
             frame:{
                 front:{
@@ -125,7 +125,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         },
         {
             item:LoadoutItemKind.Hair,
-            idString:"hair_5",
+            id_string:"hair_5",
             rank:ItemRank.E,
             frame:{
                 front:{
@@ -138,19 +138,19 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         {
             item:LoadoutItemKind.Eyes,
             position:v2(0.2,0),
-            idString:"eyes_1",
+            id_string:"eyes_1",
             rank:ItemRank.E,
         },
         {
             item:LoadoutItemKind.Eyes,
             position:v2(0.2,0),
-            idString:"eyes_2",
+            id_string:"eyes_2",
             rank:ItemRank.E,
         },
         //Shirt
         {
             item:LoadoutItemKind.Shirt,
-            idString:"white_shirt",
+            id_string:"white_shirt",
             rank:ItemRank.E,
             frame:{
                 arm:"human_shirt_1_arm",
@@ -161,7 +161,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         },
         {
             item:LoadoutItemKind.Shirt,
-            idString:"blue_shirt",
+            id_string:"blue_shirt",
             rank:ItemRank.E,
             frame:{
                 arm:"human_shirt_1_arm",
@@ -174,7 +174,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         },
         {
             item:LoadoutItemKind.Shirt,
-            idString:"black_shirt",
+            id_string:"black_shirt",
             rank:ItemRank.E,
             frame:{
                 arm:"human_shirt_1_arm",
@@ -187,7 +187,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         },
         {
             item:LoadoutItemKind.Shirt,
-            idString:"yellow_shirt",
+            id_string:"yellow_shirt",
             rank:ItemRank.E,
             frame:{
                 arm:"human_shirt_1_arm",
@@ -200,7 +200,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         },
         {
             item:LoadoutItemKind.Shirt,
-            idString:"red_shirt",
+            id_string:"red_shirt",
             rank:ItemRank.E,
             frame:{
                 arm:"human_shirt_1_arm",
@@ -213,7 +213,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         },
         {
             item:LoadoutItemKind.Shirt,
-            idString:"black_shirt",
+            id_string:"black_shirt",
             rank:ItemRank.E,
             frame:{
                 arm:"human_shirt_1_arm",
@@ -227,7 +227,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
 
         {
             item:LoadoutItemKind.Shirt,
-            idString:"white_dress",
+            id_string:"white_dress",
             rank:ItemRank.E,
             frame:{
                 arm:"human_shirt_1_arm",
@@ -241,7 +241,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         },
         {
             item:LoadoutItemKind.Shirt,
-            idString:"blue_dress",
+            id_string:"blue_dress",
             rank:ItemRank.E,
             frame:{
                 arm:"human_shirt_1_arm",
@@ -255,7 +255,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         },
         {
             item:LoadoutItemKind.Shirt,
-            idString:"yellow_dress",
+            id_string:"yellow_dress",
             rank:ItemRank.E,
             frame:{
                 arm:"human_shirt_1_arm",
@@ -269,7 +269,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         },
         {
             item:LoadoutItemKind.Shirt,
-            idString:"red_dress",
+            id_string:"red_dress",
             rank:ItemRank.E,
             frame:{
                 arm:"human_shirt_1_arm",
@@ -284,7 +284,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         //Legs
         {
             item:LoadoutItemKind.Leg,
-            idString:"blue_jeans_pants",
+            id_string:"blue_jeans_pants",
             rank:ItemRank.E,
             frame:{
                 image:"human_leg_1_1",
@@ -293,7 +293,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         },
         {
             item:LoadoutItemKind.Leg,
-            idString:"grey_jeans_pants",
+            id_string:"grey_jeans_pants",
             rank:ItemRank.E,
             frame:{
                 image:"human_leg_1_1",
@@ -302,7 +302,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         },
         {
             item:LoadoutItemKind.Leg,
-            idString:"green_grey_jeans_pants",
+            id_string:"green_grey_jeans_pants",
             rank:ItemRank.E,
             frame:{
                 image:"human_leg_1_1",
@@ -312,7 +312,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         // Foot
         {
             item:LoadoutItemKind.Foot,
-            idString:"black_shoes",
+            id_string:"black_shoes",
             rank:ItemRank.D,
             frame:{
                 image:"human_foot_2_1",
@@ -327,7 +327,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         },
         {
             item:LoadoutItemKind.Foot,
-            idString:"blue_shoes",
+            id_string:"blue_shoes",
             rank:ItemRank.D,
             frame:{
                 image:"human_foot_2_1",
@@ -342,7 +342,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         },
         {
             item:LoadoutItemKind.Foot,
-            idString:"grey_shoes",
+            id_string:"grey_shoes",
             rank:ItemRank.D,
             frame:{
                 image:"human_foot_2_1",
@@ -358,7 +358,7 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         // Accessorys
         {
             item:LoadoutItemKind.Accessory,
-            idString:"white_hair_bow",
+            id_string:"white_hair_bow",
             rank:ItemRank.E,
             frame:{
                 image:"hair_bow",

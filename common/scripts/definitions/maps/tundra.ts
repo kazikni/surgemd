@@ -1,4 +1,4 @@
-import { DeepPartial, mergeDeep, RectHitbox2D, v2 } from "../../../engine/core.ts";
+import { DeepPartial, mergeDeep, RectCollider2D, v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
 import { buildings_factory } from "../objects/buildings.ts";
@@ -16,7 +16,7 @@ export function create_hunt_house(id:string,settings:{
     const walls_tint=settings.walls_tint??1
     const doors_tint=settings.doors_tint??walls_tint
     return mergeDeep({
-        idString:id,
+        id_string:id,
         is_ghost:true,
         ceiling:[ 
             {
@@ -40,7 +40,7 @@ export function create_hunt_house(id:string,settings:{
                         tint:0x42a64a,
                     }
                 },
-                hitbox:new RectHitbox2D(v2(-1.75,-1.55),v2(1.75,1.55)),
+                collider:new RectCollider2D(v2(-1.75,-1.55),v2(1.75,1.55)),
                 scope_change:{}
             }
         ],
@@ -116,7 +116,7 @@ export function create_hunt_house(id:string,settings:{
                 ...(settings.content??[])
             ],
         },
-        hitbox:RectHitbox2D.centered(v2(0,0),v2(3.5,3.1)),
+        collider:RectCollider2D.centered(v2(0,0),v2(3.5,3.1)),
     },settings.b??{})
 }
 export const TundraBiome:MapBiomeDef={
@@ -258,10 +258,10 @@ export const TundraMap:MapDef={
         objects:{
             buildings:[
                 {
-                    idString:"bush_group_1",
+                    id_string:"bush_group_1",
                     no_collisions:true,
                     no_bullet_collision:true,
-                    hitbox:new RectHitbox2D(v2(-8,-8),v2(8,8)),
+                    collider:new RectCollider2D(v2(-8,-8),v2(8,8)),
                     generate:{
                         loots:[
                             {
@@ -339,10 +339,10 @@ export const TundraMap:MapDef={
                     }
                 },
                 {
-                    idString:"bush_group_2",
+                    id_string:"bush_group_2",
                     no_collisions:true,
                     no_bullet_collision:true,
-                    hitbox:new RectHitbox2D(v2(-8,-8),v2(8,8)),
+                    collider:new RectCollider2D(v2(-8,-8),v2(8,8)),
                     generate:{
                         loots:[
                             {

@@ -156,7 +156,7 @@ export const kspr={
         for(const path of def.audios??[]){
             console.log(`Compiling ${path}`)
             const sheet = await audios.compile_group(fs,audio_decoder,audio_encoder,path)
-            kspr.audios.push(sheet)
+            if(sheet.duration>0)kspr.audios.push(sheet)
         }
         return kspr
     },

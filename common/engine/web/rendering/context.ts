@@ -5,7 +5,7 @@ import { Batcher, BatcherCommand, BatcherMaterialCommand } from "./batcher.ts"
 import { type Texture, type Material, type Renderer, type WebglRenderer, type GLTexture, GLMaterial } from "./renderer.ts"
 import { Frame } from "../resources/resources.ts"
 import { Matrix, matrix4 } from "../../core/math/matrix.ts";
-import { Hitbox2D, HitboxType2D } from "../../core/math/hitbox.ts";
+import { Collider2D, ColliderType2D } from "../../core/math/collider.ts";
 import { Stream } from "../../core/net/stream.ts";
 import { RenderCMD, RenderCMDType } from "../../core/lang/context_command.ts";
 
@@ -231,26 +231,26 @@ export abstract class Context2D{
         }
     }
 
-    hitbox(hb: Hitbox2D, segments = 32) {
-        switch (hb.type) {
-            case HitboxType2D.null:
+    collider(col: Collider2D, segments = 32) {
+        switch (col.type) {
+            case ColliderType2D.null:
                 break
-            case HitboxType2D.circle:
-                this.circle(hb.position,hb.radius,segments)
+            case ColliderType2D.circle:
+                this.circle(col.position,col.radius,segments)
                 break
-            case HitboxType2D.rect:
-                this.rect(hb.min, hb.max)
+            case ColliderType2D.rect:
+                this.rect(col.min, col.max)
                 break
-            case HitboxType2D.group:
-                for (const child of hb.hitboxes) {
-                    this.hitbox(child, segments)
+            case ColliderType2D.group:
+                for (const child of col.content) {
+                    this.collider(child, segments)
                 }
                 break
-            case HitboxType2D.polygon: {
-                if(hb.points.length===0)return
-                this.move_to(hb.points[0].x,hb.points[0].y)
-                for (let i = 1; i < hb.points.length; i++) {
-                    const p = hb.points[i]
+            case ColliderType2D.polygon: {
+                if(col.points.length===0)return
+                this.move_to(col.points[0].x,col.points[0].y)
+                for (let i = 1; i < col.points.length; i++) {
+                    const p = col.points[i]
                     this.line_to(p.x,p.y)
                 }
                 return

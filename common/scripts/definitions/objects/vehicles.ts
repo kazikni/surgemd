@@ -1,4 +1,4 @@
-import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, HitboxGroup2D, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
+import { CircleCollider2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Collider2D, ColliderGroup2D, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
 import { Spawn, SpawnMode } from "../../others/constants.ts";
 import { FloorKind } from "../../others/terrain.ts";
 import { ScopeChange } from "../utils.ts";
@@ -17,7 +17,7 @@ export interface VehicleSeatDef{
     scope_change?:ScopeChange
 }
 export interface VehicleDef extends Definition {
-    hitbox: Hitbox2D
+    collider: Collider2D
 
     spawn?:SpawnMode
     frame: {
@@ -54,12 +54,12 @@ export interface VehicleDef extends Definition {
 
 export const VehicleTemplates = {
     bike: (id: string, ...merge: DeepPartial<VehicleDef>[]) => mergeDeep({
-        idString: id,
+        id_string: id,
         spawn:Spawn.ground,
-        hitbox: new HitboxGroup2D(
-            new CircleHitbox2D(v2(0.9, 0), 0.5),
-            new CircleHitbox2D(v2(-0.9, 0), 0.5),
-            new CircleHitbox2D(v2(0, 0), 0.5)
+        collider: new ColliderGroup2D(
+            new CircleCollider2D(v2(0.9, 0), 0.5),
+            new CircleCollider2D(v2(-0.9, 0), 0.5),
+            new CircleCollider2D(v2(0, 0), 0.5)
         ),
         frame: {
             base_transform:{
@@ -93,16 +93,16 @@ export const VehicleTemplates = {
         },
     }, ...merge),
     jeep:(id:string,...merge)=>mergeDeep({
-        idString:id,
+        id_string:id,
         spawn:Spawn.ground,
-        hitbox:new HitboxGroup2D(
-            new CircleHitbox2D(v2(1.2,0.55),1.15),
-            new CircleHitbox2D(v2(1.2,-0.55),1.15),
+        collider:new ColliderGroup2D(
+            new CircleCollider2D(v2(1.2,0.55),1.15),
+            new CircleCollider2D(v2(1.2,-0.55),1.15),
 
-            new CircleHitbox2D(v2(-1.8,0.55),1.2),
-            new CircleHitbox2D(v2(-1.8,-0.55),1.2),
+            new CircleCollider2D(v2(-1.8,0.55),1.2),
+            new CircleCollider2D(v2(-1.8,-0.55),1.2),
 
-            new CircleHitbox2D(v2(-0.5,0),1.45)
+            new CircleCollider2D(v2(-0.5,0),1.45)
         ),
         frame: {
             base_transform:{
@@ -191,16 +191,16 @@ export const VehicleTemplates = {
         },
     },...merge),
     boat:(id:string,...merge)=>mergeDeep({
-        idString:id,
+        id_string:id,
         spawn:Spawn.river_water,
-        hitbox:new HitboxGroup2D(
-            new CircleHitbox2D(v2(1.2,0.55),1.15),
-            new CircleHitbox2D(v2(1.2,-0.55),1.15),
+        collider:new ColliderGroup2D(
+            new CircleCollider2D(v2(1.2,0.55),1.15),
+            new CircleCollider2D(v2(1.2,-0.55),1.15),
 
-            new CircleHitbox2D(v2(-1.2,0.55),1.2),
-            new CircleHitbox2D(v2(-1.2,-0.55),1.2),
+            new CircleCollider2D(v2(-1.2,0.55),1.2),
+            new CircleCollider2D(v2(-1.2,-0.55),1.2),
 
-            new CircleHitbox2D(v2(0,0),1.45)
+            new CircleCollider2D(v2(0,0),1.45)
         ),
         frame: {
             base:"jeep",

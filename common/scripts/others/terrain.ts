@@ -1,5 +1,5 @@
-import { Collision, Hitbox2D, polygon2, Polygon2D, PolygonHitbox2D, SeededRandom, v2, v2m, Vec2 } from "../../engine/core.ts"
-import { BasicTerrainManager, FloorBase } from "../../engine/core/game/terrain.ts"
+import { Collision, Collider2D, polygon2, Polygon2D, PolygonCollider2D, SeededRandom, v2, v2m, Vec2 } from "../../engine/core.ts"
+import { BasicTerrainManager, FloorBase } from "../../engine/core/app/terrain.ts"
 import { TerrainLayerDef, TerrainShapeDef } from "../definitions/maps/base.ts"
 
 export enum FloorType {
@@ -142,7 +142,7 @@ export interface Floor extends FloorBase {
     tint?: number
 }
 export interface TerrainColor{
-    hitbox: Hitbox2D
+    collider: Collider2D
     tint: number
     zindex: number
 }
@@ -177,7 +177,7 @@ export interface TerrainShapeResult{
     floors:{
         def:TerrainLayerDef
         polygon:Polygon2D
-        hitbox:PolygonHitbox2D
+        collider:PolygonCollider2D
     }[]
 }
 export class TerrainManager extends BasicTerrainManager<Floor>{
@@ -196,7 +196,7 @@ export function generate_terrain_shape(shape:TerrainShapeDef,terrain:TerrainMana
     for(const floor of shape.floors){
         poly = polygon2.offset_polygon(base,floor.padding)
         poly = polygon2.distort_polygon(poly,floor.variation,floor.spacing,0.9,random)
-        const hb=new PolygonHitbox2D(poly)
+        const hb=new PolygonCollider2D(poly)
         terrain.add_floor({
             type:floor.type,
             hb:hb,
@@ -281,7 +281,7 @@ export const rivers={
     }
 }
 export interface RiverLayer{
-    hb:PolygonHitbox2D
+    hb:PolygonCollider2D
     floor:number
 
     push:boolean
@@ -289,7 +289,7 @@ export interface RiverLayer{
     layer?:number
 }
 export class River{
-    base:PolygonHitbox2D
+    base:PolygonCollider2D
     layers:RiverLayer[]=[]
     points:RiverPoint[]=[]
 
@@ -306,7 +306,7 @@ export class River{
         },
     ]
     constructor(points:RiverPoint[],def:RiverDef){
-        this.base=new PolygonHitbox2D(polygon2.from_point_line(points))
+        this.base=new PolygonCollider2D(polygon2.from_point_line(points))
         for(const layer of def.layers??River.default_layers){
             this.layers.push({
                 hb:River.create_layer(points,layer.margin,layer.scale),
@@ -367,24 +367,24 @@ export class River{
         for(const p of points){
             expanded.push({...p,width:p.width*scale+margin})
         }
-        return new PolygonHitbox2D(polygon2.from_point_line(expanded))
+        return new PolygonCollider2D(polygon2.from_point_line(expanded))
     }
-    static generate_rivers(hitbox: Polygon2D,rivers: RiversDef[],random: SeededRandom): River[] {
+    static generate_rivers(collider: Polygon2D,rivers: RiversDef[],random: SeededRandom): River[] {
         const ret: River[] = []
         const defs = random.weight2(rivers)
-        const center = polygon2.center(hitbox)
+        const center = polygon2.center(collider)
         for(const def of defs.rivers){
             let attempts = 0
             while(attempts++<25){
-                const startIndex=random.int(0, hitbox.length - 1)
-                const minOffset=Math.floor(hitbox.length * 0.3)
+                const startIndex=random.int(0, collider.length - 1)
+                const minOffset=Math.floor(collider.length * 0.3)
 
-                const maxOffset=Math.floor(hitbox.length * 0.7)
+                const maxOffset=Math.floor(collider.length * 0.7)
                 const offset=random.int(minOffset, maxOffset)
-                const endIndex=(startIndex + offset) % hitbox.length
+                const endIndex=(startIndex + offset) % collider.length
 
-                let point1 = hitbox[startIndex]
-                let point2 = hitbox[endIndex]
+                let point1 = collider[startIndex]
+                let point2 = collider[endIndex]
                 if(!point1||!point2)continue
 
                 point1 = this.extend_point(point1,center,def.width * 1.7)

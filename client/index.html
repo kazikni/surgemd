@@ -27,142 +27,18 @@
         <link rel="stylesheet" href="/scripts/extra_elements.css">
     </head>
     <body>
-        <script type="module" src="./src/scripts/others/index.ts" async></script>
+        <script type="module" src="./src/scripts/index.ts" async></script>
         <div id="game" style="display: none;">
             <canvas id="game-canvas" class="game-canvas"></canvas>
-            <div id="tiltshift-gfx"></div>
-            <div id="game-gui" style="display:none;visibility:none;pointer-events:none;">
-                <div id="help-gui"></div>
-                <div id="bottom-left-container">
-                    <div id="action-info" class="ui-panel">
-                        <span id="action-info-delay">1s</span>
-                    </div>
-                    <div id="hand-info" class="ui-panel">
-                        <img id="hand-info-consume-type"></img>
-                        <span id="hand-info-count"></span>
-                    </div>
-                    <div id="boost-bar-container" class="ui-panel">
-                        <div id="boost-bar-animation"></div>
-                        <div id="boost-bar"></div>
-                        <span id="boost-bar-amount"></span>
-                    </div>
-                    <div id="health-bar-container" class="ui-panel">
-                        <div id="health-bar-basic-heal"></div>
-                        <div id="health-bar-animation"></div>
-                        <div id="health-bar"></div>
-                        <span id="health-bar-amount"></span>
-                    </div>
-                </div>
-                <div id="information-container">
-                    <div id="information-box-container">
-                        <div id="information-killbox"></div>
-                        <div id="information-interaction"></div>
-                    </div>
-                    <!--<div id="information-hints"></div>-->
-                    <div id="information-global-messages"></div>
-                    <div id="debug-show" class="span-text"></div>
-                </div>
-                <div id="bottom-center-container">
-                    <div id="ui-weapons"></div>
-                    <div id="ui-items"></div>
-                </div>
-                <div id="inventory-container">
-                    <div id="ui-aitems"></div>
-                    <div id="ui-iitems"></div>
-                    <div id="ui-equipment"></div>
-                </div>
-                <div id="top-right-container">
-                    <div id="feed-container"></div>
-                    <div id="top-info-container">
-                        <div id="additional-info">
-                            <div>
-                                <div id="living-count-main"></div>
-                                <img src="/assets/img/menu/icons/human.svg" draggable="false">
-                            </div>
-                            <div>
-                                <span  id="kills-info" class="span-text-base">0</span>
-                                <img src="/assets/img/menu/icons/aim.svg" draggable="false">
-                            </div>
-                            <div id="deadzone-info">
-                                <span id="deadzone-info-timer"></span>
-                                <span id="deadzone-info-state"></span>
-                                <img draggable="false" id="deadzone-info-icon">
-                            </div>
-                        </div>
-                        <canvas id="ui-map"></canvas>
-                        <div id="leader-container">
-                            <span id="leader-text">Waiting For The Leader</span>
-                            <div id="leader-container-icon"></div>
-                        </div>
-                    </div>
-                </div>
-                <div id="groups-info"></div>
-                <div id="item-tooltip">
-                    <div id="item-tooltip-title"></div>
-                    <div id="item-tooltip-description"></div>
-                </div>
-                <div id="emote-wheel" class="emote-wheel">
-                    <img id="emote-wheel-top" draggable="false" class="emote-wheel-part wheel-part-top"/>
-                    <img id="emote-wheel-bottom" draggable="false" class="emote-wheel-part wheel-part-bottom"/>
-                    <img id="emote-wheel-left" draggable="false" class="emote-wheel-part wheel-part-left"/>
-                    <img id="emote-wheel-right" draggable="false" class="emote-wheel-part wheel-part-right"/>
-                    <img id="emote-wheel-hover" draggable="false" class="wheel-hover wheel-hover-center"/>
-                </div>
-                <div id="game-mobile-gui" style="display: none; pointer-events: none;">
-                    <smde-joystick id="left-joystick"></smde-joystick>
-                    <smde-joystick id="right-joystick"></smde-joystick>
-                    <div id="mobile-action-buttons">
-                        <button id="btn-mobile-interact"></button>
-                        <button id="btn-mobile-reload"></button>
-                        <button id="btn-mobile-emotes"></button>
-                        <button id="btn-mobile-toggle-map">X</button>
-                    </div>
-                </div>
-            </div>
-            <div id="normal-gameover-container">
-                <div id="gameover-status-container"></div>
-                <div id="gameover-main-message"></div>
-                <div id="gameover-buttons">
-                    <button id="gameover-menu-btn" class="btn-blue">Return To Menu</button>
-                    <button id="gameover-spectate-btn" class="btn-blue">Spectate</button>
-                    <button id="gameover-show-status-btn" class="btn-blue">Show Status</button>
-                </div>
-            </div>
-            <div id="restart-gameover-container" class="hidden"></div>
         </div>
-        <div id="menu">
-            <div id="menu-background"></div>
-            <div id="menu-options"></div>
-            <div id="menu-content"></div>
-            <div id="featured-links" class="span-text"></div>
-            <div id="main-social" class="social-links span-text"></div>
-            <p id="game-version" class="span-text"></p>
+        <div id="menu" style="display: none;">
         </div>
-        <div id="both-ui">
-            <div id="loading-screen">
-                <div id="loading-screen-logo-container">
-                    <div id="loading-screen-logo"></div>
-                    <p id="loading-screen-span" class="span">Loading...</p>
-                </div>
-                <div id="loading-current" class="loading-background"></div>
-                <div id="loading-minigame" style="display: none;">
-                    <div id="loading-target"></div>
-                    <div id="loading-score">
-                        Hits: <span>0</span>
-                    </div>
-                </div>
+        <div id="loading-screen" style="opacity: 0;">
+            <div id="loading-screen-logo-container">
+                <div id="loading-screen-logo"></div>
+                <p id="loading-screen-span" class="span">Loading...</p>
             </div>
-            <div id="initial-screen">
-                <video id="intro-video" playsinline muted width="640">
-                    <source src="/assets/videos/intro.mp4" type="video/mp4">
-                </video>
-            </div>
-            <div id="text-gameover-container" style="opacity:0;pointer-events:none;visibility:hidden;">
-                <p id="text-gameover"></p>
-            </div>
-            <div id="history-overlay"></div>
-            <div id="vignetting-gfx"></div>
-            <div id="mouse-emulated"></div>
+            <div id="loading-current" class="loading-background"></div>
         </div>
     </body>
 </html>

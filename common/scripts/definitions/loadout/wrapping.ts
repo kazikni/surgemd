@@ -9,7 +9,7 @@ export interface WrappingDef extends Definition{
 export function Wrapping_Default_Init():WrappingDef[]{
     return [
         {
-            idString:"gradient",
+            id_string:"gradient",
             rank:ItemRank.E,
             replace:{
                 "weapon_small_world":{
@@ -24,7 +24,7 @@ export function Wrapping_Default_Init():WrappingDef[]{
             }
         },
         {
-            idString:"shiny",
+            id_string:"shiny",
             rank:ItemRank.D,
             replace:{
                 "weapon_small_world":{
@@ -39,7 +39,7 @@ export function Wrapping_Default_Init():WrappingDef[]{
             }
         },
         {
-            idString:"aqua",
+            id_string:"aqua",
             rank:ItemRank.B,
             replace:{
                 "weapon_small_world":{
@@ -54,7 +54,7 @@ export function Wrapping_Default_Init():WrappingDef[]{
             }
         },
         {
-            idString:"aqua_blue",
+            id_string:"aqua_blue",
             rank:ItemRank.B,
             replace:{
                 "weapon_small_world":{

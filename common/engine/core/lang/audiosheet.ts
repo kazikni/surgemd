@@ -99,6 +99,15 @@ export const audios={
                 name: input.name
             })
         }
+        if(decoded.length===0){
+            return {
+                codec:"ogg",
+                channels:0,
+                sampleRate:0,
+                duration:0,
+                sounds:[],
+            }
+        }
         const merged=this.concatPCM(decoded)
         const audio=await encoder.encode(merged,output_extension)
         const sounds:AudioSheetPart[]=[]

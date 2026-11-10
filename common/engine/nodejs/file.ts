@@ -1,6 +1,5 @@
 
 import * as fs from "fs";
-import { open, FileHandle as NodeFile,readFile,writeFile,readdir,mkdir, } from "fs/promises";
 
 import {
     FileHandle,
@@ -8,7 +7,7 @@ import {
 } from "../core/definition/file.ts";
 export class NodeFileHandle extends FileHandle {
     constructor(
-        public readonly file: NodeFile
+        public readonly file: fs.promises.FileHandle
     ) {
         super();
     }
@@ -41,36 +40,49 @@ export class NodeFileHandle extends FileHandle {
 
 export class NodeFileManager extends FileManager {
     read_file(path: string): Promise<string> {
-        return readFile(path, "utf8")
+        return fs.promises.readFile(path, "utf8")
     }
     write_file(path: string, content: string): Promise<void> {
-        return writeFile(path, content, "utf8")
+        return fs.promises.writeFile(path, content, "utf8")
     }
 
     async read_fileb(path:string):Promise<Uint8Array> {
-        return new Uint8Array(await readFile(path))
+        return new Uint8Array(await fs.promises.readFile(path))
     }
     write_fileb(path:string,content:Uint8Array): Promise<void> {
-        return writeFile(path, content)
+        return fs.promises.writeFile(path, content)
     }
 
     list_dir(path: string): Promise<string[]> {
-        return readdir(path);
+        return fs.promises.readdir(path)
     }
-    override make_dir(path: string): Promise<void> {
-        return mkdir(path)
+    make_dir(path: string): Promise<void> {
+        return fs.promises.mkdir(path,{recursive:true}) as Promise<void>
     }
-    override async exist(path: string): Promise<boolean> {
+
+    async exist(path: string): Promise<boolean> {
         try{
-            await fs.promises.access(path)
+            await fs.promises.stat(path)
             return true
         }catch{
             return false
         }
     }
-    override is_directory(path: string): boolean {
-        const stat = fs.statSync(path)
-        return stat.isDirectory()
+    async is_directory(path: string): Promise<boolean> {
+        try{
+            const stat=await fs.promises.stat(path)
+            return stat.isDirectory()
+        }catch(e){
+            return false
+        }
+    }
+    async is_file(path: string): Promise<boolean> {
+        try{
+            const stat=await fs.promises.stat(path)
+            return stat.isFile()
+        }catch(e){
+            return false
+        }
     }
 
     async open(path: string,mode: "r" | "w" | "rw"): Promise<FileHandle>{
@@ -81,7 +93,9 @@ export class NodeFileManager extends FileManager {
                 ? "w"
                 : "r+";
 
-        const file = await open(path, flags);
-        return new NodeFileHandle(file);
+        return new NodeFileHandle(await fs.promises.open(path, flags))
+    }
+    override remove(path: string): Promise<void> {
+        return fs.promises.unlink(path)
     }
 }

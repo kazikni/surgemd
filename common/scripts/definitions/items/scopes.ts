@@ -26,23 +26,23 @@ export function Scopes_Default_Init():ScopeDef[]{
     let scope_view:number=0.87
     const ret:ScopeDef[]=[
         {
-            idString:"scope_1", // 1x
+            id_string:"scope_1", // 1x
             scope_view:scope_view,
             droppable:false,
             rank:ItemRank.E
         },
         /*{
-            idString:"scope_0d1", // 1x
+            id_string:"scope_0d1", // 1x
             scope_view:scope_view*1.25,
             rank:ItemRank.E,
             droppable:true
         },{
-            idString:"scope_0d2", // 1x
+            id_string:"scope_0d2", // 1x
             scope_view:scope_view*1.5,
             rank:ItemRank.E,
             droppable:true
         },{
-            idString:"scope_0d3", // 1x
+            id_string:"scope_0d3", // 1x
             scope_view:scope_view*2,
             rank:ItemRank.E,
             droppable:true
@@ -52,7 +52,7 @@ export function Scopes_Default_Init():ScopeDef[]{
     for(let i=2;i<=7;i++){
         scope_view*=0.743
         ret.push({
-            idString:"scope_"+i,
+            id_string:"scope_"+i,
             scope_view:scope_view,
             droppable:true,
             rank:ItemRank.E

@@ -79,6 +79,8 @@ export abstract class Renderer {
 
     abstract set_background_color(color:Color):void
     abstract clear(): void
+    bind(){
+    }
 
     full_canvas(max_ration?:number,roundPixels?:boolean){
         fullCanvas(this.canvas,max_ration,roundPixels)

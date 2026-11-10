@@ -23,7 +23,7 @@ export interface BoostDef extends Definition{
 export function Boosts_Default_Init():BoostDef[]{
     return [
         {
-            idString:"adrenaline",
+            id_string:"adrenaline",
             color:"#ff0",
             animation_color:"#ff07",
             particle:"boost_adrenaline_particle",
@@ -43,7 +43,7 @@ export function Boosts_Default_Init():BoostDef[]{
             }
         },
         {
-            idString:"shield",
+            id_string:"shield",
             color:"#08f",
             animation_color:"#08f7",
             shield:{
@@ -54,13 +54,13 @@ export function Boosts_Default_Init():BoostDef[]{
             particle:"boost_shield_particle"
         },
         {
-            idString:"mana",
+            id_string:"mana",
             color:"#92a",
             animation_color:"#92a7",
             particle:"boost_mana_particle"
         },
         {
-            idString:"addiction",
+            id_string:"addiction",
             color:"#e13",
             animation_color:"#e137",
             particle:"boost_addiction_particle",
@@ -92,7 +92,7 @@ export function Boosts_Default_Init():BoostDef[]{
             }
         },
         {
-            idString:"green_bless",
+            id_string:"green_bless",
             color:"#1f3",
             animation_color:"#1f37",
             particle:"boost_green_bless_particle",
@@ -116,7 +116,7 @@ export function Boosts_Default_Init():BoostDef[]{
             }
         },
         {
-            idString:"death",
+            id_string:"death",
             color:"#001",
             animation_color:"#0017",
             particle:"boost_death_particle",

@@ -27,11 +27,10 @@ export class GunItemBase extends MDItem{
     constructor(inventory:GInventoryBase,def?:GunDef){
         super(inventory)
         this.def=def!
-        this.tags.push("gun")
         this.liquid=false
     }
     is(other: MDItem): boolean {
-        return (other.item_type===this.item_type)&&other.def.idNumber==this.def.idNumber
+        return (other.item_type===this.item_type)&&other.def.id_number==this.def.id_number
     }
 }
 export class MeleeItemBase extends MDItem{
@@ -43,7 +42,7 @@ export class MeleeItemBase extends MDItem{
       this.def=def!
     }
     is(other: MDItem): boolean {
-      return (other.item_type===this.item_type)&&other.def.idNumber==this.def.idNumber
+      return (other.item_type===this.item_type)&&other.def.id_number==this.def.id_number
     }
 }
 export class AmmoItemBase extends MDItem{
@@ -51,14 +50,13 @@ export class AmmoItemBase extends MDItem{
     item_type: GameItemType.ammo=GameItemType.ammo
     constructor(inventory:GInventoryBase,def?:AmmoDef){
         super(inventory)
-        this.tags.push("ammo",`ammo_${this.def.ammoType}`)
         if(def)this.set_definition(def)
     }
     set_definition(def:AmmoDef){
         this.def=def
     }
     is(other: MDItem): boolean {
-        return (other.item_type===this.item_type)&&other.def.idNumber==this.def.idNumber
+        return (other.item_type===this.item_type)&&other.def.id_number==this.def.id_number
     }
 }
 export class ConsumibleItemBase extends MDItem{
@@ -72,7 +70,7 @@ export class ConsumibleItemBase extends MDItem{
         this.def=def
     }
     is(other: MDItem): boolean {
-        return (other.item_type===this.item_type)&&other.def.idNumber==this.def.idNumber
+        return (other.item_type===this.item_type)&&other.def.id_number==this.def.id_number
     }
 }
 export class GrenadeItemBase extends MDItem{
@@ -86,7 +84,7 @@ export class GrenadeItemBase extends MDItem{
         this.def=def
     }
     is(other: MDItem): boolean {
-        return (other.item_type===this.item_type)&&other.def.idNumber==this.def.idNumber
+        return (other.item_type===this.item_type)&&other.def.id_number==this.def.id_number
     }
 }
 export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
@@ -123,7 +121,7 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
     }
 
     constructor(){
-        super(1)
+        super()
     }
     initialize(definitions:GameDefinition,weapons_kind:Record<number,(new(inventory:GInventoryBase,def:GameItem)=>IT)>,weapons_defaults?:Record<number,GameItem>){
         this.default_backpack=definitions.backpacks.getFromString("null_pack")
@@ -140,11 +138,11 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
 
     set_backpack(backpack?:BackpackDef){
         if(!backpack)backpack=this.default_backpack
-        if(this.backpack&&this.backpack.idString===backpack.idString)return
+        if(this.backpack&&this.backpack.id_string===backpack.id_string)return
         this.backpack=backpack
         for(const s of this.slots){
             if(s.item){
-                s.item.limit_per_slot=backpack.max[s.item.def.idString]??this.default_backpack.max[s.item.def.idString]??15
+                s.item.limit_per_slot=backpack.max[s.item.def.id_string]??this.default_backpack.max[s.item.def.id_string]??15
             }
         }
         if(this.slots.length>backpack.slots){
@@ -174,7 +172,7 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
         this.set_hand_item(val!)
     }
     set_weapon(slot:number,wep?:GameItem){
-        const oid=this.weapons[slot]?.def.idString
+        const oid=this.weapons[slot]?.def.id_string
         if(wep||this.weapons_defaults[slot]){
             const item=new(this.weapons_kind[slot])(this,wep??this.weapons_defaults[slot])
             item.inventory=this
@@ -224,6 +222,6 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
         this.clear_weapons()
     }
     item_limit(item:GameItem):number{
-        return this.backpack.max[item.idString]??this.default_backpack.max[item.idString]??15
+        return this.backpack.max[item.id_string]??this.default_backpack.max[item.id_string]??15
     }
 }

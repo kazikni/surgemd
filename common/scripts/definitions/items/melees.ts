@@ -372,7 +372,7 @@ export function AnimationBat(time:number):AKeyFrame[]{
 export const melees_factorys={
     bonesaw(id:string,e:DeepPartial<MeleeDef>={}):MeleeDef{
         return mergeDeep({
-            idString:id,
+            id_string:id,
             rank:ItemRank.S,
             offset:v2(0.55,0),
             radius:0.4,
@@ -409,7 +409,7 @@ export const melees_factorys={
 }
 export function Melees_Default_Init():MeleeDef[]{
     return [{
-            idString:"fist",
+            id_string:"fist",
             rank:ItemRank.E,
             offset:v2(0.5,0),
             radius:0.3,
@@ -460,7 +460,7 @@ export function Melees_Default_Init():MeleeDef[]{
             ]
         },
         {
-            idString:"survival_knife",
+            id_string:"survival_knife",
             rank:ItemRank.D,
             offset:v2(0.5,0),
             radius:0.3,
@@ -519,7 +519,7 @@ export function Melees_Default_Init():MeleeDef[]{
             }
         },
         {
-            idString:"axe",
+            id_string:"axe",
             rank:ItemRank.C,
             offset:v2(0.7,0),
             radius:0.4,
@@ -555,7 +555,7 @@ export function Melees_Default_Init():MeleeDef[]{
             }
         },
         {
-            idString:"sledgehammer",
+            id_string:"sledgehammer",
             rank:ItemRank.A,
             offset:v2(0.7,0),
             radius:0.4,
@@ -591,7 +591,7 @@ export function Melees_Default_Init():MeleeDef[]{
             }
         },
         {
-            idString:"shovel",
+            id_string:"shovel",
             rank:ItemRank.D,
             offset:v2(0.7,0),
             radius:0.4,
@@ -626,7 +626,7 @@ export function Melees_Default_Init():MeleeDef[]{
             }
         },
         {
-            idString:"crowbar",
+            id_string:"crowbar",
             description:true,
             rank:ItemRank.C,
             offset:v2(0.7,0),
@@ -663,7 +663,7 @@ export function Melees_Default_Init():MeleeDef[]{
             }
         },
         {
-            idString:"baseball_bat",
+            id_string:"baseball_bat",
             rank:ItemRank.D,
             description:true,
             offset:v2(0.8,0.25),
@@ -700,7 +700,7 @@ export function Melees_Default_Init():MeleeDef[]{
             }
         },
         {
-            idString:"katana",
+            id_string:"katana",
             rank:ItemRank.B,
             offset:v2(0.8,0.25),
             radius:1,
@@ -787,7 +787,7 @@ export function Melees_Default_Init():MeleeDef[]{
             tname:"items.bonesaw"
         }),
         {
-            idString:"pan",
+            id_string:"pan",
             description:true,
             damage:25,
             offset:v2(0.8,0.1),

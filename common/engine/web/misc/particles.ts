@@ -1,10 +1,10 @@
 import { FrameDef } from "../../core/definition/definitions.ts"
-import { Particle2D } from "../../core/game/particles.ts"
+import { Particle2D } from "../../core/app/particles.ts"
 import { v2, v2m, Vec2 } from "../../core/math/vec2.ts"
 import { Color, ColorM } from "../../core/math/color.ts"
 import { Sprite2D } from "../2d/sprite.ts"
 import { EaseFunction, Numeric } from "../../core/math/utils.ts"
-import { type ClientGame } from "./game.ts";
+import { type ClientScene2D, type ClientApplication } from "./app.ts";
 
 export abstract class ClientParticle2D extends Particle2D{
     constructor(){
@@ -116,8 +116,8 @@ export class ABParticle2D extends ClientParticle2D{
     }
     override on_create(): void {
         super.on_create()
-        this.sprite.set_frame(this.config.frame,(this.manager.game as unknown as ClientGame).resources);
-        (this.manager.game as unknown as ClientGame).scene_2d.camera.add_object(this.sprite)
+        this.sprite.set_frame(this.config.frame,(this.manager.scene.app as unknown as ClientApplication).resources);
+        (this.manager.scene as ClientScene2D).camera.add_object(this.sprite)
     }
     override on_destroy(): void {
         this.sprite.destroy()
@@ -165,7 +165,7 @@ export class RainParticle2D extends ClientParticle2D{
                 if(this.sprite.scale.x<=0){
                     this.ticks=0
                     this.stage=2
-                    this.sprite.set_frame(this.config.frame.wave,(this.manager.game as unknown as ClientGame).resources)
+                    this.sprite.set_frame(this.config.frame.wave,(this.manager.scene.app as unknown as ClientApplication).resources)
                     v2m.single(this.sprite.scale,0.1)
                     this.sprite.hotspot=v2.half_one
                     if(this.config.zindex){
@@ -188,8 +188,8 @@ export class RainParticle2D extends ClientParticle2D{
     }
     override on_create(): void {
         super.on_create()
-        this.sprite.set_frame(this.config.frame.main,(this.manager.game as unknown as ClientGame).resources);
-        (this.manager.game as unknown as ClientGame).scene_2d.camera.add_object(this.sprite)
+        this.sprite.set_frame(this.config.frame.main,(this.manager.scene.app as unknown as ClientApplication).resources);
+        (this.manager.scene as ClientScene2D).camera.add_object(this.sprite)
         this.sprite.visible=true
     }
     override on_destroy(): void {

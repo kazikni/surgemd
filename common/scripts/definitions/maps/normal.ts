@@ -1,4 +1,4 @@
-import { cloneDeep, mergeDeep, RectHitbox2D, RotationMode, v2 } from "../../../engine/core.ts";
+import { cloneDeep, mergeDeep, RectCollider2D, RotationMode, v2 } from "../../../engine/core.ts";
 import { Spawn, zIndexes } from "../../others/constants.ts";
 import { FloorType, RiverLayerDef } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
@@ -96,10 +96,10 @@ export const NormalMap:MapDef={
     definitions:{
         objects:{
             obstacles:[{
-                idString:"gas_pump",
+                id_string:"gas_pump",
                 health:200,
                 onDestroyExplosion:"barrel_explosion",
-                hitbox:new RectHitbox2D(v2(-0.58,-1.1),v2(0.58,1.1)),
+                collider:new RectCollider2D(v2(-0.58,-1.1),v2(0.58,1.1)),
                 scale:{
                     destroy:0.85
                 },

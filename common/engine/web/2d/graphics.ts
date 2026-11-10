@@ -56,7 +56,7 @@ export class Graphics2D extends Container2DObject {
                 model,
                 tint:def[t].tint
             }
-            ImageModel2D(def[t].scale??v2.one,def[t].rotation??0,v2.zero,frame.frame_size,meter_size,v2.zero,rect,model)
+            ImageModel2D(def[t].scale??v2.one,def[t].rotation??0,v2.zero,frame.frame_size,v2.zero,meter_size,rect,model)
         }
         return ret
     }

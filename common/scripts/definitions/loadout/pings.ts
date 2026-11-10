@@ -16,13 +16,13 @@ export interface PingDef extends Definition{
 export function Pings_Default_Init():PingDef[]{
     return [
         {
-            idString:"airdrop",
+            id_string:"airdrop",
             lifetime:13
         },
 
-        {idString:"alert",world_version:true},
-        {idString:"here",world_version:true},
-        {idString:"heal",world_version:true},
-        {idString:"gift",world_version:true},
+        {id_string:"alert",world_version:true},
+        {id_string:"here",world_version:true},
+        {id_string:"heal",world_version:true},
+        {id_string:"gift",world_version:true},
     ]
 }

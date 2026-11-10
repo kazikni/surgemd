@@ -6,11 +6,11 @@ import { type Stream } from "../net/stream.ts";
 
 export const DefinitionTD:TDObject={
     type:TDType.object,
-    content:[{name:"idString",content:tdm.string1}]
+    content:[{name:"id_string",content:tdm.string1}]
 }
 export interface Definition{
-    idString:string,
-    idNumber?:number
+    id_string:string,
+    id_number?:number
 }
 export class DefinitionsSimple<Type,Base=null>{
     public value:Record<string,Type&Base>
@@ -31,13 +31,13 @@ export class DefinitionsSimple<Type,Base=null>{
     }
     getFromString(id:string):Type{
         if(!this.value[id]){
-            throw new Error(`idString:${id} Dont Exist In Definition`)
+            throw new Error(`id_string:${id} Dont Exist In Definition`)
         }
         return this.value[id]
     }
     getFromNumber(id:number):Type{
         if(!this.valueNumber[id]){
-            throw new Error(`idNumber:${id} Dont Exist In Definition`)
+            throw new Error(`id_number:${id} Dont Exist In Definition`)
         }
         return this.valueNumber[id]
     }
@@ -64,14 +64,14 @@ export class Definitions<Type extends Definition,Base> extends DefinitionsSimple
     insert(...val:Type[]):void{
         for(let vv of val){
             if(this.forall)vv=this.forall(vv as (Type&Partial<Base>))
-            vv.idNumber=undefined
-            this.value[vv.idString]=vv as (Type&Base)
-            if(vv.idNumber===undefined){
-                vv.idNumber=this.did
+            vv.id_number=undefined
+            this.value[vv.id_string]=vv as (Type&Base)
+            if(vv.id_number===undefined){
+                vv.id_number=this.did
                 this.valueNumber[this.did]=vv as (Type&Base)
                 this.did++
             }else{
-                this.valueNumber[vv.idNumber]=vv as (Type&Base)
+                this.valueNumber[vv.id_number]=vv as (Type&Base)
             }
             for(const p of this.parents??[]){
                 p.insert(vv)
@@ -96,22 +96,22 @@ export class DefinitionsMerge<TP extends Definition>{
     insert(...val:TP[]):void{
         for(const vv of val){
             const idn=Object.keys(this.keysNumber).length+1
-            if(this.valueString[vv.idString]){
-                console.error(`The ${vv.idString} Already exist at ${this.name} definition merge`)
+            if(this.valueString[vv.id_string]){
+                console.error(`The ${vv.id_string} Already exist at ${this.name} definition merge`)
             }
             this.valueNumber[idn]=vv
-            this.valueString[vv.idString]=vv
-            this.keysNumber[idn]=vv.idString
-            this.keysString[vv.idString]=idn
+            this.valueString[vv.id_string]=vv
+            this.keysNumber[idn]=vv.id_string
+            this.keysString[vv.id_string]=idn
         }
     }
     insert_def(def:Record<string,TP>){
         for(const dv of Object.values(def)){
             const idn=Object.keys(this.keysNumber).length+1
             this.valueNumber[idn]=dv
-            this.valueString[dv.idString]=dv
-            this.keysNumber[idn]=dv.idString
-            this.keysString[dv.idString]=idn
+            this.valueString[dv.id_string]=dv
+            this.keysNumber[idn]=dv.id_string
+            this.keysString[dv.id_string]=idn
         }
     }
     clear(){

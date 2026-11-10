@@ -1,5 +1,5 @@
 import { BackgroundEDef, BackgroundELayer, BackgroundELayerType, BackgroundTransitionType } from "../../core/definition/utils.ts";
-import { HideElement, ShowElement } from "./utils.ts";
+import {HideElement,ShowElement} from "./utils.ts"
 
 interface BackgroundLayerInstance {
     def: BackgroundELayer

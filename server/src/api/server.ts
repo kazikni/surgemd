@@ -9,8 +9,8 @@ export class ApiServer {
 
     modes:GameConfig[]=[]
 
-    api_settings!:ApiSettings
-    api_settings_s:string="{}"
+    api_public!:ApiSettings
+    api_public_s:string="{}"
 
     play_time?:{
         last_playtime?:number
@@ -47,7 +47,7 @@ export class ApiServer {
                 this.modes.push(m)
             }
         }
-        this.api_settings={
+        this.api_public={
             game_version:game_version,
             database:{
                 enabled:this.config.database?.enabled!==undefined?this.config.database.enabled:false,
@@ -63,11 +63,11 @@ export class ApiServer {
                 }
             }:undefined
         }
-        this.api_settings_s=JSON.stringify(this.api_settings)
+        this.api_public_s=JSON.stringify(this.api_public)
     }
     routes(){
-        this.server.route("/get-settings", () => {
-            return this.server.default_handlers.cors(this.server.default_handlers.no_cache(new Response(this.api_settings_s)))
+        this.server.route("/get-public", () => {
+            return this.server.default_handlers.cors(this.server.default_handlers.no_cache(new Response(this.api_public_s)))
         })
         this.server.route("/find-game", async (req) => {
             if(req.method !== "POST"){

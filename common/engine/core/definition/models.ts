@@ -1,5 +1,5 @@
 import { Rect } from "../math/geometry.ts";
-import { HitboxType2D, type Hitbox2D } from "../math/hitbox.ts"
+import { ColliderType2D, type Collider2D } from "../math/collider.ts"
 import { Matrix } from "../math/matrix.ts";
 import { v2, v2m, Vec2 } from "../math/vec2.ts";
 import { v3, Vec3 } from "../math/vec3.ts";
@@ -8,7 +8,7 @@ export interface Model2D{
     vertices:Float32Array
     tex_coords:Float32Array
 }
-export function ImageModel2D(scale: Vec2,angle: number,hotspot: Vec2,size: Vec2,meter_size: number,position: Vec2,rect: Rect,out: Float32Array) {
+export function ImageModel2D(scale: Vec2,angle: number,hotspot: Vec2,size: Vec2,position: Vec2,meter_size: number,rect: Rect,out: Float32Array) {
     const hw = (size.x / meter_size) * (scale.x * 0.5)
     const hh = (size.y / meter_size) * (scale.y * 0.5)
 
@@ -278,17 +278,17 @@ export const model2d={
             tex_coords: new Float32Array(),
         }
     },
-    hitbox(hb:Hitbox2D,segments?:number):Model2D{
-        if(hb.type===HitboxType2D.rect){
+    collider(hb:Collider2D,segments?:number):Model2D{
+        if(hb.type===ColliderType2D.rect){
             return this.rect(hb.min,hb.max)
-        }else if(hb.type===HitboxType2D.circle){
+        }else if(hb.type===ColliderType2D.circle){
             return this.circle(hb.radius,segments,hb.position)
-        }else if(hb.type===HitboxType2D.group){
+        }else if(hb.type===ColliderType2D.group){
             const vertices: number[] = []
             const tex: number[] = []
 
-            for(const sub of hb.hitboxes){
-                const model = this.hitbox(sub)
+            for(const sub of hb.content){
+                const model = this.collider(sub)
 
                 for(let i=0;i<model.vertices.length;i++){
                     vertices.push(model.vertices[i])

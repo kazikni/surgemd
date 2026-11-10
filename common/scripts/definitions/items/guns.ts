@@ -197,7 +197,7 @@ export const bullets_factory={
 export const guns_factory={
     simple(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
         return mergeDeep({
-            idString:id,
+            id_string:id,
             class:GunClasses.Pistol,
             rank:ItemRank.E,
             barrel_length:1,
@@ -207,7 +207,7 @@ export const guns_factory={
     },
     pistol(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
         return mergeDeep({
-            idString:id,
+            id_string:id,
             class:GunClasses.Pistol,
             rank:ItemRank.E,
 
@@ -237,7 +237,7 @@ export const guns_factory={
     },
     assault(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
         return mergeDeep({
-            idString:id,
+            id_string:id,
             class:GunClasses.Assault,
             rank:ItemRank.C,
 
@@ -278,7 +278,7 @@ export const guns_factory={
     },
     smg(id:string,ammo:string,small:boolean,extend:DeepPartial<GunDef>={}):GunDef{
         return mergeDeep({
-            idString:id,
+            id_string:id,
             class:GunClasses.SMG,
             rank:ItemRank.C,
 
@@ -320,7 +320,7 @@ export const guns_factory={
     },
     dmr(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
         return mergeDeep({
-            idString:id,
+            id_string:id,
             class:GunClasses.DMR,
             rank:ItemRank.A,
 
@@ -358,7 +358,7 @@ export const guns_factory={
     },
     sniper(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
         return mergeDeep({
-            idString:id,
+            id_string:id,
             class:GunClasses.Sniper,
             rank:ItemRank.A,
 
@@ -395,7 +395,7 @@ export const guns_factory={
     },
     shotgun(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
         return mergeDeep({
-            idString:id,
+            id_string:id,
             class:GunClasses.Shotgun,
             rank:ItemRank.C,
 
@@ -450,7 +450,7 @@ export const guns_factory={
     },
     lmg(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
         return mergeDeep({
-            idString:id,
+            id_string:id,
             class:GunClasses.LMG,
             rank:ItemRank.S,
 
@@ -1555,7 +1555,7 @@ export function Guns_Default_Init():GunDef[]{
         //                  MISC                   //
         /////////////////////////////////////////////
         {
-            idString:"rpg7",
+            id_string:"rpg7",
             name:"RPG-7",
             class:GunClasses.Miscellaneous,
             rank:ItemRank.S,
@@ -1607,7 +1607,7 @@ export function Guns_Default_Init():GunDef[]{
             rig_image:WeaponsRig[0]
         },
         {
-            idString:"m79",
+            id_string:"m79",
             name:"M79",
             class:GunClasses.Miscellaneous,
             rank:ItemRank.A,
@@ -1645,7 +1645,7 @@ export function Guns_Default_Init():GunDef[]{
             },
         },
         {
-            idString:"m2_2",
+            id_string:"m2_2",
             name:"M2-2",
             class:GunClasses.Miscellaneous,
             rank:ItemRank.A,

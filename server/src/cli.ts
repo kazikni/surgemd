@@ -1,9 +1,9 @@
 import { ClientsManager, CommandDef, ConsoleContext, FileManager, GameConsole, PacketsManager, parseJSONC, StaticStream } from "common/engine/core.ts";
 import { KSPRImageFormat,kspr } from "common/engine/core/lang/kspr.ts";
-import { PacketManager } from "common/scripts/packets/packet_manager.ts";
-import { Game } from "./game/others/game.ts";
+/*import { PacketManager } from "common/scripts/packets/packet_manager.ts";
+import { Game } from "./game/others/game.ts";*/
 import { ConfigType } from "common/scripts/config/config.ts";
-import { GameServer } from "./game/others/server.ts";
+//import { GameServer } from "./game/others/server.ts";
 import { ApiServer } from "./api/server.ts";
 import { server_factory } from "common/engine/server/server.ts";
 
@@ -87,7 +87,7 @@ export async function main(args:string[],default_worker_file:string,fs:FileManag
             }
         ]
     })
-    cmd.register({
+    /*cmd.register({
         name:"game",
         flags:{},
         childrens:[
@@ -168,36 +168,8 @@ export async function main(args:string[],default_worker_file:string,fs:FileManag
                     server.run()
                 }
             },
-            /*{
-                name:"map",
-                childrens:[
-                    {
-                        name:"compile",
-                        flags:{
-                            "input":{
-                                type:"string"
-                            },
-                            "output":{
-                                type:"string",
-                                default:"output.map"
-                            }
-                        },
-                        flags_orden:["input"],
-                        async execute(ctx){
-                            const module = await import(`file://${Deno.realPathSync(ctx.args.input)}`);
-                            const stream=new DynamicStream()
-                            if(module.map.generation.callback)module.map.generation.callback=undefined
-                            stream.write_string_sized(".MAP",4)
-                            .write_uint16(0)
-                            .write_td(module.map,MapTD)
-                            //.write_any(module.map)
-                            await Deno.writeFile(ctx.args.output,stream.data.slice(0,stream.length))
-                        }
-                    }
-                ]
-            }*/
         ]
-    })
+    })*/
     cmd.register({
         name: "kspr",
         flags: {},

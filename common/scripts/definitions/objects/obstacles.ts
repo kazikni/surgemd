@@ -1,5 +1,5 @@
-import { CircleHitbox2D, DeepPartial, Definition, FrameDef, FrameTransform, Hitbox2D, mergeDeep, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition, Matrix, TDType, tdm, FrameTransformTD, FrameTD, TD } from "../../../engine/core.ts";
-import { LootData, LootTable, Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
+import { CircleCollider2D, DeepPartial, Definition, FrameDef, FrameTransform, Collider2D, mergeDeep, type Model2D, RectCollider2D, RotationMode, v2, Vec2, WeightDefinition, TDType, tdm, FrameTransformTD, FrameTD, TD } from "../../../engine/core.ts";
+import { LootTable, Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { type GunDef } from "../items/guns.ts";
 import { GameObjectDefinitionType, GameObjectDefTD, hit_sounds, HitParticlesDef, HitSoundsDef, PerspetiveSizes } from "../utils.ts";
 import { DecalInstanceDef } from "./decals.ts";
@@ -14,14 +14,14 @@ export const ObstacleTD:TD={
         { name: "resistence", content: tdm.float32_onu },
 
         // Collision
-        { name: "hitbox", content: tdm.any },
-        { name: "spawnHitbox", content: tdm.any },
+        { name: "collider", content: tdm.any },
+        { name: "spawnCollider", content: tdm.any },
         {
             name: "below",
             content: {type:TDType.onu,content:{
                 type: TDType.object,
                 content: [
-                    { name: "hitbox", content: tdm.any },
+                    { name: "collider", content: tdm.any },
                     { name: "duration", content: tdm.float32_onu },
                     { name: "alpha", content: tdm.float32 },
                 ]
@@ -56,7 +56,7 @@ export const ObstacleTD:TD={
                 content: [
                     { name: "disabled", content: tdm.boolean },
                     { name: "model", content: tdm.any },
-                    { name: "hitbox", content: tdm.any },
+                    { name: "collider", content: tdm.any },
                 ]
             }}
         },
@@ -182,10 +182,10 @@ export interface ObstacleDef extends Definition{
     resistence?:number
 
     //Collisions
-    hitbox?:Hitbox2D
-    spawnHitbox?:Hitbox2D
+    collider?:Collider2D
+    spawnCollider?:Collider2D
     below?:{
-        hitbox?:Hitbox2D
+        collider?:Collider2D
         duration?:number
         alpha:number
     }
@@ -205,7 +205,7 @@ export interface ObstacleDef extends Definition{
     world_shadow?:{
         disabled?:boolean
         model?:Model2D
-        hitbox?:Hitbox2D
+        collider?:Collider2D
     }
 
     assets?:{
@@ -245,7 +245,7 @@ export interface ObstacleDef extends Definition{
     expanded_behavior?:(ObstacleBehaviorDoor|ObstacleBehaviorPlaySound|ObstacleBehaviorScalable|ObstacleBehaviorTransformInto|ObstacleBehaviorPress)
 
     stair_data?:{
-        hitbox:Hitbox2D
+        collider:Collider2D
     }[]
 }
 export const obstacles_factory={
@@ -256,10 +256,10 @@ export const obstacles_factory={
         empty?:string
     }={}){
         const tint=settings.tint===undefined?0x583b08:settings.tint
-        return mergeDeep({idString:settings.id??((weapon?.idString??"")+"_mount")},{
+        return mergeDeep({id_string:settings.id??((weapon?.id_string??"")+"_mount")},{
             health:65,
             height:1,
-            hitbox:new RectHitbox2D(v2(-0.65,-0.15),v2(0.65,0.15)),
+            collider:new RectCollider2D(v2(-0.65,-0.15),v2(0.65,0.15)),
             scale:{
                 destroy:0.8
             },
@@ -282,12 +282,11 @@ export const obstacles_factory={
                 sounds:hit_sounds.wood,
             },
             rotation_mode:RotationMode.limited,
-
         },weapon===undefined?{}:{
             assets:{
                 aditional_sprites:[{
                     ...weapon.rig_image,
-                    image:weapon.assets?.world??weapon.idString+"_world",
+                    image:weapon.assets?.world??weapon.id_string+"_world",
                     tint:weapon.assets?.world_tint,
                     hotspot:v2.half_one,
                     scale:2,
@@ -300,25 +299,25 @@ export const obstacles_factory={
                 obstacles:[{id:settings.empty??"",weight:1}],
                 give_item:[{
                     weight:1,
-                    item:weapon.idString
+                    item:weapon.id_string
                 }],
             },*/
             loot_table:[{
                 weight:1,
-                item:weapon.idString
+                item:weapon.id_string
             }],
         },settings.o??{})
     },
     rock(id:string,settings:{
         tint?:number,
-        hitbox?:Hitbox2D,
-        spawn_hitbox?:Hitbox2D,
+        collider?:Collider2D,
+        spawn_collider?:Collider2D,
         o?:DeepPartial<ObstacleDef>
     }={}):ObstacleDef{
-        return mergeDeep({idString:id},{
+        return mergeDeep({id_string:id},{
             health:220,
-            hitbox:settings.hitbox??new CircleHitbox2D(v2(0,0),0.84),
-            spawnHitbox:settings.spawn_hitbox,
+            collider:settings.collider??new CircleCollider2D(v2(0,0),0.84),
+            spawnCollider:settings.spawn_collider,
             scale:{
                 destroy:0.6,
             },
@@ -346,12 +345,12 @@ export const obstacles_factory={
     },
     bush(id:string,settings:{
         tint?:number,
-        hitbox?:Hitbox2D,
+        collider?:Collider2D,
         o?:DeepPartial<ObstacleDef>
     }={}):ObstacleDef{
-        return mergeDeep({idString:id},{
+        return mergeDeep({id_string:id},{
             health:90,
-            hitbox:settings.hitbox??new CircleHitbox2D(v2(0,0),0.8),
+            collider:settings.collider??new CircleCollider2D(v2(0,0),0.8),
             no_collision:true,
             passable_by_bullets:true,
             scale:{
@@ -381,9 +380,9 @@ export const obstacles_factory={
     box(id:string,settings:{
         o?:DeepPartial<ObstacleDef>,
     }={}):ObstacleDef{
-        return mergeDeep({idString:id},{
+        return mergeDeep({id_string:id},{
             health:35,
-            hitbox:new RectHitbox2D(v2(-0.35,-0.35),v2(0.35,0.35)),
+            collider:new RectCollider2D(v2(-0.35,-0.35),v2(0.35,0.35)),
             scale:{
                 destroy:0.8,
             },
@@ -406,9 +405,9 @@ export const obstacles_factory={
     crate(id:string,settings:{
         o?:DeepPartial<ObstacleDef>,
     }={}):ObstacleDef{
-        return mergeDeep({idString:id},{
+        return mergeDeep({id_string:id},{
             health:70,
-            hitbox:new RectHitbox2D(v2(-0.71,-0.71),v2(0.71,0.71)),
+            collider:new RectCollider2D(v2(-0.71,-0.71),v2(0.71,0.71)),
             scale:{
                 destroy:0.6,
             },
@@ -430,9 +429,9 @@ export const obstacles_factory={
     chest(id:string,settings:{
         o?:DeepPartial<ObstacleDef>,
     }={}):ObstacleDef{
-        return mergeDeep({idString:id},{
+        return mergeDeep({id_string:id},{
             health:110,
-            hitbox:new RectHitbox2D(v2(-0.52,-0.83),v2(0.52,0.83)),
+            collider:new RectCollider2D(v2(-0.52,-0.83),v2(0.52,0.83)),
             scale:{
                 destroy:0.85,
             },
@@ -445,7 +444,7 @@ export const obstacles_factory={
     button(id:string,settings:{
         o?:DeepPartial<ObstacleDef>,
     }={}){
-        return mergeDeep({idString:id},{
+        return mergeDeep({id_string:id},{
             health:1,
             expanded_behavior:{
                 type:4,
@@ -457,7 +456,7 @@ export const obstacles_factory={
             imortal:true,
             reflect_bullets:true,
             no_pathfinding_collision:true,
-            hitbox:new RectHitbox2D(v2(0,-0.2),v2(0.17,0.2)),
+            collider:new RectCollider2D(v2(0,-0.2),v2(0.17,0.2)),
             scale:{
                 destroy:0.75,
             },
@@ -490,8 +489,8 @@ export const obstacles_factory={
         }={}):ObstacleDef{
             const sounds=settings.sounds??"wood_door"
             return mergeDeep({
-                idString:id,
-                hitbox:new RectHitbox2D(v2(0,-0.15),v2(1.479996,0.15)),
+                id_string:id,
+                collider:new RectCollider2D(v2(0,-0.15),v2(1.479996,0.15)),
                 assets:{
                     particles:{
                         particle:settings.particle??"plank_particle",
@@ -522,8 +521,8 @@ export const obstacles_factory={
         wall(id:string,frame:string,tint:number|(number[]),health:number=200,width:number=0.2466,height:number=0.1233,particle:string="plank_particle",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
             return mergeDeep({
                 health:health,
-                idString:id,
-                hitbox:new RectHitbox2D(v2(-width,-height),v2(width,height)),
+                id_string:id,
+                collider:new RectCollider2D(v2(-width,-height),v2(width,height)),
                 assets:{
                     particles:{
                         particle:particle,
@@ -551,8 +550,8 @@ export const obstacles_factory={
             return mergeDeep({
                 imortal:true,
                 health:1,
-                idString:id,
-                hitbox:new RectHitbox2D(v2(-0.21,-0.21),v2(0.21,0.21)),
+                id_string:id,
+                collider:new RectCollider2D(v2(-0.21,-0.21),v2(0.21,0.21)),
                 assets:{
                     particles:{
                         particle:particle,
@@ -602,9 +601,9 @@ export const WallColors=[0xffffff,0x583b08,0xffd92b,0x468edb,0xb6071e,0x42a64a,0
 export function Obstacles_Default_Init():ObstacleDef[]{
     return [
         {
-            idString:"barrel",
+            id_string:"barrel",
             health:110,
-            hitbox:new CircleHitbox2D(v2(0,0),0.65),
+            collider:new CircleCollider2D(v2(0,0),0.65),
             scale:{
                 destroy:0.5
             },
@@ -630,7 +629,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         },
         obstacles_factory.rock("rock",{tint:0x4e4f50}),
         obstacles_factory.rock("river_rock",{
-            spawn_hitbox:new CircleHitbox2D(v2.zero,1.2),
+            spawn_collider:new CircleCollider2D(v2.zero,1.2),
             o:{
                 scale:{
                     min:1.5,
@@ -650,10 +649,10 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             health:230,
         }}),
         {
-            idString:"sillo",
+            id_string:"sillo",
             health:1,
             imortal:true,
-            hitbox:new CircleHitbox2D(v2(0,0),3.05),
+            collider:new CircleCollider2D(v2(0,0),3.05),
             onDestroyExplosion:"barrel_explosion",
             assets:{
                 particles:{
@@ -671,17 +670,17 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             spawnMode:Spawn.grass,
         },
         {
-            idString:"oak_tree",
+            id_string:"oak_tree",
             health:125,
-            hitbox:new CircleHitbox2D(v2(0,0),0.4),
-            spawnHitbox:new CircleHitbox2D(v2(0,0),1.5),
+            collider:new CircleCollider2D(v2(0,0),0.4),
+            spawnCollider:new CircleCollider2D(v2(0,0),1.5),
             scale:{
                 min:1,
                 max:1.2,
                 destroy:0.75,
             },
             world_shadow:{
-                hitbox:new CircleHitbox2D(v2(0,0),2),
+                collider:new CircleCollider2D(v2(0,0),2),
             },
             assets:{
                 particles:{},
@@ -695,24 +694,24 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             },
             rotation_mode:RotationMode.full,
             below:{
-                hitbox:new CircleHitbox2D(v2(0,0),2),
+                collider:new CircleCollider2D(v2(0,0),2),
                 alpha:30
             },
             parallax:PerspetiveSizes.large,
             spawnMode:Spawn.grass,
         },
         {
-            idString:"pine_tree",
+            id_string:"pine_tree",
             health:180,
-            hitbox:new CircleHitbox2D(v2(0,0),0.5),
-            spawnHitbox:new CircleHitbox2D(v2(0,0),2),
+            collider:new CircleCollider2D(v2(0,0),0.5),
+            spawnCollider:new CircleCollider2D(v2(0,0),2),
             scale:{
                 min:1,
                 max:1.2,
                 destroy:0.75,
             },
             world_shadow:{
-                hitbox:new CircleHitbox2D(v2(0,0),2.8),
+                collider:new CircleCollider2D(v2(0,0),2.8),
             },
             assets:{
                 particles:{
@@ -729,7 +728,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             },
             rotation_mode:RotationMode.full,
             below:{
-                hitbox:new CircleHitbox2D(v2(0,0),2.8),
+                collider:new CircleCollider2D(v2(0,0),2.8),
                 alpha:30
             },
             parallax:PerspetiveSizes.giant,
@@ -745,7 +744,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             }
         }),
         obstacles_factory.bush("squared_bush",{
-            hitbox:new RectHitbox2D(v2.new(-1.1,-1.1),v2.new(1.1,1.1)),
+            collider:new RectCollider2D(v2.new(-1.1,-1.1),v2.new(1.1,1.1)),
             o:{
                 health:130,
                 scale:{
@@ -884,7 +883,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
                 },
                 invisible_on_map:true,
                 reflect_bullets:true,
-                hitbox:new RectHitbox2D(v2(-0.8,-0.8),v2(0.8,0.8)),
+                collider:new RectCollider2D(v2(-0.8,-0.8),v2(0.8,0.8)),
             }
         }),
         obstacles_factory.crate("gold_crate",{
@@ -907,7 +906,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
                 },
                 invisible_on_map:true,
                 reflect_bullets:true,
-                hitbox:new RectHitbox2D(v2(-0.8,-0.8),v2(0.8,0.8)),
+                collider:new RectCollider2D(v2(-0.8,-0.8),v2(0.8,0.8)),
             }
         }),
         obstacles_factory.crate("ammo_crate",{
@@ -939,9 +938,9 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         obstacles_factory.button("green_button"),
         obstacles_factory.button("yellow_button"),
         {
-            idString:"airdrop_locked",
+            id_string:"airdrop_locked",
             imortal:true,
-            hitbox:new RectHitbox2D(v2(-0.88,-0.88),v2(0.88,0.88)),
+            collider:new RectCollider2D(v2(-0.88,-0.88),v2(0.88,0.88)),
             assets:{
                 particles:{
                     particle:"metal_particle",
@@ -1064,12 +1063,12 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             health:80,
         }),
         {
-            idString:"window",
+            id_string:"window",
             health:20,
 
             passable_by_bullets:true,
             keep_collision_on_die:true,
-            hitbox:new RectHitbox2D(v2(-0.16,-0.74),v2(0.16,0.74)),
+            collider:new RectCollider2D(v2(-0.16,-0.74),v2(0.16,0.74)),
             assets:{
                 frame:{
                     transform:{
@@ -1095,8 +1094,8 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             parallax:PerspetiveSizes.medium,
         },
         {
-            idString:"iron_ladder_bottom",
-            hitbox:new RectHitbox2D(v2(-0.15,-0.5),v2(0.15,0.5)),
+            id_string:"iron_ladder_bottom",
+            collider:new RectCollider2D(v2(-0.15,-0.5),v2(0.15,0.5)),
             imortal:true,
             assets:{
                 frame:{
@@ -1123,9 +1122,9 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             parallax:PerspetiveSizes.medium,
         },
         {
-            idString:"iron_ladder_top",
+            id_string:"iron_ladder_top",
             imortal:true,
-            hitbox:new RectHitbox2D(v2(-0.15,-0.5),v2(0.15,0.5)),
+            collider:new RectCollider2D(v2(-0.15,-0.5),v2(0.15,0.5)),
             assets:{
                 frame:{
                     base:"iron_ladder",
@@ -1160,7 +1159,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             scale:{
                 destroy:0.75,
             },
-            hitbox:RectHitbox2D.centered(v2.zero(),v2(3,3)),
+            collider:RectCollider2D.centered(v2.zero(),v2(3,3)),
             height:0,
             invisible_on_map:true,
         }),
@@ -1168,9 +1167,9 @@ export function Obstacles_Default_Init():ObstacleDef[]{
 
         //Furnitunes
         {
-            idString:"normal_tv",
+            id_string:"normal_tv",
             health:150,
-            hitbox:new RectHitbox2D(v2(-0.4,-0.4),v2(0.4,0.4)),
+            collider:new RectCollider2D(v2(-0.4,-0.4),v2(0.4,0.4)),
             reflect_bullets:true,
             no_collision:true,
             assets:{
@@ -1194,9 +1193,9 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             parallax:PerspetiveSizes.medium,
         },
         {
-            idString:"computer",
+            id_string:"computer",
             health:200,
-            hitbox:new RectHitbox2D(v2(-0.4,-0.39),v2(0.4,0.39)),
+            collider:new RectCollider2D(v2(-0.4,-0.39),v2(0.4,0.39)),
             reflect_bullets:true,
             no_collision:true,
             assets:{
@@ -1224,9 +1223,9 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             parallax:PerspetiveSizes.medium,
         },
         {
-            idString:"couch_3x1",
+            id_string:"couch_3x1",
             health:150,
-            hitbox:new RectHitbox2D(v2(-0.55,-1.4),v2(0.55,1.4)),
+            collider:new RectCollider2D(v2(-0.55,-1.4),v2(0.55,1.4)),
             scale:{
                 destroy:0.8
             },
@@ -1242,9 +1241,9 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             parallax:PerspetiveSizes.medium,
         },
         {
-            idString:"large_drawer",
+            id_string:"large_drawer",
             health:110,
-            hitbox:new RectHitbox2D(v2(-0.475,-1.15),v2(0.475,1.15)),
+            collider:new RectCollider2D(v2(-0.475,-1.15),v2(0.475,1.15)),
             scale:{
                 destroy:0.8
             },
@@ -1270,9 +1269,9 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             parallax:PerspetiveSizes.medium,
         },
         {
-            idString:"small_stove",
+            id_string:"small_stove",
             health:100,
-            hitbox:new RectHitbox2D(v2(-0.6,-0.6),v2(0.6,0.6)),
+            collider:new RectCollider2D(v2(-0.6,-0.6),v2(0.6,0.6)),
             scale:{
                 destroy:0.8
             },
@@ -1303,9 +1302,9 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             parallax:PerspetiveSizes.medium,
         },
         {
-            idString:"sink",
+            id_string:"sink",
             health:100,
-            hitbox:new RectHitbox2D(v2(-0.6,-0.6),v2(0.6,0.6)),
+            collider:new RectCollider2D(v2(-0.6,-0.6),v2(0.6,0.6)),
             scale:{
                 destroy:0.8
             },
@@ -1329,9 +1328,9 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             parallax:PerspetiveSizes.medium,
         },
         {
-            idString:"large_kitchen_drawer",
+            id_string:"large_kitchen_drawer",
             health:100,
-            hitbox:new RectHitbox2D(v2(-0.55,-1.15),v2(0.55,1.15)),
+            collider:new RectCollider2D(v2(-0.55,-1.15),v2(0.55,1.15)),
             scale:{
                 destroy:0.8
             },
@@ -1359,11 +1358,11 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         },
 
         {
-            idString:"wood_table",
+            id_string:"wood_table",
             health:100,
             no_collision:true,
             passable_by_bullets:true,
-            hitbox:new RectHitbox2D(v2(-0.85,-1.2),v2(0.85,1.2)),
+            collider:new RectCollider2D(v2(-0.85,-1.2),v2(0.85,1.2)),
             scale:{
                 destroy:0.9
             },
@@ -1387,11 +1386,11 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             parallax:PerspetiveSizes.medium,
         },
         {
-            idString:"wood_table_bonesaw",
+            id_string:"wood_table_bonesaw",
             health:100,
             no_collision:true,
             passable_by_bullets:true,
-            hitbox:new RectHitbox2D(v2(-0.85,-1.2),v2(0.85,1.2)),
+            collider:new RectCollider2D(v2(-0.85,-1.2),v2(0.85,1.2)),
             loot_table:[{weight:1,item:"bonesaw"}],
             scale:{
                 destroy:0.9
@@ -1424,9 +1423,9 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             parallax:PerspetiveSizes.medium,
         },
         {
-            idString:"wood_chair",
+            id_string:"wood_chair",
             health:80,
-            hitbox:new RectHitbox2D(v2(-0.49,-0.47),v2(0.49,0.47)),
+            collider:new RectCollider2D(v2(-0.49,-0.47),v2(0.49,0.47)),
             scale:{
                 destroy:0.9
             },
@@ -1448,9 +1447,9 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             parallax:PerspetiveSizes.small,
         },
         {
-            idString:"small_bed",
+            id_string:"small_bed",
             health:140,
-            hitbox:new RectHitbox2D(v2(-0.8,-1.28),v2(0.8,1.28)),
+            collider:new RectCollider2D(v2(-0.8,-1.28),v2(0.8,1.28)),
             scale:{
                 destroy:0.8
             },

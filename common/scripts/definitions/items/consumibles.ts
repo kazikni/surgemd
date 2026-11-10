@@ -130,7 +130,7 @@ export const ConsumiblesAnimations={
 
 export function CreateSoda(color:string,boost_def:string,max?:number,amount:number=25,item:DeepPartial<ConsumibleDef>={}):ConsumibleDef{
     return mergeDeep({
-        idString:color,
+        id_string:color,
         description:true,
         consuming:{
             type:0,
@@ -160,7 +160,7 @@ export function CreateSoda(color:string,boost_def:string,max?:number,amount:numb
 }
 export function CreatePills(color:string,boost_def:string,item:DeepPartial<ConsumibleDef>={}):ConsumibleDef{
     return mergeDeep({
-        idString:color+"_pills",
+        id_string:color+"_pills",
         description:true,
         consuming:{
             type:0,
@@ -186,7 +186,7 @@ export function CreatePills(color:string,boost_def:string,item:DeepPartial<Consu
 }
 export function CreateSpray(color:string,item:DeepPartial<ConsumibleDef>={}):ConsumibleDef{
     return mergeDeep({
-        idString:color+"_spray",
+        id_string:color+"_spray",
         consuming:{
             type:1,
             delay:0.25,
@@ -211,7 +211,7 @@ export function CreateSpray(color:string,item:DeepPartial<ConsumibleDef>={}):Con
 export function Consumibles_Default_Init():ConsumibleDef[]{
     return [
         {
-            idString:"bandage",
+            id_string:"bandage",
             consuming:{
                 type:0,
                 side_effects:[
@@ -233,7 +233,7 @@ export function Consumibles_Default_Init():ConsumibleDef[]{
             }
         },
         {
-            idString:"medikit",
+            id_string:"medikit",
             consuming:{
                 type:0,
                 side_effects:[
@@ -254,7 +254,7 @@ export function Consumibles_Default_Init():ConsumibleDef[]{
         //Adrenaline
         CreateSoda("yellow_soda","adrenaline"),
         {
-            idString:"inhaler",
+            id_string:"inhaler",
             description:true,
             consuming:{
                 type:0,
@@ -278,7 +278,7 @@ export function Consumibles_Default_Init():ConsumibleDef[]{
         //Shield
         CreateSoda("blue_soda","shield",0.5),
         {
-            idString:"blue_potion",
+            id_string:"blue_potion",
             consuming:{
                 type:0,
                 side_effects:[
@@ -308,7 +308,7 @@ export function Consumibles_Default_Init():ConsumibleDef[]{
         //Mana
         CreateSoda("purple","mana"),
         {
-            idString:"purple_potion",
+            id_string:"purple_potion",
             consuming:{
                 type:0,
                 side_effects:[
@@ -335,7 +335,7 @@ export function Consumibles_Default_Init():ConsumibleDef[]{
         //Addiction
         CreateSoda("red_beer","addiction",0.5,50),
         {
-            idString:"small_red_crystal",
+            id_string:"small_red_crystal",
             description:true,
             consuming:{
                 type:0,
@@ -353,7 +353,7 @@ export function Consumibles_Default_Init():ConsumibleDef[]{
             rank:ItemRank.B,
         },
         {
-            idString:"red_crystal",
+            id_string:"red_crystal",
             description:true,
             consuming:{
                 type:0,

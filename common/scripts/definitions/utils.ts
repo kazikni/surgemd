@@ -1,4 +1,4 @@
-import { Definition, Stream, Vec2, WeightDefinition, TDObjectProperty, TDType, tdm, TD, DefinitionTD, Random1, MinMax1, EaseFunction } from "../../engine/core.ts"
+import { Definition, Stream, Vec2, WeightDefinition, TDObjectProperty, tdm, DefinitionTD, Random1, MinMax1, EaseFunction } from "../../engine/core.ts"
 import { FireMode, ItemRank } from "../others/item.ts"
 export enum PacketType{
     Feed=1,
@@ -127,7 +127,7 @@ export interface GameItemBase extends Definition{
 export enum DamageReason{
     Human,
     Explosion,
-    DeadZone,
+    Deadzone,
     Abstinence,
     SideEffect,
     Disconnect,
@@ -140,7 +140,7 @@ export enum DamageReason{
 export interface InventoryItemData{
     count:number
     type:GameItemType
-    idNumber:number
+    id_number:number
 }
 export interface InventoryDroppable{
     helmet:boolean
@@ -221,13 +221,13 @@ export type CharacterDefinition=HumanDefinition&{
 }
 export function InventoryItemDataEncode(stream:Stream,data:InventoryItemData){
     stream.write_uint16(data.count)
-    stream.write_uint16(data.idNumber)
+    stream.write_uint16(data.id_number)
     stream.write_uint8(data.type)
 }
 export function InventoryItemDataDecode(stream:Stream):InventoryItemData{
     return {
         count:stream.read_uint16(),
-        idNumber:stream.read_uint16(),
+        id_number:stream.read_uint16(),
         type:stream.read_uint8(),
     }
 }

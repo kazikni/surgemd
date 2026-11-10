@@ -1,11 +1,11 @@
-import { Definition, Definitions, FrameDef, Hitbox2D, KeyFrameSpriteDef } from "../../../engine/core.ts";
+import { Definition, Definitions, FrameDef, Collider2D, KeyFrameSpriteDef } from "../../../engine/core.ts";
 
 export interface DecalTint{
     color:number
     alpha:number
 }
 export interface DecalDef extends Definition{
-    hitbox?:Hitbox2D
+    collider?:Collider2D
     assets?:{
         main?:FrameDef
         frames?:KeyFrameSpriteDef[]
@@ -21,10 +21,10 @@ export interface DecalInstanceDef{
 export function Decals_Default_Init():DecalDef[]{
     return [
         {
-            idString:"explosion_decal",
+            id_string:"explosion_decal",
         },
         {
-            idString:"wood_pallet",
+            id_string:"wood_pallet",
         }
     ]
 }

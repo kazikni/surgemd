@@ -70,7 +70,7 @@ export interface EffectInstance{
 }
 Effects.insert(
     {
-        idString:"fire",
+        id_string:"fire",
         effect_type:EffectType.Debuff,
         side_effects:[
             {
@@ -87,7 +87,7 @@ Effects.insert(
         },
     },
     {
-        idString:"poison",
+        id_string:"poison",
         effect_type:EffectType.Debuff,
         target:{
             tint:0x88ff88,
@@ -101,7 +101,7 @@ Effects.insert(
         ],
     },
     {
-        idString:"kill_haste",
+        id_string:"kill_haste",
         effect_type:EffectType.Buff,
         side_effects:[
             {
@@ -126,7 +126,7 @@ Effects.insert(
         },
     },
     {
-        idString:"nature_help",
+        id_string:"nature_help",
         effect_type:EffectType.Buff,
         particles:{
             delay:0.2,

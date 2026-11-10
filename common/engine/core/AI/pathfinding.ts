@@ -1,6 +1,6 @@
-import { BaseObject2D, GameObjectManager2D } from "../game/gameObject.ts";
+import { BaseObject2D, ObjectManager2D } from "../app/object.ts";
 import { hash } from "../math/hash.ts";
-import { Hitbox2D } from "../math/hitbox.ts";
+import { Collider2D } from "../math/collider.ts";
 import { MinHeap } from "../math/utils.ts";
 import { v2, Vec2 } from "../math/vec2.ts";
 
@@ -17,9 +17,9 @@ type AStarNode = {
     parent?: AStarNode
 }
 
-export function astar_path2d(object: BaseObject2D,base_hitbox: Hitbox2D,dest_world: Vec2,is_blocked: (
-        manager: GameObjectManager2D<BaseObject2D>,
-        hb: Hitbox2D,
+export function astar_path2d(object: BaseObject2D,base_collider: Collider2D,dest_world: Vec2,is_blocked: (
+        manager: ObjectManager2D<BaseObject2D>,
+        hb: Collider2D,
         cellX: number,
         cellY: number,
         layer: number
@@ -81,7 +81,7 @@ export function astar_path2d(object: BaseObject2D,base_hitbox: Hitbox2D,dest_wor
         }
         openMap.delete(hv)
 
-        const hb=base_hitbox.clone()
+        const hb=base_collider.clone()
         for (const [dx, dy] of dirs) {
             const nx = current.x + dx
             const ny = current.y + dy
@@ -93,8 +93,8 @@ export function astar_path2d(object: BaseObject2D,base_hitbox: Hitbox2D,dest_wor
             worldPos.x=(nx + 0.5) * cellSize
             worldPos.y=(ny + 0.5) * cellSize
             
-            hb.copy_from(base_hitbox)
-            const testHB = base_hitbox.transform(v2.sub(worldPos, base_hitbox.position))
+            hb.copy_from(base_collider)
+            const testHB = base_collider.transform(v2.sub(worldPos, base_collider.position))
             if (is_blocked(manager, testHB, nx, ny, layer)) continue
 
             const cost = (dx === 0 || dy === 0) ? 1 : 1.414

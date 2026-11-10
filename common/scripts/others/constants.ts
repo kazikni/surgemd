@@ -1,7 +1,8 @@
-import { DefaultGELvents, LootTable as LootTableBase, Vec2 } from "../../engine/core.ts";
-import { type GameItem } from "../definitions/game_defs.ts";
+import { LootTable as LootTableBase, Vec2 } from "../../engine/core.ts";
+import { GameDefinition, type GameItem } from "../definitions/game_defs.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
 import { WrappingDef } from "../definitions/loadout/wrapping.ts"
+import { GameItemType } from "../definitions/utils.ts";
 import { FloorType } from "./terrain.ts";
 
 export const GameConstants={
@@ -14,38 +15,43 @@ export const GameConstants={
     },
     loot:{
         radius:{
-            ammo:0.5,
-            weapon:0.59,
-            accessory:0.6,
-            consumible:0.5,
-            equipament:0.5,
-            grenade:0.5,
-            scopes:0.5,
-        }
+            [GameItemType.ammo]:0.5,
+            [GameItemType.consumible]:0.5,
+            [GameItemType.backpack]:0.5,
+            [GameItemType.helmet]:0.5,
+            [GameItemType.vest]:0.5,
+            [GameItemType.scope]:0.5,
+            [GameItemType.grenade]:0.5,
+
+            [GameItemType.gun]:0.59,
+            [GameItemType.melee]:0.59,
+
+            [GameItemType.accessory]:0.6,
+        }satisfies Record<GameItemType,number>
     },
     collision:{
         threads:2,
         chunckSize:2
     }
 }
-export const ObjectsComponentEvent={
-    damage:                DefaultGELvents.last+1,
-    collided:              DefaultGELvents.last+2,
-    interact:              DefaultGELvents.last+3,
-    human_clear:           DefaultGELvents.last+4,
-    human_load_preset:     DefaultGELvents.last+5,
-    human_apply_modifiers: DefaultGELvents.last+6,
-    human_tick_input:      DefaultGELvents.last+7
+export const object_instance_type={
+    loot:1,
+    wall:2,
+    obstacle:3,
+    human:4
 }
-export enum GameObjectType{
+export const gelo_instance_type={
+    map:1,
+    deadzone:2,
+}
+export enum ObjectType{
     StaticBody,
+    MovingBody,
+
     Humanoid,
     Human,
     HumanBody,
     Loot,
-    Obstacle,
-    Building,
-    Walls,
     Bullet,
     Decal,
     GraphicVisual,
@@ -90,9 +96,9 @@ export type HumanAnimation={
     type:HumanAnimationType.Reset
 })
 export enum Layers{
-    Underground=9,
-    Normal=10,
-    Top=11
+    Underground=-1,
+    Normal=0,
+    Top=1
 }
 export const LayersL=[
     Layers.Normal
@@ -141,7 +147,7 @@ export enum zIndexes{
     Rain1,
     Parachute,
     Airbodys,
-    DeadZone,
+    Deadzone,
     Lights,
     PingWorld,
     UI,
@@ -207,28 +213,6 @@ export const Spawn={
         list:[FloorType.Water,FloorType.Ice]
     },
 } satisfies Record<string,SpawnMode>
-export interface HumanoidVisualData {
-    body:{
-        def:LoadoutBodyDef
-        tint:number
-    }
-    hair?:{
-        def:LoadoutHairDef
-        tint:number
-        paint?:{
-            tint:number
-            id:number
-        }
-    }
-    eyes?:LoadoutEyesDef
-    foot?:LoadoutFootDef
-    shirt:LoadoutShirtDef
-    legs:LoadoutLegDef
-    accessorys:LoadoutAccessoryDef[]
-}
-export interface HumanVisualData extends HumanoidVisualData{
-    wrapping?:WrappingDef
-}
 export interface ObstacleVisualData{
     dirty:boolean
     skin:number
@@ -266,16 +250,24 @@ export interface LootData{
     skin?:number
     aditional?:LootData[]
 }
+
 export interface LootSetting{
     without_ammo?:boolean
     include_ammo?:boolean
     hold_ammo?:boolean
     all_skins?:boolean
+    definitions:GameDefinition
 }
-export interface LootAditional extends LootSetting{
+export interface LootAditional{
     without_ammo?:boolean
     include_ammo?:boolean
+    hold_ammo?:boolean
+    all_skins?:boolean
     skin?:number
 }
 
 export type LootTable<A=LootAditional>=LootTableBase<A>
+
+export type DamageParams={
+    
+}

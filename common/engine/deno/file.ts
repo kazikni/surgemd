@@ -29,8 +29,11 @@ export class DenoFileManager extends FileManager {
     override exist(path: string): Promise<boolean> {
       throw new Error("Method not implemented.");
     }
-    override is_directory(path: string): boolean {
+    override async is_directory(path: string): Promise<boolean> {
         return false
+    }
+    override is_file(path: string): Promise<boolean> {
+      throw new Error("Method not implemented.");
     }
     async read_file(path: string): Promise<string> {
         return await Deno.readTextFile(path)
@@ -66,5 +69,8 @@ export class DenoFileManager extends FileManager {
         })
 
         return new DenoFileHandle(file)
+    }
+    override remove(path: string): Promise<void> {
+        return Deno.remove(path)
     }
 }

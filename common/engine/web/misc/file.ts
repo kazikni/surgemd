@@ -77,4 +77,13 @@ export class BrowserFileManager extends FileManager {
 
         return new BrowserFileHandle(data)
     }
+    is_directory(path: string): boolean {
+        throw new Error("Method not implemented.");
+    }
+    make_dir(path: string): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    exist(path: string): Promise<boolean> {
+        throw new Error("Method not implemented.");
+    }
 }

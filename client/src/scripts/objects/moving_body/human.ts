@@ -1,9 +1,18 @@
-import { c_human, SI_Human, si_human, type C_Human } from "common/scripts/game/objects/moving_body/human.ts"
+import { c_human, human_events, SI_Human, si_human, type C_Human } from "common/scripts/game/objects/moving_body/human.ts"
 import { cc_humanoid_visual,CC_Humanoid_Visual } from "./humanoid.ts"
 import { cc_moving_body, type CC_MovingBody } from "./moving_body.ts"
-import { gel_events, GELComponent, Numeric, v2 } from "common/engine/core.ts";
-import { InputEventType } from "common/engine/web.ts";
+import { gel_events, GELComponent, Numeric, Stream, v2, v2m } from "common/engine/core.ts";
+import { humanoid_events } from "common/scripts/game/objects/moving_body/humanoid.ts";
+import { DefaultFistRig } from "common/scripts/others/item.ts";
 
+/**
+ * Componentes de humano no cliente:
+ * - cc_human: visual (container, pose deitada). Nao simula nada.
+ * - ccs_human: cliente + simulacao (modo local/self). O humano roda inteiro no cliente.
+ * - ccn_human: cliente + rede (modos online/worker). Recebe o estado do servidor (net_decode).
+ *
+ * O "humano ativo" (o player do cliente) e so um humano com componentes a mais, ver active_human.ts.
+ */
 export type CC_Human=CC_MovingBody&C_Human&CC_Humanoid_Visual&{
     distance_since_last_footstep:number
     physical:{
@@ -12,102 +21,78 @@ export type CC_Human=CC_MovingBody&C_Human&CC_Humanoid_Visual&{
     animation:{
         walk_animation?:number
     },
-    tick_footsteps(on_ground:boolean,footstep_distance?:number):void
+    /** Atualiza a pose (deitado/nadando) de acordo com o estado */
+    update_pose():void
 }
 
 export const cc_human:GELComponent<CC_Human>={
     id_string:"cc_human",
     extensions:[c_human,cc_moving_body,cc_humanoid_visual],
     events:{
-        [gel_events.tick](dt:number){
-
-        }
+        [gel_events.bind](){
+            this.allow_tick=true
+            this.distance_since_last_footstep=0
+            this.animation={}
+        },
+        [gel_events.create](){
+            this.set_arms_rig(DefaultFistRig)
+            this.update_visual()
+        },
+        [human_events.state_changed](){
+            this.update_pose()
+        },
     },
     methods:{
-        /*tick_footsteps(on_ground:boolean,footstep_distance:number=2){
-            const floor=(this.scene.map as CC_GameMap).terrain.get_floor_type(this.position,this.layer,(this.scene.map as CC_GameMap).default_floor)
-            const f=this.scene.map.terrain.get_floor_type(this.position,this.layer)
-            if(this.distance_walked>0.001&&on_ground){
-                this.distance_since_last_footstep+=this.distance_walked
-                // Play Footstep Sound And Do Water Riple
-                if(this.distance_since_last_footstep>=footstep_distance){
-                    this.distance_since_last_footstep=0
-                    if(this.assets.footstep_sounds){
-                        if(this.animation.footsteps)this.animation.footsteps.stop()
-                        this.animation.footsteps=this.game.sounds.play(this.game.resources.get_sound(random.choose(this.assets.footstep_sounds)),{
-                            position:this.position,
-                            max_distance: 15,
-                            volume:0.3,
-                            bus:"humans",
-                            on_complete:()=>{
-                                this.animation.footsteps=undefined
-                            }
-                        })
-                    }
-                    if(Floors[f as FloorType].footstep_decal&&!this.downed){
-                        const d=new ClientDecal()
-                        d.sprite.frame=this.game.resources.get_frame("human_footstep")
-                        d.sprite.rotation=walk_dir
-                        d.lifetime=30
-
-                        const pos=v2(0,(this.footstep_alternate?0.3:-0.3)*this.scale)
-                        v2m.rotate_RadAngle(pos,this.rotation)
-                        d.sprite.position=v2.add(this.position,pos)
-                        this.scene.objects.add_object(d,this.layer)
-
-                        this.footstep_alternate=!this.footstep_alternate
-                    }
-                    if(Floors[f as FloorType].floor_kind===FloorKind.Liquid){
-                        this.scene.particles.add_particle(new ABParticle2D({
-                            direction:0,
-                            frame:{
-                                image:"riple",
-                                hotspot:v2.half_one,
-                                zIndex:zIndexes.Decals,
-                                layer:this.layer,
-                                scale:0,
-                            },
-                            life_time:0.5,
-                            position:this.position,
-                            speed:0,
-                            to:{
-                                scale:3,
-                                tint:ColorM.default.transparent
-                            }
-                        }))
-                    }
-                }
-                this.animation.walk_speed=this.distance_walked
-                if(this.animation.walk_cycle===0){
-                    this.animation.walk_cycle=1
-                    this.animation.walk_time=0
-                }
-            }else{
-                if(this.animation.walk_cycle!==0){
-                    this.animation.walk_cycle=0
-                    this.animation.walk_time=0
-                }
-            }
-        }*/
+        update_pose(){
+            const downed=this.downed||this.swimming
+            if(downed!==this.downed_pose)this.set_downed_pose(downed)
+            this.container.visible=!this.dead
+        },
     }
 }
 
-export const ccs_human:GELComponent<CC_Human>={
+/**
+ * Humano do modo local: visual + simulacao completa (si_human).
+ */
+export const ccs_human:GELComponent<CC_Human&SI_Human>={
     id_string:"ccs_human",
     extensions:[cc_human,si_human],
     events:{
-        [gel_events.tick](dt){
+        [gel_events.tick](_dt:number){
             this.container.position=this.position
+            this.container.rotation=this.rotation
         }
     }
 }
 
-export const cc_active_human:GELComponent<CC_Human>={
-    id_string:"cc_active_human",
+/**
+ * Humano vindo da rede: so decodifica e interpola. Quem simula e o servidor/worker.
+ */
+export type CCN_Human=CC_Human&{
+    _net_first:boolean
+}
+export const ccn_human:GELComponent<CCN_Human>={
+    id_string:"ccn_human",
+    extensions:[cc_human],
     events:{
-        [gel_events.tick](){
-            //this.scene.camera.zoom=Numeric.lerp(this.scene.camera.zoom,this.scope_zoom,1/(1+dt*1300))
-            this.scene.camera.position=v2.clone(this.position)
-        }
+        [gel_events.bind](){
+            this._net_first=true
+        },
+        [gel_events.net_decode](stream:Stream,full:boolean){
+            const changed=this.decode_human_net(stream,full)
+            if(changed.visual)this.emit_event(humanoid_events.visual_changed)
+            if(changed.state||this._net_first)this.emit_event(human_events.state_changed)
+            if(full||this._net_first||!this.app.save.settings.get_var("game_interpolation")){
+                this.container.position=v2.clone(this.position)
+                this.container.rotation=this.rotation
+            }
+            this._net_first=false
+        },
+        [gel_events.tick](dt:number){
+            // Interpolacao simples entre os net ticks
+            const t=Numeric.clamp(dt*20,0,1)
+            v2m.lerp(this.container.position,this.position,t)
+            this.container.rotation=Numeric.lerp_rad(this.container.rotation,this.rotation,t)
+        },
     }
 }

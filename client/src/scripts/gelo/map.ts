@@ -1,11 +1,11 @@
 import { C_GameMap, c_gamemap, gamemap_events } from "common/scripts/game/gelo/map.ts";
 import { Graphics2D, Grid2D } from "common/engine/web.ts";
-import { ColorM, gel_events, GELComponent, v2, v2m } from "common/engine/core.ts";
+import { ColorM, gel_events, GELComponent, Stream, v2, v2m } from "common/engine/core.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { GameObject } from "../main/gel.ts";
+import { GameGELO } from "../main/gel.ts";
 
-export type CC_GameMap=GameObject&C_GameMap&{
+export type CC_GameMap=GameGELO&C_GameMap&{
     grid_gfx:Grid2D
     terrain_gfx:Record<number,Graphics2D>
 
@@ -116,6 +116,18 @@ export const cc_gamemap:GELComponent<CC_GameMap>={
 
                 ctx.fill()
             }
+        },
+    },
+}
+/**
+ * Mapa vindo da rede: o servidor manda o terreno no StartPacket.
+ */
+export const ccn_gamemap:GELComponent<CC_GameMap>={
+    id_string:"ccn_gamemap",
+    extensions:[cc_gamemap],
+    events:{
+        [gel_events.net_decode]:function(stream:Stream){
+            this.decode_map(stream)
         },
     },
 }

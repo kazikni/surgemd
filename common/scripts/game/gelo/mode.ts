@@ -108,6 +108,18 @@ export const DefaultBasicModeSettings:BasicModeSettings={
     finish_delay:5,
 }
 
+/** Visual padrao de quem entra sem loadout (bots, npcs...) */
+export const DefaultHumanLoadout:LoadoutPreset={
+    body:"body_1",
+    body_tint:0xf0a93f,
+    hair:"hair_1",
+    hair_tint:0x222222,
+    eyes:"eyes_1",
+    shirt:"black_shirt",
+    legs:"blue_jeans_pants",
+    foot:"black_shoes",
+}
+
 export interface ModeTimer{
     time:number
     callback:()=>void
@@ -294,7 +306,7 @@ export const si_mode:GELComponent<SI_Mode>={
             const human=this.scene.add_object(this.scene.make_object(object_instance_type.human),layer,undefined,{
                 position:options.position,
                 name:options.name,
-                loadout:options.loadout,
+                loadout:options.loadout??DefaultHumanLoadout,
             }) as SI_Human
             const data:ModeHumanData={
                 human,

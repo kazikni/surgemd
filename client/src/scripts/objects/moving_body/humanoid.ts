@@ -1,8 +1,8 @@
 import { ColorM, gel_events, GELComponent, random, v2, v2m } from "common/engine/core.ts";
 import { GameObject } from "../../main/gel.ts";
-import { C_Humanoid_Visual} from "common/scripts/game/objects/moving_body/humanoid.ts";
+import { C_Humanoid_Visual, humanoid_events } from "common/scripts/game/objects/moving_body/humanoid.ts";
 import { AnimatedContainer2D, AnimatedSprite2D, Container2D, Frame, Shape2D, Sprite2D } from "common/engine/web.ts";
-import { FistRig } from "common/scripts/others/item.ts";
+import { DefaultDownedWalkFistRig, DefaultFistRig, FistRig } from "common/scripts/others/item.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 export type CC_Humanoid_Visual=GameObject&C_Humanoid_Visual&{
     container:AnimatedContainer2D
@@ -48,7 +48,13 @@ export type CC_Humanoid_Visual=GameObject&C_Humanoid_Visual&{
 
     set_mounth(state?:number,enabled?:boolean):void
     set_eyes(state?:number,animated?:boolean,enabled?:boolean):void
+    /** Rig de braco "normal" (sem estar deitado). Usado para voltar da pose deitada. */
+    arms_rig?:FistRig
+    downed_pose:boolean
+
     set_arms_rig(rig?:FistRig):void
+    /** Pose deitada (downed/nadando): pernas aparecem e os bracos vao para frente */
+    set_downed_pose(downed:boolean):void
     reset_animations():void
 }
 export const cc_humanoid_visual:GELComponent<CC_Humanoid_Visual>={
@@ -56,6 +62,10 @@ export const cc_humanoid_visual:GELComponent<CC_Humanoid_Visual>={
     events:{
         [gel_events.bind]:function(){
             this.assets={}
+            this.downed_pose=false
+        },
+        [humanoid_events.visual_changed]:function(){
+            if(this.container)this.update_visual()
         },
         [gel_events.create]:function(){
             this.container=new AnimatedContainer2D(this.app)
@@ -275,6 +285,7 @@ export const cc_humanoid_visual:GELComponent<CC_Humanoid_Visual>={
                 this.container.add_child(spr)
                 this.sprites.accessorys.push(spr)
             }
+            if(this.downed_pose)this.set_downed_pose(true)
         },
         
         set_mounth(state:number=0,enabled:boolean=true){
@@ -297,7 +308,24 @@ export const cc_humanoid_visual:GELComponent<CC_Humanoid_Visual>={
                 this.sprites.eyes.frames=undefined
             }
         },
+        set_downed_pose(downed:boolean){
+            this.downed_pose=downed
+            this.sprites.left_leg.visible=downed
+            this.sprites.right_leg.visible=downed
+            if(downed){
+                this.sprites.left_leg.position=v2(-0.8,-0.22)
+                this.sprites.right_leg.position=v2(-0.8,0.22)
+                this.sprites.left_leg.rotation=Math.PI
+                this.sprites.right_leg.rotation=Math.PI
+                const normal=this.arms_rig
+                this.set_arms_rig(DefaultDownedWalkFistRig)
+                this.arms_rig=normal
+            }else{
+                this.set_arms_rig(this.arms_rig??DefaultFistRig)
+            }
+        },
         set_arms_rig(rig?:FistRig){
+            this.arms_rig=rig
             if(rig){
                 if(rig.left){
                     this.sprites.left_arm.visible=rig.left.visible===undefined?true:rig.left.visible

@@ -1,4 +1,4 @@
-import { gel_events,  Vec2, v2, RotationMode, Angle, Orientation, ColorM, Numeric, GELComponent } from "common/engine/core.ts";
+import { gel_events,  Vec2, v2, RotationMode, Angle, Orientation, ColorM, Numeric, GELComponent, Stream } from "common/engine/core.ts";
 import { Container2D, Sprite2D } from "common/engine/web.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { obstacle_events, c_obstacle, C_Obstacle, SI_Obstacle, si_obstacle } from "common/scripts/game/objects/static_body/obstacle.ts";
@@ -113,6 +113,21 @@ export const ccs_obstacle:GELComponent<CC_Obstacle&SI_Obstacle>={
     events:{
         [obstacle_events.initialized]:function(){
             this.update_frame()
+        },
+    },
+}
+/**
+ * Obstaculo vindo da rede (modos online/worker).
+ */
+export const ccn_obstacle:GELComponent<CC_Obstacle>={
+    extensions:[cc_obstacle],
+    id_string:"ccn_obstacle",
+    events:{
+        [gel_events.net_decode]:function(stream:Stream,full:boolean){
+            const died=this.decode_obstacle(stream,full)
+            this.set_physical(this.position,this.scale,this.rotation)
+            if(full)this.update_frame()
+            if(died)this.on_die()
         },
     },
 }

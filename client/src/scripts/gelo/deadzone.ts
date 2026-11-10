@@ -1,5 +1,5 @@
 import { c_deadzone, si_deadzone, C_Deadzone, SI_Deadzone, DeadzoneState } from "common/scripts/game/gelo/deadzone.ts";
-import { CircleCollider2D, Color, ColorM, ease, gel_events, GELComponent, model2d, Numeric, v2, Vec2 } from "common/engine/core.ts";
+import { CircleCollider2D, Color, ColorM, ease, gel_events, GELComponent, model2d, Numeric, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { Graphics2D, Sound, SoundController } from "common/engine/web.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { GameGELO } from "../main/gel.ts";
@@ -122,6 +122,9 @@ export const ccn_deadzone:GELComponent<CC_Deadzone>={
     events:{
         [gel_events.tick]:function(_dt){
             this.sprite.position=this.position
+        },
+        [gel_events.net_decode]:function(stream:Stream){
+            this.decode_deadzone(stream)
         },
     },
     extensions:[cc_deadzone]

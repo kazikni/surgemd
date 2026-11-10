@@ -29,6 +29,7 @@ export const c_deadzone:GELComponent<C_Deadzone>={
     id_string:"c_deadzone",
     events:{
         [gel_events.bind]:function(){
+            this.instance_type=gelo_instance_type.deadzone
             this.state=DeadzoneState.Deenabled
             this.position=v2.zero()
             this.radius=100

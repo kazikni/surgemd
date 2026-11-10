@@ -285,7 +285,7 @@ export class GELOManager<GELO extends BaseGELO=BaseGELO>{
     unregistry(id:string|number){
         const gelo=this.content[id]
         if(gelo){
-            gelo.emit_event(gel_events.registry)
+            gelo.emit_event(gel_events.unregistry)
             delete this.content[id]
         }
     }

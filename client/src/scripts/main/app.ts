@@ -8,13 +8,21 @@ import { ApiSettings, game_version } from "common/scripts/config/config.ts";
 import { warning_popup } from "../scenes/menu/def.ts";
 import { CutsceneScene } from "../scenes/cutscene/scene.ts";
 import { CommonApplication } from "common/scripts/game/base.ts";
-import { LocalGameScene } from "../scenes/play/scene.ts";
+import { play_events, PlayScene, type PlaySceneKind, type WorkerGameOptions } from "../scenes/play/scene.ts";
+import { type JoinData } from "common/scripts/net/join_packet.ts";
+
+export type PlayOptions=WorkerGameOptions&{
+    /** Endereco do servidor (modo online) */
+    url?:string
+    join?:JoinData
+}
 import { InitialScreenScene } from "../scenes/initial_screen/scene.ts";
 
 export class Application extends ClientApplication implements CommonApplication{
     menu_scene=new MenuScene()
     loading_scene=new LoadingScreenScene()
     cutscene_scene=new CutsceneScene()
+    play_scene!:PlayScene
 
     definitions:GameDefinition=new GameDefinition()
     fs:FileManager
@@ -90,9 +98,52 @@ export class Application extends ClientApplication implements CommonApplication{
         await this.load_resources(["/assets/kspr/common"])
         await this.menu_scene.init(this)
 
+        this.play_scene=new PlayScene(this)
+
         //this.scene=this.menu_scene
 
-        this.scene=new LocalGameScene()
+        // Por enquanto (sem UI) o jogo comeca direto. Escolha o modo pela URL:
+        //   ?play=self               -> local, sem servidor/worker (padrao)
+        //   ?play=worker             -> simulacao num WebWorker
+        //   ?play=online&server=ws://localhost:8080/api/ws/0
+        //   &bots=5                  -> bots no battle royale (self/worker)
+        const params=new URLSearchParams(location.search)
+        const kind=(params.get("play")??"self") as Exclude<PlaySceneKind,"none">
+        await this.play(kind,{
+            url:params.get("server")??undefined,
+            settings:{
+                bots:Number(params.get("bots")??5),
+                map:{def:params.get("map")??"normal"},
+            },
+        })
+    }
+
+    /** Entra num jogo (local, worker ou online) e troca para a cena do jogo */
+    async play(kind:Exclude<PlaySceneKind,"none">,options:PlayOptions={}){
+        const game=this.play_scene
+        switch(kind){
+            case "online":
+                await game.connect(options.url??"ws://localhost:8080/api/ws/0")
+                break
+            case "worker":
+                await game.worker_initialize(options)
+                break
+            case "self":
+                await game.self_initialize(options)
+                break
+        }
+        await game.join(options.join??{
+            name:this.save.settings.get_var("loadout_name")??"",
+        })
+        game.events.on(play_events.game_over,(msg:{win:boolean})=>{
+            console.log(msg.win?"[GAME] Voce ganhou!":"[GAME] Fim de jogo")
+        })
+        this.scene=game
+    }
+    /** Sai do jogo atual e volta para o menu */
+    async leave_game(){
+        await this.play_scene.close()
+        this.scene=this.menu_scene
     }
 
     override on_bind(){

@@ -2,10 +2,9 @@ import { AbstractApplication, Client, ClientsManager, SignalManager } from "comm
 import { type GameDataBase, type ServerGameApplication } from "common/engine/server/server.ts";
 import { type GameConfig } from "common/scripts/config/config.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
-import { get_map_def } from "common/scripts/definitions/maps/maps.ts";
 import { type CommonApplication } from "common/scripts/game/base.ts";
 import { mode_events } from "common/scripts/game/gelo/mode.ts";
-import { type BattleRoyaleSettings, type SI_BattleRoyale } from "common/scripts/game/modes/battle_royale.ts";
+import { setup_game_scene } from "common/scripts/game/modes/modes.ts";
 import { NetPlayerConn } from "./net_player_conn.ts";
 import { simulation_defs, SimulationDefs, SimulationScene } from "./scene.ts";
 
@@ -21,17 +20,6 @@ export interface GameAppConfig{
     ntps:number
     debug?:{
         debug_menu?:boolean
-    }
-}
-
-/**
- * Configuracao de um jogo (mesmo formato do config.jsonc: play_options[].content[]).
- * settings.map.def = nome do mapa (ver common/scripts/definitions/maps/maps.ts)
- */
-export type GameSettings=BattleRoyaleSettings&{
-    map?:{
-        def?:string
-        seed?:number
     }
 }
 
@@ -74,22 +62,7 @@ export class Game extends AbstractApplication implements ServerGameApplication,C
         this.initialized=false
         this.definitions.reset()
 
-        const settings=(game_config.settings??{}) as GameSettings
-
-        const mode=this.sim.make_mode(game_config.mode)??this.sim.make_mode("normal")!
-        this.sim.setup(mode)
-
-        // Configuracao especifica do battle royale
-        const br=mode as unknown as SI_BattleRoyale
-        if(br.configure_battle_royale){
-            br.configure_battle_royale({
-                ...settings,
-                group_size:settings.group_size??game_config.group_size,
-            })
-        }
-
-        this.sim.map.generate(get_map_def(settings.map?.def),settings.map?.seed)
-        this.sim.add_deadzone()
+        const mode=setup_game_scene(this.sim,game_config)
 
         mode.on(mode_events.start,()=>this.update_data())
         mode.on(mode_events.player_join,()=>this.update_data())

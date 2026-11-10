@@ -2,8 +2,8 @@ import { BaseGELO, BaseSceneObject2D, CheckpointSettings, gel_component, GELComp
 import { type CommonApplication, type SimulatedScene } from "common/scripts/game/base.ts";
 import { si_deadzone, type SI_Deadzone } from "common/scripts/game/gelo/deadzone.ts";
 import { si_gamemap, type SI_GameMap } from "common/scripts/game/gelo/map.ts";
-import { si_mode, type SI_Mode } from "common/scripts/game/gelo/mode.ts";
-import { si_battle_royale } from "common/scripts/game/modes/battle_royale.ts";
+import { type SI_Mode } from "common/scripts/game/gelo/mode.ts";
+import { get_game_mode } from "common/scripts/game/modes/modes.ts";
 import { si_loot } from "common/scripts/game/objects/loot.ts";
 import { si_human } from "common/scripts/game/objects/moving_body/human.ts";
 import { si_obstacle } from "common/scripts/game/objects/static_body/obstacle.ts";
@@ -21,8 +21,6 @@ export class ServerGELO extends BaseGELO{
 export interface SimulationDefs{
     objects:Record<number|string,(...args:any[])=>ServerObject>
     gelo:Record<number|string,(...args:any[])=>ServerGELO>
-    /** Componentes de modo de jogo disponiveis (config.mode) */
-    modes:Record<string,GELComponent<any>>
 }
 
 function obj(component:GELComponent<any>){
@@ -55,12 +53,13 @@ export const simulation_defs:SimulationDefs={
     gelo:{
         [gelo_instance_type.map]:gelo(si_gamemap),
         [gelo_instance_type.deadzone]:gelo(si_deadzone),
+        // O modo e escolhido pelo nome (config.mode), ver common/scripts/game/modes/modes.ts
+        [gelo_instance_type.mode]:(name?:string)=>{
+            const g=new ServerGELO()
+            g.add_component(gel_component.merge_deep(get_game_mode(name)))
+            return g
+        },
     },
-    modes:{
-        basic:si_mode,
-        normal:si_battle_royale,
-        battle_royale:si_battle_royale,
-    }
 }
 
 /**
@@ -81,30 +80,11 @@ export class SimulationScene extends Scene2D<ServerObject,ServerGELO> implements
         this.gelo.make_gelo_net_cb=(tp)=>this.make_gelo(tp)
     }
 
-    override make_object(type:number|string,..._args:any[]):ServerObject|undefined{
-        return this.defs.objects[type]?.()
+    override make_object(type:number|string,...args:any[]):ServerObject|undefined{
+        return this.defs.objects[type]?.(...args)
     }
-    override make_gelo(type:number|string,..._args:any[]):ServerGELO|undefined{
-        return this.defs.gelo[type]?.()
-    }
-    make_mode(name:string):(SI_Mode&ServerGELO)|undefined{
-        const comp=this.defs.modes[name]
-        if(!comp)return undefined
-        const g=new ServerGELO()
-        g.add_component(gel_component.merge_deep(comp))
-        return g as SI_Mode&ServerGELO
-    }
-
-    /** Monta mapa + modo + deadzone (a ordem importa: o mapa usa as loot tables do modo, e a deadzone usa o tamanho do mapa) */
-    setup(mode:SI_Mode&ServerGELO){
-        this.mode=mode
-        this.gelo.registry(mode,"mode")
-        this.map=this.make_gelo(gelo_instance_type.map) as SI_GameMap&ServerGELO
-        this.gelo.registry(this.map,"map")
-    }
-    add_deadzone(){
-        this.deadzone=this.make_gelo(gelo_instance_type.deadzone) as SI_Deadzone&ServerGELO
-        this.gelo.registry(this.deadzone,"deadzone")
+    override make_gelo(type:number|string,...args:any[]):ServerGELO|undefined{
+        return this.defs.gelo[type]?.(...args)
     }
 
     /**

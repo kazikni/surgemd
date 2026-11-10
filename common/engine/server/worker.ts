@@ -1,8 +1,8 @@
 import { ClientsManager } from "../core/net/client.ts";
-import { type ConnectionLimiter, Server, server_factory, WorkerMsg } from "./server.ts";
+import { type ConnectionLimiter, Server, server_factory, type ServerGameApplication, WorkerMsg } from "./server.ts";
 
 export abstract class SelfGameWorker<
-    Game extends AbstractServerGame<any>,
+    Game extends ServerGameApplication,
     GameData,
     GameConfig,
     MainConfig

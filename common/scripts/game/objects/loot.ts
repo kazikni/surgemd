@@ -1,5 +1,5 @@
-import { gel_events, GELComponent, Stream, v2, v2m, Vec2 } from "../../../engine/core.ts";
-import { ObjectType, LootData, object_instance_type } from "../../others/constants.ts";
+import { CircleCollider2D, gel_events, GELComponent, Stream, v2, v2m, Vec2 } from "../../../engine/core.ts";
+import { GameConstants, ObjectType, LootData, object_instance_type } from "../../others/constants.ts";
 import { decode_loot_data, encode_loot_data } from "../../others/functions.ts";
 import { Floors, FloorType } from "../../others/terrain.ts";
 import { CommonObject, SimulatedObject } from "../base.ts";
@@ -19,6 +19,13 @@ export const c_loot:GELComponent<C_Loot>={
         [gel_events.create]:function(args:{data?:LootData,position?:Vec2}={}){
             if(args.position)this.position=args.position
             if(args.data)this.set_loot_data(args.data)
+        }
+    },
+    methods:{
+        // Versao sem visual. O cliente (cc_loot) sobrescreve.
+        set_loot_data(data:LootData){
+            this.loot_data=data
+            this.base_collider=new CircleCollider2D(v2(0,0),GameConstants.loot.radius[data.item.item_type!]??0.5)
         }
     }
 }
@@ -83,8 +90,12 @@ export const si_loot:GELComponent<SI_Loot>={
                 const pos=v2.add(this.position,v2.scale(this.velocity,speed*dt))
                 this.position=this.scene.map.clamp_collider(pos,this.base_collider)
                 this.current_floor=this.scene.map.terrain.get_floor_type(this.position,this.layer,this.scene.map.default_floor)
-                //this.set_dirty_part()
+                this.set_dirty_part()
             }
+        },
+        [gel_events.net_encode]:function(stream:Stream,full:boolean){
+            stream.write_pos2(this.position)
+            if(full)encode_loot_data(this.app.definitions,this.loot_data,stream)
         },
         [gel_events.checkpoint_encode]:function(stream:Stream){
             stream.write_pos2(this.position)

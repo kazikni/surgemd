@@ -1,4 +1,4 @@
-import { Angle, gel_events, GELComponent, Numeric, Orientation, random, RotationMode, Vec2 } from "../../../../engine/core.ts";
+import { Angle, gel_events, GELComponent, Numeric, Orientation, random, RotationMode, Stream, Vec2 } from "../../../../engine/core.ts";
 import { ObstacleDef } from "../../../definitions/objects/obstacles.ts";
 import { DamageParams, object_instance_type } from "../../../others/constants.ts";
 import { static_body_events, SI_StaticBody, type C_StaticBody, c_static_body, si_static_body } from "./static_body.ts";
@@ -26,6 +26,10 @@ export type C_Obstacle=C_StaticBody&{
     set_definition(def:ObstacleDef):void
     set_physical(position?:Vec2,scale?:number,rotation?:number):void
     die():void
+
+    encode_obstacle(stream:Stream,full:boolean):void
+    /** Retorna true se o obstaculo morreu agora */
+    decode_obstacle(stream:Stream,full:boolean):boolean
 }
 
 export const c_obstacle:GELComponent<C_Obstacle>={
@@ -57,10 +61,38 @@ export const c_obstacle:GELComponent<C_Obstacle>={
             }
             this.emit_event(obstacle_events.set_definition,def)
         },
+        set_physical(_position?:Vec2,_scale?:number,_rotation?:number){
+            // Sem visual na simulacao pura. O cliente (cc_obstacle) sobrescreve.
+        },
         die(){
             if(!this.health||this.health.dead)return
             this.health.dead=true
             this.emit_event(obstacle_events.die)
+        },
+        encode_obstacle(stream:Stream,full:boolean){
+            stream.write_boolean_group(this.health?.dead??false)
+            stream.write_float32(this.scale)
+            if(full){
+                stream.write_uint16(this.def.id_number!)
+                stream.write_uint8(this.variation)
+                stream.write_rad(this.rotation)
+                stream.write_pos2(this.position)
+            }
+        },
+        decode_obstacle(stream:Stream,full:boolean):boolean{
+            const [dead]=stream.read_boolean_group()
+            this.scale=stream.read_float32()
+            if(full){
+                this.set_definition(this.app.definitions.obstacles.getFromNumber(stream.read_uint16()))
+                this.variation=stream.read_uint8()
+                this.rotation=stream.read_rad()
+                this.position=stream.read_pos2()
+            }
+            if(dead&&this.health&&!this.health.dead){
+                this.health.dead=true
+                return true
+            }
+            return false
         },
     },
 }
@@ -80,6 +112,31 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
     id_string:"si_obstacle",
     extensions:[c_obstacle,si_static_body],
     events:{
+        [gel_events.net_encode]:function(stream:Stream,full:boolean){
+            this.encode_obstacle(stream,full)
+        },
+        [gel_events.checkpoint_encode]:function(stream:Stream){
+            stream.write_string(this.def.id_string,1)
+            stream.write_uint8(this.variation)
+            stream.write_float32(this.rotation)
+            stream.write_float32(this.max_scale)
+            stream.write_pos2(this.position)
+            stream.write_boolean_group(this.health!==undefined,this.health?.dead??false)
+            if(this.health)stream.write_float32(this.health.value)
+        },
+        [gel_events.checkpoint_decode]:function(stream:Stream){
+            this.set_definition(this.app.definitions.obstacles.getFromString(stream.read_string(1)))
+            const variation=stream.read_uint8()
+            const rotation=stream.read_float32()
+            const max_scale=stream.read_float32()
+            const position=stream.read_pos2()
+            const [has_health,dead]=stream.read_boolean_group()
+            const health=has_health?stream.read_float32():undefined
+            this.init(rotation,max_scale,variation)
+            if(this.health&&health!==undefined)this.health.value=health
+            this.set_position(position)
+            if(dead)this.die()
+        },
     },
     methods:{
         init(rotation?:number,scale?:number,variation?:number,parent_side:Orientation=0):void{

@@ -119,10 +119,13 @@ export class Client{
         this.emit_packet(p)
     }
     emit_packet(packet: Packet) {
-        this.manager.encode(packet, this.stream_cache)
-        //this._send(this.stream_cache.data.slice())
-        this._send(this.stream_cache.data.slice(0,this.stream_cache.length))
+        // Copia e limpa ANTES de mandar: com sockets sincronos (OfflineSocket) o _send pode
+        // chamar emit_packet de novo (reentrancia) e o buffer compartilhado misturava os pacotes.
         this.stream_cache.clear()
+        this.manager.encode(packet, this.stream_cache)
+        const data=this.stream_cache.data.slice(0,this.stream_cache.length)
+        this.stream_cache.clear()
+        this._send(data)
     }
     _on_message(msg:MessageEvent<ArrayBuffer|Blob>){
         let buf: ArrayBufferLike|null=null

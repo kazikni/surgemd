@@ -2,7 +2,7 @@ import { FloorType, RiversDef } from "../../others/terrain.ts";
 import { LootAditional, SpawnMode, type Layers } from "../../others/constants.ts";
 import { Collider2D, LootTable, Orientation, Random1, Rect,  tdm,  Vec2, WeightDefinition } from "../../../engine/core.ts";
 import { GameDefinition, type GameADefinitions } from "../game_defs.ts";
-import { MapRegion, SI_GameMap_CData } from "../../game/gelo/map.ts";
+import { type MapRegion, type SI_GameMap } from "../../game/gelo/map.ts";
 
 export type MapObjectGeneration={def:string|(WeightDefinition&{def:string})[],count:Random1,layer?:Layers,spawn?:SpawnMode}
 export interface TerrainLayerDef {
@@ -139,7 +139,7 @@ export interface MapDef{
         base_tint?:number
         spawn?:MapObjectGeneration[]
         islands?:IslandDef[]
-        callback?:(map:SI_GameMap_CData)=>void
+        callback?:(map:SI_GameMap)=>void
         objects?:{
             buildings?:MapObjectBuilding[]
             items?:MapObjectItem[]

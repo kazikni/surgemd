@@ -1,7 +1,8 @@
-import { type BaseSceneObject2D, type AbstractApplication, Scene2D, SceneGELO, LootTablesManager } from "../../engine/core.ts";
+import { type BaseSceneObject2D, type AbstractApplication, Scene2D, SceneGELO } from "../../engine/core.ts";
 import { type GameDefinition } from "../definitions/game_defs.ts";
 import { type C_GameMap, type SI_GameMap } from "./gelo/map.ts";
-import { C_Mode } from "./gelo/mode.ts";
+import { type SI_Mode } from "./gelo/mode.ts";
+import { type SI_Deadzone } from "./gelo/deadzone.ts";
 
 export type CommonApplication={
     definitions:GameDefinition
@@ -20,10 +21,14 @@ export type CommonGELO=SceneGELO&{
     scene:CommonPlayScene
 }
 
+/**
+ * Cena que roda a simulacao (servidor, worker ou modo local).
+ */
 export type SimulatedScene={
     app:CommonApplication
     map:SI_GameMap
-    mode:C_Mode
+    mode:SI_Mode
+    deadzone?:SI_Deadzone
 }&Scene2D<any,any>
 export type SimulatedObject=BaseSceneObject2D&{
     scene:SimulatedScene

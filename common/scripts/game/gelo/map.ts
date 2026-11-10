@@ -1,4 +1,4 @@
-import { CircleCollider2D, Collider2D, gel_events, GELComponent, Polygon2D, PolygonCollider2D, random, Rect, RectCollider2D, SeededRandom, v2, v2m, Vec2 } from "../../../engine/core.ts";
+import { CircleCollider2D, Collider2D, gel_events, GELComponent, Polygon2D, PolygonCollider2D, random, Rect, RectCollider2D, SeededRandom, Stream, v2, v2m, Vec2 } from "../../../engine/core.ts";
 import { MapBiomeDef, MapDef, MapObjectGeneration, MapStructureDef } from "../../definitions/maps/base.ts";
 import { ObstacleDef } from "../../definitions/objects/obstacles.ts";
 import { gelo_instance_type, Layers, object_instance_type, ObjectType, Spawn, SpawnMode, SpawnModeType } from "../../others/constants.ts";
@@ -31,6 +31,11 @@ export type C_GameMap=CommonGELO&{
 
     default_layer:number
     default_floor:FloorType
+
+    /** Codifica o que o cliente precisa para desenhar o mapa (terreno, bioma, tamanho...) */
+    encode_map(stream:Stream):void
+    /** Decodifica o que foi codificado no encode_map e emite gamemap_events.generated */
+    decode_map(stream:Stream):void
 }
 
 export const c_gamemap:GELComponent<C_GameMap>={
@@ -40,12 +45,48 @@ export const c_gamemap:GELComponent<C_GameMap>={
             this.instance_type=gelo_instance_type.map
             this.terrain=new TerrainManager()
             this.seed=0
-            this.size=v2.zero
+            this.size=v2.zero()
             this.regions=[]
             this.default_layer=Layers.Normal
             this.default_floor=FloorType.Void
+            this.biome={floors:{},particles:[],musics:[],textures:[]}
         }
     },
+    methods:{
+        encode_map(stream:Stream){
+            stream.write_uint32(this.seed)
+            stream.write_pos2(this.size)
+            stream.write_uint8(this.default_floor)
+            stream.write_int8(this.default_layer)
+            stream.write_any(this.biome,2,2)
+            stream.write_any(this.regions,2,2)
+            stream.write_array(this.terrain.floors,(f)=>{
+                stream.write_uint8(f.type)
+                stream.write_int8(f.layer)
+                stream.write_boolean_group(f.smooth,f.visible,f.tint!==undefined)
+                if(f.tint!==undefined)stream.write_uint32(f.tint)
+                stream.write_collider(f.hb)
+            },3)
+        },
+        decode_map(stream:Stream){
+            this.seed=stream.read_uint32()
+            this.size=stream.read_pos2()
+            this.default_floor=stream.read_uint8()
+            this.default_layer=stream.read_int8()
+            this.biome=stream.read_any(2,2)
+            this.regions=stream.read_any(2,2)??[]
+            this.terrain.clear()
+            stream.read_array(()=>{
+                const type=stream.read_uint8()
+                const layer=stream.read_int8()
+                const [smooth,visible,has_tint]=stream.read_boolean_group()
+                const tint=has_tint?stream.read_uint32():undefined
+                const hb=stream.read_collider()
+                this.terrain.add_floor({type,layer,smooth,visible,tint,hb})
+            },3)
+            this.emit_event(gamemap_events.generated)
+        },
+    }
 }
 
 export interface MapStructure{
@@ -96,7 +137,10 @@ export const si_gamemap:GELComponent<SI_GameMap>={
             this.default_spawn_mode=Spawn.grass
             this.rivers=[]
             this.structures=[]
-        }
+        },
+        [gel_events.net_encode]:function(stream:Stream){
+            this.encode_map(stream)
+        },
     },
     methods:{
         clamp_collider(position:Vec2,col:Collider2D):Vec2{
@@ -174,6 +218,10 @@ export const si_gamemap:GELComponent<SI_GameMap>={
         },
 
         generate(definition:MapDef,seed:number=random.int(0,231412)){
+            this.terrain.clear()
+            this.rivers.length=0
+            this.structures.length=0
+            this.regions.length=0
             this.seed=seed
             const random=new SeededRandom(definition.seed??seed)
             this.random=random
@@ -334,7 +382,7 @@ export const si_gamemap:GELComponent<SI_GameMap>={
                         break
                     }
                 }
-                attempts++
+                attempts--
             }
             if(!position)return
             const terrain_shape=generate_terrain_shape(def,this.terrain,this.random,this.default_layer,position)

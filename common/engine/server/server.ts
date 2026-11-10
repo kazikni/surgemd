@@ -1,7 +1,8 @@
 import { AbstractApplication } from "../core/app/app.ts";
 import { ConnectionLimitConfig } from "../core/definition/definitions.ts";
 import { FileManager } from "../core/definition/file.ts";
-import { ClientsManager } from "../core/net/client.ts";
+import { Client, ClientsManager } from "../core/net/client.ts";
+import { SignalManager } from "../core/math/utils.ts";
 import { HandlerFunc, HandlerFuncAsync } from "../core/net/server_base.ts";
 export type server_factory=(new(port:number,ssl?:boolean,certFile?:string,keyFile?:string)=>Server)
 export class ConnectionLimiter {
@@ -162,8 +163,16 @@ export abstract class AbstractGameContainer<
     abstract stop():void
     abstract get_address():string
 }
+/**
+ * O que um container precisa de um jogo (Application) rodando no servidor.
+ */
+export interface ServerGameApplication extends AbstractApplication{
+    id:number
+    signals:SignalManager
+    handle_connection(client:Client,username:string):void
+}
 export abstract class AbstractSelfGameContainer<
-    Game extends AbstractApplication<any>,
+    Game extends ServerGameApplication,
     GameData extends GameDataBase,
     GameConfig,
     MainConfig,
@@ -234,7 +243,7 @@ export abstract class AbstractWorkerGameContainer<
     }
     terminate():Promise<void>{
         const old=this.worker
-        old.onerror=null
+        old.onerror=()=>{}
         return new Promise<void>((resolve) => {
             old.onmessage=e=>{
                 if(e.data.type===WorkerMsg.Stop){

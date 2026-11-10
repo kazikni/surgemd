@@ -2,6 +2,17 @@ import { gel_events, GELComponent, Stream } from "../../../../engine/core.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../../../definitions/loadout/skins.ts";
 import { LoadoutPreset } from "../../../definitions/utils.ts";
 import { type CommonObject, type SimulatedObject } from "../../base.ts";
+import { moving_body_events } from "./moving_body.ts";
+
+/**
+ * Humanoid = so o visual basico (corpo, cabelo, roupa, acessorios).
+ * Pode ser usado por bosses, zumbis, inimigos simples... e pelo Human.
+ */
+export const humanoid_events={
+    /** Emitido quando o visual mudou e o cliente precisa redesenhar (cc_humanoid_visual chama update_visual) */
+    visual_changed:moving_body_events.last+1,
+    last:moving_body_events.last+2,
+}
 
 export interface C_Humanoid_Visual extends CommonObject{
     visual:{
@@ -94,6 +105,7 @@ export const si_humanoid_visual:GELComponent<SI_Humanoid_Visual>={
     extensions:[c_humanoid_visual],
     events:{
         [gel_events.create]:function(){
+            this.visual.dirty=true
         },
     },
     methods:{
@@ -129,6 +141,8 @@ export const si_humanoid_visual:GELComponent<SI_Humanoid_Visual>={
                     this.visual.accessorys.push(this.app.definitions.loadout.getFromString(a) as LoadoutAccessoryDef)
                 }
             }
+            if(this.manager)this.set_dirty_full()
+            this.emit_event(humanoid_events.visual_changed)
         }
     }
 }

@@ -2,7 +2,7 @@ import { LootTable as LootTableBase, Vec2 } from "../../engine/core.ts";
 import { GameDefinition, type GameItem } from "../definitions/game_defs.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
 import { WrappingDef } from "../definitions/loadout/wrapping.ts"
-import { GameItemType } from "../definitions/utils.ts";
+import { DamageReason, GameItemType } from "../definitions/utils.ts";
 import { FloorType } from "./terrain.ts";
 
 export const GameConstants={
@@ -43,6 +43,7 @@ export const object_instance_type={
 export const gelo_instance_type={
     map:1,
     deadzone:2,
+    mode:3,
 }
 export enum ObjectType{
     StaticBody,
@@ -269,5 +270,15 @@ export interface LootAditional{
 export type LootTable<A=LootAditional>=LootTableBase<A>
 
 export type DamageParams={
-    
+    amount:number
+    reason:DamageReason
+    /** Quem causou o dano (para kills/aliados). Normalmente um humano. */
+    owner?:{id:number}&Record<string,any>
+    /** Item/objeto que causou o dano (arma, explosao...) */
+    source?:{id_string:string}
+    position?:Vec2
+    /** Direcao do dano em radianos (usado para empurrar) */
+    direction?:number
+    critical?:boolean
+    penetration?:number
 }

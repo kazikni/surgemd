@@ -1,9 +1,9 @@
-import { ClientsManager, CommandDef, ConsoleContext, FileManager, GameConsole, PacketsManager, parseJSONC, StaticStream } from "common/engine/core.ts";
+import { ClientsManager, CommandDef, ConsoleContext, FileManager, AppConsole, PacketsManager, parseJSONC, StaticStream } from "common/engine/core.ts";
 import { KSPRImageFormat,kspr } from "common/engine/core/lang/kspr.ts";
-/*import { PacketManager } from "common/scripts/packets/packet_manager.ts";
-import { Game } from "./game/others/game.ts";*/
+import { make_packet_manager } from "common/scripts/net/packet_manager.ts";
+import { Game } from "./game/game.ts";
 import { ConfigType } from "common/scripts/config/config.ts";
-//import { GameServer } from "./game/others/server.ts";
+import { GameServer } from "./game/server.ts";
 import { ApiServer } from "./api/server.ts";
 import { server_factory } from "common/engine/server/server.ts";
 
@@ -65,7 +65,7 @@ export type CMDCTX=ConsoleContext&{
     clients_factory:new(packet:PacketsManager)=>ClientsManager
 }
 export async function main(args:string[],default_worker_file:string,fs:FileManager,create_canvas:any,server:server_factory,clients_factory:new(packet:PacketsManager)=>ClientsManager) {
-    const cmd:GameConsole<CMDCTX>=new GameConsole({})
+    const cmd:AppConsole<CMDCTX>=new AppConsole({})
     cmd.register({
         name:"api",
         flags:{},
@@ -87,89 +87,55 @@ export async function main(args:string[],default_worker_file:string,fs:FileManag
             }
         ]
     })
-    /*cmd.register({
+    cmd.register({
         name:"game",
         flags:{},
         childrens:[
             {
+                // Um unico jogo, sem API: deno task dev:game:host  ->  ws://localhost:8080/api/ws
                 name:"host",
                 flags:{
-                    "port":{
-                        type:"number",
-                        default:8000
-                    },
-                    "mode":{
-                        type:"string",
-                        default:"normal"
-                    },
-                    "mode-settings":{
-                        type:"json"
-                    },
-                    "group-size":{
-                        type:"int"
-                    },
-
-                    "tps":{
-                        type:"number",
-                        default:100,
-                    },
-                    "ntps":{
-                        type:"number",
-                        default:32,
-                    },
-                    "debug-menu":{
-                        type:"boolean",
-                        default:true
-                    }
+                    "port":{type:"number",default:8080},
+                    "mode":{type:"string",default:"normal"},
+                    "mode-settings":{type:"json"},
+                    "group-size":{type:"int"},
+                    "tps":{type:"number",default:100},
+                    "ntps":{type:"number",default:32},
                 },
                 async execute(ctx){
-                    const server = new ctx.server(ctx.args.port)
-                    const clients = new ctx.clients_factory(PacketManager)
-                    server.route("/api/ws", clients.handler())
-                    const game = new Game({
-                        host:{
-                            port:ctx.args.port,
-                        },
-                        debug:{
-                            debug_menu:ctx.args["debug-menu"]
-                        },
-                        max_games:1,
-                        use_workers:false,
+                    const server=new ctx.server(ctx.args.port)
+                    const clients=new ctx.clients_factory(make_packet_manager())
+                    server.route("/api/ws",clients.handler())
+                    const game=new Game({
                         tps:ctx.args.tps,
                         ntps:ctx.args.ntps,
-                        limiter:{
-                            enabled:false,
-                            maxConnections:5,
-                            windowMs:1000,
-                        }
-                    }, clients,ctx.fs)
-                    await game.auto_init({
+                    },clients)
+                    await game.init({
                         mode:ctx.args.mode,
-                        settings:ctx.args["mode-settings"],
+                        settings:ctx.args["mode-settings"]??{},
                         group_size:ctx.args["group-size"]
                     })
-
-                    clients.onconnection = game.handle_connection.bind(game)
                     game.mainloop()
                     server.run()
+                    console.log(`[GAME] Hosting on ws://localhost:${ctx.args.port}/api/ws`)
                 }
             },
             {
+                // Servidor completo (varios jogos + conexao com a API): deno task dev:game
                 name:"start",
                 flags:{
                     "config-file":{type:"string",default:"./config"},
-                    "worker-file":{type:"string",default:default_worker_file},
                 },
                 flags_orden:["config-file"],
                 async execute(ctx){
-                    const txt = await ctx.fs.read_file(ctx.args["config-file"])
+                    const txt=await ctx.fs.read_file(ctx.args["config-file"])
                     const config:ConfigType=parseJSONC(txt)
-                    const server=new GameServer(ctx.server,ctx.clients_factory,new ctx.server(config.game.host.port,config.game.host.ssl,config.game.host.cert,config.game.host.key),config.game,ctx.args["worker-file"],ctx.fs)
+                    const server=new GameServer(ctx.server,ctx.clients_factory,new ctx.server(config.game.host.port,config.game.host.ssl,config.game.host.cert,config.game.host.key),config.game,ctx.fs)
                     server.run()
                 }
             },
         ]
-    })*/
+    })
     cmd.register({
         name: "kspr",
         flags: {},

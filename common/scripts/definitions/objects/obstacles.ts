@@ -672,7 +672,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         {
             id_string:"oak_tree",
             health:125,
-            collider:new CircleCollider2D(v2(0,0),0.4),
+            collider:new CircleCollider2D(v2(0,0),0.45),
             spawnCollider:new CircleCollider2D(v2(0,0),1.5),
             scale:{
                 min:1,

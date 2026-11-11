@@ -52,13 +52,13 @@ export class Game extends AbstractApplication implements ServerGameApplication,C
         this.initialized=false
         this.definitions.reset()
 
-        const mode=setup_game_scene(this.sim,game_config)
+        const mode=await setup_game_scene(this.sim,game_config)
 
-        mode.on(mode_events.start,()=>this.update_data())
-        mode.on(mode_events.player_join,()=>this.update_data())
-        mode.on(mode_events.human_die,()=>this.update_data())
-        mode.on(mode_events.finish,()=>this.update_data())
-        mode.on(mode_events.closed,()=>{
+        mode.signals.on(mode_events.start,()=>this.update_data())
+        mode.signals.on(mode_events.player_join,()=>this.update_data())
+        mode.signals.on(mode_events.human_die,()=>this.update_data())
+        mode.signals.on(mode_events.finish,()=>this.update_data())
+        mode.signals.on(mode_events.closed,()=>{
             console.log(`[GAME-${this.id}] Closed`)
             this.stop()
         })
@@ -71,8 +71,8 @@ export class Game extends AbstractApplication implements ServerGameApplication,C
     get_data():GameData{
         const mode=this.sim.mode
         return {
-            running:this.running&&!!mode&&!mode.closed,
-            can_join:!!mode&&mode.is_open(),
+            running:this.running&&!!mode&&!mode.finished,
+            can_join:!!mode&&mode.can_connect(),
             started:!!mode&&mode.started,
             living_count:mode?mode.get_living_count():0,
         }
@@ -82,7 +82,7 @@ export class Game extends AbstractApplication implements ServerGameApplication,C
     }
 
     handle_connection(client:Client,username:string){
-        if(!this.initialized||!this.sim.mode.is_open()){
+        if(!this.initialized||!this.sim.mode.can_connect()){
             client.disconnect()
             return
         }
@@ -104,6 +104,7 @@ export class Game extends AbstractApplication implements ServerGameApplication,C
             if(this.net_timer>1/this.ntps)this.net_timer=0
             this.net_tick()
         }
+        this.update_data()
     }
     net_tick(){
         this.sim.mode.net_update()
@@ -115,7 +116,7 @@ export class Game extends AbstractApplication implements ServerGameApplication,C
         this.clients.onconnection=this.handle_connection.bind(this)
         super.mainloop(rqf,auto_mainloop)
         this.update_data()
-        console.log(`[GAME-${this.id}] Started`)
+        console.log(`[GAME-${this.id}] Running`)
     }
     override on_stop(): void {
         this.update_data()

@@ -92,7 +92,6 @@ export async function main(args:string[],default_worker_file:string,fs:FileManag
         flags:{},
         childrens:[
             {
-                // Um unico jogo, sem API: deno task dev:game:host  ->  ws://localhost:8080/api/ws
                 name:"host",
                 flags:{
                     "port":{type:"number",default:8080},

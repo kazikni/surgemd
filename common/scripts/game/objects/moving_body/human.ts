@@ -3,7 +3,7 @@ import { GameItem } from "../../../definitions/game_defs.ts";
 import { BadgeDef } from "../../../definitions/loadout/badges.ts";
 import { EmoteDef } from "../../../definitions/loadout/emotes.ts";
 import { BoostDef } from "../../../definitions/player/boosts.ts";
-import { DamageReason, GameItemType, GameObjectDefinitionType, LoadoutPreset } from "../../../definitions/utils.ts";
+import { GameItemType, GameObjectDefinitionType, LoadoutPreset } from "../../../definitions/utils.ts";
 import { EmptyInputData, InputActionType, type InputAction, type InputData } from "../../../net/input_packet.ts";
 import { DamageParams, GameConstants, object_instance_type, ObjectType } from "../../../others/constants.ts";
 import { apply_modifiers } from "../../../others/functions.ts";
@@ -45,7 +45,6 @@ export type C_Human=C_MovingBody&C_Humanoid_Visual&{
     }
 
     encode_human_net(stream:Stream,full:boolean,visual:boolean):void
-    /** Retorna o que mudou */
     decode_human_net(stream:Stream,full:boolean):{visual:boolean,state:boolean}
 }
 export const c_human:GELComponent<C_Human>={
@@ -171,9 +170,6 @@ export type SI_Human=C_Human&SI_MovingBody&SI_Humanoid_Visual&{
     lay_down(time:number):void
     die(params:DamageParams):void
     revive(health?:number):void
-
-    encode_human_checkpoint(stream:Stream):void
-    decode_human_checkpoint(stream:Stream):void
 }
 
 const default_boost="adrenaline"
@@ -262,10 +258,58 @@ export const si_human:GELComponent<SI_Human>={
             this.physical.dirty=false
         },
         [gel_events.checkpoint_encode]:function(stream:Stream,_ctx:CheckpointContext){
-            this.encode_human_checkpoint(stream)
+            stream.write_pos2(this.position)
+            .write_pos2(this.physical.velocity)
+            .write_rad(this.rotation)
+            .write_boolean_group(this.dead,this.knocked)
+            .write_string(this.name,1)
+            .write_float32(this.health.value)
+            .write_float32(this.health.max)
+            .write_float32(this.boost.value)
+            .write_float32(this.boost.max)
+            .write_string(this.boost.def.id_string,1)
+            .write_float32(this.physical.down_timer)
+            .write_float32(this.scale)
+            this.encode_visual(stream)
+            const weapons:Record<string,string>={}
+            for(const k in this.inventory.weapons){
+                const w=this.inventory.weapons[k]
+                if(w)weapons[k]=w.def.id_string
+            }
+            stream.write_any({
+                weapons,
+                aitems:this.inventory.aitems,
+                backpack:this.inventory.backpack.id_string,
+                weapon_idx:this.inventory.weapon_idx,
+            },2,2)
         },
-        [gel_events.checkpoint_decode]:function(stream:Stream,_ctx:CheckpointContext){
-            this.decode_human_checkpoint(stream)
+        [gel_events.checkpoint_decode]:function(stream:Stream,_ctx:CheckpointContext){const defs=this.app.definitions
+            this.position=stream.read_pos2()
+            this.physical.velocity=stream.read_pos2()
+            this.rotation=stream.read_rad()
+            const [dead,knocked]=stream.read_boolean_group()
+            this.dead=dead
+            this.knocked=knocked
+            this.name=stream.read_string(1)
+            this.health.value=stream.read_float32()
+            this.health.max=stream.read_float32()
+            this.boost.value=stream.read_float32()
+            this.boost.max=stream.read_float32()
+            this.boost.def=defs.boosts.getFromString(stream.read_string(1))
+            this.physical.down_timer=stream.read_float32()
+            this.scale=stream.read_float32()
+            this.decode_visual(stream)
+            const inv=stream.read_any(2,2) as {weapons:Record<string,string>,aitems:Record<string,number>,backpack:string,weapon_idx:number}
+            this.inventory.set_backpack(defs.backpacks.getFromString(inv.backpack))
+            for(const k in inv.weapons){
+                this.inventory.set_weapon(Number(k),defs.game_items.valueString[inv.weapons[k]])
+            }
+            this.inventory.aitems=inv.aitems
+            this.inventory.set_weapon_index(inv.weapon_idx,true)
+            this.visual.dirty=true
+            this.set_dirty_full()
+            this.emit_event(humanoid_events.visual_changed)
+            this.emit_event(human_events.state_changed)
         },
     },
     methods:{
@@ -330,7 +374,7 @@ export const si_human:GELComponent<SI_Human>={
         tick_physics(current_floor:FloorType,dt:number){
             const floor=Floors[current_floor]
             const slow=this.downed||this.swimming
-            let acceleration=15*(slow?0.2:floor.acceleration)
+            let acceleration=40*(slow?0.2:floor.acceleration)
             acceleration=Numeric.dt_expo_inter(acceleration,dt)
 
             if(!this.physical.movement_locked){
@@ -458,62 +502,6 @@ export const si_human:GELComponent<SI_Human>={
             this.clear_input()
             this.set_dirty_full()
             this.emit_event(human_events.revive)
-        },
-
-        encode_human_checkpoint(stream:Stream){
-            stream.write_pos2(this.position)
-            .write_pos2(this.physical.velocity)
-            .write_rad(this.rotation)
-            .write_boolean_group(this.dead,this.knocked)
-            .write_string(this.name,1)
-            .write_float32(this.health.value)
-            .write_float32(this.health.max)
-            .write_float32(this.boost.value)
-            .write_float32(this.boost.max)
-            .write_string(this.boost.def.id_string,1)
-            .write_float32(this.physical.down_timer)
-            .write_float32(this.scale)
-            this.encode_visual(stream)
-            const weapons:Record<string,string>={}
-            for(const k in this.inventory.weapons){
-                const w=this.inventory.weapons[k]
-                if(w)weapons[k]=w.def.id_string
-            }
-            stream.write_any({
-                weapons,
-                aitems:this.inventory.aitems,
-                backpack:this.inventory.backpack.id_string,
-                weapon_idx:this.inventory.weapon_idx,
-            },2,2)
-        },
-        decode_human_checkpoint(stream:Stream){
-            const defs=this.app.definitions
-            this.position=stream.read_pos2()
-            this.physical.velocity=stream.read_pos2()
-            this.rotation=stream.read_rad()
-            const [dead,knocked]=stream.read_boolean_group()
-            this.dead=dead
-            this.knocked=knocked
-            this.name=stream.read_string(1)
-            this.health.value=stream.read_float32()
-            this.health.max=stream.read_float32()
-            this.boost.value=stream.read_float32()
-            this.boost.max=stream.read_float32()
-            this.boost.def=defs.boosts.getFromString(stream.read_string(1))
-            this.physical.down_timer=stream.read_float32()
-            this.scale=stream.read_float32()
-            this.decode_visual(stream)
-            const inv=stream.read_any(2,2) as {weapons:Record<string,string>,aitems:Record<string,number>,backpack:string,weapon_idx:number}
-            this.inventory.set_backpack(defs.backpacks.getFromString(inv.backpack))
-            for(const k in inv.weapons){
-                this.inventory.set_weapon(Number(k),defs.game_items.valueString[inv.weapons[k]])
-            }
-            this.inventory.aitems=inv.aitems
-            this.inventory.set_weapon_index(inv.weapon_idx,true)
-            this.visual.dirty=true
-            this.set_dirty_full()
-            this.emit_event(humanoid_events.visual_changed)
-            this.emit_event(human_events.state_changed)
         },
     }
 }

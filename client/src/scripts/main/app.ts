@@ -8,14 +8,10 @@ import { ApiSettings, game_version } from "common/scripts/config/config.ts";
 import { warning_popup } from "../scenes/menu/def.ts";
 import { CutsceneScene } from "../scenes/cutscene/scene.ts";
 import { CommonApplication } from "common/scripts/game/base.ts";
-import { play_events, PlayScene, type PlaySceneKind, type WorkerGameOptions } from "../scenes/play/scene.ts";
-import { type JoinData } from "common/scripts/net/join_packet.ts";
+import { OnlineGameOptions, PlayScene, SelfGameOptions, WorkerGameOptions, type PlaySceneKind } from "../scenes/play/scene.ts";
 
-export type PlayOptions=WorkerGameOptions&{
-    url?:string
-    join?:JoinData
-}
 import { InitialScreenScene } from "../scenes/initial_screen/scene.ts";
+import { JoinData } from "common/scripts/net/join_packet.ts";
 
 export class Application extends ClientApplication implements CommonApplication{
     menu_scene=new MenuScene()
@@ -103,7 +99,7 @@ export class Application extends ClientApplication implements CommonApplication{
 
         //   ?play=self               -> local, with servidor/worker
         //   ?play=worker             -> simulation in a WebWorker
-        //   ?play=online&server=ws://localhost:8080/api/ws/0
+        //   ?play=online
         const params=new URLSearchParams(location.search)
         const kind=(params.get("play")??"self") as Exclude<PlaySceneKind,"none">
         await this.play(kind,{
@@ -114,30 +110,24 @@ export class Application extends ClientApplication implements CommonApplication{
         })
     }
 
-    async play(kind:Exclude<PlaySceneKind,"none">,options:PlayOptions={}){
+    async play(kind:Exclude<PlaySceneKind,"none">,options?:SelfGameOptions|WorkerGameOptions|OnlineGameOptions,join?:JoinData){
         const game=this.play_scene
         switch(kind){
-            case "online":
-                await game.connect(options.url??"ws://localhost:8080/api/ws/0")
+            case "self":
+                await game.self_initialize(options as SelfGameOptions)
                 break
             case "worker":
-                await game.worker_initialize(options)
+                await game.worker_initialize(options as WorkerGameOptions)
                 break
-            case "self":
-                await game.self_initialize(options)
+            case "online":
+                await game.online_initialize(options as OnlineGameOptions)
                 break
         }
-        await game.join(options.join??{
+        await game.join(join??{
             name:this.save.settings.get_var("loadout_name")??"",
         })
-        game.events.on(play_events.game_over,(msg:{win:boolean})=>{
-            console.log(msg.win?"[GAME] Voce ganhou!":"[GAME] Fim de jogo")
-        })
+        //game.free_cam()
         this.scene=game
-    }
-    async leave_game(){
-        await this.play_scene.close()
-        this.scene=this.menu_scene
     }
 
     override on_bind(){
@@ -200,5 +190,9 @@ export class Application extends ClientApplication implements CommonApplication{
 
     override on_run(): void {
         super.on_run()
+    }
+
+    show_error(error:string){
+
     }
 }

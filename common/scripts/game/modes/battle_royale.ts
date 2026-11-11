@@ -1,19 +1,29 @@
-import { v2, Vec2 } from "../../../engine/core.ts";
+import { Stream, v2, Vec2 } from "../../../engine/core.ts";
+import { MapDef } from "../../definitions/maps/base.ts";
+import { get_map_def } from "../../definitions/maps/maps.ts";
 import { DamageReason } from "../../definitions/utils.ts";
 import { type DamageParams, gelo_instance_type } from "../../others/constants.ts";
 import { type DeadzoneConfig, DefaultDeadzone, type SI_Deadzone } from "../gelo/deadzone.ts";
+import { SI_GameMap } from "../gelo/map.ts";
 import { type SI_Human } from "../objects/moving_body/human.ts";
 import { BotPlayerConn } from "../players/player_conn.ts";
-import { DefaultPlayerStatus, ModeManager, type ModeSettings, type Player, type PlayerStatus } from "./mode_manager.ts";
-import { GroupsManager } from "./teams.ts";
+import { DefaultPlayerStatus, ModeManager, SpawnHumanOptions, type Player, type PlayerStatus } from "./mode_manager.ts";
+import { GroupsManager, TeamsManager } from "./teams.ts";
 
-export interface BattleRoyaleSettings extends ModeSettings{
+export interface BattleRoyaleSettings{
     join_time?:number
     min_players?:number
     group_size?:number
     group_spawn?:boolean
     bots?:number
     deadzone?:DeadzoneConfig
+    players?:{
+        limit?:number
+    }
+    map?:{
+        def?:MapDef|string
+        seed?:number
+    }
 }
 export interface BattleRoyaleStatus extends PlayerStatus{
     rank:number
@@ -22,6 +32,9 @@ export interface BattleRoyaleStatus extends PlayerStatus{
 export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSettings>{
     deadzone!:SI_Deadzone
     bots_added:boolean=false
+
+    teams?:TeamsManager
+    groups?:GroupsManager
 
     create_status():BattleRoyaleStatus{
         return {...DefaultPlayerStatus(),rank:0}
@@ -40,12 +53,12 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
         this.scene.gelo.registry(this.deadzone,"deadzone")
     }
 
-    override is_open():boolean{
-        return super.is_open()&&(!this.started||this.time<(this.settings.join_time??90))
-    }
     override can_start():boolean{
         if(this.groups)return this.groups.get_living().length>1
         return this.players.living().length>=(this.settings.min_players??2)
+    }
+    override can_connect(): boolean {
+        return true
     }
     override on_player_disconnect(p:Player<BattleRoyaleStatus>){
         if(!this.started)super.on_player_disconnect(p)
@@ -62,18 +75,66 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
         this.deadzone.start()
         this.check_finish()
     }
-    override on_tick(_dt:number){
-        if(!this.started||this.finished||!this.deadzone.do_damage)return
-        for(const p of this.players.living()){
-            if(this.finished)break
-            const h=p.human!
-            const dmg=this.deadzone.damage_at(h.position)
-            if(dmg>0)h.piercing_damage({amount:dmg,reason:DamageReason.Deadzone})
+    override on_tick(dt:number){
+        if(!this.started||this.finished){
+            this.teams?.tick(dt)
+            this.groups?.tick(dt)
+            if(this.deadzone.do_damage){
+                for(const p of this.players.living()){
+                    if(this.finished)break
+                    const h=p.human!
+                    const dmg=this.deadzone.damage_at(h.position)
+                    if(dmg>0)h.piercing_damage({amount:dmg,reason:DamageReason.Deadzone})
+                }
+            }
         }
+    }
+    override net_update(){
+        super.net_update()
+        this.teams?.net_update()
+        this.groups?.net_update()
+    }
+    override destroy(){
+        super.destroy()
+        this.teams?.reset()
+        this.groups?.reset()
+    }
+    override encode_checkpoint(stream:Stream){
+        super.encode_checkpoint(stream)
+        const membership=(m?:TeamsManager<any>)=>{
+            stream.write_array(m?.teams??[],(t)=>{
+                stream.write_uint16(t.id)
+                stream.write_array(t.humans,(h:SI_Human)=>stream.write_id(h.id),2)
+            },2)
+        }
+        membership(this.teams)
+        membership(this.groups)
+    }
+    override decode_checkpoint(stream:Stream){
+        super.decode_checkpoint(stream)
+        const membership=(m?:TeamsManager<any>)=>{
+            m?.reset()
+            stream.read_array(()=>{
+                const id=stream.read_uint16()
+                let t=m?.get(id)
+                if(m&&!t){
+                    t=m.add_team()
+                    t.id=id
+                }
+                stream.read_array(()=>{
+                    const h=this.scene.objects.get_object(stream.read_id()) as SI_Human|undefined
+                    if(h&&t)t.add_human(h)
+                },2)
+            },2)
+        }
+        membership(this.teams)
+        membership(this.groups)
     }
     override on_human_die(h:SI_Human,params:DamageParams){
         const p=this.players.of(h)
         if(p)p.status.rank=this.players.living().length+1
+        this.groups?.of(h)?.clear_knocked()
+        this.teams?.of(h)?.clear_knocked()
         super.on_human_die(h,params)
     }
     override on_finish(winners:Player<BattleRoyaleStatus>[]){
@@ -100,6 +161,34 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
         return super.get_spawn_position(h)
     }
 
+    override can_knock(h:SI_Human):boolean{
+        if(this.rules.humans.knock_enabled)return true
+        if(this.groups?.of(h)?.can_knock(h))return true
+        if(this.teams?.of(h)?.can_knock(h))return true
+        return false
+    }
+    override is_ally(a:SI_Human,b:SI_Human):boolean{
+        const ga=this.groups?.of(a)
+        if(ga&&ga===this.groups?.of(b))return true
+        const ta=this.teams?.of(a)
+        if(ta&&ta===this.teams?.of(b))return true
+        return false
+    }
+
+    override leave(p: Player<BattleRoyaleStatus>): void {
+        super.leave(p)
+        if(p.human){
+            this.teams?.of(p.human)?.remove_human(p.human)
+            this.groups?.of(p.human)?.remove_human(p.human)
+        }
+    }
+    override spawn_human(options?: SpawnHumanOptions): SI_Human {
+        const h=super.spawn_human(options)
+        if(options?.team!==undefined)this.teams?.get(options.team)?.add_human(h)
+        return h
+    }
+
+
     get_living_sides():Map<object,Player<BattleRoyaleStatus>[]>{
         const sides=new Map<object,Player<BattleRoyaleStatus>[]>()
         for(const p of this.players.living()){
@@ -113,5 +202,16 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
         for(let i=0;i<count;i++){
             this.join(new BotPlayerConn(),{name:`Bot#${i+1}`})
         }
+    }
+
+    override can_join():boolean{
+        const limit=this.settings.players?.limit
+        return limit===undefined||this.players.living().length<limit
+    }
+    override async generate_map():Promise<void>{
+        const map=this.scene.make_gelo(gelo_instance_type.map) as SI_GameMap
+        this.scene.map=map
+        this.scene.gelo.registry(map,"map")
+        map.generate(get_map_def(this.settings.map?.def),this.settings.map?.seed)
     }
 }

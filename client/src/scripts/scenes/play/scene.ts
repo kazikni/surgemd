@@ -16,6 +16,9 @@ import { type CC_Deadzone } from "../../gelo/deadzone.ts";
 import { cc_active_human, type CC_ActiveHuman, ccn_active_human, ccs_active_human } from "../../objects/moving_body/active_human.ts";
 import { local_scene_defs } from "./localdefs.ts";
 import { net_scene_defs } from "./netdefs.ts";
+import { cc_freecam } from "../../gelo/free_cam.ts";
+import { api_server } from "../../main/config.ts";
+import { FindGameData, FindGameResult } from "common/scripts/config/config.ts";
 
 export interface PlaySceneDefs{
     objects:Record<number|string,(...args: any)=>GameObject>
@@ -27,13 +30,24 @@ export type PlaySceneKind="none"|"self"|"worker"|"online"
 export interface SelfGameOptions{
     mode?:string
     settings?:Record<string,any>
-    group_size?:number
 }
-export interface WorkerGameOptions extends SelfGameOptions{
+export type WorkerGameOptions=SelfGameOptions&{
     tps?:number
     ntps?:number
 }
-export type PlayWorkerInitMessage={
+export type OnlineGameOptions={
+    token?:string
+}&({
+    type:"direct"
+    url?:string
+}|{
+    type?:"find"
+    url?:string
+    mode?:number
+    region?:string
+})
+
+export type WorkerMessage={
     type:"init"
     options:WorkerGameOptions
 }
@@ -45,14 +59,6 @@ export const play_events={
     disconnected:"disconnected",
     closed:"closed",
 }
-
-function with_timeout<T>(p:Promise<T>,ms:number,what:string):Promise<T>{
-    return new Promise<T>((resolve,reject)=>{
-        const t=setTimeout(()=>reject(new Error(`Timeout esperando ${what}`)),ms)
-        p.then((v)=>{clearTimeout(t);resolve(v)},(e)=>{clearTimeout(t);reject(e)})
-    })
-}
-
 export class PlayScene extends GameScene {
     game_div:HTMLDivElement=document.querySelector("#game") as HTMLDivElement
 
@@ -113,34 +119,26 @@ export class PlayScene extends GameScene {
         }
     }
 
-    private require_app(){
-        if(!this.app)throw new Error("PlayScene precisa do app: use new PlayScene(app)")
-    }
-
     async self_initialize(options:SelfGameOptions={}){
-        this.require_app()
         await this.close()
         this.kind="self"
         this.defs=local_scene_defs
 
-        const mode=setup_game_scene(this as unknown as SimulatedScene,{
+        const mode=await setup_game_scene(this as unknown as SimulatedScene,{
             mode:options.mode??"normal",
             settings:options.settings??{},
-            group_size:options.group_size,
         })
         this.mode=mode
         const update=()=>{
             this.info.started=mode.started
             this.info.living_count=mode.get_living_count()
         }
-        mode.on(mode_events.start,update)
-        mode.on(mode_events.player_join,update)
-        mode.on(mode_events.human_die,update)
-        mode.on(mode_events.player_leave,update)
+        mode.signals.on(mode_events.start,update)
+        mode.signals.on(mode_events.player_join,update)
+        mode.signals.on(mode_events.human_die,update)
+        mode.signals.on(mode_events.player_leave,update)
     }
-
     async worker_initialize(options:WorkerGameOptions={}){
-        this.require_app()
         await this.close()
         this.kind="worker"
         this.defs=net_scene_defs
@@ -150,13 +148,29 @@ export class PlayScene extends GameScene {
         worker.addEventListener("error",(e)=>console.error("[PLAY-WORKER]",e))
         const socket=new WorkerSocket(worker)
         await this.attach_client(socket,()=>{
-            const msg:PlayWorkerInitMessage={type:"init",options}
+            const msg:WorkerMessage={type:"init",options}
             worker.postMessage(msg)
         })
     }
+    async online_initialize(options:OnlineGameOptions={type:"find"}){
+        let url=options.url??api_server.toString("http")
+        let token=options.token??undefined
 
-    async connect(url:string){
-        this.require_app()
+        if(!options.type||options.type==="find"){
+            const ghost:FindGameResult=await(await fetch(url+"/find-game",{
+                method:"post",
+                body:JSON.stringify({
+                    mode:options.mode??0,
+                    region:options.region??this.app.save.settings.get_var("game_region")
+                } as FindGameData),
+                signal: AbortSignal.timeout(4000)
+            })).json()
+            if(!ghost.success){
+                return
+            }
+            url=ghost.address
+            token=ghost.token
+        }
         await this.close()
         this.kind="online"
         this.defs=net_scene_defs
@@ -164,7 +178,7 @@ export class PlayScene extends GameScene {
         const ws=new WebSocket(url)
         ws.binaryType="arraybuffer"
         const failed=new Promise<never>((_resolve,reject)=>{
-            ws.addEventListener("error",()=>reject(new Error(`Nao foi possivel conectar em ${url}`)))
+            ws.addEventListener("error",()=>reject(new Error(`${url}`)))
         })
         await Promise.race([this.attach_client(ws as unknown as BasicSocket),failed])
     }
@@ -185,10 +199,10 @@ export class PlayScene extends GameScene {
 
         const started=client.wait("start")
         const disconnected=new Promise<never>((_resolve,reject)=>{
-            client.on(DefaultSignals.DISCONNECT,()=>reject(new Error("Desconectado pelo servidor (jogo cheio, fechado ou ja comecou)")))
+            client.on(DefaultSignals.DISCONNECT,()=>reject(new Error("Disconnected")))
         })
         after_create?.()
-        await with_timeout(Promise.race([started,disconnected]),this.timeout,"o StartPacket")
+        await Promise.race([started,disconnected])
     }
 
     async join(data:JoinData={name:""}):Promise<CC_ActiveHuman|undefined>{
@@ -205,20 +219,27 @@ export class PlayScene extends GameScene {
             this.events.emit(play_events.joined,this.active_human)
             return this.active_human
         }
-        if(!this.client)throw new Error("Nao conectado: chame connect() ou worker_initialize() antes")
+        if(!this.client)throw new Error("Not Connected")
         const joined=this.client.wait("joined") as Promise<JoinedPacket>
         this.client.emit_packet(new JoinPacket(data))
-        const p=await with_timeout(joined,this.timeout,"o JoinedPacket")
+
+        const p=await joined
         this.info.ntps=p.ntps
         this.active_id=p.human_id
         this.try_bind_active()
         this.events.emit(play_events.joined,this.active_human)
         return this.active_human
     }
+    free_cam(){
+        const o=new GameGELO()
+        o.add_component(cc_freecam)
+        this.gelo.registry(o)
+        return o
+    }
 
     set_active_human(obj:GameObject){
         if(this.active_human===obj as unknown)return
-        this.active_human?.release_active()
+        this.active_human?.release_active?.()
         obj.add_component(cc_active_human)
         obj.add_component(this.kind==="self"?ccs_active_human:ccn_active_human)
         this.active_human=obj as unknown as CC_ActiveHuman

@@ -5,7 +5,6 @@ import { ConnectionLimitConfig } from "../../engine/core/definition/definitions.
 export interface GameConfig{
     mode:string
     settings?:any
-    group_size?:number
     name?:string
 }
 export interface GamePlayOption{

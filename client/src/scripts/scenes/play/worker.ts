@@ -1,14 +1,12 @@
-// WebWorker do modo worker: roda o MESMO Game do servidor (server/src/game/game.ts),
-// so que a "rede" e o postMessage entre o worker e a pagina (WorkerSocket).
 import { ClientsManager, WorkerSocket } from "common/engine/core.ts";
 import { make_packet_manager } from "common/scripts/net/packet_manager.ts";
 import { Game } from "../../../../../server/src/game/game.ts";
-import type { PlayWorkerInitMessage } from "./scene.ts";
+import type { WorkerMessage } from "./scene.ts";
 
 let game:Game|undefined
 
 self.addEventListener("message",async (e:MessageEvent)=>{
-    const msg=e.data as PlayWorkerInitMessage
+    const msg=e.data as WorkerMessage
     if(!msg||typeof msg!=="object"||msg.type!=="init"||game)return
     const options=msg.options??{}
 
@@ -20,7 +18,6 @@ self.addEventListener("message",async (e:MessageEvent)=>{
     await game.init({
         mode:options.mode??"normal",
         settings:options.settings??{},
-        group_size:options.group_size,
     })
     game.mainloop()
 

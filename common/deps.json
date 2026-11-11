@@ -10,6 +10,7 @@
         "child_process":"node:child_process",
         "sass-embedded": "npm:sass-embedded@^1.108.1",
         "@sveltejs/vite-plugin-svelte": "npm:@sveltejs/vite-plugin-svelte@^7.3.1",
-        "canvas": "npm:canvas@^3.2.3"
+        "canvas": "npm:canvas@^3.2.3",
+        "@napi-rs/canvas":"npm:@napi-rs/canvas"
     }
 }

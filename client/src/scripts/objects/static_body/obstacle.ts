@@ -114,11 +114,11 @@ export const ccs_obstacle:GELComponent<CC_Obstacle&SI_Obstacle>={
         [obstacle_events.initialized]:function(){
             this.update_frame()
         },
+        [obstacle_events.die]:function(){
+            this.on_die()
+        },
     },
 }
-/**
- * Obstaculo vindo da rede (modos online/worker).
- */
 export const ccn_obstacle:GELComponent<CC_Obstacle>={
     extensions:[cc_obstacle],
     id_string:"ccn_obstacle",

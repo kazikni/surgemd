@@ -1,5 +1,6 @@
 import { v2 } from "../../../engine/core.ts";
-import { Layers } from "../../others/constants.ts";
+import { Layers, type LootData, object_instance_type } from "../../others/constants.ts";
+import { type SI_Obstacle } from "../../game/objects/static_body/obstacle.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { MapDef } from "./base.ts";
 import { NormalBiome, NormalMap } from "./normal.ts";
@@ -33,72 +34,42 @@ export const DebugMap:MapDef={
             },
         }],
         callback(map) {
-            let x=map.size.x/2
-            let y=map.size.y/2
+            const scene=map.scene
+            const defs=scene.app.definitions
+            const center=v2.dscale(map.size,2)
+            let x=center.x
+            let y=center.y
             let i=0
-            for(const item of Object.values(map.scene.game.definitions.game_items.valueNumber)){
-                map.scene.add_loot(v2(x,y),{item,count:Infinity})
+            const next=(cols:number,step:number,dy:number)=>{
                 i++
-                if(i>=10){
+                if(i>=cols){
                     i=0
-                    x=map.size.x/2
-                    y+=2
+                    x=center.x
+                    y+=dy
                 }else{
-                    x+=2
-                }
-                if((item as any).skins){
-                    for(let skin=0;skin<((item as any).skins as string[]).length;skin++){
-                        map.scene.add_loot(v2(x,y),{item,count:Infinity,skin})
-                        i++
-                        if(i>=10){
-                            i=0
-                            x=map.size.x/2
-                            y+=2
-                        }else{
-                            x+=2
-                        }
-                    }
+                    x+=step
                 }
             }
-            x=map.size.x/2
-            y=map.size.y/2-10
+            const add_loot=(data:LootData)=>{
+                scene.add_object(scene.make_object(object_instance_type.loot),Layers.Normal,undefined,{data,position:v2(x,y)})
+                next(10,2,2)
+            }
+            for(const item of Object.values(defs.game_items.valueNumber)){
+                add_loot({item,count:Infinity})
+                const skins=(item as {skins?:unknown[]}).skins
+                if(skins){
+                    for(let skin=0;skin<skins.length;skin++)add_loot({item,count:Infinity,skin})
+                }
+            }
+            x=center.x
+            y=center.y-10
             i=0
-            for(const def of Object.values(map.scene.game.definitions.obstacles.valueNumber)){
-                const o=map.add_obstacle(def,Layers.Normal)
-                o.initialize(0)
+            for(const def of Object.values(defs.obstacles.valueNumber)){
+                const o=scene.add_object(scene.make_object(object_instance_type.obstacle),Layers.Normal,undefined,{def}) as SI_Obstacle
+                o.init(0)
                 o.set_position(v2(x,y))
-                i++
-                if(i>=25){
-                    i=0
-                    x=map.size.x/2
-                    y-=5
-                }else{
-                    x+=5
-                }
+                next(25,5,-5)
             }
-            for(const def of Object.values(map.scene.game.definitions.vehicles.valueNumber)){
-                const v=map.scene.add_vehicle(v2(x,y),def,Layers.Normal)
-                i++
-                if(i>=25){
-                    i=0
-                    x=map.size.x/2
-                    y-=5
-                }else{
-                    x+=5
-                }
-            }
-            /*for(const def of Object.values(map.game.definitions.buildings.valueNumber)){
-                const b=map.game.map.add_building(def)
-                b.generate(v2(x,y),1)
-                i++
-                if(i>=15){
-                    i=0
-                    x=map.size.x/2
-                    y-=5
-                }else{
-                    x+=5
-                }
-            }*/
         },
     },
 }
@@ -131,7 +102,7 @@ export const SingleBuildMap:MapDef={
                 ]
             },
         }],
-        callback(map) {
+        callback(map:any) {
             //const def=map.scene.game.definitions.buildings.getFromString("shed")
             //const def=map.scene.game.definitions.buildings.getFromString("puzzle_test")
             //const def=map.scene.game.definitions.buildings.getFromString("storehouse_1")

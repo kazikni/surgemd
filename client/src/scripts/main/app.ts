@@ -97,15 +97,14 @@ export class Application extends ClientApplication implements CommonApplication{
 
         //this.scene=this.menu_scene
 
-        //   ?play=self               -> local, with servidor/worker
-        //   ?play=worker             -> simulation in a WebWorker
-        //   ?play=online
         const params=new URLSearchParams(location.search)
         const kind=(params.get("play")??"self") as Exclude<PlaySceneKind,"none">
+        const mode=params.get("mode")??undefined
         await this.play(kind,{
             url:params.get("server")??undefined,
+            mode,
             settings:{
-                map:{def:params.get("map")??"normal"},
+                map:{def:params.get("map")??(mode==="debug"?"debug":"normal")},
             },
         })
     }

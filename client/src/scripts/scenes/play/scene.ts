@@ -1,4 +1,4 @@
-import { BaseGELO, BasicSocket, Client, DefaultSignals, SignalManager, WorkerSocket } from "common/engine/core.ts";
+import { BaseGELO, BasicSocket, Client, DefaultSignals, DynamicStream, SignalManager, Stream, WorkerSocket } from "common/engine/core.ts";
 import { HideElement, ShowElement } from "common/engine/web.ts";
 import { gelo_instance_type } from "common/scripts/others/constants.ts";
 import { type SimulatedScene } from "common/scripts/game/base.ts";
@@ -161,12 +161,12 @@ export class PlayScene extends GameScene {
                 method:"post",
                 body:JSON.stringify({
                     mode:options.mode??0,
-                    region:options.region??this.app.save.settings.get_var("game_region")
+                    region:options.region??await this.get_region()
                 } as FindGameData),
                 signal: AbortSignal.timeout(4000)
             })).json()
             if(!ghost.success){
-                return
+                throw new Error(`Find Game Failed: ${ghost.error}`)
             }
             url=ghost.address
             token=ghost.token
@@ -181,6 +181,14 @@ export class PlayScene extends GameScene {
             ws.addEventListener("error",()=>reject(new Error(`${url}`)))
         })
         await Promise.race([this.attach_client(ws as unknown as BasicSocket),failed])
+    }
+
+    async get_region():Promise<string>{
+        if(!this.app.api_public)await this.app.update_api()
+        const regions=this.app.api_public?.regions??[]
+        const region=this.app.save.settings.get_var("game_region") as string
+        if(regions.length===0||regions.includes(region))return region
+        return regions[0]
     }
 
     private async attach_client(socket:BasicSocket,after_create?:()=>void){
@@ -220,10 +228,14 @@ export class PlayScene extends GameScene {
             return this.active_human
         }
         if(!this.client)throw new Error("Not Connected")
-        const joined=this.client.wait("joined") as Promise<JoinedPacket>
-        this.client.emit_packet(new JoinPacket(data))
+        const client=this.client
+        const joined=client.wait("joined") as Promise<JoinedPacket>
+        const disconnected=new Promise<never>((_resolve,reject)=>{
+            client.on(DefaultSignals.DISCONNECT,()=>reject(new Error("Join Failed")))
+        })
+        client.emit_packet(new JoinPacket(data))
 
-        const p=await joined
+        const p=await Promise.race([joined,disconnected])
         this.info.ntps=p.ntps
         this.active_id=p.human_id
         this.try_bind_active()
@@ -264,6 +276,24 @@ export class PlayScene extends GameScene {
             }
         }
         this.try_bind_active()
+    }
+
+    save_checkpoint():Stream|undefined{
+        if(this.kind!=="self"||!this.mode)return undefined
+        const stream=new DynamicStream(1024)
+        this.objects.encode_checkpoint(stream,{save_id:true})
+        this.mode.encode_checkpoint(stream)
+        return stream
+    }
+    override load_checkpoint(stream:Stream){
+        if(this.kind!=="self"||!this.mode)return
+        stream.index=0
+        this.active_human?.release_active()
+        this.active_human=undefined
+        this.objects.proccess_checkpoint(stream)
+        this.mode.decode_checkpoint(stream)
+        const h=this.local_conn?.human
+        if(h)this.set_active_human(h as unknown as GameObject)
     }
 
     get_active_state():ActiveHumanState|undefined{

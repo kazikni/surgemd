@@ -205,7 +205,7 @@ export function make_menu_play_options(options:GamePlayOption[]){
             for(const mode of p.content??[]){
                 const btn=document.createElement("button")
                 btn.className="btn-green"
-                btn.innerText=ctx.menu.app.translation.get("menu.play.play-btn",{group_size:ctx.menu.app.translation.get("modes.group_size."+(mode.group_size??1))})
+                btn.innerText=ctx.menu.app.translation.get("menu.play.play-btn",{group_size:ctx.menu.app.translation.get("modes.group_size."+(mode.settings?.group_size??1))})
                 /*const play_a:PlayArgs={type:"online",mode:m}
                 btn.onclick=()=>{
                     if(m.game.play_callback)m.game.play_callback(play_a)

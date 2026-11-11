@@ -4,6 +4,10 @@ import { decode_loot_data, encode_loot_data } from "../../others/functions.ts";
 import { Floors, FloorType } from "../../others/terrain.ts";
 import { CommonObject, SimulatedObject } from "../base.ts";
 import { SI_StaticBody } from "./static_body/static_body.ts";
+import { type SI_Interactor } from "./interaction.ts";
+import { type Inventory } from "../inventory/inventory.ts";
+
+type InventoryHolder={inventory:Inventory<any>}
 
 export interface C_Loot extends CommonObject{
     loot_data:LootData
@@ -22,7 +26,6 @@ export const c_loot:GELComponent<C_Loot>={
         }
     },
     methods:{
-        // Versao sem visual. O cliente (cc_loot) sobrescreve.
         set_loot_data(data:LootData){
             this.loot_data=data
             this.base_collider=new CircleCollider2D(v2(0,0),GameConstants.loot.radius[data.item.item_type!]??0.5)
@@ -34,6 +37,9 @@ export type SI_Loot=C_Loot&SimulatedObject&{
     velocity:Vec2
     current_floor:FloorType
     push(speed:number,angle:number):void
+    can_interact(user:SI_Interactor):boolean
+    auto_interact(user:SI_Interactor):boolean
+    on_interact(user:SI_Interactor):void
 }
 
 export const si_loot:GELComponent<SI_Loot>={
@@ -112,6 +118,28 @@ export const si_loot:GELComponent<SI_Loot>={
         push(speed:number,angle:number){
             const a=v2.from_RadAngle(angle)
             v2m.add_component(this.velocity,a.x*speed,a.y*speed)
-        }
+        },
+        can_interact(user:SI_Interactor):boolean{
+            return !this.destroyed&&this.loot_data.count>0&&(user as Partial<InventoryHolder>).inventory!==undefined&&user.collider.colliding_with(this.collider)
+        },
+        auto_interact(user:SI_Interactor):boolean{
+            return (user as unknown as InventoryHolder).inventory.can_auto_take(this.loot_data.item)
+        },
+        on_interact(user:SI_Interactor){
+            const inventory=(user as unknown as InventoryHolder).inventory
+            const data=this.loot_data
+            const remaining=inventory.give_item(data.item,data.count,false,{ammo:data.ammo,skin:data.skin},this.position,this.layer)
+            for(const l of data.aditional??[]){
+                inventory.give_loot(l,true,this.position,this.layer)
+            }
+            data.aditional=undefined
+            if(remaining===data.count)return
+            if(remaining<=0){
+                this.destroy()
+            }else if(data.count!==Infinity){
+                data.count=remaining
+                this.set_dirty_full()
+            }
+        },
     }
 }

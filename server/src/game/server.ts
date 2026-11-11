@@ -95,7 +95,7 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig,GameServe
         for(const g of this.games.values()){
             if(
                 g.data&&g.data.running&&g.data.can_join&&
-                (!g.config||(g.config.mode===config?.mode&&g.config.group_size===config.group_size&&deepEqual(g.config.settings,config.settings)))
+                (!g.config||(g.config.mode===config?.mode&&deepEqual(g.config.settings,config.settings)))
             ){
                 return g
             }

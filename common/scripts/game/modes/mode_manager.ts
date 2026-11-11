@@ -1,4 +1,4 @@
-import { LootTableGetItemCallback, LootTablesManager, SignalManager, Stream, Vec2 } from "../../../engine/core.ts";
+import { cloneDeep, LootTableGetItemCallback, LootTablesManager, SignalManager, Stream, Vec2 } from "../../../engine/core.ts";
 import { type LoadoutPreset } from "../../definitions/utils.ts";
 import { type JoinData } from "../../net/join_packet.ts";
 import { type DamageParams, GameConstants, Layers, object_instance_type, Spawn, type SpawnMode, type LootAditional, type LootData, type LootSetting, type LootTable } from "../../others/constants.ts";
@@ -118,6 +118,7 @@ export interface GameRules{
     humans:{
         knock_enabled:boolean
         friendly_fire:boolean
+        drop_inventory:boolean
     }
     score:{
         kill:number
@@ -147,15 +148,17 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
     spawn_mode:SpawnMode=Spawn.grass
     spawn_layer:number=Layers.Normal
 
+    initialized:boolean=false
     started:boolean=false
     finished:boolean=false
+    closed:boolean=false
     destroyed:boolean=false
     time:number=0
 
     signals:SignalManager=new SignalManager()
 
     constructor(settings:Settings){
-        this.settings=settings
+        this.settings=cloneDeep(settings)
         this.loot_tables=new LootTablesManager(loot_table_get_item as LootTableGetItemCallback<LootData,LootAditional,LootSetting>)
         this.rules={
             auto_start:true,
@@ -163,6 +166,7 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
             humans:{
                 knock_enabled:false,
                 friendly_fire:false,
+                drop_inventory:true,
             },
             score:{
                 kill:50,
@@ -184,6 +188,7 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
 
         this.rules.loot_settings.definitions=this.app.definitions
         this.on_initialized()
+        this.initialized=true
         this.signals.emit(mode_events.initialized)
     }
     on_init(){}
@@ -195,11 +200,14 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
         return this.loot_tables.get_loot(table,{definitions:this.app.definitions,...(settings??this.rules.loot_settings)})
     }
 
+    get open():boolean{
+        return this.initialized&&!this.closed&&!this.finished&&!this.destroyed
+    }
     can_connect():boolean{
-        return true
+        return this.open
     }
     can_join():boolean{
-        return this.can_connect()
+        return this.open
     }
     can_start():boolean{
         return this.players.connected().length>0
@@ -225,6 +233,7 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
     connect(conn:PlayerConn):Player<S>|undefined{
         const old=this.players.get(conn.id)
         if(old)return old
+        if(!this.can_connect())return undefined
         conn.mode=this
         const p=new Player<S>(conn,this.create_status())
         this.players.add(p)
@@ -236,6 +245,7 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
         const p=this.players.get(conn.id)
         if(!p||!p.connected)return
         p.connected=false
+        conn.connected=false
         this.on_player_disconnect(p)
         this.signals.emit(mode_events.player_disconnect,p)
         this.check_finish()
@@ -322,6 +332,7 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
         this.signals.emit(mode_events.human_knocked,h,params)
     }
     on_human_die(h:SI_Human,params:DamageParams){
+        if(this.rules.humans.drop_inventory)h.inventory?.drop_all()
         const p=this.players.of(h)
         const killer=params.owner&&params.owner.id!==h.id?this.players.of(params.owner.id):undefined
         if(killer&&killer.human&&!this.is_ally(h,killer.human)){
@@ -347,9 +358,17 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
         this.signals.emit(mode_events.start)
     }
     on_start(){}
+    close(){
+        if(this.closed)return
+        this.closed=true
+        this.on_close()
+        this.signals.emit(mode_events.closed)
+    }
+    on_close(){}
     finish(winners:Player<S>[]=[]){
         if(this.finished)return
         this.finished=true
+        this.close()
         this.on_finish(winners)
         for(const p of this.players.list()){
             p.conn.on_game_finish(winners.includes(p))
@@ -381,7 +400,7 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
     }
 
     encode_checkpoint(stream:Stream){
-        stream.write_boolean_group(this.started,this.finished)
+        stream.write_boolean_group(this.started,this.finished,this.closed)
         stream.write_float32(this.time)
         stream.write_array(this.players.list(),(p)=>{
             stream.write_id(p.id)
@@ -391,9 +410,10 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
         },2)
     }
     decode_checkpoint(stream:Stream){
-        const [started,finished]=stream.read_boolean_group()
+        const [started,finished,closed]=stream.read_boolean_group()
         this.started=started
         this.finished=finished
+        this.closed=closed
         this.time=stream.read_float32()
         stream.read_array(()=>{
             const id=stream.read_id()

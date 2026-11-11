@@ -109,10 +109,11 @@ export async function main(args:string[],default_worker_file:string,fs:FileManag
                         tps:ctx.args.tps,
                         ntps:ctx.args.ntps,
                     },clients)
+                    const settings=ctx.args["mode-settings"]??{}
+                    if(ctx.args["group-size"]!==undefined)settings.group_size=ctx.args["group-size"]
                     await game.init({
                         mode:ctx.args.mode,
-                        settings:ctx.args["mode-settings"]??{},
-                        group_size:ctx.args["group-size"]
+                        settings,
                     })
                     game.mainloop()
                     server.run()

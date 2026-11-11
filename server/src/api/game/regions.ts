@@ -122,7 +122,7 @@ export class RegionManager {
     }
     validate_game_rules(mode:number,rules:{group_size?:number}):boolean{
         if(!this.api.modes[mode])return false
-        if(rules.group_size)return (this.api.modes[mode].group_size??1)>=rules.group_size
+        if(rules.group_size)return (this.api.modes[mode].settings?.group_size??1)>=rules.group_size
         return true
     }
 

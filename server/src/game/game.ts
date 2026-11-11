@@ -9,15 +9,19 @@ import { NetPlayerConn } from "./net_player_conn.ts";
 import { simulation_defs, SimulationDefs, SimulationScene } from "./scene.ts";
 
 export interface GameData extends GameDataBase{
+    initialized:boolean
     running:boolean
-    can_join:boolean
     started:boolean
+    finished:boolean
+    closed:boolean
+    can_join:boolean
     living_count:number
 }
 
 export interface GameAppConfig{
     tps:number
     ntps:number
+    finish_delay?:number
     debug?:{
         debug_menu?:boolean
     }
@@ -37,6 +41,8 @@ export class Game extends AbstractApplication implements ServerGameApplication,C
 
     initialized:boolean=false
     private net_timer:number=0
+    private last_data:string=""
+
 
     constructor(config:GameAppConfig,clients:ClientsManager,defs:SimulationDefs=simulation_defs){
         super(config.tps)
@@ -54,13 +60,12 @@ export class Game extends AbstractApplication implements ServerGameApplication,C
 
         const mode=await setup_game_scene(this.sim,game_config)
 
-        mode.signals.on(mode_events.start,()=>this.update_data())
-        mode.signals.on(mode_events.player_join,()=>this.update_data())
-        mode.signals.on(mode_events.human_die,()=>this.update_data())
-        mode.signals.on(mode_events.finish,()=>this.update_data())
         mode.signals.on(mode_events.closed,()=>{
             console.log(`[GAME-${this.id}] Closed`)
-            this.stop()
+        })
+        mode.signals.on(mode_events.finish,()=>{
+            console.log(`[GAME-${this.id}] Finished`)
+            this.clock.add_timeout(()=>this.stop(),this.config.finish_delay??10)
         })
 
         this.initialized=true
@@ -70,19 +75,27 @@ export class Game extends AbstractApplication implements ServerGameApplication,C
 
     get_data():GameData{
         const mode=this.sim.mode
+        const initialized=this.initialized&&!!mode&&mode.initialized
         return {
-            running:this.running&&!!mode&&!mode.finished,
-            can_join:!!mode&&mode.can_connect(),
+            initialized,
+            running:this.running,
             started:!!mode&&mode.started,
+            finished:!!mode&&mode.finished,
+            closed:!mode||mode.closed,
+            can_join:initialized&&this.running&&mode.can_connect(),
             living_count:mode?mode.get_living_count():0,
         }
     }
-    update_data(){
-        this.signals.emit("update_data",this.get_data())
+    update_data(force:boolean=false){
+        const data=this.get_data()
+        const str=JSON.stringify(data)
+        if(!force&&str===this.last_data)return
+        this.last_data=str
+        this.signals.emit("update_data",data)
     }
 
     handle_connection(client:Client,username:string){
-        if(!this.initialized||!this.sim.mode.can_connect()){
+        if(!this.initialized||!this.running||!this.sim.mode.can_connect()){
             client.disconnect()
             return
         }
@@ -115,11 +128,11 @@ export class Game extends AbstractApplication implements ServerGameApplication,C
     override mainloop(rqf?:boolean,auto_mainloop?:boolean){
         this.clients.onconnection=this.handle_connection.bind(this)
         super.mainloop(rqf,auto_mainloop)
-        this.update_data()
+        this.update_data(true)
         console.log(`[GAME-${this.id}] Running`)
     }
     override on_stop(): void {
-        this.update_data()
+        this.update_data(true)
         this.clients.clear()
         console.log(`[GAME-${this.id}] Stopped`)
     }

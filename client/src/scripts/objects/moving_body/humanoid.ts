@@ -1,11 +1,23 @@
-import { ColorM, gel_events, GELComponent, random, v2, v2m } from "common/engine/core.ts";
+import { ColorM, ease, gel_events, GELComponent, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameObject } from "../../main/gel.ts";
 import { C_Humanoid_Visual, humanoid_events } from "common/scripts/game/objects/moving_body/humanoid.ts";
-import { AnimatedContainer2D, AnimatedSprite2D, Container2D, Frame, Shape2D, Sprite2D } from "common/engine/web.ts";
+import { ABParticle2D, AnimatedContainer2D, AnimatedSprite2D, Container2D, Frame, Shape2D, Sprite2D } from "common/engine/web.ts";
+import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { DefaultDownedWalkFistRig, DefaultFistRig, FistRig } from "common/scripts/others/item.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
+export interface HumanoidWalk{
+    cycle:number
+    time:number
+    speed:number
+    idle:number
+    footstep_distance:number
+    footstep_alternate:boolean
+    footstep_sound?:{stop():void}
+    last_position?:Vec2
+}
 export type CC_Humanoid_Visual=GameObject&C_Humanoid_Visual&{
     container:AnimatedContainer2D
+    walk:HumanoidWalk
 
     sprites:{
         hair:Sprite2D
@@ -48,12 +60,12 @@ export type CC_Humanoid_Visual=GameObject&C_Humanoid_Visual&{
 
     set_mounth(state?:number,enabled?:boolean):void
     set_eyes(state?:number,animated?:boolean,enabled?:boolean):void
-    /** Rig de braco "normal" (sem estar deitado). Usado para voltar da pose deitada. */
     arms_rig?:FistRig
     downed_pose:boolean
 
     set_arms_rig(rig?:FistRig):void
-    /** Pose deitada (downed/nadando): pernas aparecem e os bracos vao para frente */
+    tick_walk(dt:number,distance:number):void
+    tick_footsteps(distance:number,floor:FloorType,on_ground?:boolean,footstep_distance?:number):void
     set_downed_pose(downed:boolean):void
     reset_animations():void
 }
@@ -63,6 +75,14 @@ export const cc_humanoid_visual:GELComponent<CC_Humanoid_Visual>={
         [gel_events.bind]:function(){
             this.assets={}
             this.downed_pose=false
+            this.walk={
+                cycle:0,
+                time:0,
+                speed:0,
+                idle:0,
+                footstep_distance:0,
+                footstep_alternate:false,
+            }
         },
         [humanoid_events.visual_changed]:function(){
             if(this.container)this.update_visual()
@@ -307,6 +327,148 @@ export const cc_humanoid_visual:GELComponent<CC_Humanoid_Visual>={
                 this.sprites.eyes.visible=false
                 this.sprites.eyes.frames=undefined
             }
+        },
+        tick_walk(dt:number,distance:number){
+            const w=this.walk
+            if(distance>0.001){
+                w.speed=distance
+                w.idle=0
+                if(w.cycle===0){
+                    w.cycle=1
+                    w.time=0
+                }
+            }else{
+                w.idle+=dt
+                if(w.idle>0.12&&w.cycle!==0){
+                    w.cycle=0
+                    w.time=0
+                    w.speed=0
+                }
+            }
+            if(this.downed_pose){
+                if(w.cycle===0||w.speed<=0)return
+                w.time+=dt*1.8
+                const t=ease.sineIn(Math.min(w.time,1))
+                const rig=this.arms_rig??DefaultFistRig
+                switch(w.cycle){
+                    case 1:
+                        this.sprites.right_arm.position=v2.lerp(rig.right!.position,DefaultDownedWalkFistRig.right!.position,t)
+                        this.sprites.right_arm.rotation=Numeric.lerp_rad(rig.right!.rotation,DefaultDownedWalkFistRig.right!.rotation,t)
+                        this.sprites.left_leg.position=v2.lerp(v2(-0.8,-0.22),v2(-0.7,-0.2),t)
+                        this.sprites.left_arm.position=rig.left!.position
+                        this.sprites.left_arm.rotation=rig.left!.rotation
+                        this.sprites.right_leg.position=v2(-0.8,0.22)
+                        break
+                    case 2:
+                        this.sprites.right_arm.position=v2.lerp(DefaultDownedWalkFistRig.right!.position,rig.right!.position,t)
+                        this.sprites.right_arm.rotation=Numeric.lerp_rad(DefaultDownedWalkFistRig.right!.rotation,rig.right!.rotation,t)
+                        this.sprites.left_leg.position=v2.lerp(v2(-0.7,-0.2),v2(-0.8,-0.22),t)
+                        break
+                    case 3:
+                        this.sprites.left_arm.position=v2.lerp(rig.left!.position,DefaultDownedWalkFistRig.left!.position,t)
+                        this.sprites.left_arm.rotation=Numeric.lerp_rad(rig.left!.rotation,DefaultDownedWalkFistRig.left!.rotation,t)
+                        this.sprites.right_leg.position=v2.lerp(v2(-0.8,0.22),v2(-0.7,0.2),t)
+                        break
+                    case 4:
+                        this.sprites.left_arm.position=v2.lerp(DefaultDownedWalkFistRig.left!.position,rig.left!.position,t)
+                        this.sprites.left_arm.rotation=Numeric.lerp_rad(DefaultDownedWalkFistRig.left!.rotation,rig.left!.rotation,t)
+                        this.sprites.right_leg.position=v2.lerp(v2(-0.7,0.2),v2(-0.8,0.22),t)
+                        break
+                }
+                if(w.time>=1){
+                    w.time-=1
+                    w.cycle=Numeric.loop(w.cycle+1,1,5)
+                }
+                return
+            }
+            if(w.cycle===0){
+                this.sprites.left_leg.visible=false
+                this.sprites.right_leg.visible=false
+                return
+            }
+            w.time+=w.speed
+            const t=Math.min(w.time,1)
+            this.sprites.left_leg.visible=true
+            this.sprites.right_leg.visible=true
+            this.sprites.left_leg.position.y=-0.2
+            this.sprites.right_leg.position.y=0.2
+            switch(w.cycle){
+                case 1:
+                    this.sprites.left_leg.rotation=Numeric.lerp_rad(0,0.1,t)
+                    this.sprites.right_leg.rotation=Numeric.lerp_rad(Math.PI,Math.PI+0.1,t)
+                    this.sprites.left_leg.position.x=Numeric.lerp(-0.3,-0.45,t)
+                    this.sprites.right_leg.position.x=Numeric.lerp(0.3,0.45,t)
+                    this.sprites.left_leg_foot.position.x=Numeric.lerp(0.05,0.04,t)
+                    this.sprites.right_leg_foot.position.x=Numeric.lerp(0.05,0,t)
+                    break
+                case 2:
+                    this.sprites.left_leg.rotation=Numeric.lerp_rad(0.1,0,t)
+                    this.sprites.right_leg.rotation=Numeric.lerp_rad(Math.PI+0.1,Math.PI,t)
+                    this.sprites.left_leg.position.x=Numeric.lerp(-0.45,-0.3,t)
+                    this.sprites.right_leg.position.x=Numeric.lerp(0.45,0.3,t)
+                    this.sprites.left_leg_foot.position.x=Numeric.lerp(0.04,0.05,t)
+                    this.sprites.right_leg_foot.position.x=Numeric.lerp(0,0.05,t)
+                    break
+                case 3:
+                    this.sprites.left_leg.rotation=Numeric.lerp_rad(Math.PI,Math.PI-0.1,t)
+                    this.sprites.right_leg.rotation=Numeric.lerp_rad(0,-0.1,t)
+                    this.sprites.left_leg.position.x=Numeric.lerp(0.3,0.45,t)
+                    this.sprites.right_leg.position.x=Numeric.lerp(-0.3,-0.45,t)
+                    this.sprites.left_leg_foot.position.x=Numeric.lerp(0.05,0,t)
+                    this.sprites.right_leg_foot.position.x=Numeric.lerp(0.05,0.04,t)
+                    break
+                case 4:
+                    this.sprites.left_leg.rotation=Numeric.lerp_rad(Math.PI-0.1,Math.PI,t)
+                    this.sprites.right_leg.rotation=Numeric.lerp_rad(-0.2,0,t)
+                    this.sprites.left_leg.position.x=Numeric.lerp(0.45,0.3,t)
+                    this.sprites.right_leg.position.x=Numeric.lerp(-0.45,-0.3,t)
+                    this.sprites.left_leg_foot.position.x=Numeric.lerp(0,0.05,t)
+                    this.sprites.right_leg_foot.position.x=Numeric.lerp(0.04,0.05,t)
+                    break
+            }
+            if(w.time>=1){
+                w.time=0
+                w.cycle=Numeric.loop(w.cycle+1,1,5)
+            }
+        },
+        tick_footsteps(distance:number,floor:FloorType,on_ground:boolean=true,footstep_distance:number=2){
+            const w=this.walk
+            if(distance<=0.001||!on_ground)return
+            w.footstep_distance+=distance
+            if(w.footstep_distance<footstep_distance)return
+            w.footstep_distance=0
+            const def=Floors[floor]
+            if(!def)return
+            const sounds=def.footstep_sounds
+            if(sounds&&sounds.length>0){
+                w.footstep_sound?.stop()
+                w.footstep_sound=this.app.sounds.play(this.app.resources.get_sound(random.choose(sounds)),{
+                    position:v2.clone(this.position),
+                    max_distance:15,
+                    volume:0.3,
+                    bus:"objects",
+                })
+            }
+            if(def.floor_kind===FloorKind.Liquid){
+                this.scene.particles.add_particle(new ABParticle2D({
+                    direction:0,
+                    frame:{
+                        image:"riple",
+                        hotspot:v2.half_one,
+                        zIndex:zIndexes.Decals,
+                        layer:this.layer,
+                        scale:0,
+                    },
+                    life_time:0.5,
+                    position:v2.clone(this.container.position),
+                    speed:0,
+                    to:{
+                        scale:3,
+                        tint:ColorM.default.transparent,
+                    },
+                }))
+            }
+            w.footstep_alternate=!w.footstep_alternate
         },
         set_downed_pose(downed:boolean){
             this.downed_pose=downed

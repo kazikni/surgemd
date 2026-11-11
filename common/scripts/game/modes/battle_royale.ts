@@ -8,15 +8,16 @@ import { SI_GameMap } from "../gelo/map.ts";
 import { type SI_Human } from "../objects/moving_body/human.ts";
 import { BotPlayerConn } from "../players/player_conn.ts";
 import { DefaultPlayerStatus, ModeManager, SpawnHumanOptions, type Player, type PlayerStatus } from "./mode_manager.ts";
-import { GroupsManager, TeamsManager } from "./teams.ts";
+import { Group, GroupsManager, Team, TeamsManager } from "./teams.ts";
 
 export interface BattleRoyaleSettings{
     join_time?:number
     min_players?:number
+    teams?:number
     group_size?:number
     group_spawn?:boolean
     bots?:number
-    deadzone?:DeadzoneConfig
+    deadzone?:DeadzoneConfig|false
     players?:{
         limit?:number
     }
@@ -30,7 +31,7 @@ export interface BattleRoyaleStatus extends PlayerStatus{
 }
 
 export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSettings>{
-    deadzone!:SI_Deadzone
+    deadzone?:SI_Deadzone
     bots_added:boolean=false
 
     teams?:TeamsManager
@@ -43,50 +44,61 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
     override on_init(){
         this.settings.players??={}
         this.settings.players.limit??=100
+        const teams=this.settings.teams??0
+        if(teams>1){
+            this.teams=new TeamsManager()
+            for(let i=0;i<teams;i++)this.teams.add_team()
+        }
         const group_size=this.settings.group_size??1
         if(group_size>1)this.groups=new GroupsManager(group_size)
     }
     override on_initialized(){
+        const config=this.settings.deadzone
+        if(config===false)return
         this.deadzone=this.scene.make_gelo(gelo_instance_type.deadzone) as SI_Deadzone
         this.scene.deadzone=this.deadzone
-        this.deadzone.config={...DefaultDeadzone,...this.settings.deadzone}
+        this.deadzone.config={...DefaultDeadzone,...config}
+        if(this.deadzone.config.stages)this.deadzone.stages=this.deadzone.config.stages
         this.scene.gelo.registry(this.deadzone,"deadzone")
     }
 
-    override can_start():boolean{
-        if(this.groups)return this.groups.get_living().length>1
-        return this.players.living().length>=(this.settings.min_players??2)
+    override can_join():boolean{
+        if(!super.can_join())return false
+        const limit=this.settings.players?.limit
+        return limit===undefined||this.players.living().length<limit
     }
-    override can_connect(): boolean {
-        return true
+    override can_start():boolean{
+        const min=this.settings.min_players??2
+        if(this.players.living().length<min)return false
+        return min<=1||this.get_living_sides().size>1
     }
     override on_player_disconnect(p:Player<BattleRoyaleStatus>){
         if(!this.started)super.on_player_disconnect(p)
         else p.human?.clear_input()
     }
     override on_player_join(p:Player<BattleRoyaleStatus>){
-        if(p.human)this.groups?.put(p.human)
+        if(p.human)this.put_on_side(p.human)
         if(!p.is_bot&&!this.bots_added&&(this.settings.bots??0)>0){
             this.bots_added=true
             this.add_bots(this.settings.bots!)
         }
+        if(!this.can_join())this.close()
     }
     override on_start(){
-        this.deadzone.start()
-        this.check_finish()
+        this.deadzone?.start()
+        this.app.clock.add_timeout(()=>{
+            if(!this.destroyed)this.close()
+        },this.settings.join_time??90)
     }
     override on_tick(dt:number){
-        if(!this.started||this.finished){
-            this.teams?.tick(dt)
-            this.groups?.tick(dt)
-            if(this.deadzone.do_damage){
-                for(const p of this.players.living()){
-                    if(this.finished)break
-                    const h=p.human!
-                    const dmg=this.deadzone.damage_at(h.position)
-                    if(dmg>0)h.piercing_damage({amount:dmg,reason:DamageReason.Deadzone})
-                }
-            }
+        this.teams?.tick(dt)
+        this.groups?.tick(dt)
+        if(!this.started||this.finished||!this.deadzone?.do_damage)return
+        for(const p of this.players.living()){
+            if(this.finished)break
+            const h=p.human!
+            const dmg=this.deadzone.damage_at(h.position)
+            if(dmg>0)h.piercing_damage({amount:dmg,reason:DamageReason.Deadzone})
         }
     }
     override net_update(){
@@ -102,8 +114,9 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
     override encode_checkpoint(stream:Stream){
         super.encode_checkpoint(stream)
         const membership=(m?:TeamsManager<any>)=>{
-            stream.write_array(m?.teams??[],(t)=>{
+            stream.write_array(m?.teams??[],(t:Team)=>{
                 stream.write_uint16(t.id)
+                stream.write_uint16((t as Group).team??0)
                 stream.write_array(t.humans,(h:SI_Human)=>stream.write_id(h.id),2)
             },2)
         }
@@ -116,11 +129,13 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
             m?.reset()
             stream.read_array(()=>{
                 const id=stream.read_uint16()
+                const team=stream.read_uint16()
                 let t=m?.get(id)
                 if(m&&!t){
                     t=m.add_team()
                     t.id=id
                 }
+                if(t instanceof Group)t.team=team
                 stream.read_array(()=>{
                     const h=this.scene.objects.get_object(stream.read_id()) as SI_Human|undefined
                     if(h&&t)t.add_human(h)
@@ -133,9 +148,9 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
     override on_human_die(h:SI_Human,params:DamageParams){
         const p=this.players.of(h)
         if(p)p.status.rank=this.players.living().length+1
+        super.on_human_die(h,params)
         this.groups?.of(h)?.clear_knocked()
         this.teams?.of(h)?.clear_knocked()
-        super.on_human_die(h,params)
     }
     override on_finish(winners:Player<BattleRoyaleStatus>[]){
         for(const w of winners)w.status.rank=1
@@ -154,7 +169,7 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
             const ally=g.choose_human(h)
             if(ally)return ally.position
         }
-        if(this.started&&this.deadzone.stage_index>2){
+        if(this.started&&this.deadzone&&this.deadzone.stage_index>2){
             const dz=this.deadzone
             return this.scene.map.get_random_position(h.collider,h.id,h.layer,this.spawn_mode,(_c,map)=>v2.add(map.random.random_in_circle(dz.radius*0.8),dz.position))
         }
@@ -176,11 +191,12 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
     }
 
     override leave(p: Player<BattleRoyaleStatus>): void {
-        super.leave(p)
-        if(p.human){
-            this.teams?.of(p.human)?.remove_human(p.human)
-            this.groups?.of(p.human)?.remove_human(p.human)
+        const h=p.human
+        if(h){
+            this.teams?.of(h)?.remove_human(h)
+            this.groups?.of(h)?.remove_human(h)
         }
+        super.leave(p)
     }
     override spawn_human(options?: SpawnHumanOptions): SI_Human {
         const h=super.spawn_human(options)
@@ -188,11 +204,20 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
         return h
     }
 
-
+    put_on_side(h:SI_Human,team?:Team){
+        if(this.teams){
+            team??=this.teams.of(h)??this.teams.smallest()
+            team?.add_human(h)
+        }
+        this.groups?.put(h,team?.id??0)
+    }
+    get_side(h:SI_Human):object|undefined{
+        return this.teams?.of(h)??this.groups?.of(h)
+    }
     get_living_sides():Map<object,Player<BattleRoyaleStatus>[]>{
         const sides=new Map<object,Player<BattleRoyaleStatus>[]>()
         for(const p of this.players.living()){
-            const side:object=this.groups?.of(p.human!)??p
+            const side:object=this.get_side(p.human!)??p
             if(!sides.has(side))sides.set(side,[])
             sides.get(side)!.push(p)
         }
@@ -204,10 +229,6 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
         }
     }
 
-    override can_join():boolean{
-        const limit=this.settings.players?.limit
-        return limit===undefined||this.players.living().length<limit
-    }
     override async generate_map():Promise<void>{
         const map=this.scene.make_gelo(gelo_instance_type.map) as SI_GameMap
         this.scene.map=map

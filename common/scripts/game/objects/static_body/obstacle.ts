@@ -1,6 +1,8 @@
-import { Angle, gel_events, GELComponent, Numeric, Orientation, random, RotationMode, Stream, Vec2 } from "../../../../engine/core.ts";
+import { Angle, gel_events, GELComponent, Numeric, Orientation, random, RotationMode, Stream, v2, Vec2 } from "../../../../engine/core.ts";
 import { ObstacleDef } from "../../../definitions/objects/obstacles.ts";
-import { DamageParams, object_instance_type } from "../../../others/constants.ts";
+import { DamageParams, LootData, object_instance_type } from "../../../others/constants.ts";
+import { DamageReason } from "../../../definitions/utils.ts";
+import { type SI_Interactor } from "../interaction.ts";
 import { static_body_events, SI_StaticBody, type C_StaticBody, c_static_body, si_static_body } from "./static_body.ts";
 export const obstacle_events={
     set_definition:static_body_events.last,
@@ -104,7 +106,12 @@ export type SI_Obstacle=C_Obstacle&SI_StaticBody&{
         dirty_part:boolean
     }
     max_scale:number
+    loot:LootData[]
     damage(damage:DamageParams):void
+    kill(params:DamageParams):void
+    load_loot():void
+    can_interact(user:SI_Interactor):boolean
+    on_interact(user:SI_Interactor):void
     init(rotation?:number,scale?:number,variation?:number,parent_side?:number):void
     set_position(position:Vec2):void
     reset_scale():void
@@ -113,8 +120,25 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
     id_string:"si_obstacle",
     extensions:[c_obstacle,si_static_body],
     events:{
+        [gel_events.bind]:function(){
+            this.loot=[]
+        },
         [gel_events.net_encode]:function(stream:Stream,full:boolean){
             this.encode_obstacle(stream,full)
+        },
+        [obstacle_events.die]:function(){
+            const pos=v2.clone(this.position)
+            for(const l of this.loot){
+                const loot=this.scene.add_object(this.scene.make_object(object_instance_type.loot),this.layer,undefined,{data:l,position:v2.add(pos,v2.random(-0.5,0.5))})
+                ;(loot as {push?:(speed:number,angle:number)=>void}).push?.(random.float(0.5,2),random.rad())
+            }
+            this.loot.length=0
+            if(!this.def.keep_collision_on_die){
+                this.physical.no_collision=true
+                this.physical.no_projectile_collision=true
+            }
+            this.reset_scale()
+            this.set_dirty_full()
         },
         [gel_events.checkpoint_encode]:function(stream:Stream){
             stream.write_string(this.def.id_string,1)
@@ -145,6 +169,35 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
         }
     },
     methods:{
+        load_loot(){
+            this.loot.length=0
+            if(this.def.loot_table)this.loot.push(...this.scene.mode.get_loot(this.def.loot_table))
+        },
+        damage(params:DamageParams){
+            if(!this.health||this.health.dead||this.def.imortal)return
+            if((this.def.resistence??0)>(params.resistence??0))return
+            this.health.value=Math.max(this.health.value-params.amount,0)
+            if(this.health.value<=0){
+                this.kill(params)
+            }else{
+                this.reset_scale()
+            }
+            this.set_dirty_part()
+        },
+        kill(_params:DamageParams){
+            if(!this.health||this.health.dead)return
+            this.health.value=0
+            this.die()
+        },
+        can_interact(user:SI_Interactor):boolean{
+            if(this.destroyed||!this.def.interactDestroy||!this.health||this.health.dead)return false
+            return user.collider.colliding_with(this.interaction_collider??this.collider)||user.collider.colliding_with(this.collider)
+        },
+        on_interact(user:SI_Interactor){
+            if(this.def.interactDestroy){
+                this.kill({amount:this.health?.value??0,reason:DamageReason.Human,owner:user,position:this.position})
+            }
+        },
         init(rotation?:number,scale?:number,variation?:number,parent_side:Orientation=0):void{
             if(this.def.rotation_mode===RotationMode.limited){
                 this.rotation=rotation===undefined?random.int(0,3):Angle.add_orientation(rotation as Orientation,parent_side)
@@ -166,6 +219,7 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
             this.physical.interaction_collider=this.physical.collider.transform(undefined,1.1)
             
             this.reset_scale()
+            this.load_loot()
             this.emit_event(obstacle_events.initialized)
         },
         set_position(position:Vec2){

@@ -1,28 +1,21 @@
-import { CheckpointContext, CircleCollider2D, gel_events, GELComponent, Numeric, Stream, v2, v2m, Vec2 } from "../../../../engine/core.ts"
+import { ActionsManager, CheckpointContext, CircleCollider2D, gel_events, GELComponent, Numeric, Stream, v2, v2m, Vec2 } from "../../../../engine/core.ts"
 import { GameItem } from "../../../definitions/game_defs.ts";
 import { BadgeDef } from "../../../definitions/loadout/badges.ts";
 import { EmoteDef } from "../../../definitions/loadout/emotes.ts";
 import { BoostDef } from "../../../definitions/player/boosts.ts";
-import { GameItemType, GameObjectDefinitionType, LoadoutPreset } from "../../../definitions/utils.ts";
+import { DamageReason, GameObjectDefinitionType, LoadoutPreset } from "../../../definitions/utils.ts";
 import { EmptyInputData, InputActionType, type InputAction, type InputData } from "../../../net/input_packet.ts";
 import { DamageParams, GameConstants, object_instance_type, ObjectType } from "../../../others/constants.ts";
 import { apply_modifiers } from "../../../others/functions.ts";
-import { GInventoryBase, GunItemBase, MeleeItemBase, MDItem } from "../../../others/inventory.ts";
+import { si_human_inventory } from "../../inventory/component.ts";
+import { type Inventory, type InventoryAction } from "../../inventory/inventory.ts";
+import { si_interactor, type SI_Interactor } from "../interaction.ts";
+import { human_events } from "./human_events.ts";
 import { Floors, FloorType } from "../../../others/terrain.ts";
 import { C_Humanoid_Visual, c_humanoid_visual, humanoid_events, si_humanoid_visual, SI_Humanoid_Visual } from "./humanoid.ts";
 import { c_moving_body, C_MovingBody, si_moving_body, SI_MovingBody } from "./moving_body.ts";
 
-export const human_events={
-    update_modifiers:humanoid_events.last+1,
-    tick_physics:humanoid_events.last+2,
-    knocked:humanoid_events.last+3,
-    help_up:humanoid_events.last+4,
-    die:humanoid_events.last+5,
-    revive:humanoid_events.last+6,
-    state_changed:humanoid_events.last+7,
-    damaged:humanoid_events.last+8,
-    last:humanoid_events.last+9,
-}
+export { human_events }
 
 export interface HumanCreateArgs{
     position?:Vec2
@@ -127,11 +120,16 @@ export interface HumanBoost{
     def:BoostDef
 }
 
-export type SI_Human=C_Human&SI_MovingBody&SI_Humanoid_Visual&{
+export type SI_Human=C_Human&SI_MovingBody&SI_Humanoid_Visual&SI_Interactor&{
     health:HumanHealth
     boost:HumanBoost
 
-    inventory:GInventoryBase<MDItem>
+    knocked_by?:{id:number}
+    last_damage_by?:{id:number}
+    bleed_timer:number
+
+    inventory:Inventory<SI_Human>
+    actions:ActionsManager<SI_Human,InventoryAction>
 
     input:Omit<InputData,"actions">&{
         actions:InputAction[]
@@ -176,7 +174,7 @@ const default_boost="adrenaline"
 
 export const si_human:GELComponent<SI_Human>={
     id_string:"si_human",
-    extensions:[c_human,si_moving_body,si_humanoid_visual],
+    extensions:[c_human,si_moving_body,si_humanoid_visual,si_interactor,si_human_inventory],
     events:{
         [gel_events.bind]:function(){
             this.allow_net_update=true
@@ -204,6 +202,7 @@ export const si_human:GELComponent<SI_Human>={
                 max:100,
                 invencibility:0,
             }
+            this.bleed_timer=0
         },
         [gel_events.create]:function(args?:HumanCreateArgs){
             this.boost={
@@ -211,12 +210,6 @@ export const si_human:GELComponent<SI_Human>={
                 max:100,
                 def:this.app.definitions.boosts.getFromString(default_boost),
             }
-            this.inventory=new GInventoryBase<MDItem>()
-            this.inventory.initialize(this.app.definitions,{
-                [GameItemType.gun]:GunItemBase,
-                [GameItemType.melee]:MeleeItemBase,
-            } as Record<number,new(inventory:GInventoryBase,def:GameItem)=>MDItem>)
-
             if(args?.loadout)this.set_loadout_preset(args.loadout)
         },
         [gel_events.tick](dt:number){
@@ -244,9 +237,21 @@ export const si_human:GELComponent<SI_Human>={
                 this.emit_event(human_events.state_changed)
             }
 
-            this.tick_input(dt)
+            if(this.knocked){
+                this.bleed_timer+=dt
+                if(this.bleed_timer>=1){
+                    this.bleed_timer=0
+                    this.piercing_damage({amount:1,reason:DamageReason.Bleend,position:this.position})
+                    if(this.dead)return
+                }
+            }else{
+                this.bleed_timer=0
+            }
+
             this.tick_physics(floor,dt)
             this.emit_event(human_events.tick_physics,dt)
+            this.emit_event(human_events.use_hand,dt)
+            this.tick_input(dt)
 
             this.set_dirty_part()
         },
@@ -271,17 +276,6 @@ export const si_human:GELComponent<SI_Human>={
             .write_float32(this.physical.down_timer)
             .write_float32(this.scale)
             this.encode_visual(stream)
-            const weapons:Record<string,string>={}
-            for(const k in this.inventory.weapons){
-                const w=this.inventory.weapons[k]
-                if(w)weapons[k]=w.def.id_string
-            }
-            stream.write_any({
-                weapons,
-                aitems:this.inventory.aitems,
-                backpack:this.inventory.backpack.id_string,
-                weapon_idx:this.inventory.weapon_idx,
-            },2,2)
         },
         [gel_events.checkpoint_decode]:function(stream:Stream,_ctx:CheckpointContext){const defs=this.app.definitions
             this.position=stream.read_pos2()
@@ -299,13 +293,6 @@ export const si_human:GELComponent<SI_Human>={
             this.physical.down_timer=stream.read_float32()
             this.scale=stream.read_float32()
             this.decode_visual(stream)
-            const inv=stream.read_any(2,2) as {weapons:Record<string,string>,aitems:Record<string,number>,backpack:string,weapon_idx:number}
-            this.inventory.set_backpack(defs.backpacks.getFromString(inv.backpack))
-            for(const k in inv.weapons){
-                this.inventory.set_weapon(Number(k),defs.game_items.valueString[inv.weapons[k]])
-            }
-            this.inventory.aitems=inv.aitems
-            this.inventory.set_weapon_index(inv.weapon_idx,true)
             this.visual.dirty=true
             this.set_dirty_full()
             this.emit_event(humanoid_events.visual_changed)
@@ -359,11 +346,10 @@ export const si_human:GELComponent<SI_Human>={
                         this.input.message=a.value
                         this.input.emote=undefined
                         break
-                    case InputActionType.set_hand:
-                        if(!this.knocked)this.inventory.set_weapon_index(a.hand)
-                        break
                 }
             }
+            this.emit_event(human_events.tick_input,this.input.actions)
+            if(!this.knocked)this.interact(this.input.interact)
             this.input.swap_guns=false
             this.input.interact=false
             this.input.reload=false
@@ -416,8 +402,9 @@ export const si_human:GELComponent<SI_Human>={
             if(this.dead||this.health.invencibility>0)return
             if(params.owner&&params.owner.id!==this.id){
                 const owner=this.scene.objects.get_object(params.owner.id) as SI_Human|undefined
-                if(owner&&owner.__components.has("si_human")&&this.scene.mode.is_ally(this,owner))return
+                if(owner&&owner.__components.has("si_human")&&!this.scene.mode.rules.humans.friendly_fire&&this.scene.mode.is_ally(this,owner))return
             }
+            this.emit_event(human_events.modify_damage,params)
             params.amount*=this.get_modifier("damage_reduction")
             this.piercing_damage(params)
         },
@@ -438,6 +425,7 @@ export const si_human:GELComponent<SI_Human>={
             }else{
                 health_damage=params.amount
             }
+            if(params.owner&&params.owner.id!==this.id)this.last_damage_by=params.owner
             if(health_damage>0){
                 this.health.value=Math.max(this.health.value-health_damage,0)
             }
@@ -445,6 +433,7 @@ export const si_human:GELComponent<SI_Human>={
             this.boost.def.se?.on_hitted?.(this)
 
             if(this.health.value<=0){
+                if((!params.owner||params.owner.id===this.id)&&this.last_damage_by)params.owner=this.last_damage_by
                 if(!this.knocked&&this.scene.mode.can_knock(this)){
                     this.knock_out(params)
                 }else{
@@ -455,11 +444,11 @@ export const si_human:GELComponent<SI_Human>={
         },
         knock_out(params:DamageParams){
             if(this.knocked||this.dead)return
+            this.knocked_by=params.owner
             this.knocked=true
             this.health.value=this.health.max
             this.health.invencibility=0.4
             this.boost.value=0
-            this.inventory.set_weapon_index(0)
             if(params.direction!==undefined)this.push(-10,params.direction)
             this.set_dirty_full()
             this.emit_event(human_events.knocked,params)
@@ -467,6 +456,8 @@ export const si_human:GELComponent<SI_Human>={
         },
         help_up(){
             if(!this.knocked||this.dead)return
+            this.knocked_by=undefined
+            this.last_damage_by=undefined
             this.knocked=false
             this.health.value=this.health.max*0.3
             this.boost.value=0
@@ -478,6 +469,7 @@ export const si_human:GELComponent<SI_Human>={
         },
         die(params:DamageParams){
             if(this.dead)return
+            if(this.knocked_by&&(!params.owner||params.owner.id===this.id))params.owner=this.knocked_by
             this.dead=true
             this.knocked=false
             this.downed=false
@@ -490,6 +482,8 @@ export const si_human:GELComponent<SI_Human>={
         },
         revive(health?:number){
             if(!this.dead)return
+            this.knocked_by=undefined
+            this.last_damage_by=undefined
             if(!this.registred)this.manager.registry_object(this)
             this.dead=false
             this.knocked=false

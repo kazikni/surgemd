@@ -1,12 +1,11 @@
-// Teste rapido da simulacao (sem render): deno run -A src/test/game_test.ts
 import { Client, ClientsManager, DynamicStream } from "common/engine/core.ts";
 import { make_packet_manager } from "common/scripts/net/packet_manager.ts";
 import { JoinPacket, JoinedPacket } from "common/scripts/net/join_packet.ts";
 import { InputPacket } from "common/scripts/net/input_packet.ts";
 import { StartPacket, UpdatePacket } from "common/scripts/net/update_packet.ts";
 import { Game } from "../game/game.ts";
-import { mode_events } from "common/scripts/game/gelo/mode.ts";
-import { type SI_BattleRoyale } from "common/scripts/game/modes/battle_royale.ts";
+import { mode_events } from "common/scripts/game/modes/mode_manager.ts";
+import { type BattleRoyale } from "common/scripts/game/modes/battle_royale.ts";
 
 const packets=make_packet_manager()
 const clients=new ClientsManager(packets)
@@ -18,7 +17,6 @@ game.clients.onconnection=game.handle_connection.bind(game)
 const sim=game.sim
 console.log("objects after map generation:",Object.keys(sim.objects.objects).length)
 
-// Cliente falso (mesma coisa que o worker faz)
 const [server_socket,client_socket]=clients.create_conn()
 const client=new Client(client_socket,packets)
 let start:StartPacket|undefined
@@ -36,9 +34,9 @@ console.log("start packet:",start?`ok (${start.gelos.length} bytes)`:"MISSING")
 client.emit_packet(new JoinPacket({name:"Tester"}))
 console.log("joined:",joined?`human ${joined.human_id}`:"MISSING")
 
-const br=sim.mode as unknown as SI_BattleRoyale
+const br=sim.mode as BattleRoyale
 let finished=false
-br.on(mode_events.finish,(w:any[])=>{finished=true;console.log("finish! winners:",w.map((h)=>h.name))})
+br.signals.on(mode_events.finish,(w:any[])=>{finished=true;console.log("finish! winners:",w.map((p)=>p.name))})
 
 const dt=1/100
 let t=0
@@ -51,7 +49,6 @@ for(;t<60*15&&!finished;t+=dt){
         console.log("t=5s started:",br.started,"living:",br.get_living_count(),"deadzone state:",sim.deadzone?.state)
         const h=sim.objects.get_object(joined!.human_id) as any
         console.log("player pos:",h?.position,"health:",h?.health?.value)
-        // Checkpoint roundtrip
         const s=new DynamicStream(1024)
         sim.make_checkpoint(s)
         const count=Object.keys(sim.objects.objects).length

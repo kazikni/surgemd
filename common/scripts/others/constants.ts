@@ -272,13 +272,11 @@ export type LootTable<A=LootAditional>=LootTableBase<A>
 export type DamageParams={
     amount:number
     reason:DamageReason
-    /** Quem causou o dano (para kills/aliados). Normalmente um humano. */
     owner?:{id:number}&Record<string,any>
-    /** Item/objeto que causou o dano (arma, explosao...) */
     source?:{id_string:string}
     position?:Vec2
-    /** Direcao do dano em radianos (usado para empurrar) */
     direction?:number
     critical?:boolean
     penetration?:number
+    resistence?:number
 }

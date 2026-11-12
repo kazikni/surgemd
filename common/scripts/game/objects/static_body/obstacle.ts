@@ -112,6 +112,10 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
                 stream.write_float(this.health.value/this.def.health!,0,1,1)
             }
         },
+        [gel_events.net_update](){
+            this.physical.dirty_part=false
+            this.physical.dirty=false
+        },
         [obstacle_events.die]:function(){
             const pos=v2.clone(this.position)
             for(const l of this.loot){

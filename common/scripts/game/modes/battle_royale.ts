@@ -74,11 +74,9 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
         if(!this.started)super.on_player_disconnect(p)
         else p.human?.clear_input()
     }
-    override on_player_join(p:Player<BattleRoyaleStatus>){
-        if(!this.can_join())this.close()
-    }
     override on_player_spawn(p:Player<BattleRoyaleStatus>){
         if(p.human&&!this.groups?.of?.(p.human))this.put_on_side(p.human)
+        if(!this.can_join())this.close()
     }
     override on_start(){
         this.deadzone?.start()

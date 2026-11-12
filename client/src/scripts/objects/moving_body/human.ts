@@ -50,6 +50,7 @@ export type CC_Human=CC_MovingBody&C_Human&CC_Humanoid_Visual&{
     hand_sprites:{
         weapon:Sprite2D
         weapon2:Sprite2D
+        item3:Sprite2D
         muzzle_flash:Sprite2D
         message:Container2D
         message_bg:Sprite2D
@@ -135,6 +136,7 @@ export const cc_human:GELComponent<CC_Human>={
             this.hand_sprites={
                 weapon:this.container.add_sprite("weapon"),
                 weapon2:this.container.add_sprite("weapon2"),
+                item3:this.container.add_sprite("item3"),
                 muzzle_flash:this.container.add_sprite("muzzle_flash",{visible:false,zIndex:6,hotspot:v2(0,0.5)}),
                 message,
                 message_bg:new Sprite2D(),
@@ -406,7 +408,9 @@ export const cc_human:GELComponent<CC_Human>={
             }
             if(this.downed_pose||a.recoil_state===-1)return
             const pos=v2(Numeric.lerp(0,-a.recoil_walk,a.recoil_time),0)
+            v2m.rotate_RadAngle(pos,this.container.rotation)
             const matrix=matrix4.translation_2d(pos)
+
             this.hand_sprites.muzzle_flash.matrix=matrix
             switch(a.recoil_type){
                 case 0:
@@ -559,7 +563,7 @@ export const cc_human:GELComponent<CC_Human>={
                 if(this.destroyed||this.dead)return
                 if(def.assets?.use_sound){
                     this.app.sounds.play(this.app.resources.get_sound(def.assets.use_sound),{
-                        position:v2.clone(this.position),
+                        position:this.position,
                         max_distance:12,
                         volume:0.7,
                         bus:"humans",
@@ -603,7 +607,7 @@ export const cc_human:GELComponent<CC_Human>={
                     if(sound){
                         this.action.sound?.stop()
                         this.action.sound=this.app.sounds.play(sound,{
-                            position:v2.clone(this.position),
+                            position:this.position,
                             max_distance:10,
                             bus:"humans",
                             on_complete:()=>{

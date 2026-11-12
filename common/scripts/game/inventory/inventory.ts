@@ -571,6 +571,7 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
     set_hand_slot(n:number){
         const s=this.hand_slots[n]
         if(s)this.set_hand(s.index)
+        this.recoil=undefined
     }
     select_default_hand(){
         const s=this.hand_slots.find((v)=>!v.empty)??this.slots.find((v)=>this.can_hold(v))

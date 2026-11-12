@@ -34,37 +34,6 @@ export interface HumanNetExtra{
     animations:HumanAnimation[]
     message?:HumanMessage
 }
-
-export function encode_human_animation(stream:Stream,a:HumanAnimation){
-    stream.write_uint8(a.type)
-    switch(a.type){
-        case HumanAnimationType.Fire:
-            stream.write_boolean_group(a.alt,a.last,a.alt_func)
-            break
-        case HumanAnimationType.Reloading:
-            stream.write_uint8(a.alt_reload?1:0)
-            break
-        case HumanAnimationType.Consuming:
-            stream.write_uint16(a.item)
-            break
-    }
-}
-export function decode_human_animation(stream:Stream):HumanAnimation{
-    const type=stream.read_uint8() as HumanAnimationType
-    switch(type){
-        case HumanAnimationType.Fire:{
-            const [alt,last,alt_func]=stream.read_boolean_group()
-            return {type,alt,last,alt_func}
-        }
-        case HumanAnimationType.Reloading:
-            return {type,alt_reload:stream.read_uint8()===1}
-        case HumanAnimationType.Consuming:
-            return {type,item:stream.read_uint16()}
-        default:
-            return {type} as HumanAnimation
-    }
-}
-
 export type C_Human=C_MovingBody&C_Humanoid_Visual&C_Humanoid_Animation&{
     name:string
 
@@ -83,9 +52,7 @@ export type C_Human=C_MovingBody&C_Humanoid_Visual&C_Humanoid_Animation&{
         movement_locked?:boolean
     }
 
-    encode_human_net(stream:Stream,full:boolean,visual:boolean):void
     decode_human_net(stream:Stream,full:boolean):{visual:boolean,state:boolean}
-    encode_human_extra(stream:Stream,full:boolean,extra:HumanNetExtra):void
     decode_human_extra(stream:Stream,full:boolean):HumanNetExtra
 }
 export const c_human:GELComponent<C_Human>={
@@ -113,27 +80,6 @@ export const c_human:GELComponent<C_Human>={
         },
     },
     methods:{
-        encode_human_net(stream:Stream,full:boolean,visual:boolean){
-            stream.write_boolean_group(
-                full||visual,
-                this.dead,
-                this.knocked,
-                this.downed,
-                this.swimming,
-                full&&this.name.length>0,
-            )
-            stream.write_pos2(this.position)
-            stream.write_rad(this.rotation)
-            if(full){
-                stream.write_float32(this.scale)
-            }
-            if(full||visual){
-                this.encode_visual(stream)
-            }
-            if(full&&this.name.length>0){
-                stream.write_string(this.name,1)
-            }
-        },
         decode_human_net(stream:Stream,full:boolean){
             const [visual,dead,knocked,downed,swimming,has_name]=stream.read_boolean_group()
             const state=dead!==this.dead||knocked!==this.knocked||downed!==this.downed||swimming!==this.swimming
@@ -155,22 +101,6 @@ export const c_human:GELComponent<C_Human>={
             }
             return {visual,state}
         },
-        encode_human_extra(stream:Stream,full:boolean,extra:HumanNetExtra){
-            const hand=full||extra.hand
-            const momentary=full||extra.momentary
-            stream.write_boolean_group(hand,momentary,extra.animations.length>0,extra.message!==undefined,this.controlled)
-            if(hand){
-                stream.write_int16(this.hand?(this.app.definitions.game_items.keysString[this.hand.id_string]??-1):-1)
-            }
-            if(momentary)this.encode_momentary(stream)
-            if(extra.animations.length>0){
-                stream.write_array(extra.animations,(a)=>encode_human_animation(stream,a),1)
-            }
-            if(extra.message){
-                stream.write_string(extra.message.text,2)
-                stream.write_float32(extra.message.time)
-            }
-        },
         decode_human_extra(stream:Stream,_full:boolean):HumanNetExtra{
             const [has_hand,has_momentary,has_animations,has_message,controlled]=stream.read_boolean_group()
             this.controlled=controlled
@@ -183,7 +113,21 @@ export const c_human:GELComponent<C_Human>={
                 this.hand=def
             }
             if(has_momentary)momentary=this.decode_momentary(stream)
-            const animations=has_animations?stream.read_array(()=>decode_human_animation(stream),1):[]
+            const animations=has_animations?stream.read_array(()=>{
+                const type=stream.read_uint8() as HumanAnimationType
+                switch(type){
+                    case HumanAnimationType.Fire:{
+                        const [alt,last,alt_func]=stream.read_boolean_group()
+                        return {type,alt,last,alt_func}
+                    }
+                    case HumanAnimationType.Reloading:
+                        return {type,alt_reload:stream.read_uint8()===1}
+                    case HumanAnimationType.Consuming:
+                        return {type,item:stream.read_uint16()}
+                    default:
+                        return {type} as HumanAnimation
+                }
+            },1):[]
             let message:HumanMessage|undefined
             if(has_message){
                 message={text:stream.read_string(2),time:stream.read_float32()}
@@ -208,11 +152,9 @@ export interface HumanBoost{
 export type SI_Human=C_Human&SI_MovingBody&SI_Humanoid_Visual&SI_Humanoid_Animation&SI_Interactor&{
     script?:HumanScript
     animations:HumanAnimation[]
-    net_dirty:{
-        hand:boolean
-        message:boolean
-    }
     movement_locks:Set<string>
+
+    hand_dirty:boolean
 
     health:HumanHealth
     boost:HumanBoost
@@ -283,7 +225,7 @@ export const si_human:GELComponent<SI_Human>={
         [gel_events.bind]:function(){
             this.allow_net_update=true
             this.animations=[]
-            this.net_dirty={hand:true,message:false}
+            this.hand_dirty=true
             this.movement_locks=new Set()
             this.physical={
                 ...this.physical,
@@ -336,7 +278,7 @@ export const si_human:GELComponent<SI_Human>={
             const hand=this.inventory.hand_def
             if(hand!==this.hand){
                 this.hand=hand
-                this.net_dirty.hand=true
+                this.hand_dirty=true
                 this.emit_event(human_events.hand_changed,hand)
             }
 
@@ -381,20 +323,61 @@ export const si_human:GELComponent<SI_Human>={
             this.set_dirty_part()
         },
         [gel_events.net_encode]:function(stream:Stream,full:boolean){
-            this.encode_human_net(stream,full,this.visual.dirty)
-            this.encode_human_extra(stream,full,{
-                hand:this.net_dirty.hand,
-                momentary:this.momentary_dirty,
-                animations:this.animations,
-                message:this.net_dirty.message?this.message:undefined,
-            })
+            stream.write_boolean_group(
+                full||this.visual.dirty,
+                this.dead,
+                this.knocked,
+                this.downed,
+                this.swimming,
+                full&&this.name.length>0,
+            )
+            stream.write_pos2(this.position)
+            stream.write_rad(this.rotation)
+            if(full){
+                stream.write_float32(this.scale)
+            }
+            if(full||this.visual.dirty){
+                this.encode_visual(stream)
+            }
+            if(full&&this.name.length>0){
+                stream.write_string(this.name,1)
+            }
+
+            const hand=full||this.hand_dirty
+            const momentary=full||this.momentary_dirty
+            stream.write_boolean_group(hand,momentary,this.animations.length>0,this.message!==undefined,this.controlled)
+            if(hand){
+                stream.write_int16(this.hand?(this.app.definitions.game_items.keysString[this.hand.id_string]??-1):-1)
+            }
+            if(momentary)this.encode_momentary(stream)
+            if(this.animations.length>0){
+                stream.write_array(this.animations,(a)=>{
+                    stream.write_uint8(a.type)
+                    switch(a.type){
+                        case HumanAnimationType.Fire:
+                            stream.write_boolean_group(a.alt,a.last,a.alt_func)
+                            break
+                        case HumanAnimationType.Reloading:
+                            stream.write_uint8(a.alt_reload?1:0)
+                            break
+                        case HumanAnimationType.Consuming:
+                            stream.write_uint16(a.item)
+                            break
+                    }
+                },1)
+            }
+            if(this.message){
+                stream.write_string(this.message.text,2)
+                stream.write_float32(this.message.time)
+            }
         },
         [gel_events.net_update]:function(){
             this.visual.dirty=false
             this.physical.dirty=false
             this.animations.length=0
-            this.net_dirty.hand=false
-            this.net_dirty.message=false
+            this.hand_dirty=false
+            this.input.message=undefined
+            this.input.emote=undefined
         },
         [inventory_events.animation]:function(animation:HumanAnimation){
             this.play_animation(animation)
@@ -669,7 +652,6 @@ export const si_human:GELComponent<SI_Human>={
         },
         say(text:string,time:number=3){
             this.message={text,time}
-            this.net_dirty.message=true
             if(this.manager)this.set_dirty_part()
             this.emit_event(human_events.message,this.message)
         },

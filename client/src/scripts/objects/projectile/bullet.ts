@@ -13,7 +13,6 @@ export type BulletHitVisual=GameObject&{
 
 export type CC_Bullet=GameObject&C_Bullet&{
     sprite_trail:Sprite2D
-    max_length:number
     trail_time:number
     visual_ready:boolean
     whiz:boolean
@@ -30,7 +29,6 @@ export const cc_bullet:GELComponent<CC_Bullet>={
     events:{
         [gel_events.bind](){
             this.allow_tick=true
-            this.max_length=0.3
             this.trail_time=0
             this.visual_ready=false
             this.whiz=false
@@ -59,7 +57,6 @@ export const cc_bullet:GELComponent<CC_Bullet>={
         setup_visual(){
             this.visual_ready=true
             this.sprite_trail.rotation=this.angle
-            this.max_length=this.tracer_width
             this.sprite_trail.scale.y=this.tracer_height
             const col=ColorM.number(this.tracer_color)
             col.a=this.tracer_alpha
@@ -74,12 +71,12 @@ export const cc_bullet:GELComponent<CC_Bullet>={
                     this.destroy()
                     return
                 }
-            }else if(this.sprite_trail.scale.x<this.max_length){
+            }else if(this.sprite_trail.scale.x<this.tracer_width){
                 this.trail_time+=dt
             }
             this.sprite_trail.position=this.position
             const traveled=v2.distance(this.initial_position,this.position)
-            this.sprite_trail.scale.x=Math.min(Math.min(this.speed*this.trail_time,traveled),this.max_length)
+            this.sprite_trail.scale.x=Math.min(Math.min(this.speed*this.trail_time,traveled),this.tracer_width)
         },
         tick_whiz(){
             if(this.whiz||this.finished)return

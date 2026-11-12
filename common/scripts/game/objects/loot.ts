@@ -5,9 +5,8 @@ import { Floors, FloorType } from "../../others/terrain.ts";
 import { CommonObject, SimulatedObject } from "../base.ts";
 import { SI_StaticBody } from "./static_body/static_body.ts";
 import { type SI_Interactor } from "./interaction.ts";
-import { type Inventory } from "../inventory/inventory.ts";
+import { type SI_Human } from "./human/human.ts";
 
-type InventoryHolder={inventory:Inventory<any>}
 
 export interface C_Loot extends CommonObject{
     loot_data:LootData
@@ -71,7 +70,7 @@ export const si_loot:GELComponent<SI_Loot>={
             const others:SimulatedObject[]=this.manager.cells.get_objects(this.collider,this.layer)
             for(const other of others){
                 if(other.__components.has("c_static_body")){
-                    if((other as SI_StaticBody).physical.no_collision)break
+                    if((other as SI_StaticBody).physical.no_collision)continue
                     const collisions=this.collider.overlap_collisions(other.collider)
                     for(const col of collisions){
                         v2m.sub(this.position,this.position,v2.scale(col.dir,col.pen))
@@ -81,22 +80,22 @@ export const si_loot:GELComponent<SI_Loot>={
                     const col=this.collider.overlap_collision(other.collider)
                     if(col){
                         const pen=col.pen*2.5*dt
-                        if(col.pen<=0.05)col.dir=v2.random(-1,1)
+                        if(col.pen<=0.0001)col.dir=v2.random(-1,1)
 
                         const vel=v2.scale(col.dir,pen)
                         v2m.sub(this.velocity,this.velocity,vel)
                         v2m.sub(this.position,this.position,v2.scale(col.dir,pen))
                     }
-                    break
                 }
             }
+            const pos=v2.add(this.position,v2.scale(this.velocity,speed*dt))
+            v2m.scale(this.velocity,this.velocity,1/(1+dt*2.5))
+            this.position=this.scene.map.clamp_collider(pos,this.base_collider)
             if(!v2.is(this.position,this.old_position)){
                 this.old_position=v2.clone(this.position)
-                v2m.scale(this.velocity,this.velocity,1/(1+dt*2.5))
-                const pos=v2.add(this.position,v2.scale(this.velocity,speed*dt))
-                this.position=this.scene.map.clamp_collider(pos,this.base_collider)
                 this.current_floor=this.scene.map.terrain.get_floor_type(this.position,this.layer,this.scene.map.default_floor)
                 this.set_dirty_part()
+                
             }
         },
         [gel_events.net_encode]:function(stream:Stream,full:boolean){
@@ -120,13 +119,13 @@ export const si_loot:GELComponent<SI_Loot>={
             v2m.add_component(this.velocity,a.x*speed,a.y*speed)
         },
         can_interact(user:SI_Interactor):boolean{
-            return !this.destroyed&&this.loot_data.count>0&&(user as Partial<InventoryHolder>).inventory!==undefined&&user.collider.colliding_with(this.collider)
+            return !this.destroyed&&this.loot_data.count>0&&(user as Partial<SI_Human>).inventory!==undefined&&user.collider.colliding_with(this.collider)
         },
         auto_interact(user:SI_Interactor):boolean{
-            return (user as unknown as InventoryHolder).inventory.can_auto_take(this.loot_data.item)
+            return (user as unknown as SI_Human).inventory.can_auto_take(this.loot_data.item)
         },
         on_interact(user:SI_Interactor){
-            const inventory=(user as unknown as InventoryHolder).inventory
+            const inventory=(user as unknown as SI_Human).inventory
             const data=this.loot_data
             const remaining=inventory.give_item(data.item,data.count,false,{ammo:data.ammo,skin:data.skin},this.position,this.layer)
             for(const l of data.aditional??[]){

@@ -108,6 +108,10 @@ export class Application extends ClientApplication implements CommonApplication{
             },
         })
     }
+    override on_update(dt: number): void {
+        super.on_update(dt)
+        this.global_interpolation=Numeric.get_interpolation_t(this.tps,dt)
+    }
 
     async play(kind:Exclude<PlaySceneKind,"none">,options?:SelfGameOptions|WorkerGameOptions|OnlineGameOptions,join?:JoinData){
         const game=this.play_scene

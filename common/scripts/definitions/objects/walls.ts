@@ -6,7 +6,7 @@ export const WallsClientTD: TDObject = {
     content: [
         { name: "positions", content: {type:TDType.array,content:{type:TDType.array,content:Vec2TD,len_bytes:2},len_bytes:2}},
         { name: "no_collisions", content: tdm.boolean },
-        { name: "no_bullet_collision", content: tdm.boolean },
+        { name: "no_projectiles_collision", content: tdm.boolean },
 
         { name: "width", content: tdm.float32_onu },
         { name: "stroke_width", content: tdm.float32_onu },
@@ -38,7 +38,7 @@ export const WallsTD: TDObject = {
 }
 export interface WallsDef{
     no_collisions?: boolean
-    no_bullet_collision?: boolean
+    no_projectiles_collision?: boolean
     reflect_bullets?:boolean
     passable_by_bullets?:boolean
 

@@ -2,7 +2,7 @@ import { Numeric, random, v2 } from "../../../engine/core.ts";
 import { type JoinData } from "../../net/join_packet.ts";
 import { type DamageParams } from "../../others/constants.ts";
 import { type ModeManager } from "../modes/mode_manager.ts";
-import { type SI_Human } from "../objects/moving_body/human.ts";
+import { type SI_Human } from "../objects/human/human.ts";
 
 export abstract class PlayerConn{
     private static _next_id=1

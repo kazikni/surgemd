@@ -2,10 +2,6 @@ import { Packet, Stream } from "../../engine/core.ts";
 import { LoadoutPreset, PacketType } from "../definitions/utils.ts";
 import { GameConstants } from "../others/constants.ts";
 
-/**
- * Dados que um jogador manda para entrar no jogo.
- * E usado igual no modo online/worker (dentro do JoinPacket) e no modo local (direto para o ModeManager).
- */
 export interface JoinData{
     name:string
     group_token?:string

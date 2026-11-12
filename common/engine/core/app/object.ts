@@ -11,7 +11,6 @@ export type GameObjectID=ID
 export abstract class BaseObject2D extends BaseGEL{
     // Physical
     public collider:Collider2D
-    cell_collider?:Collider2D
 
     cell_rect?:Rect
     old_cell_rect?:Rect
@@ -73,7 +72,7 @@ export abstract class BaseObject2D extends BaseGEL{
         }
     }
     to_rect():Rect{
-        return (this.cell_collider??this.collider).to_rect()
+        return this.collider.to_rect()
     }
 
     object_type:number=0

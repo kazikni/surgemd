@@ -10,12 +10,10 @@ import { apply_modifiers } from "../../../others/functions.ts";
 import { si_human_inventory } from "../../inventory/component.ts";
 import { type Inventory, type InventoryAction } from "../../inventory/inventory.ts";
 import { si_interactor, type SI_Interactor } from "../interaction.ts";
-import { human_events } from "./human_events.ts";
 import { Floors, FloorType } from "../../../others/terrain.ts";
-import { C_Humanoid_Visual, c_humanoid_visual, humanoid_events, si_humanoid_visual, SI_Humanoid_Visual } from "./humanoid.ts";
-import { c_moving_body, C_MovingBody, si_moving_body, SI_MovingBody } from "./moving_body.ts";
-
-export { human_events }
+import { C_Humanoid_Visual, c_humanoid_visual, humanoid_events, si_humanoid_visual, SI_Humanoid_Visual } from "../human/humanoid.ts";
+import { c_moving_body, C_MovingBody, si_moving_body, SI_MovingBody } from "../moving_body/moving_body.ts";
+import { human_events } from "./events.ts";
 
 export interface HumanCreateArgs{
     position?:Vec2
@@ -364,7 +362,7 @@ export const si_human:GELComponent<SI_Human>={
             acceleration=Numeric.dt_expo_inter(acceleration,dt)
 
             if(!this.physical.movement_locked){
-                let speed=5.7*floor.speed_mult*this.get_modifier("speed")
+                let speed=5.7*floor.speed_mult*this.get_modifier("speed")*(this.inventory.recoil?.speed??1)
                 if(this.knocked)speed*=0.3
                 else if(this.swimming)speed*=0.6
                 const move=v2.from_PolarMovement(this.input.movement)

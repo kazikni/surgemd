@@ -1,27 +1,16 @@
 import { gel_events, GELComponent, Numeric, v2 } from "common/engine/core.ts";
 import { InputEvent, InputEventType } from "common/engine/web.ts";
-import { type SI_Human } from "common/scripts/game/objects/moving_body/human.ts";
-import { EmptyInputData, InputActionType, InputPacket, type InputData } from "common/scripts/net/input_packet.ts";
+import { type SI_Human } from "common/scripts/game/objects/human/human.ts";
+import { InputAction, InputActionType, InputPacket, type InputData } from "common/scripts/net/input_packet.ts";
 import { type CC_Human } from "./human.ts";
 
 export type CC_ActiveHuman=CC_Human&{
     active:{
         zoom:number
-        pending:InputData
         input_listener?:(e:InputEvent)=>void
     }
     read_input():InputData
     release_active():void
-}
-
-const one_shot_actions:Record<string,(d:InputData)=>void>={
-    interact:(d)=>{d.interact=true},
-    reload:(d)=>{d.reload=true},
-    swap_guns:(d)=>{d.swap_guns=true},
-    cancel:(d)=>{d.cancel=true},
-    weapon1:(d)=>{d.actions.push({type:InputActionType.set_hand,hand:0})},
-    weapon2:(d)=>{d.actions.push({type:InputActionType.set_hand,hand:1})},
-    weapon3:(d)=>{d.actions.push({type:InputActionType.set_hand,hand:2})},
 }
 
 export const cc_active_human:GELComponent<CC_ActiveHuman>={
@@ -30,14 +19,11 @@ export const cc_active_human:GELComponent<CC_ActiveHuman>={
         [gel_events.bind](){
             this.active={
                 zoom:1,
-                pending:EmptyInputData(),
             }
         },
         [gel_events.create](){
             if(this.active.input_listener)return
-            this.active.input_listener=(e:InputEvent)=>{
-                if(e.type!==InputEventType.ActionDown)return
-                one_shot_actions[e.action]?.(this.active.pending)
+            this.active.input_listener=(_e:InputEvent)=>{
             }
             this.app.input.listener.on(InputEventType.ActionDown,this.active.input_listener)
             this.scene.camera.position=v2.clone(this.position)
@@ -55,27 +41,38 @@ export const cc_active_human:GELComponent<CC_ActiveHuman>={
     methods:{
         read_input():InputData{
             const input=this.app.input
-            const pending=this.active.pending
-            this.active.pending=EmptyInputData()
+            const actions:InputAction[]=[]
+
+            if(input.adown.has("weapon1")){
+                actions.push({type:InputActionType.set_hand,hand:0})
+            }
+            if(input.adown.has("weapon2")){
+                actions.push({type:InputActionType.set_hand,hand:1})
+            }
+            if(input.adown.has("weapon3")){
+                actions.push({type:InputActionType.set_hand,hand:2})
+            }
 
             const axis=input.axis["movement"]?.old??v2.zero()
             const len=Numeric.clamp(v2.len(axis),0,1)
 
-            const mouse=this.scene.camera.to_world_camera(input.mouse_position)
-            const origin=this.container?this.container.position:this.position
-            const aim_dist=v2.distance(origin,mouse)
+            const canvas_rect=this.app.renderer.canvas.getBoundingClientRect()
+            const cam_s=v2(canvas_rect.width/2,canvas_rect.height/2)
 
             return {
-                ...pending,
+                actions,
                 movement:{
                     dir:len>0?Math.atan2(axis.y,axis.x):0,
                     scale:len,
                 },
-                rotation:v2.lookTo(origin,mouse),
-                distance_to_aim:Numeric.clamp(aim_dist/Math.max(this.scene.camera.width*0.5,0.001),0,1),
+                rotation:v2.lookTo(cam_s,input.real_mouse_position),
+                distance_to_aim:Numeric.clamp(v2.distance(cam_s,input.real_mouse_position)/Math.min(cam_s.x,cam_s.y),0,1),
                 use_weapon:input.active_actions.has("fire"),
                 alt_use_weapon:input.active_actions.has("alt_fire"),
-                interact:input.active_actions.has("interact"),
+                interact:input.adown.has("interact"),
+                reload:input.adown.has("reload"),
+                cancel:input.adown.has("cancel"),
+                swap_guns:input.adown.has("swap_guns"),
                 auto_fire:false,
             }
         },
@@ -108,7 +105,13 @@ export const ccn_active_human:GELComponent<CCN_ActiveHuman>={
     events:{
         [gel_events.tick](){
             if(this.dead)return
-            this.scene.client?.emit_packet(new InputPacket(this.read_input()))
+            const input=this.read_input()
+            this._rotation_set=!this.app.save.settings.get_var("game_client_rot")
+            if(!this._rotation_set){
+                this.rotation=input.rotation
+                this.container.rotation=input.rotation
+            }
+            this.scene.client?.emit_packet(new InputPacket(input))
         },
     },
 }

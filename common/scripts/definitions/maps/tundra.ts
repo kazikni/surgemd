@@ -260,7 +260,7 @@ export const TundraMap:MapDef={
                 {
                     id_string:"bush_group_1",
                     no_collisions:true,
-                    no_bullet_collision:true,
+                    no_projectiles_collision:true,
                     collider:new RectCollider2D(v2(-8,-8),v2(8,8)),
                     generate:{
                         loots:[
@@ -341,7 +341,7 @@ export const TundraMap:MapDef={
                 {
                     id_string:"bush_group_2",
                     no_collisions:true,
-                    no_bullet_collision:true,
+                    no_projectiles_collision:true,
                     collider:new RectCollider2D(v2(-8,-8),v2(8,8)),
                     generate:{
                         loots:[

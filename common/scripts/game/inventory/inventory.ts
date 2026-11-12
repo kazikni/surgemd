@@ -207,6 +207,7 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
     get item_slots():InventorySlot[]{
         return this.slots.filter((s)=>s.group.type==="normal")
     }
+    recoil?:{time:number,speed:number}
 
     initialize(defs:InventoryGroupDef[]){
         this.clear(true)
@@ -691,6 +692,10 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
         for(const s of this.slots){
             if(s.item&&!s.empty)s.item.update(dt)
         }
+        if(this.recoil){
+            this.recoil.time-=dt
+            if(this.recoil.time<=0)this.recoil=undefined
+        }
     }
     net_update(){
         this.dirty.clear()
@@ -808,7 +813,4 @@ export function default_can_change(ctx:InventoryChangeContext):boolean{
     const level=(ctx.def as {level?:number}).level
     if(old?.level===undefined||level===undefined)return ctx.old?.def!==ctx.def
     return level>old.level
-}
-export function inventory_speed(inventory:Inventory<any>):number{
-    return Numeric.clamp((inventory.hand_def as {speed_mod?:number}|undefined)?.speed_mod??1,0,10)
 }

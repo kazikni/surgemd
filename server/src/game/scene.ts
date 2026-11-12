@@ -4,7 +4,7 @@ import { si_deadzone, type SI_Deadzone } from "common/scripts/game/gelo/deadzone
 import { si_gamemap, type SI_GameMap } from "common/scripts/game/gelo/map.ts";
 import { type ModeManager } from "common/scripts/game/modes/mode_manager.ts";
 import { si_loot } from "common/scripts/game/objects/loot.ts";
-import { si_human } from "common/scripts/game/objects/moving_body/human.ts";
+import { si_human } from "common/scripts/game/objects/human/human.ts";
 import { si_obstacle } from "common/scripts/game/objects/static_body/obstacle.ts";
 import { gelo_instance_type, object_instance_type } from "common/scripts/others/constants.ts";
 

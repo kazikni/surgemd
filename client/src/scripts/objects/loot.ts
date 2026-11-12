@@ -51,6 +51,7 @@ export const cc_loot:GELComponent<CC_Loot>={
     methods:{
         set_loot_data(data:LootData){
             this.loot_data=data
+            this.base_collider=new CircleCollider2D(v2(0,0),GameConstants.loot.radius[data.item.item_type!]??0.5)
             switch(data.item.item_type!){
                 case GameItemType.gun:
                     this.sprite_main.frame=this.app.resources.get_frame((data.item as GunDef).assets?.item??data.item.id_string)
@@ -159,7 +160,6 @@ export const cc_loot:GELComponent<CC_Loot>={
                     this.container.add_child(this.sprite_outline)
                     break
             }
-            this.base_collider=new CircleCollider2D(v2(0,0),GameConstants.loot.radius[data.item.item_type!]??0.5)
             this.container.visible=true
             if(this.is_new){
                 v2m.single(this.container.scale,0)

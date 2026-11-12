@@ -2,7 +2,7 @@ import { gel_events, GELComponent, Stream } from "../../../../engine/core.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../../../definitions/loadout/skins.ts";
 import { LoadoutPreset } from "../../../definitions/utils.ts";
 import { type CommonObject, type SimulatedObject } from "../../base.ts";
-import { moving_body_events } from "./moving_body.ts";
+import { moving_body_events } from "../moving_body/moving_body.ts";
 
 export const humanoid_events={
     visual_changed:moving_body_events.last+1,

@@ -54,7 +54,7 @@ export const cc_static_body:GELComponent<CC_StaticBody>={
                 tint:particles.tint,
                 to:{
                     speed:random.float(0.1,0.2),
-                    angle:angle+random.neg_float(0.1,4),
+                    angle:angle+random.neg_float(0.1,3),
                     tint:particles.tint===undefined?ColorM.default.transparent:ColorM.mult_rgba(particles.tint,1,1,1,0),
                     tint_ease:ease.quarticIn
                 }
@@ -97,7 +97,6 @@ export const cc_static_body:GELComponent<CC_StaticBody>={
             }
 
             const particle=particles.particle??`${id}_particle`
-
             if(particles.tint){
                 this.assets.particles.tint=ColorM.number(
                     typeof particles.tint==="number"?particles.tint:particles.tint[variation]

@@ -1,5 +1,5 @@
 import { Client, DefaultSignals, DynamicStream, RectCollider2D, v2, Vec2 } from "common/engine/core.ts";
-import { type SI_Human } from "common/scripts/game/objects/moving_body/human.ts";
+import { type SI_Human } from "common/scripts/game/objects/human/human.ts";
 import { PlayerConn } from "common/scripts/game/players/player_conn.ts";
 import { type InputPacket } from "common/scripts/net/input_packet.ts";
 import { JoinedPacket, type JoinPacket } from "common/scripts/net/join_packet.ts";

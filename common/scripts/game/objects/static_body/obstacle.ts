@@ -1,7 +1,6 @@
 import { Angle, gel_events, GELComponent, Numeric, Orientation, random, RotationMode, Stream, v2, Vec2 } from "../../../../engine/core.ts";
 import { ObstacleDef } from "../../../definitions/objects/obstacles.ts";
 import { DamageParams, LootData, object_instance_type } from "../../../others/constants.ts";
-import { DamageReason } from "../../../definitions/utils.ts";
 import { type SI_Interactor } from "../interaction.ts";
 import { static_body_events, SI_StaticBody, type C_StaticBody, c_static_body, si_static_body } from "./static_body.ts";
 export const obstacle_events={
@@ -29,7 +28,6 @@ export type C_Obstacle=C_StaticBody&{
     set_physical(position?:Vec2,scale?:number,rotation?:number):void
     die():void
 
-    encode_obstacle(stream:Stream,full:boolean):void
     decode_obstacle(stream:Stream,full:boolean):boolean
 }
 
@@ -56,12 +54,12 @@ export const c_obstacle:GELComponent<C_Obstacle>={
             this.def=def
             if(this.def.health!==undefined&&!this.def.imortal){
                 this.health={
-                    value:this.def.health??1,
-                    dead:false
+                    value:0,
+                    dead:true
                 }
             }
             this.physical.no_collision=this.def.no_collision??false
-            this.physical.no_projectile_collision=this.def.no_bullets_collision??false
+            this.physical.no_projectiles_collision=this.def.no_projectiles_collision??false
 
             this.emit_event(obstacle_events.set_definition,def)
         },
@@ -71,31 +69,6 @@ export const c_obstacle:GELComponent<C_Obstacle>={
             if(!this.health||this.health.dead)return
             this.health.dead=true
             this.emit_event(obstacle_events.die)
-        },
-        encode_obstacle(stream:Stream,full:boolean){
-            stream.write_boolean_group(this.health?.dead??false)
-            stream.write_float32(this.scale)
-            if(full){
-                stream.write_uint16(this.def.id_number!)
-                stream.write_uint8(this.variation)
-                stream.write_rad(this.rotation)
-                stream.write_pos2(this.position)
-            }
-        },
-        decode_obstacle(stream:Stream,full:boolean):boolean{
-            const [dead]=stream.read_boolean_group()
-            this.scale=stream.read_float32()
-            if(full){
-                this.set_definition(this.app.definitions.obstacles.getFromNumber(stream.read_uint16()))
-                this.variation=stream.read_uint8()
-                this.rotation=stream.read_rad()
-                this.position=stream.read_pos2()
-            }
-            if(dead&&this.health&&!this.health.dead){
-                this.health.dead=true
-                return true
-            }
-            return false
         },
     },
 }
@@ -108,7 +81,6 @@ export type SI_Obstacle=C_Obstacle&SI_StaticBody&{
     max_scale:number
     loot:LootData[]
     damage(damage:DamageParams):void
-    kill(params:DamageParams):void
     load_loot():void
     can_interact(user:SI_Interactor):boolean
     on_interact(user:SI_Interactor):void
@@ -123,8 +95,22 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
         [gel_events.bind]:function(){
             this.loot=[]
         },
-        [gel_events.net_encode]:function(stream:Stream,full:boolean){
-            this.encode_obstacle(stream,full)
+        [gel_events.net_encode](stream:Stream,full:boolean){
+            stream.write_boolean_group(this.health?.dead??false,this.physical.dirty_part,this.physical.dirty)
+            if(full){
+                stream.write_uint16(this.def.id_number!)
+            }
+            if(full||this.physical.dirty||this.physical.dirty_part){
+                stream.write_float32(this.scale)
+            }
+            if(full||this.physical.dirty){
+                stream.write_uint8(this.variation)
+                stream.write_rad(this.rotation)
+                stream.write_pos2(this.position)
+            }
+            if(this.health){
+                stream.write_float(this.health.value/this.def.health!,0,1,1)
+            }
         },
         [obstacle_events.die]:function(){
             const pos=v2.clone(this.position)
@@ -135,10 +121,10 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
             this.loot.length=0
             if(!this.def.keep_collision_on_die){
                 this.physical.no_collision=true
-                this.physical.no_projectile_collision=true
+                this.physical.no_projectiles_collision=true
             }
             this.reset_scale()
-            this.set_dirty_full()
+            this.set_dirty_part()
         },
         [gel_events.checkpoint_encode]:function(stream:Stream){
             stream.write_string(this.def.id_string,1)
@@ -172,22 +158,17 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
         load_loot(){
             this.loot.length=0
             if(this.def.loot_table)this.loot.push(...this.scene.mode.get_loot(this.def.loot_table))
-        },
+        }, 
         damage(params:DamageParams){
             if(!this.health||this.health.dead||this.def.imortal)return
             if((this.def.resistence??0)>(params.resistence??0))return
             this.health.value=Math.max(this.health.value-params.amount,0)
             if(this.health.value<=0){
-                this.kill(params)
+                this.die()
             }else{
                 this.reset_scale()
             }
             this.set_dirty_part()
-        },
-        kill(_params:DamageParams){
-            if(!this.health||this.health.dead)return
-            this.health.value=0
-            this.die()
         },
         can_interact(user:SI_Interactor):boolean{
             if(this.destroyed||!this.def.interactDestroy||!this.health||this.health.dead)return false
@@ -195,7 +176,7 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
         },
         on_interact(user:SI_Interactor){
             if(this.def.interactDestroy){
-                this.kill({amount:this.health?.value??0,reason:DamageReason.Human,owner:user,position:this.position})
+                this.die()
             }
         },
         init(rotation?:number,scale?:number,variation?:number,parent_side:Orientation=0):void{
@@ -217,7 +198,12 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
 
             this.base_collider=this.physical.collider
             this.physical.interaction_collider=this.physical.collider.transform(undefined,1.1)
-            
+
+            if(this.health){
+                this.health.dead=false
+                this.health.value=this.def.health!
+            }
+
             this.reset_scale()
             this.load_loot()
             this.emit_event(obstacle_events.initialized)
@@ -225,6 +211,7 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
         set_position(position:Vec2){
             this.position=position
             this.reset_scale()
+            this.physical.dirty=true
         },
         reset_scale(){
             let scale=this.max_scale

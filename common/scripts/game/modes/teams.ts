@@ -1,6 +1,6 @@
 import { Numeric, random } from "../../../engine/core.ts";
 import { DamageReason } from "../../definitions/utils.ts";
-import { type SI_Human } from "../objects/moving_body/human.ts";
+import { type SI_Human } from "../objects/human/human.ts";
 
 export class Team{
     id:number=0

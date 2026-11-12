@@ -1,9 +1,6 @@
 import { DynamicStream, Packet, Stream } from "../../engine/core.ts";
 import { PacketType } from "../definitions/utils.ts";
 
-/**
- * Estado privado do humano ativo (so o dono recebe).
- */
 export interface ActiveHumanState{
     id:number
     spectating:boolean
@@ -18,11 +15,6 @@ export interface ActiveHumanState{
     knocked:boolean
 }
 
-/**
- * Pacote mandado a cada net tick para cada PlayerConn.
- * - objects: saida do ObjectManager2D.encode_list_net (objetos que o player ve)
- * - gelos: saida do GELOManager.encode (gelos sincronizados, ex: deadzone)
- */
 export class UpdatePacket extends Packet{
     ID=PacketType.Update
     Name="update"
@@ -74,10 +66,6 @@ export class UpdatePacket extends Packet{
     }
 }
 
-/**
- * Mandado quando o cliente conecta, antes do JoinPacket.
- * Contem os gelos iniciais (mapa, deadzone...) codificados pelo GELOManager.
- */
 export class StartPacket extends Packet{
     ID=PacketType.Start
     Name="start"

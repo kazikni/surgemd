@@ -1,4 +1,4 @@
-import { gel_events,  Vec2, v2, RotationMode, Angle, Orientation, ColorM, Numeric, GELComponent, Stream } from "common/engine/core.ts";
+import { gel_events,  Vec2, v2, RotationMode, Angle, Orientation, ColorM, Numeric, GELComponent, Stream, random } from "common/engine/core.ts";
 import { Container2D, Sprite2D } from "common/engine/web.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { obstacle_events, c_obstacle, C_Obstacle, SI_Obstacle, si_obstacle } from "common/scripts/game/objects/static_body/obstacle.ts";
@@ -42,14 +42,29 @@ export const cc_obstacle:GELComponent<CC_Obstacle>={
         [gel_events.layer_set]:function(){
             this.container.layer=this.layer
         },
-        [obstacle_events.set_definition]:function(def:ObstacleDef){
+        [obstacle_events.set_definition](def:ObstacleDef){
             this.assets={
                 particles:{images:[]},
                 sounds:{}
             }
             if(def.assets?.sounds)this.set_hit_sounds_def(def.assets?.sounds)
+            if(def.assets?.particles)this.set_hit_particles_def(def.id_string,this.variation,this.def.assets!.particles!)
             this.update_frame()
-        }
+        },
+        [obstacle_events.die](){
+            if(this.assets.sounds.break){
+                this.app.sounds.play(this.assets.sounds.break,{
+                    position:this.position,
+                    max_distance:15,
+                    bus:"obstacles",
+                })
+            }
+            const ac=random.int(8,10)
+            for(let i=0;i<ac;i++){
+                this.add_own_particle(this.collider.random_point(),2,false)
+            }
+            this.update_frame()
+        },
     },
     methods:{
         update_frame(){
@@ -95,16 +110,6 @@ export const cc_obstacle:GELComponent<CC_Obstacle>={
             }
             if(scale!==undefined)this.container.scale=v2(scale,scale)
         },
-        on_die(){
-            if(this.assets.sounds.break){
-                this.app.sounds.play(this.assets.sounds.break,{
-                    position:this.position,
-                    max_distance:15,
-                    bus:"obstacles",
-                })
-            }
-            this.update_frame()
-        }
     }
 }
 export const ccs_obstacle:GELComponent<CC_Obstacle&SI_Obstacle>={
@@ -114,9 +119,6 @@ export const ccs_obstacle:GELComponent<CC_Obstacle&SI_Obstacle>={
         [obstacle_events.initialized]:function(){
             this.update_frame()
         },
-        [obstacle_events.die]:function(){
-            this.on_die()
-        },
     },
 }
 export const ccn_obstacle:GELComponent<CC_Obstacle>={
@@ -124,10 +126,32 @@ export const ccn_obstacle:GELComponent<CC_Obstacle>={
     id_string:"ccn_obstacle",
     events:{
         [gel_events.net_decode]:function(stream:Stream,full:boolean){
-            const died=this.decode_obstacle(stream,full)
-            this.set_physical(this.position,this.scale,this.rotation)
-            if(full)this.update_frame()
-            if(died)this.on_die()
+            const [dead,physical_dirty_part,physical_dirty]=stream.read_boolean_group()
+
+            if(full){
+                this.set_definition(this.app.definitions.obstacles.getFromNumber(stream.read_uint16()))
+                this.update_frame()
+            }
+            if(physical_dirty||physical_dirty_part||full){
+                this.scale=stream.read_float32()
+                this.set_physical(undefined,this.scale)
+            }
+            if(physical_dirty||full){
+                this.variation=stream.read_uint8()
+                this.rotation=stream.read_rad()
+                this.position=stream.read_pos2()
+                this.set_physical(this.position,undefined,this.rotation)
+            }
+
+            if(this.health){
+                if(dead&&!this.health.dead){
+                    this.die()
+                }else if(!dead&&this.health.dead){
+                    this.health.dead=false
+                    this.update_frame()
+                }
+                this.health.value=stream.read_float(0,1,1)
+            }
         },
     },
 }

@@ -2,10 +2,11 @@ import { ActionsManager, gel_events, GELComponent, Stream } from "../../../engin
 import { type SimulatedObject } from "../base.ts";
 import { InputActionType, type InputAction } from "../../net/input_packet.ts";
 import { type DamageParams } from "../../others/constants.ts";
-import { human_events } from "../objects/moving_body/human_events.ts";
-import { Inventory, inventory_speed, type InventoryAction, type InventoryGroupDef, type InventoryOwner, type ItemFactories } from "./inventory.ts";
+import { Inventory, type InventoryAction, type InventoryGroupDef, type InventoryOwner, type ItemFactories } from "./inventory.ts";
 import { armor_damage, DefaultItemFactories } from "./items.ts";
 import { HumanInventoryLayout } from "./layouts.ts";
+import { WeaponDef } from "../../definitions/game_defs.ts";
+import { human_events } from "../objects/human/events.ts";
 
 export type SI_InventoryOwner=SimulatedObject&InventoryOwner&{
     inventory:Inventory<SI_InventoryOwner>
@@ -67,7 +68,7 @@ export const si_human_inventory:GELComponent<SI_HumanInventory>={
             this.inventory_layout=HumanInventoryLayout
         },
         [human_events.update_modifiers]:function(mods:Record<string,number>){
-            mods.speed=(mods.speed??1)*inventory_speed(this.inventory)*(this.actions.current_action?.action_speed??1)
+            mods.speed=(mods.speed??1)*((this.inventory.hand_def as WeaponDef)?.speed_mod??1)*(this.actions.current_action?.action_speed??1)
         },
         [human_events.use_hand]:function(){
             if(this.knocked||this.swimming)return

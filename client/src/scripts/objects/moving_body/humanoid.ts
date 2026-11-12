@@ -1,6 +1,6 @@
 import { ColorM, ease, gel_events, GELComponent, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameObject } from "../../main/gel.ts";
-import { C_Humanoid_Visual, humanoid_events } from "common/scripts/game/objects/moving_body/humanoid.ts";
+import { C_Humanoid_Visual, humanoid_events } from "common/scripts/game/objects/human/humanoid.ts";
 import { ABParticle2D, AnimatedContainer2D, AnimatedSprite2D, Container2D, Frame, Shape2D, Sprite2D } from "common/engine/web.ts";
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { DefaultDownedWalkFistRig, DefaultFistRig, FistRig } from "common/scripts/others/item.ts";

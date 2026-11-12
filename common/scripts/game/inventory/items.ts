@@ -165,6 +165,10 @@ export class GunItem extends InventoryItem{
         }else{
             this.use_delay=this.def.fire_delay??0
         }
+        if(this.def.recoil)user.inventory.recoil={
+            speed:this.def.recoil.speed,
+            time:this.def.recoil.duration
+        }
         user.inventory.dirty.hand=true
         if(this.slot)user.inventory.dirty.slots.add(this.slot.index)
         user.emit_event(inventory_events.fire,this,position,user.rotation)

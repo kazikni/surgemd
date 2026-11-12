@@ -43,11 +43,6 @@ export type InputAction={
     val:string[]
 }
 
-/**
- * Snapshot do input de um humano.
- * O mesmo formato e usado pelo modo local (ccs_active_human aplica direto no humano)
- * e pelos modos online/worker (ccn_active_human manda pelo InputPacket e o PlayerConn aplica no servidor).
- */
 export interface InputData{
     movement:PolarMovement
     rotation:number

@@ -3,7 +3,7 @@ import { type MapDef } from "../../definitions/maps/base.ts";
 import { get_map_def } from "../../definitions/maps/maps.ts";
 import { type DamageParams, gelo_instance_type } from "../../others/constants.ts";
 import { type SI_GameMap } from "../gelo/map.ts";
-import { type SI_Human } from "../objects/moving_body/human.ts";
+import { type SI_Human } from "../objects/human/human.ts";
 import { DefaultPlayerStatus, ModeManager, type PlayerStatus } from "./mode_manager.ts";
 
 export interface DebugModeSettings{

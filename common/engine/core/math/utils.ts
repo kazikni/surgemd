@@ -4,7 +4,6 @@ export const halfpi=Math.PI/2
 
 export type ID=number
 
-
 export const Path={
     split(path:string):string[]{
         const ret=path.split(/[\\/]/)
@@ -335,20 +334,22 @@ export class Clock {
 
             const dt=(elapsedTime/1000)*this.time_scale
 
-            for(let i=0;i<this.timeouts.length;i++){
-                this.timeouts[i].delay-=dt
-                if(this.timeouts[i].delay<=0){
-                    this.timeouts[i].c()
-                    this.timeouts.splice(i,1) 
-                    i--
+            if(this.time_scale>0){
+                for(let i=0;i<this.timeouts.length;i++){
+                    this.timeouts[i].delay-=dt
+                    if(this.timeouts[i].delay<=0){
+                        this.timeouts[i].c()
+                        this.timeouts.splice(i,1) 
+                        i--
+                    }
                 }
-            }
-            for(const v of this.tweens){
-                v.update(dt)
-            }
-            this.callback(dt);
-            for (const i of this.intervals.values()) {
-                i(dt);
+                for(const v of this.tweens){
+                    v.update(dt)
+                }
+                this.callback(dt);
+                for (const i of this.intervals.values()) {
+                    i(dt)
+                }
             }
             this.profiler.end(0)
         }

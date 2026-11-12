@@ -4,9 +4,9 @@ import { type JoinData } from "../../net/join_packet.ts";
 import { type DamageParams, GameConstants, Layers, object_instance_type, Spawn, type SpawnMode, type LootAditional, type LootData, type LootSetting, type LootTable } from "../../others/constants.ts";
 import { loot_table_get_item } from "../../others/functions.ts";
 import { type CommonApplication, type SimulatedScene } from "../base.ts";
-import { human_events, type SI_Human } from "../objects/moving_body/human.ts";
+import { human_events } from "../objects/human/events.ts";
+import { type SI_Human } from "../objects/human/human.ts";
 import { type PlayerConn } from "../players/player_conn.ts";
-import { GroupsManager, TeamsManager } from "./teams.ts";
 
 export const mode_events={
     map_generated:"map_generated",
@@ -17,7 +17,6 @@ export const mode_events={
     player_leave:"player_leave",
     player_spawn:"player_spawn",
     player_respawn:"player_respawn",
-    human_spawn:"human_spawn",
     human_knocked:"human_knocked",
     human_die:"human_die",
     start:"start",
@@ -125,14 +124,6 @@ export interface GameRules{
         damage:number
         win:number
     }
-}
-
-export interface SpawnHumanOptions{
-    position?:Vec2
-    layer?:number
-    name?:string
-    loadout?:LoadoutPreset
-    team?:number
 }
 
 export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
@@ -256,8 +247,8 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
         p.join=data
         conn.join=data
         p.name=data.name.length>0?data.name:`${GameConstants.player.defaultName}#${this.players.count}`
-        const h=this.spawn_player(p)
         this.on_player_join(p)
+        const h=this.spawn_player(p)
         this.signals.emit(mode_events.player_join,p)
         return h
     }
@@ -271,25 +262,11 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
         this.signals.emit(mode_events.player_leave,p)
     }
 
-    spawn_human(options:SpawnHumanOptions={}):SI_Human{
-        const h=this.scene.add_object(this.scene.make_object(object_instance_type.human),options.layer??this.spawn_layer,undefined,{
-            position:options.position,
-            name:options.name,
-            loadout:options.loadout??DefaultHumanLoadout,
-        }) as SI_Human
-        if(!options.position){
-            const pos=this.get_spawn_position(h)
-            if(pos)h.position=pos
-        }
-        this.on_human_spawn(h)
-        this.signals.emit(mode_events.human_spawn,h)
-        return h
-    }
     spawn_player(p:Player<S>):SI_Human{
-        const h=this.spawn_human({
+        const h=this.scene.add_object(this.scene.make_object(object_instance_type.human),this.spawn_layer,undefined,{
             name:p.name,
-            loadout:p.join?.loadout,
-        })
+            loadout:p.join?.loadout??DefaultHumanLoadout,
+        }) as SI_Human
         this.players.set_human(p,h)
         h.on(human_events.damaged,(params:DamageParams,health_damage:number)=>{
             this.players.add_status(p,"damage_taken",health_damage)
@@ -297,6 +274,9 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
         })
         this.on_player_spawn(p,h)
         this.signals.emit(mode_events.player_spawn,p,h)
+
+        const pos=this.get_spawn_position(h)
+        if(pos)h.position=pos
         return h
     }
     respawn_player(p:Player<S>,delay:number=0){
@@ -325,7 +305,6 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
     on_player_join(_p:Player<S>){}
     on_player_spawn(_p:Player<S>,_h:SI_Human){}
     on_player_respawn(_p:Player<S>){}
-    on_human_spawn(_h:SI_Human){}
 
     on_human_knocked(h:SI_Human,params:DamageParams){
         this.players.of(h)?.conn.on_human_knocked(params)

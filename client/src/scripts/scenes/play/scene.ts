@@ -4,7 +4,7 @@ import { gelo_instance_type } from "common/scripts/others/constants.ts";
 import { type SimulatedScene } from "common/scripts/game/base.ts";
 import { mode_events, type ModeManager } from "common/scripts/game/modes/mode_manager.ts";
 import { setup_game_scene } from "common/scripts/game/modes/modes.ts";
-import { type SI_Human } from "common/scripts/game/objects/moving_body/human.ts";
+import { type SI_Human } from "common/scripts/game/objects/human/human.ts";
 import { LocalPlayerConn } from "common/scripts/game/players/player_conn.ts";
 import { type JoinData, JoinedPacket, JoinPacket } from "common/scripts/net/join_packet.ts";
 import { make_packet_manager } from "common/scripts/net/packet_manager.ts";
@@ -50,6 +50,9 @@ export type OnlineGameOptions={
 export type WorkerMessage={
     type:"init"
     options:WorkerGameOptions
+}|{
+    type:"set_state"
+    pause?:boolean
 }
 
 export const play_events={
@@ -351,10 +354,16 @@ export class PlayScene extends GameScene {
         super.on_set()
         ShowElement(this.game_div)
         ShowElement(this.app.renderer.canvas)
+        if(this.kind==="worker"&&this.worker){
+            this.worker.postMessage({type:"set_state",pause:false} as WorkerMessage)
+        }
     }
     override on_unset(): void {
         HideElement(this.game_div)
         HideElement(this.app.renderer.canvas)
+        if(this.kind==="worker"&&this.worker){
+            this.worker.postMessage({type:"set_state",pause:true} as WorkerMessage)
+        }
     }
 
     override update(dt: number): void {

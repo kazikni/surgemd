@@ -243,7 +243,9 @@ export class InputManager {
 
     pressed = new Set<number>()
     down = new Set<number>()
+    adown = new Set<string>()
     up = new Set<number>()
+    aup = new Set<string>()
     key_elements:Record<number,HTMLElement>={}
 
     gamepad_pressed = new Set<number>()
@@ -599,6 +601,8 @@ export class InputManager {
     tick(dt:number) {
         this.gamepad_down.clear()
         this.gamepad_up.clear()
+        this.adown.clear()
+        this.aup.clear()
         this.update_gamepads()
         for(const id in this.axis) {
             const axis = this.axis[id]
@@ -652,12 +656,14 @@ export class InputManager {
                     action,
                     element:this.key_elements[pressed.key]
                 })
+                this.adown.add(action)
             }else if(!pressed&&active){
                 this.active_actions.delete(action)
                 this.emit({
                     type: InputEventType.ActionUp,
                     action,
                 })
+                this.aup.add(action)
             }
         }
         for(const key of this.wheel_pressed) {
@@ -674,7 +680,9 @@ export class InputManager {
         this.pressed.clear()
 
         this.down.clear()
+        this.adown.clear()
         this.up.clear()
+        this.aup.clear()
 
         this.gamepad_pressed.clear()
         this.wheel_pressed.clear()

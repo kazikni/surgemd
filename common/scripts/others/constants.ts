@@ -1,7 +1,5 @@
 import { LootTable as LootTableBase, Vec2 } from "../../engine/core.ts";
 import { GameDefinition, type GameItem } from "../definitions/game_defs.ts";
-import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
-import { WrappingDef } from "../definitions/loadout/wrapping.ts"
 import { DamageReason, GameItemType } from "../definitions/utils.ts";
 import { FloorType } from "./terrain.ts";
 
@@ -38,7 +36,8 @@ export const object_instance_type={
     loot:1,
     wall:2,
     obstacle:3,
-    human:4
+    human:4,
+    bullet:5,
 }
 export const gelo_instance_type={
     map:1,
@@ -48,6 +47,8 @@ export const gelo_instance_type={
 export enum ObjectType{
     StaticBody,
     MovingBody,
+
+    Projectile,
 
     Humanoid,
     Human,

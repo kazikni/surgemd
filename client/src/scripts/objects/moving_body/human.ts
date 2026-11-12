@@ -1,12 +1,14 @@
-import { c_human, human_events, SI_Human, si_human, type C_Human } from "common/scripts/game/objects/moving_body/human.ts"
+import { c_human, SI_Human, si_human, type C_Human } from "common/scripts/game/objects/human/human.ts"
 import { cc_humanoid_visual,CC_Humanoid_Visual } from "./humanoid.ts"
 import { cc_moving_body, type CC_MovingBody } from "./moving_body.ts"
 import { gel_events, GELComponent, Numeric, Stream, v2, v2m } from "common/engine/core.ts";
-import { humanoid_events } from "common/scripts/game/objects/moving_body/humanoid.ts";
+import { humanoid_events } from "common/scripts/game/objects/human/humanoid.ts";
 import { DefaultFistRig } from "common/scripts/others/item.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
+import { human_events } from "common/scripts/game/objects/human/events.ts";
 
 export type CC_Human=CC_MovingBody&C_Human&CC_Humanoid_Visual&{
+    _rotation_set:boolean
     physical:{
         movement_locked?:boolean
     }
@@ -20,6 +22,7 @@ export const cc_human:GELComponent<CC_Human>={
     events:{
         [gel_events.bind](){
             this.allow_tick=true
+            this._rotation_set=true
         },
         [gel_events.create](){
             this.set_arms_rig(DefaultFistRig)
@@ -71,26 +74,26 @@ export const ccn_human:GELComponent<CCN_Human>={
         [gel_events.bind](){
             this._net_first=true
         },
+        [gel_events.tick](dt:number){
+            if(this.app.save.settings.get_var("game_interpolation")){
+                const t=Numeric.clamp(dt*20,0,1)
+                v2m.lerp(this.container.position,this.position,t)
+                if(this._rotation_set)this.container.rotation=Numeric.lerp_rad(this.container.rotation,this.rotation,t)
+            }else{
+                this.container.position=v2.clone(this.position)
+                if(this._rotation_set)this.container.rotation=this.rotation
+            }
+            this.tick_visual(dt)
+        },
         [gel_events.net_decode](stream:Stream,full:boolean){
             const changed=this.decode_human_net(stream,full)
             if(changed.visual)this.emit_event(humanoid_events.visual_changed)
             if(changed.state||this._net_first)this.emit_event(human_events.state_changed)
             if(full||this._net_first||!this.app.save.settings.get_var("game_interpolation")){
                 this.container.position=v2.clone(this.position)
-                this.container.rotation=this.rotation
+                if(this._rotation_set)this.container.rotation=this.rotation
             }
             this._net_first=false
-        },
-        [gel_events.tick](dt:number){
-            if(this.app.save.settings.get_var("game_interpolation")){
-                const t=Numeric.clamp(dt*20,0,1)
-                v2m.lerp(this.container.position,this.position,t)
-                this.container.rotation=Numeric.lerp_rad(this.container.rotation,this.rotation,t)
-            }else{
-                this.container.position=v2.clone(this.position)
-                this.container.rotation=this.rotation
-            }
-            this.tick_visual(dt)
         },
     }
 }

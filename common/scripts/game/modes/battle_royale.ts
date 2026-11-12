@@ -5,9 +5,8 @@ import { DamageReason } from "../../definitions/utils.ts";
 import { type DamageParams, gelo_instance_type } from "../../others/constants.ts";
 import { type DeadzoneConfig, DefaultDeadzone, type SI_Deadzone } from "../gelo/deadzone.ts";
 import { SI_GameMap } from "../gelo/map.ts";
-import { type SI_Human } from "../objects/moving_body/human.ts";
-import { BotPlayerConn } from "../players/player_conn.ts";
-import { DefaultPlayerStatus, ModeManager, SpawnHumanOptions, type Player, type PlayerStatus } from "./mode_manager.ts";
+import { type SI_Human } from "../objects/human/human.ts";
+import { DefaultPlayerStatus, ModeManager, type Player, type PlayerStatus } from "./mode_manager.ts";
 import { Group, GroupsManager, Team, TeamsManager } from "./teams.ts";
 
 export interface BattleRoyaleSettings{
@@ -16,7 +15,6 @@ export interface BattleRoyaleSettings{
     teams?:number
     group_size?:number
     group_spawn?:boolean
-    bots?:number
     deadzone?:DeadzoneConfig|false
     players?:{
         limit?:number
@@ -77,12 +75,10 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
         else p.human?.clear_input()
     }
     override on_player_join(p:Player<BattleRoyaleStatus>){
-        if(p.human)this.put_on_side(p.human)
-        if(!p.is_bot&&!this.bots_added&&(this.settings.bots??0)>0){
-            this.bots_added=true
-            this.add_bots(this.settings.bots!)
-        }
         if(!this.can_join())this.close()
+    }
+    override on_player_spawn(p:Player<BattleRoyaleStatus>){
+        if(p.human&&!this.groups?.of?.(p.human))this.put_on_side(p.human)
     }
     override on_start(){
         this.deadzone?.start()
@@ -189,7 +185,6 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
         if(ta&&ta===this.teams?.of(b))return true
         return false
     }
-
     override leave(p: Player<BattleRoyaleStatus>): void {
         const h=p.human
         if(h){
@@ -197,11 +192,6 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
             this.groups?.of(h)?.remove_human(h)
         }
         super.leave(p)
-    }
-    override spawn_human(options?: SpawnHumanOptions): SI_Human {
-        const h=super.spawn_human(options)
-        if(options?.team!==undefined)this.teams?.get(options.team)?.add_human(h)
-        return h
     }
 
     put_on_side(h:SI_Human,team?:Team){
@@ -222,11 +212,6 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
             sides.get(side)!.push(p)
         }
         return sides
-    }
-    add_bots(count:number){
-        for(let i=0;i<count;i++){
-            this.join(new BotPlayerConn(),{name:`Bot#${i+1}`})
-        }
     }
 
     override async generate_map():Promise<void>{

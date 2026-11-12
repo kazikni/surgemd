@@ -54,13 +54,13 @@ export const DebugMap:MapDef={
                 scene.add_object(scene.make_object(object_instance_type.loot),Layers.Normal,undefined,{data,position:v2(x,y)})
                 next(10,2,2)
             }
-            for(const item of Object.values(defs.game_items.valueNumber)){
+            /*for(const item of Object.values(defs.game_items.valueNumber)){
                 add_loot({item,count:Infinity})
                 const skins=(item as {skins?:unknown[]}).skins
                 if(skins){
                     for(let skin=0;skin<skins.length;skin++)add_loot({item,count:Infinity,skin})
                 }
-            }
+            }*/
             x=center.x
             y=center.y-10
             i=0

@@ -58,7 +58,7 @@ export const BuildingClientTD: TDObject = {
         ...GameObjectDefTD,
 
         { name: "no_collisions", content: tdm.boolean },
-        { name: "no_bullet_collision", content: tdm.boolean },
+        { name: "no_projectiles_collision", content: tdm.boolean },
         { name: "is_ghost", content: tdm.boolean },
 
         { name: "collider", content: tdm.any },
@@ -429,7 +429,7 @@ export interface BuildingPuzzleDef{
 }
 export interface BuildingDef extends Definition{
     no_collisions?: boolean
-    no_bullet_collision?: boolean
+    no_projectiles_collision?: boolean
     reflect_bullets?:boolean
     no_spawn_collision?:boolean
     is_ghost?:boolean

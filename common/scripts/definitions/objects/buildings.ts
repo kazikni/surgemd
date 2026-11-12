@@ -1108,7 +1108,7 @@ export function Buildings_Default_Init():BuildingDef[]{
                     width: 2,
                     stroke_width: 0.15,
                     no_collisions:true,
-                    no_bullet_collision:true,
+                    no_projectiles_collision:true,
                 }],
             },
             assets:{

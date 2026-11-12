@@ -28,7 +28,7 @@ export const c_walls:GELComponent<C_Walls>={
             this.base_collider=hitbox.transform(undefined,undefined,undefined,this.side)
 
             this.physical.no_collision=false
-            this.physical.no_projectile_collision=false
+            this.physical.no_projectiles_collision=false
         },
     }
 }

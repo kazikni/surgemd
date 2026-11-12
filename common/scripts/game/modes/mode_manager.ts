@@ -118,6 +118,8 @@ export interface GameRules{
         knock_enabled:boolean
         friendly_fire:boolean
         drop_inventory:boolean
+        critical_chance:number
+        idle_critical_chance:number
     }
     score:{
         kill:number
@@ -158,6 +160,8 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
                 knock_enabled:false,
                 friendly_fire:false,
                 drop_inventory:true,
+                critical_chance:0.1,
+                idle_critical_chance:0.2,
             },
             score:{
                 kill:50,

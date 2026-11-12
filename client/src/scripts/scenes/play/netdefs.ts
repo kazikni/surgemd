@@ -8,6 +8,9 @@ import { GameGELO, GameObject } from "../../main/gel.ts";
 import { ccn_loot } from "../../objects/loot.ts";
 import { ccn_human } from "../../objects/moving_body/human.ts";
 import { ccn_obstacle } from "../../objects/static_body/obstacle.ts";
+import { ccn_bullet } from "../../objects/projectile/bullet.ts";
+import { ccn_explosion } from "../../objects/projectile/explosion.ts";
+import { ccn_grenade } from "../../objects/projectile/grenade.ts";
 import { type PlaySceneDefs } from "./scene.ts";
 
 function obj(component:GELComponent<any>){
@@ -37,5 +40,8 @@ export const net_scene_defs:PlaySceneDefs={
         [object_instance_type.loot]:obj(ccn_loot),
         [object_instance_type.obstacle]:obj(ccn_obstacle),
         [object_instance_type.human]:obj(ccn_human),
+        [object_instance_type.bullet]:obj(ccn_bullet),
+        [object_instance_type.explosion]:obj(ccn_explosion),
+        [object_instance_type.grenade]:obj(ccn_grenade),
     }
 }

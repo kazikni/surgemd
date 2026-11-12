@@ -10,6 +10,9 @@ import { GameGELO, GameObject } from "../../main/gel.ts";
 import { gel_component, GELComponent } from "common/engine/core.ts";
 import { cc_gamemap } from "../../gelo/map.ts";
 import { ccs_human } from "../../objects/moving_body/human.ts";
+import { ccs_bullet } from "../../objects/projectile/bullet.ts";
+import { ccs_explosion } from "../../objects/projectile/explosion.ts";
+import { ccs_grenade } from "../../objects/projectile/grenade.ts";
 
 const map=gel_component.merge_deep(cc_gamemap,si_gamemap)
 const deadzone=gel_component.merge_deep(ccs_deadzone)
@@ -17,6 +20,9 @@ const deadzone=gel_component.merge_deep(ccs_deadzone)
 const loot=gel_component.merge_deep(ccs_loot)
 const obstacle=gel_component.merge_deep(ccs_obstacle)
 const human=gel_component.merge_deep(ccs_human)
+const bullet=gel_component.merge_deep(ccs_bullet)
+const explosion=gel_component.merge_deep(ccs_explosion)
+const grenade=gel_component.merge_deep(ccs_grenade)
 
 function obj(component:GELComponent<any>){
     return ()=>{
@@ -43,5 +49,8 @@ export const local_scene_defs:PlaySceneDefs={
         [object_instance_type.loot]:obj(loot),
         [object_instance_type.obstacle]:obj(obstacle),
         [object_instance_type.human]:obj(human),
+        [object_instance_type.bullet]:obj(bullet),
+        [object_instance_type.explosion]:obj(explosion),
+        [object_instance_type.grenade]:obj(grenade),
     }
 }

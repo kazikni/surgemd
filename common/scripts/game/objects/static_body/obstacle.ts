@@ -60,6 +60,8 @@ export const c_obstacle:GELComponent<C_Obstacle>={
             }
             this.physical.no_collision=this.def.no_collision??false
             this.physical.no_projectiles_collision=this.def.no_projectiles_collision??false
+            this.physical.reflect_projectiles=this.def.reflect_bullets??false
+            this.physical.passable_by_projectiles=this.def.passable_by_bullets??false
 
             this.emit_event(obstacle_events.set_definition,def)
         },

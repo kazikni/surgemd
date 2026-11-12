@@ -3,7 +3,7 @@ import { type SimulatedObject } from "../base.ts";
 import { InputActionType, type InputAction } from "../../net/input_packet.ts";
 import { type DamageParams } from "../../others/constants.ts";
 import { Inventory, type InventoryAction, type InventoryGroupDef, type InventoryOwner, type ItemFactories } from "./inventory.ts";
-import { armor_damage, DefaultItemFactories } from "./items.ts";
+import { armor_damage, DefaultItemFactories, GrenadeItem } from "./items.ts";
 import { HumanInventoryLayout } from "./layouts.ts";
 import { WeaponDef } from "../../definitions/game_defs.ts";
 import { human_events } from "../objects/human/events.ts";
@@ -68,7 +68,9 @@ export const si_human_inventory:GELComponent<SI_HumanInventory>={
             this.inventory_layout=HumanInventoryLayout
         },
         [human_events.update_modifiers]:function(mods:Record<string,number>){
-            mods.speed=(mods.speed??1)*((this.inventory.hand_def as WeaponDef)?.speed_mod??1)*(this.actions.current_action?.action_speed??1)
+            const hand=this.inventory.hand_item
+            const holding=hand instanceof GrenadeItem&&hand.holding!==undefined
+            mods.speed=(mods.speed??1)*((this.inventory.hand_def as WeaponDef)?.speed_mod??1)*(this.actions.current_action?.action_speed??1)*(holding?0.7:1)
         },
         [human_events.use_hand]:function(){
             if(this.knocked||this.swimming)return
@@ -132,7 +134,7 @@ export const si_human_inventory:GELComponent<SI_HumanInventory>={
                         break
                     }
                     case InputActionType.set_hand:
-                        if(this.knocked)break
+                        if(this.knocked||this.hand_locked?.())break
                         inv.set_hand_slot(a.hand)
                         break
                     case InputActionType.set_scope:{

@@ -52,6 +52,12 @@ export const cc_active_human:GELComponent<CC_ActiveHuman>={
             if(input.adown.has("weapon3")){
                 actions.push({type:InputActionType.set_hand,hand:2})
             }
+            for(let i=0;i<7;i++){
+                if(input.adown.has(`use_item${i+1}`)){
+                    actions.push({type:InputActionType.use_item,slot:i})
+                    break
+                }
+            }
 
             const axis=input.axis["movement"]?.old??v2.zero()
             const len=Numeric.clamp(v2.len(axis),0,1)

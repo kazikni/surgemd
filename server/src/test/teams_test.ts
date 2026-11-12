@@ -1,7 +1,7 @@
 import { ClientsManager } from "common/engine/core.ts";
 import { make_packet_manager } from "common/scripts/net/packet_manager.ts";
 import { BotPlayerConn } from "common/scripts/game/players/player_conn.ts";
-import { type SI_Human } from "common/scripts/game/objects/moving_body/human.ts";
+import { type SI_Human } from "common/scripts/game/objects/human/human.ts";
 import { type BattleRoyale } from "common/scripts/game/modes/battle_royale.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { Game } from "../game/game.ts";

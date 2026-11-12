@@ -33,6 +33,7 @@ export interface InventoryOwner{
         distance_to_aim:number
     }
     knocked?:boolean
+    hand_locked?():boolean
     get_modifier?(name:string):number
     emit_event(event:string|number,...args:any[]):void
 }
@@ -167,6 +168,7 @@ export const inventory_events={
     fire:"inventory_fire",
     reload:"inventory_reload",
     drop:"inventory_drop",
+    animation:"inventory_animation",
 }
 
 export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
@@ -599,10 +601,11 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
     }
     use_slot(index:number){
         const s=this.slots[index]
-        if(!s?.item||s.empty)return
+        if(!s?.item||s.empty||this.owner.hand_locked?.())return
         s.item.on_use()
     }
     reload(){
+        if(this.owner.hand_locked?.())return
         this.hand_item?.reload()
     }
 

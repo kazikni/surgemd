@@ -6,6 +6,9 @@ import { type ModeManager } from "common/scripts/game/modes/mode_manager.ts";
 import { si_loot } from "common/scripts/game/objects/loot.ts";
 import { si_human } from "common/scripts/game/objects/human/human.ts";
 import { si_obstacle } from "common/scripts/game/objects/static_body/obstacle.ts";
+import { si_bullet } from "common/scripts/game/objects/projectile/bullet.ts";
+import { si_explosion } from "common/scripts/game/objects/projectile/explosion.ts";
+import { si_grenade } from "common/scripts/game/objects/projectile/grenade.ts";
 import { gelo_instance_type, object_instance_type } from "common/scripts/others/constants.ts";
 
 export class ServerObject extends BaseSceneObject2D{
@@ -44,6 +47,9 @@ export const simulation_defs:SimulationDefs={
         [object_instance_type.human]:obj(si_human),
         [object_instance_type.loot]:obj(si_loot),
         [object_instance_type.obstacle]:obj(si_obstacle),
+        [object_instance_type.bullet]:obj(si_bullet),
+        [object_instance_type.explosion]:obj(si_explosion),
+        [object_instance_type.grenade]:obj(si_grenade),
     },
     gelo:{
         [gelo_instance_type.map]:gelo(si_gamemap),

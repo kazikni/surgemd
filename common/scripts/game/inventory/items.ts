@@ -1,17 +1,33 @@
-import { CircleCollider2D, Numeric, Stream, v2, Vec2 } from "../../../engine/core.ts";
+import { CircleCollider2D, Numeric, Stream, v2, v2m, Vec2 } from "../../../engine/core.ts";
 import { type GameItem } from "../../definitions/game_defs.ts";
 import { type GunDef } from "../../definitions/items/guns.ts";
 import { type MeleeDef } from "../../definitions/items/melees.ts";
 import { type HelmetDef, type VestDef } from "../../definitions/items/equipaments.ts";
+import { type GrenadeDef } from "../../definitions/items/grenades.ts";
+import { type ConsumibleCondition, type ConsumibleDef, type ConsumingAction as ConsumingActionDef } from "../../definitions/items/consumibles.ts";
+import { type SideEffect } from "../../definitions/player/effects.ts";
 import { DamageReason, GameItemType } from "../../definitions/utils.ts";
-import { type DamageParams, type LootData } from "../../others/constants.ts";
+import { type DamageParams, HumanAnimationType, type HumanAnimation, type LootData, object_instance_type } from "../../others/constants.ts";
 import { FireMode } from "../../others/item.ts";
 import { type SimulatedObject } from "../base.ts";
-import { InventoryAction, inventory_events, InventoryItem, type InventoryOwner, type ItemFactories, type ItemGiveExtra } from "./inventory.ts";
+import { type SI_Grenade } from "../objects/projectile/grenade.ts";
+import { spawn_projectile } from "../objects/projectile/projectile.ts";
+import { clip_muzzle, fire_item, type FireUser } from "./fire.ts";
+import { InventoryAction, inventory_events, InventoryItem, type InventoryOwner, type InventorySlot, type ItemFactories, type ItemGiveExtra } from "./inventory.ts";
 
 export enum InventoryActionType{
     Reload,
     Consuming,
+}
+
+export type ItemUser=FireUser&{
+    scale?:number
+    consuming_condition?(conditions:ConsumibleCondition[],side_effects:SideEffect[]):boolean
+    apply_side_effect?(effect:SideEffect,owner?:SimulatedObject):void
+}
+
+export function play_item_animation(user:InventoryOwner,animation:HumanAnimation){
+    user.emit_event(inventory_events.animation,animation)
 }
 
 export type Damageable=SimulatedObject&{
@@ -52,8 +68,9 @@ export class ReloadAction extends InventoryAction{
         if(this.item.slot)user.inventory.dirty.slots.add(this.item.slot.index)
         user.emit_event(inventory_events.reload,this.item,false)
     }
-    override on_cancel(_user:InventoryOwner){
+    override on_cancel(user:InventoryOwner){
         this.item.reloading=false
+        play_item_animation(user,{type:HumanAnimationType.Reset})
     }
 }
 
@@ -133,8 +150,11 @@ export class GunItem extends InventoryItem{
             if(this.ammo>=this.get_capacity()||no_ammo)this.reloading=false
             return
         }
-        user.actions.play(new ReloadAction(this))
+        const action=new ReloadAction(this)
+        user.actions.play(action)
+        if(user.actions.current_action!==action)return
         user.emit_event(inventory_events.reload,this,true)
+        play_item_animation(user,{type:HumanAnimationType.Reloading,alt_reload:action.alt_reload})
     }
     muzzle_position():Vec2{
         const user=this.owner
@@ -145,15 +165,13 @@ export class GunItem extends InventoryItem{
         return v2.add(user.position,v2.rotate_RadAngle(barrel,user.rotation))
     }
     shot(consume:boolean=true){
-        const user=this.owner
+        const user=this.owner as unknown as ItemUser
         user.actions.cancel()
         this.reloading=false
         if(consume&&this.def.reload)this.ammo=Math.max(this.ammo-(this.def.reload.ammo_consume??1),0)
-        const position=this.muzzle_position()
+        const position=clip_muzzle(user,this.muzzle_position())
         if(this.def.dual_from)this.dual_d=!this.dual_d
-        if(this.def.fire_sequence){
-            this.fire_sequence=Math.min(this.fire_sequence+this.def.fire_sequence.increse,1)
-        }
+        fire_item(user,this,position,this.def)
         if(this.burst){
             if(this.burst.c<=0||this.ammo<=0){
                 this.burst=undefined
@@ -165,20 +183,17 @@ export class GunItem extends InventoryItem{
         }else{
             this.use_delay=this.def.fire_delay??0
         }
-        if(this.def.recoil)user.inventory.recoil={
-            speed:this.def.recoil.speed,
-            time:this.def.recoil.duration
-        }
         user.inventory.dirty.hand=true
         if(this.slot)user.inventory.dirty.slots.add(this.slot.index)
         user.emit_event(inventory_events.fire,this,position,user.rotation)
+        play_item_animation(user,{type:HumanAnimationType.Fire,alt:this.dual_d,last:this.ammo===0,alt_func:false})
     }
     override update(dt:number){
         if(this.use_delay>0)this.use_delay-=dt
         else if(this.fire_sequence>0&&this.def.fire_sequence?.decay){
             this.fire_sequence=Math.max(this.fire_sequence-this.def.fire_sequence.decay*dt,0)
         }
-        if(this.in_hand&&!this.owner.actions.current_action){
+        if(this.in_hand&&!this.owner.actions.current_action&&!this.owner.hand_locked?.()){
             if(((this.ammo<=0&&this.use_delay<=0)||this.reloading)&&this.def.reload){
                 this.reloading=true
                 this.start_reload()
@@ -256,6 +271,7 @@ export class MeleeItem extends InventoryItem{
         this.firing=true
         user.inventory.dirty.hand=true
         user.emit_event(inventory_events.fire,this,user.position,user.rotation)
+        play_item_animation(user,{type:HumanAnimationType.Melee})
         return true
     }
     attack(){
@@ -323,6 +339,159 @@ export class StackItem extends InventoryItem{
     }
 }
 
+export interface GrenadeHolding{
+    time:number
+    active_time:number
+    cook_time:number
+    activated:boolean
+}
+
+export class GrenadeItem extends InventoryItem{
+    def:GrenadeDef
+    holding?:GrenadeHolding
+    constructor(def:GrenadeDef){
+        super()
+        this.def=def
+        this.allow_merge=true
+    }
+    override on_use(){
+        if(this.slot)this.inventory.set_hand(this.slot.index)
+    }
+    override on_fire():boolean{
+        const user=this.owner
+        if(this.holding)return true
+        if(!this.slot||this.slot.count<=0||!user.input.using_item_down)return true
+        this.holding={
+            time:this.def.fuse?.time??10,
+            active_time:this.def.throw_time??0.1,
+            cook_time:this.def.cook_time??0.2,
+            activated:false,
+        }
+        user.actions.cancel()
+        play_item_animation(user,{type:HumanAnimationType.Cook})
+        return true
+    }
+    override update(dt:number){
+        const h=this.holding
+        if(!h)return
+        if(!this.in_hand){
+            this.holding=undefined
+            return
+        }
+        if(h.cook_time>0){
+            h.cook_time-=dt
+            return
+        }
+        const user=this.owner
+        if(!user.input.use_weapon&&!h.activated){
+            h.activated=true
+            play_item_animation(user,{type:HumanAnimationType.Throw})
+        }
+        if(h.activated){
+            h.active_time-=dt
+            this.throw()
+        }else if(this.def.fuse?.allow_hand){
+            h.time-=dt
+            if(h.time<=0){
+                h.cook_time=0
+                h.activated=true
+                play_item_animation(user,{type:HumanAnimationType.Reset})
+            }
+        }
+    }
+    throw(){
+        const h=this.holding
+        this.holding=undefined
+        const slot=this.slot
+        if(!h||!slot||slot.empty)return
+        const user=this.owner as unknown as ItemUser
+        const position=v2.scale(this.def.throw_position??v2(0.3,0.4),user.scale??1)
+        v2m.rotate_RadAngle(position,user.rotation)
+        v2m.add(position,position,user.position)
+        const proj=spawn_projectile<SI_Grenade>(user.scene,object_instance_type.grenade,user.layer,{
+            position,
+            def:this.def,
+            owner:user,
+            fuse:this.def.fuse?.allow_hand?h.time:(this.def.fuse?.time??h.time),
+        })
+        proj.zpos=0.01
+        proj.zpos_speed=1.8
+        const limit=this.def.throw_max_speed??0
+        proj.push(Numeric.clamp(user.input.distance_to_aim*limit,0,limit),user.rotation,10)
+        if(user.physical)v2m.add(proj.physical.velocity,proj.physical.velocity,user.physical.velocity)
+        this.inventory.remove_slot(slot,1)
+    }
+    override unload(){
+        this.holding=undefined
+    }
+    override encode_checkpoint(stream:Stream){
+        stream.write_boolean_group(this.holding!==undefined,this.holding?.activated??false)
+        if(this.holding){
+            stream.write_float32(this.holding.time)
+            .write_float32(this.holding.active_time)
+            .write_float32(this.holding.cook_time)
+        }
+    }
+    override decode_checkpoint(stream:Stream){
+        const [holding,activated]=stream.read_boolean_group()
+        this.holding=holding?{
+            time:stream.read_float32(),
+            active_time:stream.read_float32(),
+            cook_time:stream.read_float32(),
+            activated,
+        }:undefined
+    }
+}
+
+export class ConsumingAction extends InventoryAction{
+    type:number=InventoryActionType.Consuming
+    delay:number
+    item:ConsumibleItem
+    slot:InventorySlot
+    constructor(item:ConsumibleItem,slot:InventorySlot){
+        super()
+        const consuming=item.def.consuming as ConsumingActionDef&{type:0}
+        this.item=item
+        this.slot=slot
+        this.delay=consuming.use_delay
+        this.action_speed=0.35
+    }
+    on_execute(user:InventoryOwner){
+        const consuming=this.item.def.consuming as ConsumingActionDef&{type:0}
+        const u=user as unknown as ItemUser
+        for(const se of consuming.side_effects)u.apply_side_effect?.(se)
+        if(this.slot.item===this.item)user.inventory.remove_slot(this.slot,1)
+        play_item_animation(user,{type:HumanAnimationType.Reset})
+    }
+    override on_cancel(user:InventoryOwner){
+        play_item_animation(user,{type:HumanAnimationType.Reset})
+    }
+}
+
+export class ConsumibleItem extends InventoryItem{
+    def:ConsumibleDef
+    constructor(def:ConsumibleDef){
+        super()
+        this.def=def
+        this.allow_merge=def.allow_merge??true
+    }
+    can_consume():boolean{
+        const c=this.def.consuming
+        if(c.type!==0)return false
+        const user=this.owner as unknown as ItemUser
+        if(user.knocked)return false
+        return user.consuming_condition?.(this.def.condition??[],c.side_effects)??true
+    }
+    override on_use(){
+        const user=this.owner
+        if(user.actions.current_action||!this.slot||!this.can_consume())return
+        const action=new ConsumingAction(this,this.slot)
+        user.actions.play(action)
+        if(user.actions.current_action!==action)return
+        play_item_animation(user,{type:HumanAnimationType.Consuming,item:this.def.id_number!})
+    }
+}
+
 export class EquipmentItem extends InventoryItem{
     def:GameItem
     health?:number
@@ -363,8 +532,8 @@ export class EquipmentItem extends InventoryItem{
 export const DefaultItemFactories:ItemFactories={
     [GameItemType.gun]:(_inv,def)=>new GunItem(def as unknown as GunDef),
     [GameItemType.melee]:(_inv,def)=>new MeleeItem(def as MeleeDef),
-    [GameItemType.consumible]:(_inv,def)=>new StackItem(def),
-    [GameItemType.grenade]:(_inv,def)=>new StackItem(def),
+    [GameItemType.consumible]:(_inv,def)=>new ConsumibleItem(def as unknown as ConsumibleDef),
+    [GameItemType.grenade]:(_inv,def)=>new GrenadeItem(def as unknown as GrenadeDef),
     [GameItemType.helmet]:(_inv,def)=>new EquipmentItem(def),
     [GameItemType.vest]:(_inv,def)=>new EquipmentItem(def),
     [GameItemType.backpack]:(_inv,def)=>new EquipmentItem(def),

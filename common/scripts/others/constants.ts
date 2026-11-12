@@ -38,6 +38,8 @@ export const object_instance_type={
     obstacle:3,
     human:4,
     bullet:5,
+    explosion:6,
+    grenade:7,
 }
 export const gelo_instance_type={
     map:1,
@@ -74,7 +76,8 @@ export enum HumanAnimationType{
     Fire,
     Cook,
     Throw,
-    Reset
+    Reset,
+    Switch,
 }
 export type HumanAnimation={
 }&({
@@ -96,6 +99,8 @@ export type HumanAnimation={
     type:HumanAnimationType.Throw
 }|{
     type:HumanAnimationType.Reset
+}|{
+    type:HumanAnimationType.Switch
 })
 export enum Layers{
     Underground=-1,

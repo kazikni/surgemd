@@ -14,6 +14,7 @@ export interface C_StaticBody extends CommonObject{
         no_projectiles_collision?:boolean
         no_pathfinding_collision?:boolean
         passable_by_projectiles?:boolean
+        reflect_projectiles?:boolean
 
         collider:Collider2D
         interaction_collider?:Collider2D

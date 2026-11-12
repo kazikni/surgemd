@@ -1,7 +1,7 @@
 import { ColorM, ease, gel_events, GELComponent, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameObject } from "../../main/gel.ts";
-import { C_Humanoid_Visual, humanoid_events } from "common/scripts/game/objects/human/humanoid.ts";
-import { ABParticle2D, AnimatedContainer2D, AnimatedSprite2D, Container2D, Frame, Shape2D, Sprite2D } from "common/engine/web.ts";
+import { C_Humanoid_Animation, C_Humanoid_Visual, humanoid_events } from "common/scripts/game/objects/human/humanoid.ts";
+import { ABParticle2D, AnimatedContainer2D, type AnimatedContainerModeCallback, AnimatedSprite2D, Container2D, Frame, Shape2D, Sprite2D } from "common/engine/web.ts";
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { DefaultDownedWalkFistRig, DefaultFistRig, FistRig } from "common/scripts/others/item.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
@@ -15,7 +15,19 @@ export interface HumanoidWalk{
     footstep_sound?:{stop():void}
     last_position?:Vec2
 }
-export type CC_Humanoid_Visual=GameObject&C_Humanoid_Visual&{
+export const HumanoidModes:Record<string,AnimatedContainerModeCallback>={
+    eyes(h:CC_Humanoid_Visual,state:number=0,animated:boolean=true){
+        h.set_eyes(state,animated)
+    },
+    mounth(h:CC_Humanoid_Visual,state:number=0,enabled:boolean=true){
+        h.set_mounth(state,enabled)
+    },
+    reset(h:CC_Humanoid_Visual){
+        h.reset_pose()
+    },
+}
+
+export type CC_Humanoid_Visual=GameObject&C_Humanoid_Visual&Partial<C_Humanoid_Animation>&{
     container:AnimatedContainer2D
     walk:HumanoidWalk
 
@@ -67,7 +79,8 @@ export type CC_Humanoid_Visual=GameObject&C_Humanoid_Visual&{
     tick_walk(dt:number,distance:number):void
     tick_footsteps(distance:number,floor:FloorType,on_ground?:boolean,footstep_distance?:number):void
     set_downed_pose(downed:boolean):void
-    reset_animations():void
+    reset_pose():void
+    apply_momentary():void
 }
 export const cc_humanoid_visual:GELComponent<CC_Humanoid_Visual>={
     id_string:"cc_humanoid_visual",
@@ -87,8 +100,13 @@ export const cc_humanoid_visual:GELComponent<CC_Humanoid_Visual>={
         [humanoid_events.visual_changed]:function(){
             if(this.container)this.update_visual()
         },
+        [humanoid_events.momentary_changed]:function(){
+            if(this.container)this.apply_momentary()
+        },
         [gel_events.create]:function(){
             this.container=new AnimatedContainer2D(this.app)
+            this.container.animation_parent=this
+            this.container.modes={...HumanoidModes}
             this.container.zIndex=zIndexes.Humans
             this.sprites={
                 body:this.container.add_animated_sprite("body",{scale:1.5,zIndex:4,hotspot:v2.half_one}),
@@ -469,6 +487,35 @@ export const cc_humanoid_visual:GELComponent<CC_Humanoid_Visual>={
                 }))
             }
             w.footstep_alternate=!w.footstep_alternate
+        },
+        reset_pose(){
+            this.container.stop_all_animations()
+            this.set_eyes()
+            this.set_mounth()
+            if(this.downed_pose){
+                this.set_downed_pose(true)
+            }else{
+                this.set_arms_rig(this.arms_rig??DefaultFistRig)
+                this.sprites.left_leg.visible=false
+                this.sprites.right_leg.visible=false
+                this.sprites.left_leg.position=v2(-0.3,-0.2)
+                this.sprites.right_leg.position=v2(0.3,0.2)
+                this.sprites.left_leg.rotation=0
+                this.sprites.right_leg.rotation=Math.PI
+                this.walk.cycle=0
+                this.walk.time=0
+            }
+            this.emit_event(humanoid_events.pose_reset)
+        },
+        apply_momentary(){
+            const m=this.momentary
+            if(!m){
+                this.reset_pose()
+                return
+            }
+            this.container.stop_all_animations()
+            const keyframes=this.get_momentary_keyframes?.()
+            if(keyframes&&keyframes.length>0)this.container.play_animation(keyframes,undefined,m.def.loop===true)
         },
         set_downed_pose(downed:boolean){
             this.downed_pose=downed

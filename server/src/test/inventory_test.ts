@@ -1,7 +1,7 @@
 import { ClientsManager, DynamicStream, v2 } from "common/engine/core.ts";
 import { make_packet_manager } from "common/scripts/net/packet_manager.ts";
 import { LocalPlayerConn } from "common/scripts/game/players/player_conn.ts";
-import { type SI_Human } from "common/scripts/game/objects/moving_body/human.ts";
+import { type SI_Human } from "common/scripts/game/objects/human/human.ts";
 import { type SI_Obstacle } from "common/scripts/game/objects/static_body/obstacle.ts";
 import { type SI_Loot } from "common/scripts/game/objects/loot.ts";
 import { GunItem } from "common/scripts/game/inventory/items.ts";
@@ -24,7 +24,13 @@ check("default backpack/scope",inv.backpack?.id_string==="null_pack"&&inv.get_gr
 check("item slots from backpack",inv.get_group("items")!.slots.length===4)
 
 const loots=()=>Object.values(sim.objects.objects).filter((o)=>o.instance_type===1) as unknown as SI_Loot[]
-const find_loot=(id:string)=>loots().find((l)=>l.loot_data.item.id_string===id)
+const find_loot=(id:string)=>{
+    const l=loots().find((d)=>d.loot_data.item.id_string===id)
+    if(l)return l
+    const item=game.definitions.game_items.valueString[id]
+    if(!item)return undefined
+    return sim.add_object(sim.make_object(1)!,h.layer,undefined,{data:{item,count:Infinity},position:v2.add(h.position,v2(3,3))}) as unknown as SI_Loot
+}
 const pick=(id:string)=>{
     const l=find_loot(id)
     if(!l)return false
@@ -66,7 +72,7 @@ check("switch cancels reload",h.actions.current_action===undefined&&!gun.reloadi
 const before_backpack=inv.get_group("items")!.slots.length
 check("pick backpack",pick("tactical_pack"),inv.backpack?.id_string)
 check("backpack resizes item slots",inv.get_group("items")!.slots.length>before_backpack,[before_backpack,inv.get_group("items")!.slots.length])
-check("pick helmet",pick(loots().find((l)=>l.loot_data.item.item_type===GameItemType.helmet)!.loot_data.item.id_string),inv.get_equipment(GameItemType.helmet)?.id_string)
+check("pick helmet",pick("bike_helmet"),inv.get_equipment(GameItemType.helmet)?.id_string)
 check("pick consumible",pick("bandage"),inv.item_slots.map((s)=>s.item?.def.id_string+":"+s.count))
 
 const crate=(Object.values(sim.objects.objects) as unknown as SI_Obstacle[]).find((o)=>o.instance_type===3&&o.def.interactDestroy&&o.health&&!o.health.dead)

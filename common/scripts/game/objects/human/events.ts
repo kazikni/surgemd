@@ -13,5 +13,9 @@ export const human_events={
     tick_input:humanoid_events.last+10,
     modify_damage:humanoid_events.last+11,
     interact:humanoid_events.last+12,
-    last:humanoid_events.last+13,
+    animation:humanoid_events.last+13,
+    hand_changed:humanoid_events.last+14,
+    message:humanoid_events.last+15,
+    side_effect:humanoid_events.last+16,
+    last:humanoid_events.last+17,
 }

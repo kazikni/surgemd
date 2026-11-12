@@ -5,7 +5,7 @@ import { type DamageParams, GameConstants, Layers, object_instance_type, Spawn, 
 import { loot_table_get_item } from "../../others/functions.ts";
 import { type CommonApplication, type SimulatedScene } from "../base.ts";
 import { human_events } from "../objects/human/events.ts";
-import { type SI_Human } from "../objects/human/human.ts";
+import { type Human } from "../objects/human/human.ts";
 import { type PlayerConn } from "../players/player_conn.ts";
 
 export const mode_events={
@@ -48,7 +48,7 @@ export const DefaultHumanLoadout:LoadoutPreset={
 }
 
 export class Player<S extends object=PlayerStatus>{
-    human?:SI_Human
+    human?:Human
     name:string=""
     join?:JoinData
     connected:boolean=true
@@ -82,10 +82,10 @@ export class PlayersManager<S extends object=PlayerStatus>{
     get(id:number):Player<S>|undefined{
         return this.players.get(id)
     }
-    of(h:SI_Human|number):Player<S>|undefined{
+    of(h:Human|number):Player<S>|undefined{
         return this.by_human.get(typeof h==="number"?h:h.id)
     }
-    set_human(p:Player<S>,h?:SI_Human){
+    set_human(p:Player<S>,h?:Human){
         if(p.human&&this.by_human.get(p.human.id)===p)this.by_human.delete(p.human.id)
         p.human=h
         if(h)this.by_human.set(h.id,p)
@@ -120,6 +120,14 @@ export interface GameRules{
         drop_inventory:boolean
         critical_chance:number
         idle_critical_chance:number
+        no_quickswitch:boolean
+        reload_while_shoot:boolean
+        hold_ammo:boolean
+        modifiers:Record<string,number>
+        help_up:{
+            time:number
+            distance:number
+        }
     }
     score:{
         kill:number
@@ -162,6 +170,14 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
                 drop_inventory:true,
                 critical_chance:0.1,
                 idle_critical_chance:0.2,
+                no_quickswitch:false,
+                reload_while_shoot:false,
+                hold_ammo:true,
+                modifiers:{},
+                help_up:{
+                    time:7,
+                    distance:2,
+                },
             },
             score:{
                 kill:50,
@@ -208,20 +224,20 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
         return this.players.connected().length>0
     }
 
-    can_knock(h:SI_Human):boolean{
+    can_knock(h:Human):boolean{
         return false
     }
-    is_ally(a:SI_Human,b:SI_Human):boolean{
+    is_ally(a:Human,b:Human):boolean{
         return false
     }
-    is_player(h:SI_Human):boolean{
+    is_player(h:Human):boolean{
         return this.players.of(h)!==undefined
     }
     get_living_count():number{
         return this.players.living().length
     }
 
-    get_spawn_position(h:SI_Human):Vec2|undefined{
+    get_spawn_position(h:Human):Vec2|undefined{
         return this.scene.map.get_random_position(h.collider,h.id,h.layer,this.spawn_mode)
     }
 
@@ -245,7 +261,7 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
         this.signals.emit(mode_events.player_disconnect,p)
         this.check_finish()
     }
-    join(conn:PlayerConn,data:JoinData):SI_Human|undefined{
+    join(conn:PlayerConn,data:JoinData):Human|undefined{
         const p=this.connect(conn)
         if(!p||p.alive||!this.can_join())return undefined
         p.join=data
@@ -266,11 +282,11 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
         this.signals.emit(mode_events.player_leave,p)
     }
 
-    spawn_player(p:Player<S>):SI_Human{
+    spawn_player(p:Player<S>):Human{
         const h=this.scene.add_object(this.scene.make_object(object_instance_type.human),this.spawn_layer,undefined,{
             name:p.name,
             loadout:p.join?.loadout??DefaultHumanLoadout,
-        }) as SI_Human
+        }) as Human
         this.players.set_human(p,h)
         h.on(human_events.damaged,(params:DamageParams,health_damage:number)=>{
             this.players.add_status(p,"damage_taken",health_damage)
@@ -307,14 +323,14 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
         this.leave(p)
     }
     on_player_join(_p:Player<S>){}
-    on_player_spawn(_p:Player<S>,_h:SI_Human){}
+    on_player_spawn(_p:Player<S>,_h:Human){}
     on_player_respawn(_p:Player<S>){}
 
-    on_human_knocked(h:SI_Human,params:DamageParams){
+    on_human_knocked(h:Human,params:DamageParams){
         this.players.of(h)?.conn.on_human_knocked(params)
         this.signals.emit(mode_events.human_knocked,h,params)
     }
-    on_human_die(h:SI_Human,params:DamageParams){
+    on_human_die(h:Human,params:DamageParams){
         if(this.rules.humans.drop_inventory)h.inventory?.drop_all()
         const p=this.players.of(h)
         const killer=params.owner&&params.owner.id!==h.id?this.players.of(params.owner.id):undefined
@@ -407,7 +423,7 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
             if(!p)return
             p.name=name
             p.status=status
-            const h=this.scene.objects.get_object(human_id) as SI_Human|undefined
+            const h=this.scene.objects.get_object(human_id) as Human|undefined
             this.players.set_human(p,h)
         },2)
     }

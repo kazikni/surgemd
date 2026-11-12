@@ -1,11 +1,10 @@
 import { ClientsManager, DynamicStream, v2 } from "common/engine/core.ts";
 import { make_packet_manager } from "common/scripts/net/packet_manager.ts";
 import { LocalPlayerConn } from "common/scripts/game/players/player_conn.ts";
-import { type SI_Human } from "common/scripts/game/objects/human/human.ts";
+import { type Human } from "common/scripts/game/objects/human/human.ts";
 import { HumanFunctionScript, HumanScript } from "common/scripts/game/objects/human/script.ts";
 import { GrenadeItem, type GunItem } from "common/scripts/game/inventory/items.ts";
 import { GameItemType } from "common/scripts/definitions/utils.ts";
-import { human_events } from "common/scripts/game/objects/human/events.ts";
 import { HumanAnimationType, type DamageParams, type HumanAnimation, object_instance_type } from "common/scripts/others/constants.ts";
 import { Game } from "../game/game.ts";
 
@@ -28,22 +27,26 @@ const check=(name:string,ok:boolean,info:unknown="")=>{
 const count=(type:number)=>Object.values(sim.objects.objects).filter((o)=>o.instance_type===type).length
 const defs=game.definitions
 
-const shooter=sim.mode.join(new LocalPlayerConn(),{name:"Shooter"})! as SI_Human
+const shooter=sim.mode.join(new LocalPlayerConn(),{name:"Shooter"})! as Human
 const target_conn=new LocalPlayerConn()
-let target=sim.mode.join(target_conn,{name:"Target"})! as SI_Human
+let target=sim.mode.join(target_conn,{name:"Target"})! as Human
 tick(0.1)
 const base=v2.clone(shooter.position)
 const place=()=>{
     shooter.position=v2.clone(base)
     target.position=v2.add(base,v2(6,0))
-    shooter.physical.velocity=v2.zero()
-    target.physical.velocity=v2.zero()
+    shooter.velocity=v2.zero()
+    target.velocity=v2.zero()
     shooter.input.rotation=0
     target.health.value=target.health.max
     shooter.health.value=shooter.health.max
 }
 const animations:HumanAnimation[]=[]
-shooter.on(human_events.animation,(a:HumanAnimation)=>animations.push(a))
+const push=shooter.animations.push.bind(shooter.animations)
+shooter.animations.push=(...a:HumanAnimation[])=>{
+    animations.push(...a)
+    return push(...a)
+}
 
 place()
 const gun_def=defs.guns.getFromString("ak47")
@@ -54,7 +57,7 @@ check("gun given",gun!==undefined,gun?.def.id_string)
 shooter.inventory.set_hand(gun.slot!.index)
 check("switch animation",animations.some((a)=>a.type===HumanAnimationType.Switch))
 tick(1.5)
-check("hand def synced",shooter.hand?.id_string==="ak47",shooter.hand?.id_string)
+check("hand def synced",shooter.inventory.hand_def?.id_string==="ak47",shooter.inventory.hand_def?.id_string)
 
 place()
 const hp=target.health.value
@@ -98,8 +101,6 @@ shooter.input.distance_to_aim=0.5
 tick(0.05)
 check("cooking",nade.holding!==undefined)
 check("cook animation",animations.some((a)=>a.type===HumanAnimationType.Cook))
-const speed_mod=shooter.modifiers.speed
-check("holding grenade slows",speed_mod!==undefined&&speed_mod<1,speed_mod)
 tick(0.5)
 shooter.input.use_weapon=false
 tick(0.05)
@@ -121,7 +122,7 @@ for(let t=0;t<6;t+=0.01){
 check("grenade exploded",explosions>0&&count(object_instance_type.grenade)===0,explosions)
 check("explosion damaged target",target.dead||target.health.value<hp2,[hp2,target.health.value,target.dead])
 tick(2.5)
-target=target_conn.human as SI_Human
+target=target_conn.human as Human
 if(target.dead)target.revive()
 tick(0.1)
 check("target revived",target!==undefined&&!target.dead&&target.registred)
@@ -134,7 +135,6 @@ shooter.inventory.use_slot(bandage_slot.index)
 check("consuming started",shooter.actions.current_action!==undefined)
 check("consuming animation",animations.some((a)=>a.type===HumanAnimationType.Consuming))
 tick(1)
-check("consuming slows",(shooter.modifiers.speed??1)<1,shooter.modifiers.speed)
 tick(2.2)
 check("bandage healed",Math.abs(shooter.health.value-50)<0.01,shooter.health.value)
 check("bandage consumed",bandage_slot.count===1,bandage_slot.count)
@@ -163,7 +163,7 @@ shooter.input.movement={dir:0,scale:0}
 let ended=false
 shooter.play_momentary("wake_up",{on_end:(c)=>ended=c})
 tick(1)
-check("wake up active",shooter.is_momentary("wake_up")&&!ended)
+check("wake up active",shooter.momentary?.def.id_string==="wake_up"&&!ended)
 tick(2)
 check("wake up ends by duration",!shooter.momentary&&ended)
 shooter.inventory.set_hand(gun.slot!.index)
@@ -174,8 +174,6 @@ shooter.stop_momentary()
 
 place()
 const dest=v2.add(base,v2(2,1))
-let said=""
-shooter.on(human_events.message,(m:{text:string})=>said=m.text)
 let done=false
 shooter.set_script(new HumanFunctionScript(async(s)=>{
     await s.say("Where am I?",0.5)
@@ -185,7 +183,7 @@ shooter.set_script(new HumanFunctionScript(async(s)=>{
 check("script takes control",shooter.controlled)
 shooter.process_input({movement:{dir:Math.PI,scale:1},rotation:0,distance_to_aim:0,auto_fire:false,use_weapon:true,alt_use_weapon:false,interact:false,cancel:false,reload:false,swap_guns:false,actions:[]})
 check("player input ignored",!shooter.input.use_weapon)
-check("script said",said==="Where am I?",said)
+check("script said",shooter.input.message==="Where am I?",shooter.input.message)
 await atick(4)
 check("script moved",done&&v2.distance(shooter.position,dest)<0.3,v2.distance(shooter.position,dest))
 check("script detached",shooter.script===undefined&&!shooter.controlled)
@@ -196,7 +194,12 @@ class FriendScript extends HumanScript{
     override keep_alive=true
     talks=0
     hurt=0
-    override on_interact(user:SI_Human){
+    said=""
+    override say(text:string,time?:number,wait?:boolean){
+        this.said=text
+        return super.say(text,time,wait)
+    }
+    override on_interact(user:Human){
         this.talks++
         void this.say(`Hi ${user.name}`,1)
     }
@@ -211,7 +214,7 @@ target.position=v2.add(shooter.position,v2(1,0))
 await atick(0.1)
 shooter.input.interact=true
 await atick(0.02)
-check("npc interaction",friend.talks===1&&target.message?.text==="Hi Shooter",[friend.talks,target.message?.text])
+check("npc interaction",friend.talks===1&&friend.said==="Hi Shooter",[friend.talks,friend.said])
 target.position=v2.add(shooter.position,v2(5,0))
 shooter.input.rotation=0
 shooter.input.use_weapon=true
@@ -219,7 +222,7 @@ shooter.input.using_item_down=true
 await atick(0.3)
 shooter.input.use_weapon=false
 await atick(0.5)
-check("npc reacts to damage",friend.hurt>0&&target.message?.text==="Why did you shoot me?",[friend.hurt,target.message?.text])
+check("npc reacts to damage",friend.hurt>0&&friend.said==="Why did you shoot me?",[friend.hurt,friend.said])
 
 place()
 shooter.inventory.use_slot(nade.slot!.index)

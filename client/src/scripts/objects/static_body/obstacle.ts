@@ -1,7 +1,7 @@
 import { gel_events,  Vec2, v2, RotationMode, Angle, Orientation, ColorM, Numeric, GELComponent, Stream, random } from "common/engine/core.ts";
 import { Container2D, Sprite2D } from "common/engine/web.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
-import { obstacle_events, c_obstacle, C_Obstacle, SI_Obstacle, si_obstacle } from "common/scripts/game/objects/static_body/obstacle.ts";
+import { obstacle_events, c_obstacle, C_Obstacle } from "common/scripts/game/objects/static_body/obstacle.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { cc_static_body, CC_StaticBody } from "./static_body.ts";
 
@@ -111,15 +111,6 @@ export const cc_obstacle:GELComponent<CC_Obstacle>={
             if(scale!==undefined)this.container.scale=v2(scale,scale)
         },
     }
-}
-export const ccs_obstacle:GELComponent<CC_Obstacle&SI_Obstacle>={
-    extensions:[cc_obstacle,si_obstacle],
-    id_string:"ccs_obstacle", // Loot Self
-    events:{
-        [obstacle_events.initialized]:function(){
-            this.update_frame()
-        },
-    },
 }
 export const ccn_obstacle:GELComponent<CC_Obstacle>={
     extensions:[cc_obstacle],

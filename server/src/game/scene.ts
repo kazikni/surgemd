@@ -1,20 +1,17 @@
-import { BaseGELO, BaseSceneObject2D, CheckpointSettings, gel_component, GELComponent, Scene2D, Stream } from "common/engine/core.ts";
-import { type CommonApplication, type SimulatedScene } from "common/scripts/game/base.ts";
+import { BaseGELO, CheckpointSettings, gel_component, GELComponent, Scene2D, Stream } from "common/engine/core.ts";
+import { type CommonApplication, SimObject, type SimulatedScene } from "common/scripts/game/base.ts";
 import { si_deadzone, type SI_Deadzone } from "common/scripts/game/gelo/deadzone.ts";
 import { si_gamemap, type SI_GameMap } from "common/scripts/game/gelo/map.ts";
 import { type ModeManager } from "common/scripts/game/modes/mode_manager.ts";
-import { si_loot } from "common/scripts/game/objects/loot.ts";
-import { si_human } from "common/scripts/game/objects/human/human.ts";
+import { Loot } from "common/scripts/game/objects/loot.ts";
+import { Human } from "common/scripts/game/objects/human/human.ts";
 import { si_obstacle } from "common/scripts/game/objects/static_body/obstacle.ts";
-import { si_bullet } from "common/scripts/game/objects/projectile/bullet.ts";
-import { si_explosion } from "common/scripts/game/objects/projectile/explosion.ts";
-import { si_grenade } from "common/scripts/game/objects/projectile/grenade.ts";
+import { Bullet } from "common/scripts/game/objects/projectile/bullet.ts";
+import { Explosion } from "common/scripts/game/objects/projectile/explosion.ts";
+import { Grenade } from "common/scripts/game/objects/projectile/grenade.ts";
 import { gelo_instance_type, object_instance_type } from "common/scripts/others/constants.ts";
 
-export class ServerObject extends BaseSceneObject2D{
-    declare app:CommonApplication
-    declare scene:SimulationScene
-}
+export type ServerObject=SimObject
 export class ServerGELO extends BaseGELO{
     declare app:CommonApplication
     declare scene:SimulationScene
@@ -28,7 +25,7 @@ export interface SimulationDefs{
 function obj(component:GELComponent<any>){
     const merged=gel_component.merge_deep(component)
     return ()=>{
-        const o=new ServerObject()
+        const o=new SimObject()
         o.add_component(merged)
         return o
     }
@@ -44,12 +41,12 @@ function gelo(component:GELComponent<any>){
 
 export const simulation_defs:SimulationDefs={
     objects:{
-        [object_instance_type.human]:obj(si_human),
-        [object_instance_type.loot]:obj(si_loot),
+        [object_instance_type.human]:()=>new Human(),
+        [object_instance_type.loot]:()=>new Loot(),
         [object_instance_type.obstacle]:obj(si_obstacle),
-        [object_instance_type.bullet]:obj(si_bullet),
-        [object_instance_type.explosion]:obj(si_explosion),
-        [object_instance_type.grenade]:obj(si_grenade),
+        [object_instance_type.bullet]:()=>new Bullet(),
+        [object_instance_type.explosion]:()=>new Explosion(),
+        [object_instance_type.grenade]:()=>new Grenade(),
     },
     gelo:{
         [gelo_instance_type.map]:gelo(si_gamemap),

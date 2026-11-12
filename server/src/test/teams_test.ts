@@ -1,7 +1,7 @@
 import { ClientsManager } from "common/engine/core.ts";
 import { make_packet_manager } from "common/scripts/net/packet_manager.ts";
 import { BotPlayerConn } from "common/scripts/game/players/player_conn.ts";
-import { type SI_Human } from "common/scripts/game/objects/human/human.ts";
+import { type Human } from "common/scripts/game/objects/human/human.ts";
 import { type BattleRoyale } from "common/scripts/game/modes/battle_royale.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { Game } from "../game/game.ts";
@@ -11,10 +11,10 @@ const game=new Game({tps:100,ntps:32},new ClientsManager(make_packet_manager()))
 await game.init({mode:"normal",settings:{teams:2,group_size:2,min_players:2,deadzone:false}})
 game.running=true
 const br=game.sim.mode as BattleRoyale
-const hs:SI_Human[]=[]
+const hs:Human[]=[]
 for(let i=0;i<8;i++)hs.push(br.join(new BotPlayerConn(),{name:"P"+i})!)
-const team=(h:SI_Human)=>br.teams!.of(h)!.id
-const group=(h:SI_Human)=>br.groups!.of(h)!
+const team=(h:Human)=>br.teams!.of(h)!.id
+const group=(h:Human)=>br.groups!.of(h)!
 check("teams balanced",br.teams!.teams.map((t)=>t.humans.length).join(",")==="4,4",br.teams!.teams.map((t)=>t.humans.length))
 check("groups of 2",br.groups!.teams.every((g)=>g.humans.length===2),br.groups!.teams.map((g)=>g.humans.length))
 check("groups inside a single team",br.groups!.teams.every((g)=>g.humans.every((h)=>team(h)===g.team)),br.groups!.teams.map((g)=>[g.team,...g.humans.map(team)]))

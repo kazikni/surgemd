@@ -1,9 +1,9 @@
 import { Angle, astar_path2d, BaseObject2D, Collider2D, Numeric, ObjectManager2D, random, Random1, v2, Vec2 } from "../../../../engine/core.ts";
-import { type DamageParams } from "../../../others/constants.ts";
+import { type DamageParams, ObjectType } from "../../../others/constants.ts";
 import { mode_events } from "../../modes/mode_manager.ts";
+import { type MomentaryPlayOptions } from "../../../definitions/objects/humanoid_animations.ts";
 import { type SI_StaticBody } from "../static_body/static_body.ts";
-import { type MomentaryPlayOptions } from "./humanoid.ts";
-import { type SI_Human } from "./human.ts";
+import { type Human } from "./human.ts";
 
 export interface HumanScriptWait{
     update(dt:number):boolean
@@ -36,7 +36,7 @@ export interface HumanScriptPathOptions{
 
 export function human_path_blocked(manager:ObjectManager2D<BaseObject2D>,collider:Collider2D,_x:number,_y:number,layer:number):boolean{
     for(const obj of manager.cells.get_objects(collider,layer)){
-        if(!obj.__components.has("c_static_body"))continue
+        if(obj.object_type!==ObjectType.StaticBody)continue
         const sb=obj as unknown as SI_StaticBody
         if(sb.physical.no_collision||sb.physical.no_pathfinding_collision)continue
         if(collider.colliding_with(obj.collider))return true
@@ -45,7 +45,7 @@ export function human_path_blocked(manager:ObjectManager2D<BaseObject2D>,collide
 }
 
 export class HumanScript{
-    human!:SI_Human
+    human!:Human
     take_control:boolean=false
     interactable:boolean=false
     keep_alive:boolean=false
@@ -57,7 +57,7 @@ export class HumanScript{
     move_state?:HumanScriptMoveState
     waits:HumanScriptWait[]=[]
 
-    private _human_die_cb?:(h:SI_Human,params:DamageParams)=>void
+    private _human_die_cb?:(h:Human,params:DamageParams)=>void
 
     constructor(take_control:boolean=false){
         this.take_control=take_control
@@ -77,14 +77,14 @@ export class HumanScript{
     on_damaged(_params:DamageParams,_health_damage:number){}
     on_knocked(_params:DamageParams){}
     on_die(_params:DamageParams){}
-    on_interact(_user:SI_Human){}
-    on_human_die(_human:SI_Human,_params:DamageParams){}
+    on_interact(_user:Human){}
+    on_human_die(_human:Human,_params:DamageParams){}
 
-    start(human:SI_Human){
+    start(human:Human){
         this.human=human
         this.stopped=false
         this.running=true
-        this._human_die_cb=(h:SI_Human,params:DamageParams)=>{
+        this._human_die_cb=(h:Human,params:DamageParams)=>{
             if(h!==this.human&&this.alive)this.on_human_die(h,params)
         }
         human.scene.mode?.signals.on(mode_events.human_die,this._human_die_cb)
@@ -110,9 +110,6 @@ export class HumanScript{
         this.move_state=undefined
         if(this.take_control&&this.human)this.human.clear_input()
         this.on_stop()
-    }
-    detach(){
-        if(this.human?.script===this)this.human.set_script(undefined)
     }
 
     tick(dt:number){
@@ -199,7 +196,7 @@ export class HumanScript{
     }
 
     say(text:string,time:number=3,wait:boolean=true):Promise<boolean>{
-        this.human.say(text,time)
+        this.human.input.message=text
         if(!wait)return Promise.resolve(true)
         return this.sleep(time)
     }
@@ -297,11 +294,11 @@ export class HumanScript{
     set_hand(slot:number){
         this.human.inventory.set_hand_slot(slot)
     }
-    nearby_humans(radius:number,filter?:(h:SI_Human)=>boolean):SI_Human[]{
-        const ret:SI_Human[]=[]
+    nearby_humans(radius:number,filter?:(h:Human)=>boolean):Human[]{
+        const ret:Human[]=[]
         for(const id in this.human.scene.objects.objects){
-            const o=this.human.scene.objects.objects[id] as unknown as SI_Human
-            if(o===this.human||!o.__components.has("si_human")||o.dead||o.destroyed||o.layer!==this.human.layer)continue
+            const o=this.human.scene.objects.objects[id] as unknown as Human
+            if(o===this.human||o.object_type!==ObjectType.Human||o.dead||o.destroyed||o.layer!==this.human.layer)continue
             if(v2.distance(o.position,this.human.position)>radius)continue
             if(filter&&!filter(o))continue
             ret.push(o)

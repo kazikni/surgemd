@@ -1,7 +1,8 @@
 import { Angle, gel_events, GELComponent, Numeric, Orientation, random, RotationMode, Stream, v2, Vec2 } from "../../../../engine/core.ts";
 import { ObstacleDef } from "../../../definitions/objects/obstacles.ts";
 import { DamageParams, LootData, object_instance_type } from "../../../others/constants.ts";
-import { type SI_Interactor } from "../interaction.ts";
+import { type Human } from "../human/human.ts";
+import { type Loot } from "../loot.ts";
 import { static_body_events, SI_StaticBody, type C_StaticBody, c_static_body, si_static_body } from "./static_body.ts";
 export const obstacle_events={
     set_definition:static_body_events.last,
@@ -84,8 +85,8 @@ export type SI_Obstacle=C_Obstacle&SI_StaticBody&{
     loot:LootData[]
     damage(damage:DamageParams):void
     load_loot():void
-    can_interact(user:SI_Interactor):boolean
-    on_interact(user:SI_Interactor):void
+    can_interact(user:Human):boolean
+    on_interact(user:Human):void
     init(rotation?:number,scale?:number,variation?:number,parent_side?:number):void
     set_position(position:Vec2):void
     reset_scale():void
@@ -121,8 +122,8 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
         [obstacle_events.die]:function(){
             const pos=v2.clone(this.position)
             for(const l of this.loot){
-                const loot=this.scene.add_object(this.scene.make_object(object_instance_type.loot),this.layer,undefined,{data:l,position:v2.add(pos,v2.random(-0.5,0.5))})
-                ;(loot as {push?:(speed:number,angle:number)=>void}).push?.(random.float(0.5,2),random.rad())
+                const loot=this.scene.add_object(this.scene.make_object(object_instance_type.loot)!,this.layer,undefined,{data:l,position:v2.add(pos,v2.random(-0.5,0.5))}) as Loot
+                loot.push(random.float(0.5,2),random.rad())
             }
             this.loot.length=0
             if(!this.def.keep_collision_on_die){
@@ -176,11 +177,11 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
             }
             this.set_dirty_part()
         },
-        can_interact(user:SI_Interactor):boolean{
+        can_interact(user:Human):boolean{
             if(this.destroyed||!this.def.interactDestroy||!this.health||this.health.dead)return false
             return user.collider.colliding_with(this.interaction_collider??this.collider)||user.collider.colliding_with(this.collider)
         },
-        on_interact(user:SI_Interactor){
+        on_interact(user:Human){
             if(this.def.interactDestroy){
                 this.die()
             }

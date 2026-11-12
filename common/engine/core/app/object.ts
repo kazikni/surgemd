@@ -8,6 +8,18 @@ import { Rect } from "../math/geometry.ts";
 import { BaseGEL, gel_events, GELComponent, GELEvent } from "./gel.ts";
 export type GameObjectID=ID
 
+const object_hooks:[number,string][]=[
+    [gel_events.create,"on_create"],
+    [gel_events.destroy,"on_destroy"],
+    [gel_events.layer_set,"on_layer_set"],
+    [gel_events.tick,"on_tick"],
+    [gel_events.net_encode,"on_encode_net"],
+    [gel_events.net_decode,"on_decode_net"],
+    [gel_events.net_update,"on_net_update"],
+    [gel_events.checkpoint_encode,"on_encode_checkpoint"],
+    [gel_events.checkpoint_decode,"on_decode_checkpoint"],
+]
+
 export abstract class BaseObject2D extends BaseGEL{
     // Physical
     public collider:Collider2D
@@ -55,6 +67,9 @@ export abstract class BaseObject2D extends BaseGEL{
         this._position=new Vec2M(0,0,this.update_collider.bind(this))
         this._base_collider=new NullCollider2D(v2(0,0))
         this.collider=this.base_collider.transform(this._position)
+        for(const [event,method] of object_hooks){
+            if(typeof (this as any)[method]==="function")this.son(event,method)
+        }
     }
 
     update_collider():void{

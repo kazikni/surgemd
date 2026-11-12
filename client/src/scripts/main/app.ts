@@ -8,7 +8,7 @@ import { ApiSettings, game_version } from "common/scripts/config/config.ts";
 import { warning_popup } from "../scenes/menu/def.ts";
 import { CutsceneScene } from "../scenes/cutscene/scene.ts";
 import { CommonApplication } from "common/scripts/game/base.ts";
-import { OnlineGameOptions, PlayScene, SelfGameOptions, WorkerGameOptions, type PlaySceneKind } from "../scenes/play/scene.ts";
+import { OnlineGameOptions, PlayScene, WorkerGameOptions, type PlaySceneKind } from "../scenes/play/scene.ts";
 
 import { InitialScreenScene } from "../scenes/initial_screen/scene.ts";
 import { JoinData } from "common/scripts/net/join_packet.ts";
@@ -98,7 +98,7 @@ export class Application extends ClientApplication implements CommonApplication{
         //this.scene=this.menu_scene
 
         const params=new URLSearchParams(location.search)
-        const kind=(params.get("play")??"self") as Exclude<PlaySceneKind,"none">
+        const kind=(params.get("play")??"worker") as Exclude<PlaySceneKind,"none">
         const mode=params.get("mode")??undefined
         await this.play(kind,{
             url:params.get("server")??undefined,
@@ -113,12 +113,9 @@ export class Application extends ClientApplication implements CommonApplication{
         this.global_interpolation=Numeric.get_interpolation_t(this.tps,dt)
     }
 
-    async play(kind:Exclude<PlaySceneKind,"none">,options?:SelfGameOptions|WorkerGameOptions|OnlineGameOptions,join?:JoinData){
+    async play(kind:Exclude<PlaySceneKind,"none">,options?:WorkerGameOptions|OnlineGameOptions,join?:JoinData){
         const game=this.play_scene
         switch(kind){
-            case "self":
-                await game.self_initialize(options as SelfGameOptions)
-                break
             case "worker":
                 await game.worker_initialize(options as WorkerGameOptions)
                 break

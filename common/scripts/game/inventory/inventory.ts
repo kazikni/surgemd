@@ -2,7 +2,7 @@ import { ActionsManager, BaseAction, Numeric, random, Stream, v2, Vec2 } from ".
 import { type GameDefinition, type GameItem } from "../../definitions/game_defs.ts";
 import { type BackpackDef } from "../../definitions/items/backpacks.ts";
 import { GameItemType } from "../../definitions/utils.ts";
-import { type LootData, object_instance_type } from "../../others/constants.ts";
+import { HumanAnimationType, type HumanAnimation, type LootData, object_instance_type } from "../../others/constants.ts";
 import { type CommonApplication, type SimulatedScene } from "../base.ts";
 
 export enum InventoryDisplay{
@@ -33,7 +33,8 @@ export interface InventoryOwner{
         distance_to_aim:number
     }
     knocked?:boolean
-    hand_locked?():boolean
+    hand_locked:boolean
+    animations:HumanAnimation[]
     get_modifier?(name:string):number
     emit_event(event:string|number,...args:any[]):void
 }
@@ -78,6 +79,7 @@ export abstract class InventoryItem<Owner extends InventoryOwner=InventoryOwner>
     skin?:number
     droppable:boolean=true
     allow_merge:boolean=false
+    use_delay:number=0
 
     get owner():Owner{
         return this.inventory.owner
@@ -168,7 +170,6 @@ export const inventory_events={
     fire:"inventory_fire",
     reload:"inventory_reload",
     drop:"inventory_drop",
-    animation:"inventory_animation",
 }
 
 export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
@@ -566,11 +567,15 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
         this.hand_index=index
         this.hand_item?.load(old?.def)
         this.dirty.hand=true
+        if(old&&this.hand_item)this.owner.animations.push({type:HumanAnimationType.Switch,item:this.definitions.game_items.keysString[this.hand_item.def.id_string]})
         this.owner.emit_event(inventory_events.hand,this.hand_item,old)
     }
     set_hand_slot(n:number){
         const s=this.hand_slots[n]
-        if(s)this.set_hand(s.index)
+        const hand=this.hand_item
+        if(!s||this.owner.hand_locked)return
+        if(this.owner.scene.mode.rules.humans.no_quickswitch&&hand?.def.item_type===GameItemType.gun&&hand.use_delay>0)return
+        this.set_hand(s.index)
     }
     select_default_hand(){
         const s=this.hand_slots.find((v)=>!v.empty)??this.slots.find((v)=>this.can_hold(v))
@@ -601,11 +606,11 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
     }
     use_slot(index:number){
         const s=this.slots[index]
-        if(!s?.item||s.empty||this.owner.hand_locked?.())return
+        if(!s?.item||s.empty||this.owner.hand_locked)return
         s.item.on_use()
     }
     reload(){
-        if(this.owner.hand_locked?.())return
+        if(this.owner.hand_locked)return
         this.hand_item?.reload()
     }
 

@@ -1,5 +1,5 @@
 import { Client, DefaultSignals, DynamicStream, RectCollider2D, v2, Vec2 } from "common/engine/core.ts";
-import { type SI_Human } from "common/scripts/game/objects/human/human.ts";
+import { type Human } from "common/scripts/game/objects/human/human.ts";
 import { PlayerConn } from "common/scripts/game/players/player_conn.ts";
 import { type InputPacket } from "common/scripts/net/input_packet.ts";
 import { JoinedPacket, type JoinPacket } from "common/scripts/net/join_packet.ts";
@@ -65,7 +65,7 @@ export class NetPlayerConn extends PlayerConn{
         this.client.emit_packet(jp)
     }
 
-    override set_human(human?: SI_Human): void {
+    override set_human(human?: Human): void {
         super.set_human(human)
         this.full_update=true
     }

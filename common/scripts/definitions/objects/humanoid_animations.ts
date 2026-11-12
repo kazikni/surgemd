@@ -21,6 +21,20 @@ export interface HumanoidMomentaryDef extends Definition{
     variations?:HumanoidMomentaryVariation[]
 }
 
+export interface HumanoidMomentaryState{
+    def:HumanoidMomentaryDef
+    variation:number
+    time:number
+    duration?:number
+}
+
+export interface MomentaryPlayOptions{
+    item?:{id_string:string,item_type?:GameItemType}
+    duration?:number
+    force?:boolean
+    on_end?:(completed:boolean)=>void
+}
+
 export const HumanoidAnimations=new Definitions<HumanoidMomentaryDef,{}>()
 
 const left=DefaultFistRig.left!

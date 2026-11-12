@@ -5,7 +5,7 @@ import { DamageReason } from "../../definitions/utils.ts";
 import { type DamageParams, gelo_instance_type } from "../../others/constants.ts";
 import { type DeadzoneConfig, DefaultDeadzone, type SI_Deadzone } from "../gelo/deadzone.ts";
 import { SI_GameMap } from "../gelo/map.ts";
-import { type SI_Human } from "../objects/human/human.ts";
+import { type Human } from "../objects/human/human.ts";
 import { DefaultPlayerStatus, ModeManager, type Player, type PlayerStatus } from "./mode_manager.ts";
 import { Group, GroupsManager, Team, TeamsManager } from "./teams.ts";
 
@@ -111,7 +111,7 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
             stream.write_array(m?.teams??[],(t:Team)=>{
                 stream.write_uint16(t.id)
                 stream.write_uint16((t as Group).team??0)
-                stream.write_array(t.humans,(h:SI_Human)=>stream.write_id(h.id),2)
+                stream.write_array(t.humans,(h:Human)=>stream.write_id(h.id),2)
             },2)
         }
         membership(this.teams)
@@ -131,7 +131,7 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
                 }
                 if(t instanceof Group)t.team=team
                 stream.read_array(()=>{
-                    const h=this.scene.objects.get_object(stream.read_id()) as SI_Human|undefined
+                    const h=this.scene.objects.get_object(stream.read_id()) as Human|undefined
                     if(h&&t)t.add_human(h)
                 },2)
             },2)
@@ -139,7 +139,7 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
         membership(this.teams)
         membership(this.groups)
     }
-    override on_human_die(h:SI_Human,params:DamageParams){
+    override on_human_die(h:Human,params:DamageParams){
         const p=this.players.of(h)
         if(p)p.status.rank=this.players.living().length+1
         super.on_human_die(h,params)
@@ -157,7 +157,7 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
             this.finish(sides.size===1?[...sides.values()][0]:[])
         }
     }
-    override get_spawn_position(h:SI_Human):Vec2|undefined{
+    override get_spawn_position(h:Human):Vec2|undefined{
         const g=this.groups?.of(h)
         if(g&&(this.settings.group_spawn??true)){
             const ally=g.choose_human(h)
@@ -170,13 +170,13 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
         return super.get_spawn_position(h)
     }
 
-    override can_knock(h:SI_Human):boolean{
+    override can_knock(h:Human):boolean{
         if(this.rules.humans.knock_enabled)return true
         if(this.groups?.of(h)?.can_knock(h))return true
         if(this.teams?.of(h)?.can_knock(h))return true
         return false
     }
-    override is_ally(a:SI_Human,b:SI_Human):boolean{
+    override is_ally(a:Human,b:Human):boolean{
         const ga=this.groups?.of(a)
         if(ga&&ga===this.groups?.of(b))return true
         const ta=this.teams?.of(a)
@@ -192,14 +192,14 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
         super.leave(p)
     }
 
-    put_on_side(h:SI_Human,team?:Team){
+    put_on_side(h:Human,team?:Team){
         if(this.teams){
             team??=this.teams.of(h)??this.teams.smallest()
             team?.add_human(h)
         }
         this.groups?.put(h,team?.id??0)
     }
-    get_side(h:SI_Human):object|undefined{
+    get_side(h:Human):object|undefined{
         return this.teams?.of(h)??this.groups?.of(h)
     }
     get_living_sides():Map<object,Player<BattleRoyaleStatus>[]>{

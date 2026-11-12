@@ -1,166 +1,132 @@
-import { ColorM, gel_events, GELComponent, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleCollider2D, ColorM, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Sprite2D } from "common/engine/web.ts";
-import { bullet_events, c_bullet, type C_Bullet, si_bullet, type SI_Bullet } from "common/scripts/game/objects/projectile/bullet.ts";
-import { projectile_events } from "common/scripts/game/objects/projectile/projectile.ts";
 import { type C_StaticBody } from "common/scripts/game/objects/static_body/static_body.ts";
-import { zIndexes } from "common/scripts/others/constants.ts";
+import { object_instance_type, ObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../../main/gel.ts";
+import { type Human } from "../human.ts";
 
-export type BulletHitVisual=GameObject&{
-    dead?:boolean
-    on_hitted?(position:Vec2,critical?:boolean,sound?:string,reflected?:boolean,weight?:number):void
+type Hittable=GameObject&{
+    on_hitted(position:Vec2,critical?:boolean,sound?:string,reflected?:boolean,weight?:number):void
 }
 
-export type CC_Bullet=GameObject&C_Bullet&{
-    sprite_trail:Sprite2D
-    max_length:number
-    trail_time:number
-    visual_ready:boolean
-    whiz:boolean
+export class Bullet extends GameObject{
+    speed:number=0
+    max_distance:number=1
+    angle:number=0
+    weight:number=0
+    critical:boolean=false
+    hit_owner:boolean=false
+    pass_through_humans:boolean=false
+    pass_through_everthing:boolean=false
+    owner_id:number=0
 
-    setup_visual():void
-    tick_trail(dt:number):void
-    tick_whiz():void
-    finish():void
-}
+    initial_position:Vec2=v2.zero()
+    old_position:Vec2=v2.zero()
+    velocity:Vec2=v2.zero()
+    tticks:number=0
+    max_length:number=0.3
+    collided_with=new Set<number>()
+    dying:boolean=false
+    whiz:boolean=false
+    sprite_trail=new Sprite2D()
 
-export const cc_bullet:GELComponent<CC_Bullet>={
-    id_string:"cc_bullet",
-    extensions:[c_bullet],
-    events:{
-        [gel_events.bind](){
-            this.allow_tick=true
-            this.max_length=0.3
-            this.trail_time=0
-            this.visual_ready=false
-            this.whiz=false
+    constructor(){
+        super()
+        this.object_type=ObjectType.Bullet
+        this.instance_type=object_instance_type.bullet
+        this.allow_tick=true
+        this.base_collider=new CircleCollider2D(v2(0,0),0.2)
+        this.sprite_trail.hotspot=v2(1,0.5)
+        this.sprite_trail.visible=false
+        this.sprite_trail.zIndex=zIndexes.Bullets
+    }
 
-            this.sprite_trail=new Sprite2D()
-            this.sprite_trail.hotspot=v2(1,0.5)
-            this.sprite_trail.visible=false
-            this.sprite_trail.zIndex=zIndexes.Bullets
-        },
-        [gel_events.create](){
-            this.sprite_trail.frame=this.app.resources.get_frame("base_trail")
-            this.sprite_trail.size=v2(200,17)
-            this.scene.camera.add_object(this.sprite_trail)
-        },
-        [gel_events.layer_set](){
-            this.sprite_trail.layer=this.layer
-        },
-        [gel_events.destroy](){
-            this.sprite_trail.destroy()
-        },
-        [bullet_events.hit_visual](obj:BulletHitVisual,position:Vec2,reflected:boolean){
-            obj.on_hitted?.(position,this.critical,undefined,reflected,this.weight)
-        },
-    },
-    methods:{
-        setup_visual(){
-            this.visual_ready=true
-            this.sprite_trail.rotation=this.angle
-            this.max_length=this.tracer_width
-            this.sprite_trail.scale.y=this.tracer_height
-            const col=ColorM.number(this.tracer_color)
-            col.a=this.tracer_alpha
-            this.sprite_trail.tint=col
-            this.sprite_trail.visible=true
-            this.sprite_trail.position=this.position
-        },
-        tick_trail(dt:number){
-            if(this.finished){
-                this.trail_time-=dt
-                if(this.trail_time<=0){
-                    this.destroy()
-                    return
-                }
-            }else if(this.sprite_trail.scale.x<this.max_length){
-                this.trail_time+=dt
+    on_create(){
+        this.sprite_trail.frame=this.app.resources.get_frame("base_trail")
+        this.sprite_trail.size=v2(200,17)
+        this.scene.camera.add_object(this.sprite_trail)
+    }
+    on_layer_set(){
+        this.sprite_trail.layer=this.layer
+    }
+    on_destroy(){
+        this.sprite_trail.destroy()
+    }
+
+    on_decode_net(stream:Stream,full:boolean){
+        this.position=stream.read_pos2()
+        this.old_position=v2.clone(this.position)
+        this.tticks=stream.read_float(0,100,2)
+        if(!full)return
+        this.initial_position=stream.read_pos2()
+        this.max_distance=stream.read_float32()
+        this.speed=stream.read_float32()
+        this.angle=stream.read_rad()
+        this.weight=stream.read_uint8()
+        this.max_length=stream.read_float32()
+        this.sprite_trail.scale.y=stream.read_float32()
+        const color=ColorM.number(stream.read_uint32())
+        color.a=stream.read_uint8()
+        this.sprite_trail.tint=color
+        const [hit_owner,critical,pass_through_humans,pass_through_everthing]=stream.read_boolean_group()
+        this.hit_owner=hit_owner
+        this.critical=critical
+        this.pass_through_humans=pass_through_humans
+        this.pass_through_everthing=pass_through_everthing
+        this.owner_id=stream.read_id()
+        this.velocity=v2.from_RadAngle(this.angle,this.speed)
+        this.sprite_trail.rotation=this.angle
+        this.sprite_trail.visible=true
+    }
+
+    on_tick(dt:number){
+        if(v2.distance(this.initial_position,this.position)>this.max_distance)this.die()
+        if(this.dying){
+            this.tticks-=dt
+            if(this.tticks<=0)this.destroy()
+        }else{
+            this.old_position=v2.clone(this.position)
+            if(this.sprite_trail.scale.x<this.max_length)this.tticks+=dt
+            v2m.add_component(this._position,this.velocity.x*dt,this.velocity.y*dt)
+            if(!this.whiz&&!(this.owner_id===(this.scene as {active_id?:number}).active_id&&!this.hit_owner)&&v2.distance(this.position,this.scene.camera.position)<7){
+                this.whiz=true
+                this.app.sounds.play(this.app.resources.get_sound("bullet_whiz_"+random.int(1,3)),{
+                    position:v2.clone(this.position),
+                    max_distance:20,
+                    volume:0.6,
+                    bus:"objects",
+                })
+            }
+            for(const obj of this.manager.cells.get_objects(this.collider,this.layer) as GameObject[]){
+                if(this.dying)break
+                if(obj.id!==this.id&&!this.collided_with.has(obj.id))this.collide(obj)
             }
             this.sprite_trail.position=this.position
-            const traveled=v2.distance(this.initial_position,this.position)
-            this.sprite_trail.scale.x=Math.min(Math.min(this.speed*this.trail_time,traveled),this.max_length)
-        },
-        tick_whiz(){
-            if(this.whiz||this.finished)return
-            const active=(this.scene as {active_id?:number}).active_id
-            if(this.owner_id===active&&!this.hit_owner)return
-            if(v2.distance(this.position,this.scene.camera.position)>=7)return
-            this.whiz=true
-            this.app.sounds.play(this.app.resources.get_sound("bullet_whiz_"+random.int(1,3)),{
-                position:v2.clone(this.position),
-                max_distance:20,
-                volume:0.6,
-                bus:"objects",
-            })
-        },
-        finish(){
-            if(this.finished)return
-            this.finished=true
-            this.velocity.x=0
-            this.velocity.y=0
-            this.emit_event(projectile_events.finish)
-        },
-    },
-}
+        }
+        this.sprite_trail.scale.x=Math.min(this.speed*this.tticks,v2.distance(this.initial_position,this.position),this.max_length)
+    }
 
-export const ccs_bullet:GELComponent<CC_Bullet&SI_Bullet>={
-    id_string:"ccs_bullet",
-    extensions:[si_bullet,cc_bullet],
-    events:{
-        [gel_events.tick](dt:number){
-            if(!this.visual_ready)this.setup_visual()
-            this.tick_whiz()
-            this.tick_trail(dt)
-        },
-    },
-}
-
-export const ccn_bullet:GELComponent<CC_Bullet>={
-    id_string:"ccn_bullet",
-    extensions:[cc_bullet],
-    events:{
-        [gel_events.net_decode](stream:Stream,full:boolean){
-            this.decode_bullet(stream,full)
-            if(full){
-                this.trail_time=this.tticks
-                this.setup_visual()
-            }
-        },
-        [gel_events.tick](dt:number){
-            if(!this.visual_ready)return
-            if(!this.finished){
-                if(v2.distance(this.initial_position,this.position)>this.max_distance){
-                    this.finish()
-                }else{
-                    this.old_position=v2.clone(this.position)
-                    v2m.add_component(this._position,this.velocity.x*dt,this.velocity.y*dt)
-                    this.tick_whiz()
-                    const objs:GameObject[]=this.manager.cells.get_objects(this.collider,this.layer)
-                    for(const obj of objs){
-                        if(this.finished)break
-                        if(obj.id===this.id||this.collided_with.has(obj.id))continue
-                        if(obj.__components.has("c_human")){
-                            const h=obj as BulletHitVisual
-                            if(h.dead||(obj.id===this.owner_id&&!this.hit_owner))continue
-                            const col=obj.collider.overlap_line(this.old_position,this.position)
-                            if(!col)continue
-                            this.collided_with.add(obj.id)
-                            this.emit_event(bullet_events.hit_visual,obj,v2.clone(col.point),false)
-                            if(!(this.pass_through_humans||this.pass_through_everthing))this.finish()
-                        }else if(obj.__components.has("c_static_body")){
-                            const sb=obj as GameObject&C_StaticBody
-                            if(sb.physical.no_projectiles_collision)continue
-                            const col=obj.collider.overlap_line(this.old_position,this.position)
-                            if(!col)continue
-                            this.collided_with.add(obj.id)
-                            this.emit_event(bullet_events.hit_visual,obj,v2.clone(col.point),false)
-                            if(!(sb.physical.passable_by_projectiles||this.pass_through_everthing))this.finish()
-                        }
-                    }
-                }
-            }
-            this.tick_trail(dt)
-        },
-    },
+    collide(obj:GameObject){
+        if(obj.object_type===ObjectType.Human){
+            const human=obj as unknown as Human
+            if(human.dead||(obj.id===this.owner_id&&!this.hit_owner))return
+            const col_body=obj.collider.overlap_line(this.old_position,this.position)
+            const col_reflect=human.get_reflect_collider()?.overlap_line(this.old_position,this.position)
+            if(!col_body&&!col_reflect)return
+            const is_reflect=(col_reflect?v2.distance(this.old_position,col_reflect.point):Infinity)<(col_body?v2.distance(this.old_position,col_body.point):Infinity)
+            this.collided_with.add(obj.id)
+            human.on_hitted((is_reflect?col_reflect:col_body)!.point,this.critical,undefined,is_reflect,this.weight)
+            if(!(this.pass_through_humans||this.pass_through_everthing)||is_reflect)this.die()
+        }else if(obj.object_type===ObjectType.StaticBody){
+            const body=obj as Hittable&C_StaticBody
+            if(body.physical.no_projectiles_collision||!obj.collider.overlap_line(this.old_position,this.position))return
+            this.collided_with.add(obj.id)
+            body.on_hitted(this.position,this.critical)
+            if(!(body.physical.passable_by_projectiles||this.pass_through_everthing))this.die()
+        }
+    }
+    die(){
+        this.dying=true
+        this.velocity=v2.zero()
+    }
 }

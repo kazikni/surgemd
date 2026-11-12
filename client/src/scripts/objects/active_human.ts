@@ -1,38 +1,42 @@
 import { gel_events, GELComponent, Numeric, v2 } from "common/engine/core.ts";
 import { InputEvent, InputEventType } from "common/engine/web.ts";
-import { type SI_Human } from "common/scripts/game/objects/human/human.ts";
 import { InputAction, InputActionType, InputPacket, type InputData } from "common/scripts/net/input_packet.ts";
-import { type CC_Human } from "./human.ts";
+import { type Human } from "./human.ts";
 
-export type CC_ActiveHuman=CC_Human&{
+export type ActiveHuman=Human&{
     active:{
         zoom:number
         input_listener?:(e:InputEvent)=>void
     }
+    scene:{client?:{emit_packet(p:InputPacket):void}}
     read_input():InputData
     release_active():void
 }
 
-export const cc_active_human:GELComponent<CC_ActiveHuman>={
-    id_string:"cc_active_human",
+export const active_human:GELComponent<ActiveHuman>={
+    id_string:"active_human",
     events:{
         [gel_events.bind](){
-            this.active={
-                zoom:1,
-            }
+            this.active={zoom:1}
         },
         [gel_events.create](){
             if(this.active.input_listener)return
-            this.active.input_listener=(_e:InputEvent)=>{
-            }
+            this.active.input_listener=()=>{}
             this.app.input.listener.on(InputEventType.ActionDown,this.active.input_listener)
             this.scene.camera.position=v2.clone(this.position)
         },
         [gel_events.tick](dt:number){
             const cam=this.scene.camera
-            const t=Numeric.clamp(dt*12,0,1)
             cam.position=this.container?this.container.position:this.position
-            cam.zoom=Numeric.lerp(cam.zoom,this.active.zoom,t)
+            cam.zoom=Numeric.lerp(cam.zoom,this.active.zoom,Numeric.clamp(dt*12,0,1))
+            if(this.dead)return
+            const input=this.read_input()
+            this._rotation_set=!this.app.save.settings.get_var("game_client_rot")
+            if(!this._rotation_set){
+                this.rotation=input.rotation
+                this.container.rotation=input.rotation
+            }
+            this.scene.client?.emit_packet(new InputPacket(input))
         },
         [gel_events.destroy](){
             this.release_active()
@@ -42,15 +46,8 @@ export const cc_active_human:GELComponent<CC_ActiveHuman>={
         read_input():InputData{
             const input=this.app.input
             const actions:InputAction[]=[]
-
-            if(input.adown.has("weapon1")){
-                actions.push({type:InputActionType.set_hand,hand:0})
-            }
-            if(input.adown.has("weapon2")){
-                actions.push({type:InputActionType.set_hand,hand:1})
-            }
-            if(input.adown.has("weapon3")){
-                actions.push({type:InputActionType.set_hand,hand:2})
+            for(let i=0;i<3;i++){
+                if(input.adown.has(`weapon${i+1}`))actions.push({type:InputActionType.set_hand,hand:i})
             }
             for(let i=0;i<7;i++){
                 if(input.adown.has(`use_item${i+1}`)){
@@ -58,13 +55,10 @@ export const cc_active_human:GELComponent<CC_ActiveHuman>={
                     break
                 }
             }
-
             const axis=input.axis["movement"]?.old??v2.zero()
             const len=Numeric.clamp(v2.len(axis),0,1)
-
             const canvas_rect=this.app.renderer.canvas.getBoundingClientRect()
             const cam_s=v2(canvas_rect.width/2,canvas_rect.height/2)
-
             return {
                 actions,
                 movement:{
@@ -83,41 +77,9 @@ export const cc_active_human:GELComponent<CC_ActiveHuman>={
             }
         },
         release_active(){
-            if(this.active?.input_listener){
-                this.app.input.listener.off(InputEventType.ActionDown,this.active.input_listener)
-                this.active.input_listener=undefined
-            }
-        },
-    }
-}
-
-export const ccs_active_human:GELComponent<CC_ActiveHuman&SI_Human>={
-    id_string:"ccs_active_human",
-    extensions:[cc_active_human],
-    events:{
-        [gel_events.tick](){
-            if(this.dead)return
-            this.process_input(this.read_input())
-        },
-    },
-}
-
-export type CCN_ActiveHuman=CC_ActiveHuman&{
-    scene:{client?:{emit_packet(p:InputPacket):void}}
-}
-export const ccn_active_human:GELComponent<CCN_ActiveHuman>={
-    id_string:"ccn_active_human",
-    extensions:[cc_active_human],
-    events:{
-        [gel_events.tick](){
-            if(this.dead)return
-            const input=this.read_input()
-            this._rotation_set=!this.app.save.settings.get_var("game_client_rot")
-            if(!this._rotation_set){
-                this.rotation=input.rotation
-                this.container.rotation=input.rotation
-            }
-            this.scene.client?.emit_packet(new InputPacket(input))
+            if(!this.active?.input_listener)return
+            this.app.input.listener.off(InputEventType.ActionDown,this.active.input_listener)
+            this.active.input_listener=undefined
         },
     },
 }

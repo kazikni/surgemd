@@ -1,16 +1,13 @@
 import { Angle, Numeric, random, v2, v2m, Vec2 } from "../../../engine/core.ts";
 import { type ItemFireDefinition } from "../../definitions/utils.ts";
-import { object_instance_type } from "../../others/constants.ts";
-import { type SimulatedObject } from "../base.ts";
-import { type SI_Bullet } from "../objects/projectile/bullet.ts";
-import { type SI_Grenade } from "../objects/projectile/grenade.ts";
+import { object_instance_type, ObjectType } from "../../others/constants.ts";
+import { type SimObject } from "../base.ts";
+import { type Human } from "../objects/human/human.ts";
+import { type Bullet } from "../objects/projectile/bullet.ts";
+import { type Grenade } from "../objects/projectile/grenade.ts";
 import { spawn_projectile } from "../objects/projectile/projectile.ts";
 import { type SI_StaticBody } from "../objects/static_body/static_body.ts";
-import { type InventoryItem, type InventoryOwner } from "./inventory.ts";
-
-export type FireUser=InventoryOwner&SimulatedObject&{
-    physical?:{velocity:Vec2}
-}
+import { type InventoryItem } from "./inventory.ts";
 
 export interface FireState{
     fire_sequence:number
@@ -34,12 +31,12 @@ export function patterning_shape(count:number,radius:number):Vec2[]{
     return [v2(0,0),...shape(count-1)(radius)]
 }
 
-export function clip_muzzle(user:FireUser,muzzle:Vec2):Vec2{
+export function clip_muzzle(user:Human,muzzle:Vec2):Vec2{
     const start=user.position
     let best=v2.distance(start,muzzle)
-    const objs=user.scene.cells.ray(start,muzzle,user.layer) as SimulatedObject[]
+    const objs=user.scene.cells.ray(start,muzzle,user.layer) as SimObject[]
     for(const obj of objs){
-        if(!obj.__components.has("c_static_body"))continue
+        if(obj.object_type!==ObjectType.StaticBody)continue
         const sb=obj as SI_StaticBody
         if(sb.physical.no_collision||sb.physical.no_projectiles_collision||sb.physical.passable_by_projectiles)continue
         const hit=obj.collider.overlap_line(start,muzzle)
@@ -55,18 +52,16 @@ export function clip_muzzle(user:FireUser,muzzle:Vec2):Vec2{
     return ret
 }
 
-export function fire_item(user:FireUser,item:InventoryItem&FireState,position:Vec2,def:ItemFireDefinition){
+export function fire_item(user:Human,item:InventoryItem&FireState,position:Vec2,def:ItemFireDefinition){
     const rules=user.scene.mode.rules.humans
     let spread=def.spread??0
-    const velocity=user.physical?.velocity
-    const is_idle=velocity?v2.len(velocity)<=0.01:true
+    const is_idle=v2.len(user.velocity)<=0.01
     if(is_idle&&def.idle_spread!==undefined)spread*=def.idle_spread
     if(def.fire_sequence){
         const time=def.fire_sequence.ease===undefined?item.fire_sequence:def.fire_sequence.ease(item.fire_sequence)
         if(def.fire_sequence.spread)spread*=Numeric.lerp(def.fire_sequence.spread.begin,def.fire_sequence.spread.end??1,time)
         item.fire_sequence=Math.min(item.fire_sequence+def.fire_sequence.increse,1)
     }
-    const modifier=(name:string)=>user.get_modifier?.(name)??1
 
     if(def.bullet){
         const ammo=user.app.definitions.ammos.getFromStringSafe(def.ammo_type)
@@ -79,7 +74,7 @@ export function fire_item(user:FireUser,item:InventoryItem&FireState,position:Ve
                 const a=random.rad()
                 v2m.add(pos,pos,v2(Math.cos(a)*def.jitter_radius*0.5,Math.sin(a)*def.jitter_radius))
             }
-            const b=spawn_projectile<SI_Bullet>(user.scene,object_instance_type.bullet,user.layer,{
+            const b=spawn_projectile<Bullet>(user.scene,object_instance_type.bullet,user.layer,{
                 position:pos,
                 owner:user,
                 source:item.def,
@@ -87,8 +82,8 @@ export function fire_item(user:FireUser,item:InventoryItem&FireState,position:Ve
                 critical:Math.random()<=(is_idle?rules.idle_critical_chance:rules.critical_chance),
                 def:def.bullet.def,
             })
-            b.speed*=modifier("bullet_speed")
-            b.tracer_height*=modifier("bullet_size")
+            b.speed*=user.get_modifier("bullet_speed")
+            b.tracer_height*=user.get_modifier("bullet_size")
             b.set_direction(angle)
         }
     }
@@ -98,7 +93,7 @@ export function fire_item(user:FireUser,item:InventoryItem&FireState,position:Ve
         const gdef=user.app.definitions.grenades.getFromString(def.projectile.def)
         for(let i=0;i<count;i++){
             const pos=def.jitter_radius?v2.add(position,pattern[i]):v2.clone(position)
-            const p=spawn_projectile<SI_Grenade>(user.scene,object_instance_type.grenade,user.layer,{
+            const p=spawn_projectile<Grenade>(user.scene,object_instance_type.grenade,user.layer,{
                 position:pos,
                 def:gdef,
                 owner:user,

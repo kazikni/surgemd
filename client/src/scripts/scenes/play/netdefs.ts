@@ -5,12 +5,12 @@ import { ccn_deadzone } from "../../gelo/deadzone.ts";
 import { ccn_gamemap } from "../../gelo/map.ts";
 import { Debug_Colliders } from "../../main/config.ts";
 import { GameGELO, GameObject } from "../../main/gel.ts";
-import { ccn_loot } from "../../objects/loot.ts";
-import { ccn_human } from "../../objects/moving_body/human.ts";
+import { Loot } from "../../objects/loot.ts";
+import { Human } from "../../objects/human.ts";
 import { ccn_obstacle } from "../../objects/static_body/obstacle.ts";
-import { ccn_bullet } from "../../objects/projectile/bullet.ts";
-import { ccn_explosion } from "../../objects/projectile/explosion.ts";
-import { ccn_grenade } from "../../objects/projectile/grenade.ts";
+import { Bullet } from "../../objects/projectile/bullet.ts";
+import { Explosion } from "../../objects/projectile/explosion.ts";
+import { Grenade } from "../../objects/projectile/grenade.ts";
 import { type PlaySceneDefs } from "./scene.ts";
 
 function obj(component:GELComponent<any>){
@@ -37,11 +37,11 @@ export const net_scene_defs:PlaySceneDefs={
         [gelo_instance_type.deadzone]:gelo(ccn_deadzone),
     },
     objects:{
-        [object_instance_type.loot]:obj(ccn_loot),
+        [object_instance_type.loot]:()=>new Loot(),
         [object_instance_type.obstacle]:obj(ccn_obstacle),
-        [object_instance_type.human]:obj(ccn_human),
-        [object_instance_type.bullet]:obj(ccn_bullet),
-        [object_instance_type.explosion]:obj(ccn_explosion),
-        [object_instance_type.grenade]:obj(ccn_grenade),
+        [object_instance_type.human]:()=>new Human(),
+        [object_instance_type.bullet]:()=>new Bullet(),
+        [object_instance_type.explosion]:()=>new Explosion(),
+        [object_instance_type.grenade]:()=>new Grenade(),
     }
 }

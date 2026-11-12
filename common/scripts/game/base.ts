@@ -1,4 +1,4 @@
-import { type BaseSceneObject2D, type AbstractApplication, Scene2D, SceneGELO } from "../../engine/core.ts";
+import { BaseSceneObject2D, type AbstractApplication, Scene2D, SceneGELO } from "../../engine/core.ts";
 import { type GameDefinition } from "../definitions/game_defs.ts";
 import { type C_GameMap, type SI_GameMap } from "./gelo/map.ts";
 import { type SI_Deadzone } from "./gelo/deadzone.ts";
@@ -34,4 +34,9 @@ export type SimulatedObject=BaseSceneObject2D&{
 export type SimulatedGELO=SceneGELO&{
     app:CommonApplication
     scene:SimulatedScene
+}
+
+export class SimObject extends BaseSceneObject2D{
+    declare app:CommonApplication
+    declare scene:SimulatedScene
 }

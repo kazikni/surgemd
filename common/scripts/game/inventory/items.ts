@@ -7,12 +7,13 @@ import { type GrenadeDef } from "../../definitions/items/grenades.ts";
 import { type ConsumibleCondition, type ConsumibleDef, type ConsumingAction as ConsumingActionDef } from "../../definitions/items/consumibles.ts";
 import { type SideEffect } from "../../definitions/player/effects.ts";
 import { DamageReason, GameItemType } from "../../definitions/utils.ts";
-import { type DamageParams, HumanAnimationType, type HumanAnimation, type LootData, object_instance_type } from "../../others/constants.ts";
+import { type DamageParams, HumanAnimationType, type LootData, object_instance_type } from "../../others/constants.ts";
 import { FireMode } from "../../others/item.ts";
-import { type SimulatedObject } from "../base.ts";
-import { type SI_Grenade } from "../objects/projectile/grenade.ts";
+import { type SimObject } from "../base.ts";
+import { type Human } from "../objects/human/human.ts";
+import { type Grenade } from "../objects/projectile/grenade.ts";
 import { spawn_projectile } from "../objects/projectile/projectile.ts";
-import { clip_muzzle, fire_item, type FireUser } from "./fire.ts";
+import { clip_muzzle, fire_item } from "./fire.ts";
 import { InventoryAction, inventory_events, InventoryItem, type InventoryOwner, type InventorySlot, type ItemFactories, type ItemGiveExtra } from "./inventory.ts";
 
 export enum InventoryActionType{
@@ -20,17 +21,8 @@ export enum InventoryActionType{
     Consuming,
 }
 
-export type ItemUser=FireUser&{
-    scale?:number
-    consuming_condition?(conditions:ConsumibleCondition[],side_effects:SideEffect[]):boolean
-    apply_side_effect?(effect:SideEffect,owner?:SimulatedObject):void
-}
 
-export function play_item_animation(user:InventoryOwner,animation:HumanAnimation){
-    user.emit_event(inventory_events.animation,animation)
-}
-
-export type Damageable=SimulatedObject&{
+export type Damageable=SimObject&{
     damage(params:DamageParams):void
 }
 
@@ -70,14 +62,14 @@ export class ReloadAction extends InventoryAction{
     }
     override on_cancel(user:InventoryOwner){
         this.item.reloading=false
-        play_item_animation(user,{type:HumanAnimationType.Reset})
+        user.animations.push({type:HumanAnimationType.Reset})
     }
 }
 
 export class GunItem extends InventoryItem{
     def!:GunDef
     ammo:number=0
-    use_delay:number=0
+    override use_delay:number=0
     fire_sequence:number=0
     burst?:{t:number,c:number}
     reloading:boolean=false
@@ -146,7 +138,7 @@ export class GunItem extends InventoryItem{
         const user=this.owner
         if(!this.def.reload||user.knocked)return
         const no_ammo=!this.infinity_ammo()&&!user.inventory.amount(this.def.ammo_type)
-        if(this.ammo>=this.get_capacity()||no_ammo||this.use_delay>0){
+        if(this.ammo>=this.get_capacity()||no_ammo||(!user.scene.mode.rules.humans.reload_while_shoot&&this.use_delay>0)){
             if(this.ammo>=this.get_capacity()||no_ammo)this.reloading=false
             return
         }
@@ -154,7 +146,7 @@ export class GunItem extends InventoryItem{
         user.actions.play(action)
         if(user.actions.current_action!==action)return
         user.emit_event(inventory_events.reload,this,true)
-        play_item_animation(user,{type:HumanAnimationType.Reloading,alt_reload:action.alt_reload})
+        user.animations.push({type:HumanAnimationType.Reloading,alt_reload:action.alt_reload})
     }
     muzzle_position():Vec2{
         const user=this.owner
@@ -165,7 +157,7 @@ export class GunItem extends InventoryItem{
         return v2.add(user.position,v2.rotate_RadAngle(barrel,user.rotation))
     }
     shot(consume:boolean=true){
-        const user=this.owner as unknown as ItemUser
+        const user=this.owner as unknown as Human
         user.actions.cancel()
         this.reloading=false
         if(consume&&this.def.reload)this.ammo=Math.max(this.ammo-(this.def.reload.ammo_consume??1),0)
@@ -186,14 +178,14 @@ export class GunItem extends InventoryItem{
         user.inventory.dirty.hand=true
         if(this.slot)user.inventory.dirty.slots.add(this.slot.index)
         user.emit_event(inventory_events.fire,this,position,user.rotation)
-        play_item_animation(user,{type:HumanAnimationType.Fire,alt:this.dual_d,last:this.ammo===0,alt_func:false})
+        user.animations.push({type:HumanAnimationType.Fire,alt:this.dual_d,last:this.ammo===0,alt_func:false})
     }
     override update(dt:number){
         if(this.use_delay>0)this.use_delay-=dt
         else if(this.fire_sequence>0&&this.def.fire_sequence?.decay){
             this.fire_sequence=Math.max(this.fire_sequence-this.def.fire_sequence.decay*dt,0)
         }
-        if(this.in_hand&&!this.owner.actions.current_action&&!this.owner.hand_locked?.()){
+        if(this.in_hand&&!this.owner.actions.current_action&&!this.owner.hand_locked){
             if(((this.ammo<=0&&this.use_delay<=0)||this.reloading)&&this.def.reload){
                 this.reloading=true
                 this.start_reload()
@@ -254,7 +246,7 @@ export class GunItem extends InventoryItem{
 
 export class MeleeItem extends InventoryItem{
     def:MeleeDef
-    use_delay:number=0
+    override use_delay:number=0
     damage_times:number[]=[]
     firing:boolean=false
     constructor(def:MeleeDef){
@@ -271,13 +263,13 @@ export class MeleeItem extends InventoryItem{
         this.firing=true
         user.inventory.dirty.hand=true
         user.emit_event(inventory_events.fire,this,user.position,user.rotation)
-        play_item_animation(user,{type:HumanAnimationType.Melee})
+        user.animations.push({type:HumanAnimationType.Melee})
         return true
     }
     attack(){
         const user=this.owner
         const hb=new CircleCollider2D(v2.add_rotate_RadAngle(user.position,this.def.offset,user.rotation),this.def.radius)
-        const objs:SimulatedObject[]=user.scene.cells.get_objects(hb,user.layer)
+        const objs:SimObject[]=user.scene.cells.get_objects(hb,user.layer)
         for(const o of objs){
             if(o.id===user.id||o.destroyed)continue
             const d=o as Damageable
@@ -325,7 +317,7 @@ export class MeleeItem extends InventoryItem{
 
 export class StackItem extends InventoryItem{
     def:GameItem
-    use_delay:number=0
+    override use_delay:number=0
     constructor(def:GameItem){
         super()
         this.def=def
@@ -368,7 +360,7 @@ export class GrenadeItem extends InventoryItem{
             activated:false,
         }
         user.actions.cancel()
-        play_item_animation(user,{type:HumanAnimationType.Cook})
+        user.animations.push({type:HumanAnimationType.Cook})
         return true
     }
     override update(dt:number){
@@ -385,7 +377,7 @@ export class GrenadeItem extends InventoryItem{
         const user=this.owner
         if(!user.input.use_weapon&&!h.activated){
             h.activated=true
-            play_item_animation(user,{type:HumanAnimationType.Throw})
+            user.animations.push({type:HumanAnimationType.Throw})
         }
         if(h.activated){
             h.active_time-=dt
@@ -395,7 +387,7 @@ export class GrenadeItem extends InventoryItem{
             if(h.time<=0){
                 h.cook_time=0
                 h.activated=true
-                play_item_animation(user,{type:HumanAnimationType.Reset})
+                user.animations.push({type:HumanAnimationType.Reset})
             }
         }
     }
@@ -404,11 +396,11 @@ export class GrenadeItem extends InventoryItem{
         this.holding=undefined
         const slot=this.slot
         if(!h||!slot||slot.empty)return
-        const user=this.owner as unknown as ItemUser
-        const position=v2.scale(this.def.throw_position??v2(0.3,0.4),user.scale??1)
+        const user=this.owner as unknown as Human
+        const position=v2.scale(this.def.throw_position??v2(0.3,0.4),user.scale)
         v2m.rotate_RadAngle(position,user.rotation)
         v2m.add(position,position,user.position)
-        const proj=spawn_projectile<SI_Grenade>(user.scene,object_instance_type.grenade,user.layer,{
+        const proj=spawn_projectile<Grenade>(user.scene,object_instance_type.grenade,user.layer,{
             position,
             def:this.def,
             owner:user,
@@ -418,7 +410,7 @@ export class GrenadeItem extends InventoryItem{
         proj.zpos_speed=1.8
         const limit=this.def.throw_max_speed??0
         proj.push(Numeric.clamp(user.input.distance_to_aim*limit,0,limit),user.rotation,10)
-        if(user.physical)v2m.add(proj.physical.velocity,proj.physical.velocity,user.physical.velocity)
+        v2m.add(proj.velocity,proj.velocity,user.velocity)
         this.inventory.remove_slot(slot,1)
     }
     override unload(){
@@ -458,13 +450,13 @@ export class ConsumingAction extends InventoryAction{
     }
     on_execute(user:InventoryOwner){
         const consuming=this.item.def.consuming as ConsumingActionDef&{type:0}
-        const u=user as unknown as ItemUser
-        for(const se of consuming.side_effects)u.apply_side_effect?.(se)
+        const u=user as unknown as Human
+        for(const se of consuming.side_effects)u.apply_side_effect(se)
         if(this.slot.item===this.item)user.inventory.remove_slot(this.slot,1)
-        play_item_animation(user,{type:HumanAnimationType.Reset})
+        user.animations.push({type:HumanAnimationType.Reset})
     }
     override on_cancel(user:InventoryOwner){
-        play_item_animation(user,{type:HumanAnimationType.Reset})
+        user.animations.push({type:HumanAnimationType.Reset})
     }
 }
 
@@ -478,9 +470,9 @@ export class ConsumibleItem extends InventoryItem{
     can_consume():boolean{
         const c=this.def.consuming
         if(c.type!==0)return false
-        const user=this.owner as unknown as ItemUser
+        const user=this.owner as unknown as Human
         if(user.knocked)return false
-        return user.consuming_condition?.(this.def.condition??[],c.side_effects)??true
+        return user.consuming_condition(this.def.condition??[],c.side_effects)
     }
     override on_use(){
         const user=this.owner
@@ -488,7 +480,7 @@ export class ConsumibleItem extends InventoryItem{
         const action=new ConsumingAction(this,this.slot)
         user.actions.play(action)
         if(user.actions.current_action!==action)return
-        play_item_animation(user,{type:HumanAnimationType.Consuming,item:this.def.id_number!})
+        user.animations.push({type:HumanAnimationType.Consuming,item:this.def.id_number!})
     }
 }
 

@@ -2,14 +2,14 @@ import { Numeric, random, v2 } from "../../../engine/core.ts";
 import { type JoinData } from "../../net/join_packet.ts";
 import { type DamageParams } from "../../others/constants.ts";
 import { type ModeManager } from "../modes/mode_manager.ts";
-import { type SI_Human } from "../objects/human/human.ts";
+import { type Human } from "../objects/human/human.ts";
 
 export abstract class PlayerConn{
     private static _next_id=1
 
     id:number
     mode?:ModeManager<any,any>
-    human?:SI_Human
+    human?:Human
     join?:JoinData
 
     connected:boolean=true
@@ -24,11 +24,11 @@ export abstract class PlayerConn{
         return this.join?.name??""
     }
 
-    set_human(human?:SI_Human){
+    set_human(human?:Human){
         this.human=human
         this.spectating=false
     }
-    spectate(human?:SI_Human){
+    spectate(human?:Human){
         this.human=human
         this.spectating=true
     }

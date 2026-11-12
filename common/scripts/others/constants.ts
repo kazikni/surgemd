@@ -101,6 +101,7 @@ export type HumanAnimation={
     type:HumanAnimationType.Reset
 }|{
     type:HumanAnimationType.Switch
+    item:number
 })
 export enum Layers{
     Underground=-1,

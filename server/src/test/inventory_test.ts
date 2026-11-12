@@ -1,9 +1,9 @@
 import { ClientsManager, DynamicStream, v2 } from "common/engine/core.ts";
 import { make_packet_manager } from "common/scripts/net/packet_manager.ts";
 import { LocalPlayerConn } from "common/scripts/game/players/player_conn.ts";
-import { type SI_Human } from "common/scripts/game/objects/human/human.ts";
+import { type Human } from "common/scripts/game/objects/human/human.ts";
 import { type SI_Obstacle } from "common/scripts/game/objects/static_body/obstacle.ts";
-import { type SI_Loot } from "common/scripts/game/objects/loot.ts";
+import { type Loot as SI_Loot } from "common/scripts/game/objects/loot.ts";
 import { GunItem } from "common/scripts/game/inventory/items.ts";
 import { inventory_events } from "common/scripts/game/inventory/inventory.ts";
 import { GameItemType } from "common/scripts/definitions/utils.ts";
@@ -16,7 +16,7 @@ const sim=game.sim
 const tick=(seconds:number)=>{for(let t=0;t<seconds;t+=0.01)game.update(0.01)}
 const check=(name:string,ok:boolean,info:unknown="")=>console.log(ok?"OK  ":"FAIL",name,info)
 
-const h=sim.mode.join(new LocalPlayerConn(),{name:"Tester"})! as SI_Human
+const h=sim.mode.join(new LocalPlayerConn(),{name:"Tester"})! as Human
 const inv=h.inventory
 check("groups",inv.groups.map((g)=>g.id).join(",")==="melee,guns,ammo,scopes,items,helmet,vest,backpack,accessory",inv.groups.map((g)=>g.id))
 check("default fist in hand",inv.hand_def?.id_string==="fist",inv.hand_def?.id_string)

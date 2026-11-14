@@ -503,7 +503,7 @@ export class Human extends MovingBody implements InventoryOwner{
         const d=typeof def==="string"?HumanoidAnimations.getFromString(def):def
         if(this.momentary&&!options.force&&(this.momentary.def.priority??0)>(d.priority??0))return false
         this.stop_momentary(false)
-        const variation=get_momentary_variation(d,options.item)
+        const variation=get_momentary_variation(d,options.item as any)
         const keyframes=variation>=0?d.variations?.[variation].keyframes:d.keyframes
         let duration=(variation>=0?d.variations?.[variation].duration:undefined)??d.duration
         if(duration===undefined&&!d.loop)duration=(keyframes??[]).reduce((t,k)=>t+k.time,0)
@@ -571,14 +571,13 @@ export class Human extends MovingBody implements InventoryOwner{
         if(visual)encode_visual(stream,this.visual)
         if(hand)stream.write_int16(inv.hand_def?defs.game_items.keysString[inv.hand_def.id_string]:-1)
         if(equipment){
-            const equipped=(type:GameItemType)=>(inv.get_items(type)[0]?.def.id_number??-1)+1
             const helmet=inv.get_items<EquipmentItem>(GameItemType.helmet)[0]
             stream.write_boolean_group(helmet?.skin!==undefined)
-            .write_uint8(equipped(GameItemType.helmet))
-            .write_uint8(equipped(GameItemType.vest))
-            .write_uint8(equipped(GameItemType.backpack))
-            .write_uint16(equipped(GameItemType.melee))
+            .write_uint8(helmet?.def.id_number??0)
             if(helmet?.skin!==undefined)stream.write_uint8(helmet.skin)
+            stream.write_uint8(inv.get_items(GameItemType.vest)[0]?.def.id_number??0)
+            .write_uint8(inv.get_items(GameItemType.backpack)[0]?.def.id_number??0)
+            .write_uint16(inv.get_items(GameItemType.melee)[0]?.def.id_number??0)
         }
         if(momentary){
             stream.write_boolean_group(this.momentary!==undefined)

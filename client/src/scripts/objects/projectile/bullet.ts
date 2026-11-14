@@ -88,10 +88,10 @@ export class Bullet extends GameObject{
             this.old_position=v2.clone(this.position)
             if(this.sprite_trail.scale.x<this.max_length)this.tticks+=dt
             v2m.add_component(this._position,this.velocity.x*dt,this.velocity.y*dt)
-            if(!this.whiz&&!(this.owner_id===(this.scene as {active_id?:number}).active_id&&!this.hit_owner)&&v2.distance(this.position,this.scene.camera.position)<7){
+            if(!this.whiz&&!(this.owner_id===(this.scene as {active_id?:number}).active_id&&!this.hit_owner)&&v2.distance(this.position,this.scene.camera.position)<5){
                 this.whiz=true
                 this.app.sounds.play(this.app.resources.get_sound("bullet_whiz_"+random.int(1,3)),{
-                    position:v2.clone(this.position),
+                    position:this.position,
                     max_distance:20,
                     volume:0.6,
                     bus:"objects",

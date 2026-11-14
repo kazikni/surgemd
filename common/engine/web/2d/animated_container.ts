@@ -163,6 +163,11 @@ export class AnimatedContainer2D extends Container2D{
         this.objects.set(id,ret)
         return ret
     }
+    registry(obj:Container2DObject,id:string,transform?:FrameTransform){
+        this.objects.set(id,obj)
+        if(transform)obj.transform_frame(transform)
+        return obj
+    }
     get_object(id:string):Container2DObject{
         return this.objects.get(id)!
     }

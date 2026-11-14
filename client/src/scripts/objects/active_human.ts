@@ -31,7 +31,8 @@ export const active_human:GELComponent<ActiveHuman>={
             cam.zoom=Numeric.lerp(cam.zoom,this.active.zoom,Numeric.clamp(dt*12,0,1))
             if(this.dead)return
             const input=this.read_input()
-            this._rotation_set=!this.app.save.settings.get_var("game_client_rot")
+
+            this._rotation_set=!this.app.save.settings.get_var("game_client_rot")||this.momentary!==undefined||this.downed
             if(!this._rotation_set){
                 this.rotation=input.rotation
                 this.container.rotation=input.rotation

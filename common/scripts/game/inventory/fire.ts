@@ -1,13 +1,13 @@
-import { Angle, Numeric, random, v2, v2m, Vec2 } from "../../../engine/core.ts";
-import { type ItemFireDefinition } from "../../definitions/utils.ts";
-import { object_instance_type, ObjectType } from "../../others/constants.ts";
-import { type SimObject } from "../base.ts";
+import { Angle, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type Human } from "../objects/human/human.ts";
 import { type Bullet } from "../objects/projectile/bullet.ts";
 import { type Grenade } from "../objects/projectile/grenade.ts";
 import { spawn_projectile } from "../objects/projectile/projectile.ts";
 import { type SI_StaticBody } from "../objects/static_body/static_body.ts";
 import { type InventoryItem } from "./inventory.ts";
+import { object_instance_type, ObjectType } from "common/scripts/others/constants.ts";
+import { ItemFireDefinition } from "common/scripts/definitions/utils.ts";
+import { SimObject } from "../base.ts";
 
 export interface FireState{
     fire_sequence:number
@@ -87,10 +87,10 @@ export function fire_item(user:Human,item:InventoryItem&FireState,position:Vec2,
             b.set_direction(angle)
         }
     }
-    if(def.projectile){
-        const count=def.projectile.count??1
+    if(def.grenade){
+        const count=def.grenade.count??1
         const pattern=patterning_shape(count,def.jitter_radius??1)
-        const gdef=user.app.definitions.grenades.getFromString(def.projectile.def)
+        const gdef=user.app.definitions.grenades.getFromString(def.grenade.def)
         for(let i=0;i<count;i++){
             const pos=def.jitter_radius?v2.add(position,pattern[i]):v2.clone(position)
             const p=spawn_projectile<Grenade>(user.scene,object_instance_type.grenade,user.layer,{

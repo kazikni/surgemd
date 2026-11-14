@@ -103,13 +103,13 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
             if(full){
                 stream.write_uint16(this.def.id_number!)
             }
-            if(full||this.physical.dirty||this.physical.dirty_part){
-                stream.write_float32(this.scale)
-            }
             if(full||this.physical.dirty){
                 stream.write_uint8(this.variation)
                 stream.write_rad(this.rotation)
                 stream.write_pos2(this.position)
+            }
+            if(full||this.physical.dirty||this.physical.dirty_part){
+                stream.write_float32(this.scale)
             }
             if(this.health){
                 stream.write_float(this.health.value/this.def.health!,0,1,1)

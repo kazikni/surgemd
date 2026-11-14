@@ -1,5 +1,5 @@
-import { AKeyFrame, v2 } from "../../engine/core.ts";
-import { WeaponsArmRig, WeaponsRig } from "./item.ts";
+import { AKeyFrame, ease, v2 } from "../../engine/core.ts";
+import { DefaultFistRig, WeaponsArmRig, WeaponsRig } from "./item.ts";
 
 export const default_animations={
     load_pump:Object.freeze([
@@ -279,3 +279,38 @@ export const default_animations_factory={
         ]) as AKeyFrame[]
     }
 }
+
+export const cook_animation:AKeyFrame[]=[
+    {
+        time:0.075,
+        actions:[
+            {type:"tween",fuser:"left_arm",to:{position:v2(DefaultFistRig.left!.position.x+0.1,-0.05),rotation:0.3},ease:ease.quadraticInOut},
+            {type:"tween",fuser:"right_arm",to:{position:v2(DefaultFistRig.right!.position.x+0.1,0.05),rotation:0.3},ease:ease.quadraticInOut},
+            {type:"tween",fuser:"weapon",to:{position:v2(DefaultFistRig.right!.position.x+0.1,0.05),rotation:0.3},ease:ease.quadraticInOut},
+        ],
+    },
+    {
+        time:0.025,
+        actions:[
+            {type:"tween",fuser:"left_arm",to:{position:v2(DefaultFistRig.left!.position.x+0.15,-0.1),rotation:0.3},ease:ease.quadraticInOut},
+        ],
+    },
+    {
+        time:0.1,
+        actions:[
+            {type:"tween",fuser:"left_arm",to:{position:v2(DefaultFistRig.left!.position.x,DefaultFistRig.left!.position.y-0.1),rotation:DefaultFistRig.left!.rotation-0.3},ease:ease.quadraticInOut},
+            {type:"tween",fuser:"right_arm",to:{position:v2(0.15,0.6),rotation:1.2},ease:ease.quadraticInOut},
+            {type:"tween",fuser:"weapon",to:{position:v2(0.15,0.6),rotation:0.3},ease:ease.quadraticInOut},
+        ],
+    },
+]
+export const throw_animation:AKeyFrame[]=[
+    {
+        time:0.075,
+        actions:[
+            {type:"tween",fuser:"left_arm",to:{position:DefaultFistRig.left!.position,rotation:DefaultFistRig.left!.rotation}},
+            {type:"tween",fuser:"right_arm",to:{position:DefaultFistRig.right!.position,rotation:DefaultFistRig.right!.rotation}},
+            {type:"tween",fuser:"weapon",to:{position:DefaultFistRig.right!.position,rotation:DefaultFistRig.right!.rotation}},
+        ],
+    },
+]

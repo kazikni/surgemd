@@ -5,8 +5,8 @@ import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { type CommonApplication } from "common/scripts/game/base.ts";
 import { mode_events } from "common/scripts/game/modes/mode_manager.ts";
 import { setup_game_scene } from "common/scripts/game/modes/modes.ts";
-import { NetPlayerConn } from "./net_player_conn.ts";
 import { simulation_defs, SimulationDefs, SimulationScene } from "./scene.ts";
+import { NetPlayerConn } from "./net_player_conn.ts";
 
 export interface GameData extends GameDataBase{
     initialized:boolean

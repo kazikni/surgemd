@@ -1,5 +1,6 @@
 import { AKeyFrame, Definition, Definitions, ease, v2 } from "../../../engine/core.ts";
 import { DefaultFistRig } from "../../others/item.ts";
+import { type WeaponDef } from "../game_defs.ts";
 import { GameItemType } from "../utils.ts";
 
 export interface HumanoidMomentaryVariation{
@@ -53,118 +54,15 @@ HumanoidAnimations.insert(
             {
                 time:0.3,
                 actions:[
-                    {type:"tween",fuser:"left_arm",to:{position:v2(0.15,-0.45),rotation:-0.4},ease:ease.quadraticInOut},
-                    {type:"tween",fuser:"right_arm",to:{position:v2(0.15,0.45),rotation:0.4},ease:ease.quadraticInOut},
-                    {type:"transform",fuser:"left_leg",visible:true,position:v2(0.35,-0.22),rotation:0},
-                    {type:"transform",fuser:"right_leg",visible:true,position:v2(0.35,0.22),rotation:0},
+                    {type:"tween",fuser:"left_arm",to:{position:v2(0.15,-0.4),rotation:-0.4},ease:ease.quadraticInOut},
+                    {type:"tween",fuser:"right_arm",to:{position:v2(0.15,0.4),rotation:0.4},ease:ease.quadraticInOut},
+                    {type:"transform",fuser:"chest",visible:true,position:v2(0.2,0),rotation:-Math.PI},
+                    {type:"transform",fuser:"left_leg",visible:true,position:v2(0.55,-0.18),rotation:Math.PI+0.1},
+                    {type:"transform",fuser:"left_leg_foot",visible:true,position:v2(0,0)},
+                    {type:"transform",fuser:"right_leg",visible:true,position:v2(0.55,0.18),rotation:Math.PI-0.1},
+                    {type:"transform",fuser:"right_leg_foot",visible:true,position:v2(0,0)},
                 ],
-            },
-            {
-                time:4,
-                actions:[],
-            },
-        ],
-    },
-    {
-        id_string:"wake_up",
-        priority:2,
-        duration:2.6,
-        lock_movement:true,
-        lock_rotation:true,
-        lock_hand:true,
-        hide_hand:true,
-        keyframes:[
-            {
-                time:0,
-                actions:[
-                    {type:"transform",fuser:"left_arm",position:v2(-0.1,-0.55),rotation:-1.2},
-                    {type:"transform",fuser:"right_arm",position:v2(-0.1,0.55),rotation:1.2},
-                    {type:"transform",fuser:"left_leg",visible:true,position:v2(-0.8,-0.22),rotation:Math.PI},
-                    {type:"transform",fuser:"right_leg",visible:true,position:v2(-0.8,0.22),rotation:Math.PI},
-                    {type:"callmode",mode:"eyes",args:[1,false]},
-                ],
-            },
-            {
-                time:1.2,
-                actions:[],
-            },
-            {
-                time:0.4,
-                actions:[
-                    {type:"callmode",mode:"eyes",args:[0,true]},
-                    {type:"tween",fuser:"left_arm",to:{position:v2(0.2,-0.5),rotation:-0.6},ease:ease.quadraticInOut},
-                    {type:"tween",fuser:"right_arm",to:{position:v2(0.2,0.5),rotation:0.6},ease:ease.quadraticInOut},
-                ],
-            },
-            {
-                time:0.6,
-                actions:[
-                    {type:"tween",fuser:"left_leg",to:{position:v2(-0.3,-0.2),rotation:0},ease:ease.quadraticInOut},
-                    {type:"tween",fuser:"right_leg",to:{position:v2(0.3,0.2),rotation:Math.PI},ease:ease.quadraticInOut},
-                    {type:"tween",fuser:"left_arm",to:{position:left.position,rotation:left.rotation},ease:ease.quadraticInOut},
-                    {type:"tween",fuser:"right_arm",to:{position:right.position,rotation:right.rotation},ease:ease.quadraticInOut},
-                ],
-            },
-            {
-                time:0.4,
-                actions:[
-                    {type:"transform",fuser:"left_leg",visible:false},
-                    {type:"transform",fuser:"right_leg",visible:false},
-                ],
-            },
-        ],
-    },
-    {
-        id_string:"wave",
-        priority:0,
-        duration:1.6,
-        lock_hand:true,
-        hide_hand:true,
-        keyframes:[
-            {
-                time:0.25,
-                actions:[
-                    {type:"tween",fuser:"right_arm",to:{position:v2(0.35,0.75),rotation:1.3},ease:ease.quadraticInOut},
-                ],
-            },
-            {
-                time:0.3,
-                actions:[
-                    {type:"tween",fuser:"right_arm",yoyo:true,to:{position:v2(0.5,0.65),rotation:0.9},ease:ease.quadraticInOut},
-                ],
-            },
-            {
-                time:0.3,
-                actions:[
-                    {type:"tween",fuser:"right_arm",yoyo:true,to:{position:v2(0.5,0.65),rotation:0.9},ease:ease.quadraticInOut},
-                ],
-            },
-            {
-                time:0.25,
-                actions:[
-                    {type:"tween",fuser:"right_arm",to:{position:right.position,rotation:right.rotation},ease:ease.quadraticInOut},
-                ],
-            },
-        ],
-    },
-    {
-        id_string:"surrender",
-        priority:1,
-        loop:true,
-        lock_hand:true,
-        hide_hand:true,
-        keyframes:[
-            {
-                time:0.3,
-                actions:[
-                    {type:"tween",fuser:"left_arm",to:{position:v2(0.1,-0.75),rotation:-1.4},ease:ease.quadraticInOut},
-                    {type:"tween",fuser:"right_arm",to:{position:v2(0.1,0.75),rotation:1.4},ease:ease.quadraticInOut},
-                ],
-            },
-            {
-                time:2,
-                actions:[],
-            },
+            }
         ],
     },
     {
@@ -256,7 +154,7 @@ HumanoidAnimations.insert(
     },
 )
 
-export function get_momentary_variation(def:HumanoidMomentaryDef,item?:{id_string:string,item_type?:GameItemType}):number{
+export function get_momentary_variation(def:HumanoidMomentaryDef,item?:WeaponDef):number{
     if(!def.variations||!item)return -1
     let ret=-1
     for(let i=0;i<def.variations.length;i++){

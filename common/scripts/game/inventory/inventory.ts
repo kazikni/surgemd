@@ -566,6 +566,7 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
         this.owner.actions.cancel()
         this.hand_index=index
         this.hand_item?.load(old?.def)
+        this.recoil=undefined
         this.dirty.hand=true
         if(old&&this.hand_item)this.owner.animations.push({type:HumanAnimationType.Switch,item:this.definitions.game_items.keysString[this.hand_item.def.id_string]})
         this.owner.emit_event(inventory_events.hand,this.hand_item,old)

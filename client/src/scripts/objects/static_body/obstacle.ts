@@ -1,4 +1,4 @@
-import { gel_events,  Vec2, v2, RotationMode, Angle, Orientation, ColorM, Numeric, GELComponent, Stream, random } from "common/engine/core.ts";
+import { gel_events,  Vec2, v2, RotationMode, Angle, Orientation, ColorM, Numeric, GELComponent, Stream, random, GELMethod } from "common/engine/core.ts";
 import { Container2D, Sprite2D } from "common/engine/web.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { obstacle_events, c_obstacle, C_Obstacle } from "common/scripts/game/objects/static_body/obstacle.ts";
@@ -105,10 +105,15 @@ export const cc_obstacle:GELComponent<CC_Obstacle>={
         set_physical(position?:Vec2,scale?:number,rotation?:number){
             if(position)this.container.position=position
             if(rotation!==undefined){
-                if(this.def.rotation_mode===RotationMode.full)this.container.rotation=rotation
-                else if(this.def.rotation_mode===RotationMode.limited)this.container.rotation=Angle.side2rad(rotation as Orientation)
+                if(this.def.rotation_mode===RotationMode.full){
+                    this.container.rotation=rotation
+                }else if(this.def.rotation_mode===RotationMode.limited){
+                    this.container.rotation=Angle.side2rad(rotation as Orientation)
+                }
             }
-            if(scale!==undefined)this.container.scale=v2(scale,scale)
+            if(scale!==undefined){
+                this.container.scale=v2(scale,scale)
+            }
         },
     }
 }
@@ -123,15 +128,17 @@ export const ccn_obstacle:GELComponent<CC_Obstacle>={
                 this.set_definition(this.app.definitions.obstacles.getFromNumber(stream.read_uint16()))
                 this.update_frame()
             }
-            if(physical_dirty||physical_dirty_part||full){
-                this.scale=stream.read_float32()
-                this.set_physical(undefined,this.scale)
-            }
             if(physical_dirty||full){
                 this.variation=stream.read_uint8()
                 this.rotation=stream.read_rad()
                 this.position=stream.read_pos2()
                 this.set_physical(this.position,undefined,this.rotation)
+                if(this.def.collider)this.physical.collider=this.def.collider.transform(undefined,undefined,undefined,this.rotation)
+            }
+            if(physical_dirty||physical_dirty_part||full){
+                this.scale=stream.read_float32()
+                this.set_physical(undefined,this.scale)
+                this.base_collider=this.physical.collider.transform(undefined,this.scale)
             }
 
             if(this.health){
@@ -145,4 +152,6 @@ export const ccn_obstacle:GELComponent<CC_Obstacle>={
             }
         },
     },
+    methods:{
+    }
 }

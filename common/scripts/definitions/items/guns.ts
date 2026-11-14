@@ -1271,13 +1271,8 @@ export function Guns_Default_Init():GunDef[]{
         }),
         guns_factory.shotgun_buckshot("aipc39","p76",{
             name:"AIPC-39",
-            fire_delay:0.2,
-            barrel_length:0.9,
+            fire_delay:0.3,
 
-            recoil:{
-                speed:0.55,
-                duration:0.3
-            },
             ammo_spawn:{
                 amount:10
             },
@@ -1288,7 +1283,7 @@ export function Guns_Default_Init():GunDef[]{
                 all_direction:true,
                 count:2,
             },
-            rig_arms:WeaponsArmRig[0],
+            rig_arms:WeaponsArmRig[1],
 
             reload:{
                 delay:2.5,
@@ -1299,7 +1294,6 @@ export function Guns_Default_Init():GunDef[]{
                 walk:0.07
             },
             assets:{
-                world:"weapon_small_world",
                 world_tint:0x573c05,
                 reload_animation:default_animations_factory.insert_reload(0.8,2),
                 load_animation:Object.freeze([]as AKeyFrame[]) as (AKeyFrame[]),
@@ -1625,7 +1619,7 @@ export function Guns_Default_Init():GunDef[]{
                 amount:11
             },
 
-            projectile:{
+            grenade:{
                 def:"m79_grenade",
             },
             reload:{

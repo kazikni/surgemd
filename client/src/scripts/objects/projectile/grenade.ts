@@ -11,8 +11,6 @@ export class Grenade extends GameObject{
     particles_spawner?:ParticlesEmitter2D<Particle2D>
     zpos:number=0
     rotation:number=0
-    visual_position=v2.zero()
-    visual_rotation:number=0
 
     constructor(){
         super()
@@ -43,8 +41,8 @@ export class Grenade extends GameObject{
             stream.read_id()
         }
         if(full||!this.app.save.settings.get_var("game_interpolation")){
-            this.visual_position=v2.clone(this.position)
-            this.visual_rotation=this.rotation
+            this.sprite.position=this.position
+            this.sprite.rotation=this.rotation
         }
     }
 
@@ -64,8 +62,8 @@ export class Grenade extends GameObject{
                 const col=ColorM.number(p.tint)
                 const col2=ColorM.clone(col)
                 col2.a=0
-                const pos=v2.rotate_RadAngle(p.spawn,this.visual_rotation)
-                v2m.add(pos,pos,this.visual_position)
+                const pos=v2.rotate_RadAngle(p.spawn,this.sprite.rotation)
+                v2m.add(pos,pos,this.sprite.position)
                 return new ABParticle2D({
                     direction:ang,
                     frame:p.frame,
@@ -85,18 +83,19 @@ export class Grenade extends GameObject{
         this.app.clock.add_timeout(()=>{
             if(this.particles_spawner)this.particles_spawner.enabled=true
         },p.spawn_delay??0)
+        if(this.def.parralax!==undefined&&this.app.save.settings.get_var("graphics_perspective")){
+            this.sprite.propertys={no_layer_parallax:true}
+        }
     }
 
     on_tick(dt:number){
         if(!this.def)return
         if(this.app.save.settings.get_var("game_interpolation")){
             const t=Numeric.clamp(dt*20,0,1)
-            v2m.lerp(this.visual_position,this.position,t)
-            this.visual_rotation=Numeric.lerp_rad(this.visual_rotation,this.rotation,t)
+            v2m.lerp(this.sprite.position,this.position,t)
+            this.sprite.rotation=Numeric.lerp_rad(this.sprite.rotation,this.rotation,t)
         }
         const s=(this.def.zBaseScale+(this.def.zScaleAdd*this.zpos))*2
-        this.sprite.position=this.visual_position
-        this.sprite.rotation=this.visual_rotation
         this.sprite.scale=v2(s,s)
         const air=this.def.z_index_air??zIndexes.GrenadeAir1
         if(this.zpos===0){
@@ -107,7 +106,6 @@ export class Grenade extends GameObject{
             this.sprite.zIndex=air
             if(this.def.parralax!==undefined&&this.app.save.settings.get_var("graphics_perspective")){
                 this.sprite.matrix=matrix4.parallax_2d(this.scene.camera.position,1+(this.def.parralax*this.zpos))
-                this.sprite.propertys={no_layer_parallax:true}
             }
         }
     }

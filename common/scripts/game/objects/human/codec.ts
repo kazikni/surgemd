@@ -1,7 +1,7 @@
 import { Stream } from "../../../../engine/core.ts";
-import { type GameDefinition } from "../../../definitions/game_defs.ts";
-import { type LoadoutAccessoryDef, type LoadoutBodyDef, type LoadoutEyesDef, type LoadoutFootDef, type LoadoutHairDef, type LoadoutLegDef, type LoadoutShirtDef } from "../../../definitions/loadout/skins.ts";
-import { HumanAnimationType, type HumanAnimation } from "../../../others/constants.ts";
+import { GameDefinition } from "../../../definitions/game_defs.ts";
+import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../../../definitions/loadout/skins.ts";
+import { HumanAnimation, HumanAnimationType } from "../../../others/constants.ts";
 
 export interface HumanVisual{
     body:{

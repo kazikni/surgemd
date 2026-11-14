@@ -1,6 +1,7 @@
 import { random, v2, Vec2 } from "../../../engine/core.ts";
 import { type MapDef } from "../../definitions/maps/base.ts";
 import { get_map_def } from "../../definitions/maps/maps.ts";
+import { HumanoidAnimations } from "../../definitions/objects/humanoid_animations.ts";
 import { type DamageParams, gelo_instance_type } from "../../others/constants.ts";
 import { type SI_GameMap } from "../gelo/map.ts";
 import { type Human } from "../objects/human/human.ts";
@@ -27,7 +28,8 @@ export class DebugMode extends ModeManager<PlayerStatus,DebugModeSettings>{
         return this.players.count>0
     }
     override on_player_spawn(_p:unknown,h:Human){
-        if(this.settings.infinity_ammo??true)h.inventory.infinity_ammo=true
+        /*h.play_momentary(HumanoidAnimations.getFromString("sit"),{force:true,duration:2})
+        h.app.clock.add_timeout(()=>h.play_momentary(HumanoidAnimations.getFromString("suicide"),{force:true}),5)*/
     }
     override on_human_die(h:Human,params:DamageParams){
         super.on_human_die(h,params)

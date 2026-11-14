@@ -103,9 +103,7 @@ export class Application extends ClientApplication implements CommonApplication{
         await this.play(kind,{
             url:params.get("server")??undefined,
             mode,
-            settings:{
-                map:{def:params.get("map")??(mode==="debug"?"debug":"normal")},
-            },
+            settings:{},
         })
     }
     override on_update(dt: number): void {

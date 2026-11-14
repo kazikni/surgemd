@@ -354,7 +354,7 @@ export interface ItemFireDefinition{
         def:BulletDef
         count?:number
     }
-    projectile?:{
+    grenade?:{
         def:string
         count?:number
         angular_speed?:number

@@ -1,15 +1,15 @@
 import { CircleCollider2D, random, Stream, v2, v2m, Vec2 } from "../../../../engine/core.ts";
 import { type ExplosionDef } from "../../../definitions/objects/explosions.ts";
-import { DamageReason } from "../../../definitions/utils.ts";
-import { type DamageParams, object_instance_type, ObjectType } from "../../../others/constants.ts";
-import { SimObject } from "../../base.ts";
+import { object_instance_type, ObjectType } from "../../../others/constants.ts";
+import { type SimObject } from "../../base.ts";
 import { type Human } from "../human/human.ts";
 import { type Loot } from "../loot.ts";
 import { type SI_StaticBody } from "../static_body/static_body.ts";
 import { type Bullet } from "./bullet.ts";
 import { type Grenade } from "./grenade.ts";
+import { type DamageParams, Projectile } from "./projectile.ts";
 
-export class Explosion extends SimObject{
+export class Explosion extends Projectile{
     def!:ExplosionDef
     delay:number=0.1
     exploded_base:boolean=false
@@ -25,6 +25,7 @@ export class Explosion extends SimObject{
     }
 
     override on_create(args:{def:ExplosionDef,parent_velocity?:Vec2}){
+        super.on_create(args)
         this.def=args.def
         this.parent_velocity=args.parent_velocity
         this.base_collider=new CircleCollider2D(v2(0,0),args.def.size.end)
@@ -41,7 +42,7 @@ export class Explosion extends SimObject{
         this.exploded_base=true
         if(!this.def.bullet)return
         for(let i=0;i<this.def.bullet.count;i++){
-            const b=spawn_projectile<Bullet>(this.scene,object_instance_type.bullet,this.layer,{
+            const b:Bullet=this.scene.add_object(this.scene.make_object(object_instance_type.bullet),this.layer,undefined,{
                 position:v2.clone(this.position),
                 owner:this.owner,
                 source:this.source,
@@ -71,7 +72,6 @@ export class Explosion extends SimObject{
             const force=Math.max(0,(size.end-dist)/size.end)*push_force*block_factor
             const params:DamageParams={
                 amount:damage,
-                reason:DamageReason.Explosion,
                 source:this.source,
                 owner:this.owner,
                 position:v2.clone(obj.position),
@@ -112,7 +112,7 @@ export class Explosion extends SimObject{
         if(this.def.projectiles){
             const gdef=this.app.definitions.grenades.getFromString(this.def.projectiles.def)
             for(let i=0;i<this.def.projectiles.count;i++){
-                const p=spawn_projectile<Grenade>(this.scene,object_instance_type.grenade,this.layer,{
+                const p:Grenade=this.scene.add_object(this.scene.make_object(object_instance_type.grenade),this.layer,undefined,{
                     position:v2.clone(this.position),
                     def:gdef,
                     owner:this.owner,

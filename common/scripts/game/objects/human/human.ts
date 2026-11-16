@@ -1,26 +1,45 @@
+import { type DamageParams, type ProjectileOwner } from "../projectile/projectile.ts";
+
 import { ActionsManager, CheckpointContext, CircleCollider2D, Collider2D, Numeric, Stream, v2, v2m, Vec2 } from "../../../../engine/core.ts";
+
 import { type GameItem } from "../../../definitions/game_defs.ts";
+
 import { ConsumibleCondition } from "../../../definitions/items/consumibles.ts";
+
 import { type MeleeDef } from "../../../definitions/items/melees.ts";
+
 import { type BadgeDef } from "../../../definitions/loadout/badges.ts";
+
 import { type EmoteDef } from "../../../definitions/loadout/emotes.ts";
-import { type LoadoutAccessoryDef, type LoadoutBodyDef, type LoadoutEyesDef, type LoadoutFootDef, type LoadoutHairDef, type LoadoutLegDef, type LoadoutShirtDef } from "../../../definitions/loadout/skins.ts";
-import { HumanoidAnimations, type HumanoidMomentaryDef, type MomentaryPlayOptions } from "../../../definitions/objects/humanoid_animations.ts";
+
+import { type HumanoidMomentaryDef, type MomentaryPlayOptions } from "../../../definitions/objects/humanoid_animations.ts";
 import { type BoostDef } from "../../../definitions/player/boosts.ts";
+
 import { type SideEffect, SideEffectType } from "../../../definitions/player/effects.ts";
-import { DamageReason, GameItemType, GameObjectDefinitionType, type LoadoutPreset } from "../../../definitions/utils.ts";
+
+import { GameItemType, GameObjectDefinitionType, type LoadoutPreset } from "../../../definitions/utils.ts";
+
 import { InputActionType, type InputData } from "../../../net/input_packet.ts";
-import { type DamageParams, GameConstants, type HumanAnimation, HumanAnimationType, object_instance_type, ObjectType } from "../../../others/constants.ts";
+
+import { GameConstants, type HumanAnimation, HumanAnimationType, object_instance_type, ObjectType } from "../../../others/constants.ts";
+
 import { apply_modifiers } from "../../../others/functions.ts";
-import { Floors, FloorType } from "../../../others/terrain.ts";
+
+import { Floors } from "../../../others/terrain.ts";
 import { SimObject } from "../../base.ts";
+
 import { type InventoryAction, Inventory, type InventoryOwner } from "../../inventory/inventory.ts";
+
 import { armor_damage, DefaultItemFactories, type EquipmentItem, GrenadeItem } from "../../inventory/items.ts";
+
 import { HumanInventoryLayout } from "../../inventory/layouts.ts";
-import { MovingBody } from "../moving_body.ts";
-import { decode_visual, encode_visual, type HumanVisual } from "./codec.ts";
+
+import { Humanoid } from "./humanoid.ts";
+
 import { human_events } from "./events.ts";
+
 import { type HumanScript } from "./script.ts";
+
 
 export interface HumanCreateArgs{
     position?:Vec2
@@ -34,31 +53,21 @@ export type Interactable=SimObject&{
     auto_interact?(user:Human):boolean
 }
 
-export class Human extends MovingBody implements InventoryOwner{
-    name:string=""
-    dead:boolean=false
+export class Human extends Humanoid implements InventoryOwner{
     knocked:boolean=false
-    downed:boolean=false
-    swimming:boolean=false
     controlled:boolean=false
-    scale:number=1
+    self_revive:boolean=false
 
     health={value:100,max:100,invencibility:0}
     boost!:{value:number,max:number,def:BoostDef}
-    knocked_by?:{id:number}
-    last_damage_by?:{id:number}
+    knocked_by?:ProjectileOwner
+    last_damage_by?:ProjectileOwner
     bleed_timer:number=0
-    down_timer:number=0
 
     movement_enabled:boolean=true
     combat_enabled:boolean=true
     pacific_enabled:boolean=false
 
-    secondary_velocity:Vec2=v2.zero()
-    secondary_acceleration:number=1
-    current_floor:FloorType=FloorType.Void
-
-    visual!:HumanVisual&{dirty:boolean}
     inventory!:Inventory<Human>
     actions!:ActionsManager<Human,InventoryAction>
 
@@ -88,13 +97,6 @@ export class Human extends MovingBody implements InventoryOwner{
     interaction={enabled:true,auto_pickup:false,radius:1.1}
 
     animations:HumanAnimation[]=[]
-    momentary?:{
-        def:HumanoidMomentaryDef
-        time:number
-        duration?:number
-        on_end?:(completed:boolean)=>void
-    }
-    momentary_dirty:boolean=false
 
     script?:HumanScript
 
@@ -102,31 +104,19 @@ export class Human extends MovingBody implements InventoryOwner{
         super()
         this.object_type=ObjectType.Human
         this.instance_type=object_instance_type.human
-        this.allow_tick=true
-        this.allow_net_update=true
-        this.base_collider=new CircleCollider2D(v2(0,0),GameConstants.humanoid.radius)
     }
 
     get hand_locked():boolean{
         return this.momentary?.def.lock_hand===true
     }
 
-    on_create(args:HumanCreateArgs={}){
-        if(args.position)this.position=args.position
-        this.name=args.name??""
-        this.visual={
-            accessorys:[],
-            body:{def:this.app.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,tint:0x000000},
-            legs:this.app.definitions.loadout.getFromString("blue_jeans_pants") as LoadoutLegDef,
-            shirt:this.app.definitions.loadout.getFromString("red_shirt") as LoadoutShirtDef,
-            dirty:true
-        }
+    override on_create(args:HumanCreateArgs={}){
+        super.on_create(args)
         this.boost={value:0,max:100,def:this.app.definitions.boosts.getFromString(GameConstants.human.default_boost)}
         this.actions=new ActionsManager(this)
         this.inventory=new Inventory(this,DefaultItemFactories)
         this.inventory.initialize(HumanInventoryLayout())
         this.inventory.hold_ammo=this.scene.mode.rules.humans.hold_ammo
-        this.set_loadout_preset(args.loadout)
     }
     on_destroy(){
         this.set_script(undefined)
@@ -136,34 +126,34 @@ export class Human extends MovingBody implements InventoryOwner{
         return (this.modifiers[name]??1)*(this.scene.mode.rules.humans.modifiers[name]??1)
     }
 
-    on_tick(dt:number){
+    override on_tick(dt:number){
         if(this.dead)return
         this.script?.tick(dt)
         this.controlled=this.script!==undefined&&this.script.take_control
 
+        this.inventory.emit_event("tick",dt)
         this.inventory.update(dt)
         this.actions.update(dt)
-        if(this.momentary){
-            this.momentary.time+=dt
-            if(this.momentary.duration!==undefined&&this.momentary.time>=this.momentary.duration)this.stop_momentary(true)
-        }
+        super.on_tick(dt)
+        if(this.knocked)this.downed=true
         if(this.emote_time>0)this.emote_time-=dt
 
         this.modifiers={}
         apply_modifiers(this.modifiers,this.temp_modifiers)
         if(this.boost.def.se?.update_modifiers)apply_modifiers(this.modifiers,this.boost.def.se.update_modifiers(this))
+        for(const slot of this.inventory.slots){
+            const def=slot.item?.def as {modifiers?:Record<string,number>,events?:Record<string,(e:unknown)=>Record<string,number>|void>}|undefined
+            if(def?.modifiers)apply_modifiers(this.modifiers,def.modifiers)
+            const mods=def?.events?.apply_modifiers?.(this)
+            if(mods)apply_modifiers(this.modifiers,mods)
+        }
         if(this.health.invencibility>0)this.health.invencibility=Math.max(this.health.invencibility-dt,0)
-
-        this.current_floor=this.scene.map.terrain.get_floor_type(this.position,this.layer,this.scene.map.default_floor) as FloorType
-        this.swimming=Floors[this.current_floor]?.deep===true
-        if(this.down_timer>0)this.down_timer=Math.max(this.down_timer-dt,0)
-        this.downed=this.knocked||this.down_timer>0
 
         if(this.knocked){
             this.bleed_timer+=dt
             if(this.bleed_timer>=1){
                 this.bleed_timer=0
-                this.piercing_damage({amount:1,reason:DamageReason.Bleend,position:this.position})
+                this.piercing_damage({amount:1,position:this.position})
                 if(this.dead)return
             }
         }else{
@@ -173,7 +163,7 @@ export class Human extends MovingBody implements InventoryOwner{
         this.tick_physics(dt)
         this.move(dt)
 
-        const hand=this.inventory.hand_item
+        const hand=this.inventory.slots[this.inventory.hand_index]?.item
         if(hand&&this.combat_enabled&&!this.pacific_enabled&&!this.hand_locked&&!this.knocked&&!this.swimming){
             if(this.input.use_weapon){
                 if(hand.on_fire())this.input.using_item_down=false
@@ -192,12 +182,12 @@ export class Human extends MovingBody implements InventoryOwner{
         const rotation_locked=this.momentary?.def.lock_rotation===true
 
         if(this.movement_enabled&&this.momentary?.def.lock_movement!==true){
-            const hand=this.inventory.hand_item
+            const hand=this.inventory.slots[this.inventory.hand_index]?.item
             const grenade_holding=hand instanceof GrenadeItem&&hand.holding!==undefined
             let speed=5.7*floor.speed_mult*this.get_modifier("speed")
                 *(this.inventory.recoil?.speed??1)
                 *(this.actions.current_action?.action_speed??1)
-                *((this.inventory.hand_def as {speed_mod?:number}|undefined)?.speed_mod??1)
+                *((this.inventory.slots[this.inventory.hand_index]?.item?.def as {speed_mod?:number}|undefined)?.speed_mod??1)
                 *(grenade_holding?0.7:1)
                 *(this.boost.def.se?.tick?.(dt,this)??1)
             if(this.knocked)speed*=0.3
@@ -273,7 +263,7 @@ export class Human extends MovingBody implements InventoryOwner{
                             break
                         }
                         case 2:{
-                            const def=inv.definitions.game_items.valueNumber[a.drop]
+                            const def=inv.owner.app.definitions.game_items.valueNumber[a.drop]
                             if(def)inv.drop_amount(def.id_string)
                             break
                         }
@@ -283,19 +273,19 @@ export class Human extends MovingBody implements InventoryOwner{
                             break
                         }
                         case 4:{
-                            const def=inv.definitions.game_items.valueNumber[a.drop]
+                            const def=inv.owner.app.definitions.game_items.valueNumber[a.drop]
                             const s=inv.slots.find((v)=>v.item?.def===def&&!v.is_default)
                             if(s)inv.drop_slot(s.index)
                             break
                         }
                         case 5:{
-                            const def=inv.definitions.game_items.valueNumber[a.drop]
+                            const def=inv.owner.app.definitions.game_items.valueNumber[a.drop]
                             const g=def?inv.groups.find((v)=>v.includes.includes(def)):undefined
                             if(g)inv.drop_include(g,def)
                             break
                         }
                         case 6:{
-                            const s=inv.slots.filter((v)=>v.group.type==="change"&&!v.group.def.hand)[a.drop]
+                            const s=inv.slots.filter((v)=>v.group.def.type==="change"&&!v.group.def.hand)[a.drop]
                             if(s)inv.drop_slot(s.index)
                             break
                         }
@@ -310,7 +300,7 @@ export class Human extends MovingBody implements InventoryOwner{
                     if(!this.knocked)inv.set_hand_slot(a.hand)
                     break
                 case InputActionType.set_scope:{
-                    const def=inv.definitions.game_items.valueNumber[a.scope_id]
+                    const def=inv.owner.app.definitions.game_items.valueNumber[a.scope_id]
                     const g=def?inv.groups.find((v)=>v.includes.includes(def)):undefined
                     if(g)inv.select_include(g,def)
                     break
@@ -347,14 +337,11 @@ export class Human extends MovingBody implements InventoryOwner{
 
     get_reflect_collider():Collider2D|undefined{
         const melee=this.inventory.get_group("melee")?.slots[0]?.item?.def as MeleeDef|undefined
-        const reflect=this.inventory.hand_def===melee?melee?.reflective?.equipped:melee?.reflective?.unequipped
+        const reflect=this.inventory.slots[this.inventory.hand_index]?.item?.def===melee?melee?.reflective?.equipped:melee?.reflective?.unequipped
         if(!reflect)return undefined
         return new CircleCollider2D(v2.add_rotate_RadAngle(this.position,reflect.offset,this.rotation),reflect.radius)
     }
 
-    override push(speed:number,direction:number){
-        v2m.add(this.secondary_velocity,this.secondary_velocity,v2.from_RadAngle(direction,speed))
-    }
     give_boost(amount:number){
         this.boost.value=Numeric.clamp(this.boost.value+amount,0,this.boost.max)
     }
@@ -391,10 +378,11 @@ export class Human extends MovingBody implements InventoryOwner{
         this.emit_event(human_events.damaged,params,health_damage,shield_damage)
         this.script?.on_damaged(params,health_damage)
         this.boost.def.se?.on_hitted?.(this)
+        this.inventory.emit_event("damage",{params,player:this})
 
         if(this.health.value<=0){
             if((!params.owner||params.owner.id===this.id)&&this.last_damage_by)params.owner=this.last_damage_by
-            if(!this.knocked&&this.scene.mode.can_knock(this))this.knock_out(params)
+            if(!this.knocked&&(this.scene.mode.can_knock(this)||this.self_revive))this.knock_out(params)
             else this.die(params)
         }
         return [health_damage,shield_damage]
@@ -440,6 +428,7 @@ export class Human extends MovingBody implements InventoryOwner{
             if(this.script===script)this.set_script(undefined)
         }
         this.set_dirty_full()
+        ;(params.owner as Human|undefined)?.inventory?.emit_event("kill",{...params,owner:params.owner})
         this.emit_event(human_events.die,params)
         this.scene.mode.on_human_die(this,params)
         this.destroy()
@@ -461,11 +450,11 @@ export class Human extends MovingBody implements InventoryOwner{
         this.emit_event(human_events.revive)
     }
 
-    apply_side_effect(effect:SideEffect,owner?:{id:number}){
+    apply_side_effect(effect:SideEffect,owner?:ProjectileOwner){
         if(this.boost.def.se?.can_apply&&!this.boost.def.se.can_apply(effect,this))return
         switch(effect.type){
             case SideEffectType.Damage:{
-                const params:DamageParams={amount:effect.amount,critical:false,position:this.position,reason:DamageReason.SideEffect,direction:0,penetration:1,owner}
+                const params:DamageParams={amount:effect.amount,critical:false,position:this.position,direction:0,penetration:1,owner}
                 if(effect.piercing)this.piercing_damage(params)
                 else this.damage(params)
                 break
@@ -509,25 +498,6 @@ export class Human extends MovingBody implements InventoryOwner{
         return true
     }
 
-    play_momentary(def:string|HumanoidMomentaryDef,options:MomentaryPlayOptions={}):boolean{
-        const d=typeof def==="string"?HumanoidAnimations.getFromString(def):def
-        if(this.momentary&&!options.force&&(this.momentary.def.priority??0)>(d.priority??0))return false
-        this.stop_momentary(false)
-        const keyframes=d.keyframes
-        let duration=d.duration??d.duration
-        if(duration===undefined&&!d.loop)duration=(keyframes??[]).reduce((t,k)=>t+k.time,0)
-        this.momentary={def:d,time:0,duration:options.duration??duration,on_end:options.on_end}
-        this.momentary_dirty=true
-        this.actions.cancel()
-        return true
-    }
-    stop_momentary(completed:boolean=false){
-        if(!this.momentary)return
-        this.momentary.on_end?.(completed)
-        this.momentary=undefined
-        this.momentary_dirty=true
-    }
-
     set_script(script?:HumanScript){
         const old=this.script
         if(old===script)return
@@ -536,58 +506,34 @@ export class Human extends MovingBody implements InventoryOwner{
         old?.stop()
         script?.start(this)
     }
-
-    set_loadout_preset(preset?:LoadoutPreset){
-        if(!preset)return
-        const loadout=this.app.definitions.loadout
-        const v=this.visual
-        v.dirty=true
-        if(preset.shirt)v.shirt=loadout.getFromString(preset.shirt) as LoadoutShirtDef
-        if(preset.legs)v.legs=loadout.getFromString(preset.legs) as LoadoutLegDef
-        if(preset.foot!==undefined)v.foot=loadout.getFromStringSafe(preset.foot??"") as LoadoutFootDef|undefined
-        if(preset.eyes)v.eyes=loadout.getFromString(preset.eyes) as LoadoutEyesDef
-        if(preset.hair!==undefined){
-            v.hair=preset.hair===""?undefined:{def:loadout.getFromString(preset.hair) as LoadoutHairDef,tint:0}
-        }
-        if(v.hair){
-            if(preset.hair_tint!==undefined)v.hair.tint=preset.hair_tint
-            if(preset.hair_paint!==undefined)v.hair.paint=preset.hair_paint
-        }
-        if(preset.body)v.body={def:loadout.getFromString(preset.body) as LoadoutBodyDef,tint:0}
-        if(preset.body_tint!==undefined)v.body.tint=preset.body_tint
-        if(preset.accessorys!==undefined)v.accessorys=preset.accessorys.map((a)=>loadout.getFromString(a) as LoadoutAccessoryDef)
+    override play_momentary(def:string|HumanoidMomentaryDef,options:MomentaryPlayOptions={}):boolean{
+        if(!super.play_momentary(def,options))return false
+        this.actions.cancel()
+        return true
     }
 
-    on_encode_net(stream:Stream,full:boolean){
+    override on_encode_net(stream:Stream,full:boolean){
+        super.on_encode_net(stream,full)
         const inv=this.inventory
         const defs=this.app.definitions
-        const visual=full||this.visual.dirty
         const hand=full||inv.dirty.hand
         const equipment=full||inv.dirty.full||inv.dirty.slots.size>0||inv.dirty.groups.size>0
-        const momentary=full||this.momentary_dirty
-        stream.write_boolean_group3(
-            visual,hand,equipment,momentary,
+        stream.write_boolean_group(
+            hand,equipment,
             this.animations.length>0,
             this.input.message!==undefined,this.input.emote!==undefined,
-            this.controlled,this.dead,this.knocked,this.downed,this.swimming,
-            full&&this.name.length>0
+            this.controlled,this.knocked
         )
-        stream.write_pos2(this.position).write_rad(this.rotation)
-        if(full)stream.write_float32(this.scale)
-        if(visual)encode_visual(stream,this.visual)
-        if(hand)stream.write_int16(inv.hand_def?defs.game_items.keysString[inv.hand_def.id_string]:-1)
+        const hand_def=inv.slots[inv.hand_index]?.item?.def
+        if(hand)stream.write_int16(hand_def?defs.game_items.keysString[hand_def.id_string]:-1)
         if(equipment){
             const helmet=inv.get_items<EquipmentItem>(GameItemType.helmet)[0]
             stream.write_boolean_group(helmet?.skin!==undefined)
-            .write_uint8(helmet?.def.id_number??0)
+            .write_uint8((helmet?.def.id_number??-1)+1)
             if(helmet?.skin!==undefined)stream.write_uint8(helmet.skin)
-            stream.write_uint8(inv.get_items(GameItemType.vest)[0]?.def.id_number??0)
-            .write_uint8(inv.get_items(GameItemType.backpack)[0]?.def.id_number??0)
-            .write_uint16(inv.get_items(GameItemType.melee)[0]?.def.id_number??0)
-        }
-        if(momentary){
-            stream.write_boolean_group(this.momentary!==undefined)
-            if(this.momentary)stream.write_uint16(this.momentary.def.id_number!).write_float32(this.momentary.time)
+            stream.write_uint8((inv.get_items(GameItemType.vest)[0]?.def.id_number??-1)+1)
+            .write_uint8((inv.get_items(GameItemType.backpack)[0]?.def.id_number??-1)+1)
+            .write_uint16((inv.get_items(GameItemType.melee)[0]?.def.id_number??-1)+1)
         }
         if(this.animations.length>0)stream.write_array(this.animations,(a)=>{
             stream.write_uint8(a.type)
@@ -606,11 +552,9 @@ export class Human extends MovingBody implements InventoryOwner{
         },1)
         if(this.input.message!==undefined)stream.write_string_sized(this.input.message,50)
         if(this.input.emote!==undefined)stream.write_uint16(defs.game_objects.keysString[this.input.emote.id_string])
-        if(full&&this.name.length>0)stream.write_string(this.name,1)
     }
-    on_net_update(){
-        this.visual.dirty=false
-        this.momentary_dirty=false
+    override on_net_update(){
+        super.on_net_update()
         this.animations.length=0
         this.input.message=undefined
         this.input.emote=undefined
@@ -618,40 +562,24 @@ export class Human extends MovingBody implements InventoryOwner{
         this.actions.net_update()
     }
 
-    on_encode_checkpoint(stream:Stream,_ctx:CheckpointContext){
-        stream.write_pos2(this.position)
-        .write_pos2(this.velocity)
-        .write_rad(this.rotation)
-        .write_boolean_group(this.dead,this.knocked)
-        .write_string(this.name,1)
+    override on_encode_checkpoint(stream:Stream,ctx:CheckpointContext){
+        super.on_encode_checkpoint(stream,ctx)
+        stream.write_boolean_group(this.knocked)
         .write_float32(this.health.value)
         .write_float32(this.health.max)
         .write_float32(this.boost.value)
         .write_float32(this.boost.max)
         .write_string(this.boost.def.id_string,1)
-        .write_float32(this.down_timer)
-        .write_float32(this.scale)
-        encode_visual(stream,this.visual)
         this.inventory.encode_checkpoint(stream)
     }
-    on_decode_checkpoint(stream:Stream,_ctx:CheckpointContext){
-        this.position=stream.read_pos2()
-        this.velocity=stream.read_pos2()
-        this.rotation=stream.read_rad()
-        const [dead,knocked]=stream.read_boolean_group()
-        this.dead=dead
-        this.knocked=knocked
-        this.name=stream.read_string(1)
+    override on_decode_checkpoint(stream:Stream,ctx:CheckpointContext){
+        super.on_decode_checkpoint(stream,ctx)
+        this.knocked=stream.read_boolean_group()[0]
         this.health.value=stream.read_float32()
         this.health.max=stream.read_float32()
         this.boost.value=stream.read_float32()
         this.boost.max=stream.read_float32()
         this.boost.def=this.app.definitions.boosts.getFromString(stream.read_string(1))
-        this.down_timer=stream.read_float32()
-        this.scale=stream.read_float32()
-        decode_visual(stream,this.app.definitions,this.visual)
-        this.visual.dirty=true
         this.inventory.decode_checkpoint(stream)
-        this.set_dirty_full()
     }
 }

@@ -1,9 +1,13 @@
-import { ActionsManager, BaseAction, BaseObject2D, BaseSceneObject2D, CircleCollider2D, Numeric, random, Stream, v2, Vec2 } from "../../../engine/core.ts";
-import { type GameDefinition, type GameItem } from "../../definitions/game_defs.ts";
+import { ActionsManager, BaseAction, BaseSceneObject2D, CircleCollider2D, random, Stream, v2, Vec2 } from "../../../engine/core.ts";
+import { type GameItem } from "../../definitions/game_defs.ts";
 import { type BackpackDef } from "../../definitions/items/backpacks.ts";
+
 import { GameItemType } from "../../definitions/utils.ts";
+
 import { HumanAnimationType, type HumanAnimation, type LootData, object_instance_type } from "../../others/constants.ts";
+
 import { type CommonApplication, type SimulatedScene } from "../base.ts";
+
 
 export enum InventoryDisplay{
     None,
@@ -79,16 +83,6 @@ export abstract class InventoryItem<Owner extends InventoryOwner=InventoryOwner>
     allow_merge:boolean=false
     use_delay:number=0
 
-    get owner():Owner{
-        return this.inventory.owner
-    }
-    get in_hand():boolean{
-        return this.inventory.hand_item===this
-    }
-    get item_type():GameItemType{
-        return this.def.item_type!
-    }
-
     on_give(_extra?:ItemGiveExtra){}
     on_remove(){}
     merge(_def:GameItem,_extra?:ItemGiveExtra):boolean{
@@ -135,16 +129,12 @@ export class InventoryGroup{
     includes:GameItem[]=[]
     selected?:GameItem
     constructor(public index:number,public def:InventoryGroupDef){}
-    get id():string{
-        return this.def.id
-    }
-    get type():InventoryGroupType{
-        return this.def.type
-    }
     accepts(def:GameItem):boolean{
         return this.def.accept.includes(def.item_type!)
     }
 }
+
+type ItemEvents={events?:Record<string,(e:unknown)=>void>}
 
 export const inventory_events={
     changed:"inventory_changed",
@@ -179,25 +169,22 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
         this.factories=factories
     }
 
-    get definitions():GameDefinition{
-        return this.owner.app.definitions
-    }
-    get hand_slot():InventorySlot|undefined{
-        return this.slots[this.hand_index]
-    }
-    get hand_item():InventoryItem<Owner>|undefined{
-        return this.hand_slot?.item as InventoryItem<Owner>|undefined
-    }
-    get hand_def():GameItem|undefined{
-        return this.hand_item?.def
-    }
     get hand_slots():InventorySlot[]{
-        return this.slots.filter((s)=>s.group.def.hand&&s.group.type==="change")
+        return this.slots.filter((s)=>s.group.def.hand&&s.group.def.type==="change")
     }
     get item_slots():InventorySlot[]{
-        return this.slots.filter((s)=>s.group.type==="normal")
+        return this.slots.filter((s)=>s.group.def.type==="normal")
     }
     recoil?:{time:number,speed:number}
+
+    emit_event(name:string,e:unknown){
+        for(const s of this.slots){
+            (s.item?.def as ItemEvents|undefined)?.events?.[name]?.(e)
+        }
+    }
+    has_property(property:string):boolean{
+        return this.slots.some((s)=>(s.item?.def as {property?:string[]}|undefined)?.property?.includes(property))
+    }
 
     initialize(defs:InventoryGroupDef[]){
         this.clear(true)
@@ -222,7 +209,7 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
         return s
     }
     protected reindex(){
-        const hand=this.hand_slot
+        const hand=this.slots[this.hand_index]
         this.slots.length=0
         for(const g of this.groups){
             for(const s of g.slots){
@@ -234,9 +221,9 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
     }
     fill_default(g:InventoryGroup){
         if(!g.def.default)return
-        const def=this.definitions.game_items.valueString[g.def.default]
+        const def=this.owner.app.definitions.game_items.valueString[g.def.default]
         if(!def)return
-        switch(g.type){
+        switch(g.def.type){
             case "change":
             case "normal":
                 for(const s of g.slots){
@@ -260,7 +247,7 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
                 if(!s.is_default)this.drop_loot(s.item.drop(s.count))
                 s.item.on_remove()
             }
-            if(this.hand_slot===s)this.hand_index=-1
+            if(this.slots[this.hand_index]===s)this.hand_index=-1
             changed=true
         }
         while(g.slots.length<count){
@@ -274,7 +261,7 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
             this.dirty.full=true
         }
         for(const s of g.slots){
-            if(s.item&&g.type==="normal"){
+            if(s.item&&g.def.type==="normal"){
                 const limit=this.item_limit(s.item.def,g)
                 if(s.count>limit){
                     this.drop_loot(s.item.drop(s.count-limit))
@@ -287,9 +274,9 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
     refresh(){
         for(const g of this.groups)this.resize(g)
         for(const g of this.groups){
-            if(g.type!=="amount")continue
+            if(g.def.type!=="amount")continue
             for(const id in g.amounts){
-                const def=this.definitions.game_items.valueString[id]
+                const def=this.owner.app.definitions.game_items.valueString[id]
                 const limit=this.item_limit(def,g)
                 if(g.amounts[id]>limit){
                     this.drop_loot([{item:def,count:g.amounts[id]-limit}])
@@ -301,14 +288,14 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
     }
 
     get_group(id:string):InventoryGroup|undefined{
-        return this.groups.find((g)=>g.id===id)
+        return this.groups.find((g)=>g.def.id===id)
     }
     groups_for(def:GameItem):InventoryGroup[]{
         return this.groups.filter((g)=>g.accepts(def))
     }
     get_equipment<T extends GameItem=GameItem>(type:GameItemType):T|undefined{
         for(const g of this.groups){
-            if(g.type!=="change"||!g.def.accept.includes(type))continue
+            if(g.def.type!=="change"||!g.def.accept.includes(type))continue
             for(const s of g.slots){
                 if(s.item&&!s.empty)return s.item.def as T
             }
@@ -318,7 +305,7 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
     get_items<T extends InventoryItem<any>=InventoryItem<any>>(type:GameItemType):T[]{
         const ret:T[]=[]
         for(const s of this.slots){
-            if(s.item&&!s.empty&&s.item.item_type===type)ret.push(s.item as T)
+            if(s.item&&!s.empty&&s.item.def.item_type===type)ret.push(s.item as T)
         }
         return ret
     }
@@ -330,7 +317,7 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
         if(custom!==undefined)return custom
         const backpack=this.backpack
         if(backpack&&backpack.max[def.id_string]!==undefined)return backpack.max[def.id_string]
-        const base=this.definitions.backpacks.getFromStringSafe("null_pack")
+        const base=this.owner.app.definitions.backpacks.getFromStringSafe("null_pack")
         return base?.max[def.id_string]??15
     }
 
@@ -343,7 +330,7 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
     }
     place(slot:InventorySlot,def:GameItem,count:number=1,extra?:ItemGiveExtra,drop_old:boolean=true,is_default:boolean=false):InventoryItem<Owner>|undefined{
         const old=slot.item as InventoryItem<Owner>|undefined
-        const in_hand=this.hand_slot===slot
+        const in_hand=this.slots[this.hand_index]===slot
         const item=this.create_item(def)
         if(!item)return undefined
         if(old){
@@ -361,6 +348,8 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
             item.load(old?.def)
             this.dirty.hand=true
         }
+        if(old)(old.def as ItemEvents).events?.drop?.({def:old.def,user:this.owner})
+        ;(def as ItemEvents).events?.pickup?.({def,user:this.owner})
         slot.group.def.on_change?.({inventory:this,group:slot.group,slot,def,old})
         this.dirty.slots.add(slot.index)
         this.owner.emit_event(inventory_events.changed,slot)
@@ -372,15 +361,16 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
         slot.count-=removed
         if(slot.count<=0){
             const old=slot.item
-            if(this.hand_slot===slot)old.unload()
+            if(this.slots[this.hand_index]===slot)old.unload()
             old.on_remove()
             slot.item=undefined
             slot.count=0
             slot.is_default=false
             this.fill_default(slot.group)
             slot.group.def.on_change?.({inventory:this,group:slot.group,slot,def:old.def,old})
-            if(this.hand_slot===slot&&slot.empty)this.select_default_hand()
-            else if(this.hand_slot===slot)this.hand_item?.load(old.def)
+            ;(old.def as ItemEvents).events?.drop?.({def:old.def,user:this.owner})
+            if(this.slots[this.hand_index]===slot&&slot.empty)this.select_default_hand()
+            else if(this.slots[this.hand_index]===slot)this.slots[this.hand_index]?.item?.load(old.def)
         }
         this.dirty.slots.add(slot.index)
         this.owner.emit_event(inventory_events.changed,slot)
@@ -395,12 +385,12 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
             if(s.item&&!s.empty&&s.group.accepts(def)&&s.item.merge(def,extra)){
                 remaining--
                 this.dirty.slots.add(s.index)
-                if(this.hand_slot===s)this.dirty.hand=true
+                if(this.slots[this.hand_index]===s)this.dirty.hand=true
             }
         }
         for(const g of this.groups_for(def)){
             if(remaining<=0)break
-            switch(g.type){
+            switch(g.def.type){
                 case "amount":
                     remaining=this.give_amount(g,def,remaining)
                     break
@@ -484,7 +474,7 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
         const replace=g.def.replace??(g.def.hand?"hand":"first")
         let target:InventorySlot|undefined
         if(replace==="hand"){
-            if(this.hand_slot?.group===g)target=this.hand_slot
+            if(this.slots[this.hand_index]?.group===g)target=this.slots[this.hand_index]
         }else if(replace==="first"){
             target=g.slots[0]
         }
@@ -495,7 +485,7 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
     }
     can_auto_take(def:GameItem):boolean{
         for(const g of this.groups_for(def)){
-            switch(g.type){
+            switch(g.def.type){
                 case "amount":
                     if((g.amounts[def.id_string]??0)<this.item_limit(def,g))return true
                     break
@@ -517,13 +507,13 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
 
     amount(id:string):number{
         for(const g of this.groups){
-            if(g.type==="amount"&&g.amounts[id]!==undefined)return g.amounts[id]
+            if(g.def.type==="amount"&&g.amounts[id]!==undefined)return g.amounts[id]
         }
         return 0
     }
     consume_amount(id:string,count:number):number{
         for(const g of this.groups){
-            if(g.type!=="amount"||!g.amounts[id])continue
+            if(g.def.type!=="amount"||!g.amounts[id])continue
             const c=Math.min(count,g.amounts[id])
             g.amounts[id]-=c
             if(g.amounts[id]<=0)delete g.amounts[id]
@@ -533,7 +523,7 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
         return 0
     }
     has_include(def:GameItem):boolean{
-        return this.groups.some((g)=>g.type==="include"&&g.includes.includes(def))
+        return this.groups.some((g)=>g.def.type==="include"&&g.includes.includes(def))
     }
     select_include(group:InventoryGroup,def:GameItem){
         if(!group.includes.includes(def))return
@@ -548,19 +538,19 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
         const slot=this.slots[index]
         if(!this.can_hold(slot))return
         if(this.hand_index===index&&!force)return
-        const old=this.hand_item
+        const old=this.slots[this.hand_index]?.item
         old?.unload()
         this.owner.actions.cancel()
         this.hand_index=index
-        this.hand_item?.load(old?.def)
+        this.slots[this.hand_index]?.item?.load(old?.def)
         this.recoil=undefined
         this.dirty.hand=true
-        if(old&&this.hand_item)this.owner.animations.push({type:HumanAnimationType.Switch,item:this.definitions.game_items.keysString[this.hand_item.def.id_string]})
-        this.owner.emit_event(inventory_events.hand,this.hand_item,old)
+        const item=this.slots[this.hand_index]?.item
+        if(old&&item)this.owner.animations.push({type:HumanAnimationType.Switch,item:this.owner.app.definitions.game_items.keysString[item.def.id_string]})
     }
     set_hand_slot(n:number){
         const s=this.hand_slots[n]
-        const hand=this.hand_item
+        const hand=this.slots[this.hand_index]?.item
         if(!s||this.owner.hand_locked)return
         if(this.owner.scene.mode.rules.humans.no_quickswitch&&hand?.def.item_type===GameItemType.gun&&hand.use_delay>0)return
         this.set_hand(s.index)
@@ -588,7 +578,7 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
         this.dirty.hand=true
     }
     swap_hand_group(){
-        const g=this.hand_slot?.group.slots.length===2?this.hand_slot.group:this.groups.find((v)=>v.def.hand&&v.type==="change"&&v.slots.length===2)
+        const g=this.slots[this.hand_index]?.group.slots.length===2?this.slots[this.hand_index].group:this.groups.find((v)=>v.def.hand&&v.def.type==="change"&&v.slots.length===2)
         if(!g)return
         this.swap_slots(g.slots[0],g.slots[1])
     }
@@ -599,15 +589,14 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
     }
     reload(){
         if(this.owner.hand_locked)return
-        this.hand_item?.reload()
+        this.slots[this.hand_index]?.item?.reload()
     }
 
     drop_loot(loots:LootData[],position:Vec2=this.owner.position,layer?:number){
         const scene=this.owner.scene
         for(const l of loots){
             if(l.count<=0)continue
-            const loot=scene.add_object(scene.make_object(object_instance_type.loot),layer??this.owner.layer,undefined,{data:l,position})
-            this.owner.emit_event(inventory_events.drop,loot)
+            scene.add_object(scene.make_object(object_instance_type.loot),layer??this.owner.layer,undefined,{data:l,position})
         }
     }
     drop_slot(index:number,count?:number){
@@ -620,7 +609,7 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
         this.drop_loot(loots)
     }
     drop_amount(id:string,count?:number){
-        const def=this.definitions.game_items.valueString[id]
+        const def=this.owner.app.definitions.game_items.valueString[id]
         if(!def)return
         const c=this.consume_amount(id,count??Math.ceil(this.amount(id)/2))
         if(c>0)this.drop_loot([{item:def,count:c}])
@@ -637,9 +626,9 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
     drop_all(){
         for(const g of this.groups){
             if(g.def.droppable===false)continue
-            if(g.type==="amount"){
+            if(g.def.type==="amount"){
                 for(const id in g.amounts){
-                    const def=this.definitions.game_items.valueString[id]
+                    const def=this.owner.app.definitions.game_items.valueString[id]
                     let c=g.amounts[id]
 
                     const dir=random.rad()
@@ -652,7 +641,7 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
                     }
                 }
                 g.amounts={}
-            }else if(g.type==="include"){
+            }else if(g.def.type==="include"){
                 for(const def of [...g.includes])this.drop_include(g,def)
             }
         }
@@ -706,7 +695,7 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
         stream.write_uint16(s.index)
         stream.write_boolean_group(!s.empty,s.is_default,s.item?.skin!==undefined)
         if(s.empty)return
-        stream.write_uint16(this.definitions.game_items.keysString[s.item!.def.id_string])
+        stream.write_uint16(this.owner.app.definitions.game_items.keysString[s.item!.def.id_string])
         stream.write_float32(s.count)
         if(s.item!.skin!==undefined)stream.write_uint8(s.item!.skin)
         if(checkpoint)s.item!.encode_checkpoint(stream)
@@ -719,7 +708,7 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
             if(s&&!s.empty)this.remove_slot(s,s.count)
             return
         }
-        const def=this.definitions.game_items.valueNumber[stream.read_uint16()]
+        const def=this.owner.app.definitions.game_items.valueNumber[stream.read_uint16()]
         const count=stream.read_float32()
         const skin=has_skin?stream.read_uint8():undefined
         if(!s)return
@@ -734,30 +723,30 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
     }
     protected encode_group(stream:Stream,g:InventoryGroup){
         stream.write_uint8(g.index)
-        if(g.type==="amount"){
+        if(g.def.type==="amount"){
             stream.write_array(Object.keys(g.amounts),(id)=>{
-                stream.write_uint16(this.definitions.game_items.keysString[id])
+                stream.write_uint16(this.owner.app.definitions.game_items.keysString[id])
                 stream.write_float32(g.amounts[id])
             },2)
-        }else if(g.type==="include"){
-            stream.write_array(g.includes,(d)=>stream.write_uint16(this.definitions.game_items.keysString[d.id_string]),1)
-            stream.write_int16(g.selected?this.definitions.game_items.keysString[g.selected.id_string]:-1)
+        }else if(g.def.type==="include"){
+            stream.write_array(g.includes,(d)=>stream.write_uint16(this.owner.app.definitions.game_items.keysString[d.id_string]),1)
+            stream.write_int16(g.selected?this.owner.app.definitions.game_items.keysString[g.selected.id_string]:-1)
         }else{
             stream.write_uint8(g.slots.length)
         }
     }
     protected decode_group(stream:Stream){
         const g=this.groups[stream.read_uint8()]
-        if(g.type==="amount"){
+        if(g.def.type==="amount"){
             g.amounts={}
             stream.read_array(()=>{
-                const def=this.definitions.game_items.valueNumber[stream.read_uint16()]
+                const def=this.owner.app.definitions.game_items.valueNumber[stream.read_uint16()]
                 g.amounts[def.id_string]=stream.read_float32()
             },2)
-        }else if(g.type==="include"){
-            g.includes=stream.read_array(()=>this.definitions.game_items.valueNumber[stream.read_uint16()],1)
+        }else if(g.def.type==="include"){
+            g.includes=stream.read_array(()=>this.owner.app.definitions.game_items.valueNumber[stream.read_uint16()],1)
             const sel=stream.read_int16()
-            g.selected=sel>=0?this.definitions.game_items.valueNumber[sel]:undefined
+            g.selected=sel>=0?this.owner.app.definitions.game_items.valueNumber[sel]:undefined
         }else{
             const count=stream.read_uint8()
             while(g.slots.length>count)g.slots.pop()

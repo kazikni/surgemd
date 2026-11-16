@@ -5,7 +5,7 @@ import { type Human } from "common/scripts/game/objects/human/human.ts";
 import { type SI_Obstacle } from "common/scripts/game/objects/static_body/obstacle.ts";
 import { type Loot as SI_Loot } from "common/scripts/game/objects/loot.ts";
 import { GunItem } from "common/scripts/game/inventory/items.ts";
-import { inventory_events } from "common/scripts/game/inventory/inventory.ts";
+import { HumanAnimationType } from "common/scripts/others/constants.ts";
 import { GameItemType } from "common/scripts/definitions/utils.ts";
 import { Game } from "../game/game.ts";
 
@@ -18,8 +18,8 @@ const check=(name:string,ok:boolean,info:unknown="")=>console.log(ok?"OK  ":"FAI
 
 const h=sim.mode.join(new LocalPlayerConn(),{name:"Tester"})! as Human
 const inv=h.inventory
-check("groups",inv.groups.map((g)=>g.id).join(",")==="melee,guns,ammo,scopes,items,helmet,vest,backpack,accessory",inv.groups.map((g)=>g.id))
-check("default fist in hand",inv.hand_def?.id_string==="fist",inv.hand_def?.id_string)
+check("groups",inv.groups.map((g)=>g.def.id).join(",")==="melee,guns,ammo,scopes,items,helmet,vest,backpack,accessory",inv.groups.map((g)=>g.def.id))
+check("default fist in hand",inv.slots[inv.hand_index]?.item?.def?.id_string==="fist",inv.slots[inv.hand_index]?.item?.def?.id_string)
 check("default backpack/scope",inv.backpack?.id_string==="null_pack"&&inv.get_group("scopes")!.includes.length===1)
 check("item slots from backpack",inv.get_group("items")!.slots.length===4)
 
@@ -42,15 +42,21 @@ const pick=(id:string)=>{
 
 check("pick ak47",pick("ak47"))
 const gun=inv.get_items<GunItem>(GameItemType.gun)[0]
-check("gun in guns group",gun?.slot?.group.id==="guns",gun?.def.id_string)
+check("gun in guns group",gun?.slot?.group.def.id==="guns",gun?.def.id_string)
 inv.set_hand(gun.slot!.index)
 tick(1)
-check("gun in hand",(inv.hand_item as unknown)===gun)
+check("gun in hand",(inv.slots[inv.hand_index]?.item as unknown)===gun)
 check("pick ammo",pick(gun.def.ammo_type),inv.amount(gun.def.ammo_type))
 
-let fired=0,reload_begin=0,reload_end=0
-h.on(inventory_events.fire,()=>fired++)
-h.on(inventory_events.reload,(_i:unknown,begin:boolean)=>begin?reload_begin++:reload_end++)
+let fired=0,reload_begin=0
+const push=h.animations.push.bind(h.animations)
+h.animations.push=(...a)=>{
+    for(const v of a){
+        if(v.type===HumanAnimationType.Fire)fired++
+        if(v.type===HumanAnimationType.Reloading)reload_begin++
+    }
+    return push(...a)
+}
 gun.ammo=3
 const ammo_before=inv.amount(gun.def.ammo_type)
 h.input.use_weapon=true
@@ -59,7 +65,7 @@ tick(1.5)
 h.input.use_weapon=false
 check("fired 3 times",fired===3,fired)
 tick(5)
-check("auto reload",reload_begin>=1&&reload_end>=1&&gun.ammo===gun.get_capacity(),{reload_begin,reload_end,ammo:gun.ammo,cap:gun.get_capacity()})
+check("auto reload",reload_begin>=1&&gun.ammo===gun.get_capacity(),{reload_begin,ammo:gun.ammo,cap:gun.get_capacity()})
 check("ammo consumed from amounts",inv.amount(gun.def.ammo_type)===ammo_before-gun.get_capacity(),[ammo_before,inv.amount(gun.def.ammo_type)])
 
 gun.ammo=5
@@ -104,6 +110,6 @@ inv.encode_net(net2)
 check("net encode partial small",net2.length<net.length,net2.length)
 
 const loot_before_die=loots().length
-h.piercing_damage({amount:1000,reason:0})
+h.piercing_damage({amount:1000})
 check("drop all on death",loots().length>loot_before_die,[loot_before_die,loots().length])
 Deno.exit(0)

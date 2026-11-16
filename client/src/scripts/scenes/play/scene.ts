@@ -1,4 +1,4 @@
-import { BaseGELO, BasicSocket, Client, DefaultSignals, DynamicStream, SignalManager, Stream, WorkerSocket } from "common/engine/core.ts";
+import { BaseGELO, BasicSocket, Client, ClientsManager, DefaultSignals, DynamicStream, SignalManager, Stream, WorkerSocket } from "common/engine/core.ts";
 import { HideElement, ShowElement, UIRoot } from "common/engine/web.ts";
 import { gelo_instance_type } from "common/scripts/others/constants.ts";
 import { type JoinData, JoinedPacket, JoinPacket } from "common/scripts/net/join_packet.ts";
@@ -13,13 +13,14 @@ import { net_scene_defs } from "./netdefs.ts";
 import { cc_freecam } from "../../gelo/free_cam.ts";
 import { api_server } from "../../main/config.ts";
 import { FindGameData, FindGameResult } from "common/scripts/config/config.ts";
+import { Game } from "../../../../../server/src/game/game.ts";
 
 export interface PlaySceneDefs{
     objects:Record<number|string,(...args: any)=>GameObject>
     gelo:Record<number|string,(...args: any)=>GameGELO>
 }
 
-export type PlaySceneKind="none"|"worker"|"online"
+export type PlaySceneKind="none"|"local"|"worker"|"online"
 
 export interface WorkerGameOptions{
     mode?:string
@@ -66,6 +67,7 @@ export class PlayScene extends GameScene {
     events=new SignalManager()
 
     client?:Client
+    game?:Game
     worker?:Worker
 
     active_human?:ActiveHuman
@@ -112,6 +114,19 @@ export class PlayScene extends GameScene {
         }
     }
 
+    async local_initialize(options:WorkerGameOptions={}){
+        await this.close()
+        this.kind="local"
+        const clients=new ClientsManager(make_packet_manager())
+        const game=new Game({tps:options.tps??100,ntps:options.ntps??32},clients)
+        this.game=game
+        await game.init({mode:options.mode??"normal",settings:options.settings??{}})
+        const [server_socket,client_socket]=clients.create_conn()
+        await this.attach_client(client_socket,()=>{
+            game.mainloop()
+            clients.fake_connect_other_s(server_socket)
+        })
+    }
     async worker_initialize(options:WorkerGameOptions={}){
         await this.close()
         this.kind="worker"
@@ -245,6 +260,8 @@ export class PlayScene extends GameScene {
             this.worker.terminate()
             this.worker=undefined
         }
+        this.game?.stop()
+        this.game=undefined
         this.active_human?.release_active()
         this.active_human=undefined
         this.active_id=undefined
@@ -270,6 +287,7 @@ export class PlayScene extends GameScene {
         if(this.kind==="worker"&&this.worker){
             this.worker.postMessage({type:"set_state",pause:false} as WorkerMessage)
         }
+        if(this.game)this.game.clock.time_scale=1
     }
     override on_unset(): void {
         HideElement(this.game_div)
@@ -277,6 +295,7 @@ export class PlayScene extends GameScene {
         if(this.kind==="worker"&&this.worker){
             this.worker.postMessage({type:"set_state",pause:true} as WorkerMessage)
         }
+        if(this.game)this.game.clock.time_scale=0
     }
 
     override update(dt: number): void {

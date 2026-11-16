@@ -1,5 +1,4 @@
 import { Numeric, random } from "../../../engine/core.ts";
-import { DamageReason } from "../../definitions/utils.ts";
 import { type Human } from "../objects/human/human.ts";
 
 export class Team{
@@ -50,7 +49,7 @@ export class Team{
     clear_knocked(){
         if(this.get_not_knocked_humans().length>0)return
         for(const h of this.get_knocked_humans()){
-            h.die({amount:h.health.value,reason:DamageReason.Bleend,position:h.position})
+            h.die({amount:h.health.value,position:h.position})
         }
     }
     choose_human(self?:Human):Human|undefined{

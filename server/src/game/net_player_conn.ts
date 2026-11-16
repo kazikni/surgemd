@@ -1,10 +1,10 @@
+import { type DamageParams } from "common/scripts/game/objects/projectile/projectile.ts";
 import { Client, DefaultSignals, DynamicStream, RectCollider2D, v2, Vec2 } from "common/engine/core.ts";
 import { type Human } from "common/scripts/game/objects/human/human.ts";
 import { PlayerConn } from "common/scripts/game/players/player_conn.ts";
 import { type InputPacket } from "common/scripts/net/input_packet.ts";
 import { JoinedPacket, type JoinPacket } from "common/scripts/net/join_packet.ts";
 import { StartPacket, UpdatePacket } from "common/scripts/net/update_packet.ts";
-import { type DamageParams } from "common/scripts/others/constants.ts";
 import { type Game } from "./game.ts";
 import { type ServerObject } from "./scene.ts";
 

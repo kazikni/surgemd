@@ -1,8 +1,8 @@
+import { type DamageParams } from "../objects/projectile/projectile.ts";
 import { Stream, v2, Vec2 } from "../../../engine/core.ts";
 import { MapDef } from "../../definitions/maps/base.ts";
 import { get_map_def } from "../../definitions/maps/maps.ts";
-import { DamageReason } from "../../definitions/utils.ts";
-import { type DamageParams, gelo_instance_type } from "../../others/constants.ts";
+import { gelo_instance_type } from "../../others/constants.ts";
 import { type DeadzoneConfig, DefaultDeadzone, type SI_Deadzone } from "../gelo/deadzone.ts";
 import { SI_GameMap } from "../gelo/map.ts";
 import { type Human } from "../objects/human/human.ts";
@@ -72,7 +72,11 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
     }
     override on_player_disconnect(p:Player<BattleRoyaleStatus>){
         if(!this.started)super.on_player_disconnect(p)
-        else p.human?.clear_input()
+        else if(p.human){
+            p.human.input.movement.scale=0
+            p.human.input.use_weapon=false
+            p.human.input.alt_use_weapon=false
+        }
     }
     override on_player_spawn(p:Player<BattleRoyaleStatus>){
         if(p.human&&!this.groups?.of?.(p.human))this.put_on_side(p.human)
@@ -92,7 +96,7 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
             if(this.finished)break
             const h=p.human!
             const dmg=this.deadzone.damage_at(h.position)
-            if(dmg>0)h.piercing_damage({amount:dmg,reason:DamageReason.Deadzone})
+            if(dmg>0)h.piercing_damage({amount:dmg})
         }
     }
     override net_update(){

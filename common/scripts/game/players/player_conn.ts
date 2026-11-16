@@ -1,6 +1,6 @@
+import { type DamageParams } from "../objects/projectile/projectile.ts";
 import { Numeric, random, v2 } from "../../../engine/core.ts";
 import { type JoinData } from "../../net/join_packet.ts";
-import { type DamageParams } from "../../others/constants.ts";
 import { type ModeManager } from "../modes/mode_manager.ts";
 import { type Human } from "../objects/human/human.ts";
 

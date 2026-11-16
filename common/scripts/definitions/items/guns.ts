@@ -887,7 +887,7 @@ export function Guns_Default_Init():GunDef[]{
                     speed:0.25,
                 },
                 ammo_type:"explosive_ammo",
-                projectile:{
+                grenade:{
                     def:"m79_grenade",
                 },
             },

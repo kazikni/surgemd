@@ -1,6 +1,8 @@
-import { Angle, gel_events, GELComponent, Numeric, Orientation, random, RotationMode, Stream, v2, Vec2 } from "../../../../engine/core.ts";
+import { type DamageParams } from "../projectile/projectile.ts";
+import { Angle, CircleCollider2D, gel_events, GELComponent, Numeric, Orientation, random, RotationMode, Stream, v2, Vec2 } from "../../../../engine/core.ts";
 import { ObstacleDef } from "../../../definitions/objects/obstacles.ts";
-import { DamageParams, LootData, object_instance_type, ObjectType } from "../../../others/constants.ts";
+import { LootData, object_instance_type } from "../../../others/constants.ts";
+import { type Inventory } from "../../inventory/inventory.ts";
 import { type Human } from "../human/human.ts";
 import { type Loot } from "../loot.ts";
 import { static_body_events, SI_StaticBody, type C_StaticBody, c_static_body, si_static_body } from "./static_body.ts";
@@ -127,7 +129,7 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
             }
             this.loot.length=0
             if(this.def.onDestroyExplosion){
-                this.scene.add_object(this.scene.make_object(ObjectType.Explosion),this.layer,undefined,{position:this.position,def:this.app.scene})
+                this.scene.add_object(this.scene.make_object(object_instance_type.explosion),this.layer,undefined,{position:v2.clone(this.position),def:this.app.definitions.explosions.getFromString(this.def.onDestroyExplosion),source:this.def})
             }
             if(!this.def.keep_collision_on_die){
                 this.physical.no_collision=true
@@ -175,6 +177,7 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
             this.health.value=Math.max(this.health.value-params.amount,0)
             if(this.health.value<=0){
                 this.die()
+                ;(params.owner as {inventory?:Inventory}|undefined)?.inventory?.emit_event("obstacle_destroy",{obstacle:this,human:params.owner})
             }else{
                 this.reset_scale()
             }
@@ -182,7 +185,7 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
         },
         can_interact(user:Human):boolean{
             if(this.destroyed||!this.def.interactDestroy||!this.health||this.health.dead)return false
-            return user.collider.colliding_with(this.interaction_collider??this.collider)||user.collider.colliding_with(this.collider)
+            return new CircleCollider2D(user.position,user.interaction.radius).colliding_with(this.collider)
         },
         on_interact(user:Human){
             if(this.def.interactDestroy){

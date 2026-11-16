@@ -1,5 +1,6 @@
+import { type DamageParams } from "../projectile/projectile.ts";
 import { Angle, astar_path2d, BaseObject2D, Collider2D, Numeric, ObjectManager2D, random, Random1, v2, Vec2 } from "../../../../engine/core.ts";
-import { type DamageParams, ObjectType } from "../../../others/constants.ts";
+import { ObjectType } from "../../../others/constants.ts";
 import { mode_events } from "../../modes/mode_manager.ts";
 import { type MomentaryPlayOptions } from "../../../definitions/objects/humanoid_animations.ts";
 import { type SI_StaticBody } from "../static_body/static_body.ts";
@@ -268,7 +269,7 @@ export class HumanScript{
         return new Promise<boolean>((resolve)=>{
             const end=options.on_end
             const ok=this.human.play_momentary(id,{
-                item:this.human.inventory.hand_def,
+                item:this.human.inventory.slots[this.human.inventory.hand_index]?.item?.def,
                 ...options,
                 on_end:(completed)=>{
                     end?.(completed)

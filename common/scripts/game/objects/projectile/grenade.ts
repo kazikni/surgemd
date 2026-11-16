@@ -1,4 +1,4 @@
-import { CheckpointContext, CircleCollider2D, Numeric, Stream, v2, v2m } from "../../../../engine/core.ts";
+import { CheckpointContext, CircleCollider2D, Numeric, Stream, v2, v2m, Vec2 } from "../../../../engine/core.ts";
 import { type GrenadeDef } from "../../../definitions/items/grenades.ts";
 import { type ObstacleDef } from "../../../definitions/objects/obstacles.ts";
 import { object_instance_type, ObjectType } from "../../../others/constants.ts";
@@ -6,16 +6,12 @@ import { Floors, FloorType } from "../../../others/terrain.ts";
 import { type SimObject } from "../../base.ts";
 import { type Human } from "../human/human.ts";
 import { type SI_StaticBody } from "../static_body/static_body.ts";
-import { type Explosion } from "./explosion.ts";
 import { Projectile } from "./projectile.ts";
-
-export interface GrenadeCreateArgs extends ProjectileCreateArgs{
-    def:GrenadeDef
-    fuse?:number
-}
 
 export class Grenade extends Projectile{
     def!:GrenadeDef
+    velocity:Vec2=v2.zero()
+    rotation:number=0
     zpos:number=0
     zpos_speed:number=0
     angular_velocity:number=0
@@ -30,7 +26,7 @@ export class Grenade extends Projectile{
         this.allow_tick=true
     }
 
-    override on_create(args?:GrenadeCreateArgs){
+    override on_create(args?:{def:GrenadeDef,fuse?:number}){
         super.on_create(args)
         if(!args)return
         this.def=args.def
@@ -39,14 +35,14 @@ export class Grenade extends Projectile{
         this.base_collider=new CircleCollider2D(v2(0,0),args.def.radius)
     }
 
-    override push(speed:number,direction:number,angular_velocity:number=10){
-        super.push(speed,direction)
+    push(speed:number,direction:number,angular_velocity:number=10){
+        v2m.add(this.velocity,this.velocity,v2.from_RadAngle(direction,speed))
         this.angular_velocity=Numeric.clamp(this.angular_velocity+angular_velocity,-40,40)
     }
     kill(){
         if(this.destroyed)return
         if(this.def.explosion){
-            spawn_projectile<Explosion>(this.scene,object_instance_type.explosion,this.layer,{
+            this.scene.add_object(this.scene.make_object(object_instance_type.explosion),this.layer,undefined,{
                 position:v2.clone(this.position),
                 def:this.app.definitions.explosions.getFromString(this.def.explosion),
                 owner:this.owner,
@@ -57,7 +53,7 @@ export class Grenade extends Projectile{
         this.destroy()
     }
 
-    override on_collided(obj:SimObject){
+    on_collided(obj:SimObject){
         if(obj.object_type===ObjectType.StaticBody){
             if((obj as SI_StaticBody).physical.no_collision)return
             const height=(obj as unknown as {def?:ObstacleDef}).def?.height
@@ -79,8 +75,11 @@ export class Grenade extends Projectile{
 
     on_tick(dt:number){
         if(this.velocity.x!==0||this.velocity.y!==0){
-            this.move(dt)
-            if(this.destroyed)return
+            this.position=this.scene.map.clamp_collider(v2.add(this.position,v2.scale(this.velocity,dt)),this.collider)
+            for(const obj of this.manager.cells.get_objects(this.collider,this.layer) as SimObject[]){
+                if(obj.id!==this.id)this.on_collided(obj)
+                if(this.destroyed)return
+            }
             if(v2.len(this.velocity)<=0.000001)v2m.zero(this.velocity)
         }
         this.rotation+=this.angular_velocity*dt

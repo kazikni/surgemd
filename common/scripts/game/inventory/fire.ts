@@ -83,6 +83,7 @@ export function fire_item(user:Human,item:InventoryItem&FireState,position:Vec2,
             })
             b.speed*=user.get_modifier("bullet_speed")
             b.tracer_height*=user.get_modifier("bullet_size")
+            user.inventory.emit_event("gun_shoot",{user,item,bullet:b,angle,spread,position:pos})
             b.set_direction(angle)
         }
     }

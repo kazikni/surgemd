@@ -3,7 +3,6 @@ import { make_packet_manager } from "common/scripts/net/packet_manager.ts";
 import { BotPlayerConn } from "common/scripts/game/players/player_conn.ts";
 import { type Human } from "common/scripts/game/objects/human/human.ts";
 import { type BattleRoyale } from "common/scripts/game/modes/battle_royale.ts";
-import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { Game } from "../game/game.ts";
 
 const check=(name:string,ok:boolean,info:unknown="")=>console.log(ok?"OK  ":"FAIL",name,info)
@@ -29,21 +28,21 @@ for(let t=0;t<0.1;t+=0.01)game.update(0.01)
 check("started",br.started)
 
 const hp=mate.health.value
-mate.damage({amount:10,reason:DamageReason.Human,owner:a})
+mate.damage({amount:10,owner:a})
 check("no friendly fire",mate.health.value===hp)
 br.rules.humans.friendly_fire=true
-mate.damage({amount:10,reason:DamageReason.Human,owner:a})
+mate.damage({amount:10,owner:a})
 check("friendly fire damages ally",mate.health.value===hp-10&&br.is_ally(a,mate))
 br.rules.humans.friendly_fire=false
 
-enemy.damage({amount:1000,reason:DamageReason.Human,owner:a})
+enemy.damage({amount:1000,owner:a})
 check("enemy with alive group mates gets knocked",enemy.knocked&&!enemy.dead)
 const enemy_mate=group(enemy).humans.find((h)=>h!==enemy)!
 const enemy_team=hs.filter((h)=>team(h)===team(enemy))
 for(const h of enemy_team){
     if(h.dead)continue
-    h.damage({amount:1000,reason:DamageReason.Human,owner:a})
-    if(h.knocked&&!h.dead)h.damage({amount:1000,reason:DamageReason.Human,owner:a})
+    h.damage({amount:1000,owner:a})
+    if(h.knocked&&!h.dead)h.damage({amount:1000,owner:a})
 }
 check("knocked group dies when no one stands",enemy.dead&&enemy_mate.dead)
 check("finish when one team is left",br.finished,br.players.living().map((p)=>p.name))

@@ -1,7 +1,8 @@
+import { type DamageParams } from "../objects/projectile/projectile.ts";
 import { cloneDeep, LootTableGetItemCallback, LootTablesManager, SignalManager, Stream, Vec2 } from "../../../engine/core.ts";
 import { type LoadoutPreset } from "../../definitions/utils.ts";
 import { type JoinData } from "../../net/join_packet.ts";
-import { type DamageParams, GameConstants, Layers, object_instance_type, Spawn, type SpawnMode, type LootAditional, type LootData, type LootSetting, type LootTable } from "../../others/constants.ts";
+import { GameConstants, Layers, object_instance_type, Spawn, type SpawnMode, type LootAditional, type LootData, type LootSetting, type LootTable } from "../../others/constants.ts";
 import { loot_table_get_item } from "../../others/functions.ts";
 import { type CommonApplication, type SimulatedScene } from "../base.ts";
 import { human_events } from "../objects/human/events.ts";

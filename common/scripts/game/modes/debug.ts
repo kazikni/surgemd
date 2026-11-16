@@ -1,8 +1,9 @@
+import { type DamageParams } from "../objects/projectile/projectile.ts";
 import { random, v2, Vec2 } from "../../../engine/core.ts";
 import { type MapDef } from "../../definitions/maps/base.ts";
 import { get_map_def } from "../../definitions/maps/maps.ts";
 import { HumanoidAnimations } from "../../definitions/objects/humanoid_animations.ts";
-import { type DamageParams, gelo_instance_type } from "../../others/constants.ts";
+import { gelo_instance_type } from "../../others/constants.ts";
 import { type SI_GameMap } from "../gelo/map.ts";
 import { type Human } from "../objects/human/human.ts";
 import { DefaultPlayerStatus, ModeManager, type PlayerStatus } from "./mode_manager.ts";

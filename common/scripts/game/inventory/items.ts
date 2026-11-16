@@ -1,18 +1,32 @@
 import { CircleCollider2D, Numeric, Stream, v2, v2m, Vec2 } from "../../../engine/core.ts";
+
 import { type GameItem } from "../../definitions/game_defs.ts";
+
 import { type GunDef } from "../../definitions/items/guns.ts";
+
 import { type MeleeDef } from "../../definitions/items/melees.ts";
+
 import { type HelmetDef, type VestDef } from "../../definitions/items/equipaments.ts";
+
 import { type GrenadeDef } from "../../definitions/items/grenades.ts";
+
 import { type ConsumibleDef, type ConsumingAction as ConsumingActionDef } from "../../definitions/items/consumibles.ts";
+
 import { GameItemType } from "../../definitions/utils.ts";
+
 import { HumanAnimationType, type LootData, object_instance_type } from "../../others/constants.ts";
+
 import { FireMode } from "../../others/item.ts";
+
 import { type SimObject } from "../base.ts";
+
 import { type Human } from "../objects/human/human.ts";
+
 import { clip_muzzle, fire_item } from "./fire.ts";
-import { InventoryAction, inventory_events, InventoryItem, type InventoryOwner, type InventorySlot, type ItemFactories, type ItemGiveExtra } from "./inventory.ts";
-import { SimObjectDamageable } from "../objects/projectile/projectile.ts";
+
+import { InventoryAction, InventoryItem, type InventoryOwner, type InventorySlot, type ItemFactories, type ItemGiveExtra } from "./inventory.ts";
+import { SimObjectDamageable, type DamageParams } from "../objects/projectile/projectile.ts";
+
 
 export enum InventoryActionType{
     Reload,
@@ -51,7 +65,6 @@ export class ReloadAction extends InventoryAction{
         if(this.item.ammo>=capacity)this.item.reloading=false
         user.inventory.dirty.hand=true
         if(this.item.slot)user.inventory.dirty.slots.add(this.item.slot.index)
-        user.emit_event(inventory_events.reload,this.item,false)
     }
     override on_cancel(user:InventoryOwner){
         this.item.reloading=false
@@ -95,10 +108,10 @@ export class GunItem extends InventoryItem{
     override merge(def:GameItem,extra?:ItemGiveExtra):boolean{
         const gun=def as GunDef
         if(gun!==this.def||!gun.dual||gun.dual_from)return false
-        const dual=this.inventory.definitions.guns.getFromStringSafe(gun.id_string+"_dual")
+        const dual=this.inventory.owner.app.definitions.guns.getFromStringSafe(gun.id_string+"_dual")
         if(!dual)return false
         const old_ammo=this.ammo
-        const in_hand=this.in_hand
+        const in_hand=this.inventory.slots[this.inventory.hand_index]?.item===this
         if(in_hand)this.unload()
         this.set_def(dual)
         if(extra?.ammo===true)this.ammo=dual.reload?.capacity??0
@@ -107,7 +120,7 @@ export class GunItem extends InventoryItem{
         return true
     }
     override on_fire():boolean{
-        const user=this.owner
+        const user=this.inventory.owner
         if(this.def.fire_mode===FireMode.Single&&!user.input.using_item_down)return false
         if(this.has_ammo()){
             if(this.use_delay<=0){
@@ -128,7 +141,7 @@ export class GunItem extends InventoryItem{
         if(this.def.reload)this.reloading=true
     }
     start_reload(){
-        const user=this.owner
+        const user=this.inventory.owner
         if(!this.def.reload||user.knocked)return
         const no_ammo=!this.infinity_ammo()&&!this.inventory.amount(this.def.ammo_type)
         if(this.ammo>=this.get_capacity()||no_ammo||(!user.scene.mode.rules.humans.reload_while_shoot&&this.use_delay>0)){
@@ -138,11 +151,10 @@ export class GunItem extends InventoryItem{
         const action=new ReloadAction(this)
         user.actions.play(action)
         if(user.actions.current_action!==action)return
-        user.emit_event(inventory_events.reload,this,true)
         user.animations.push({type:HumanAnimationType.Reloading,alt_reload:action.alt_reload})
     }
     muzzle_position():Vec2{
-        const user=this.owner
+        const user=this.inventory.owner
         const barrel=v2(
             this.def.barrel_length,
             (this.def.barrel_offset??0)+(this.def.dual_from?(this.dual_d?-this.def.dual_offset:this.def.dual_offset):0)
@@ -150,7 +162,7 @@ export class GunItem extends InventoryItem{
         return v2.add(user.position,v2.rotate_RadAngle(barrel,user.rotation))
     }
     shot(consume:boolean=true){
-        const user=this.owner as unknown as Human
+        const user=this.inventory.owner as unknown as Human
         user.actions.cancel()
         this.reloading=false
         if(consume&&this.def.reload)this.ammo=Math.max(this.ammo-(this.def.reload.ammo_consume??1),0)
@@ -170,7 +182,6 @@ export class GunItem extends InventoryItem{
         }
         this.inventory.dirty.hand=true
         if(this.slot)this.inventory.dirty.slots.add(this.slot.index)
-        user.emit_event(inventory_events.fire,this,position,user.rotation)
         user.animations.push({type:HumanAnimationType.Fire,alt:this.dual_d,last:this.ammo===0,alt_func:false})
     }
     override update(dt:number){
@@ -178,7 +189,7 @@ export class GunItem extends InventoryItem{
         else if(this.fire_sequence>0&&this.def.fire_sequence?.decay){
             this.fire_sequence=Math.max(this.fire_sequence-this.def.fire_sequence.decay*dt,0)
         }
-        if(this.in_hand&&!this.owner.actions.current_action&&!this.owner.hand_locked){
+        if((this.inventory.slots[this.inventory.hand_index]?.item===this)&&!this.inventory.owner.actions.current_action&&!this.inventory.owner.hand_locked){
             if(((this.ammo<=0&&this.use_delay<=0)||this.reloading)&&this.def.reload){
                 this.reloading=true
                 this.start_reload()
@@ -204,12 +215,12 @@ export class GunItem extends InventoryItem{
     override drop(count:number=1):LootData[]{
         const hold=this.inventory.hold_ammo
         if(!hold&&this.ammo>0&&!this.infinity_ammo()){
-            const ammo=this.inventory.definitions.game_items.valueString[this.def.ammo_type]
+            const ammo=this.inventory.owner.app.definitions.game_items.valueString[this.def.ammo_type]
             if(ammo)this.inventory.give_item(ammo,this.ammo)
             this.ammo=0
         }
         if(this.def.dual_from){
-            const single=this.inventory.definitions.guns.getFromString(this.def.dual_from)
+            const single=this.inventory.owner.app.definitions.guns.getFromString(this.def.dual_from)
             return [
                 {item:single,count:1,skin:this.skin,ammo:hold?Math.ceil(this.ammo/2):undefined},
                 {item:single,count:1,skin:this.skin,ammo:hold?Math.floor(this.ammo/2):undefined},
@@ -230,7 +241,7 @@ export class GunItem extends InventoryItem{
         stream.write_float(this.fire_sequence,0,1,1)
     }
     override decode_checkpoint(stream:Stream){
-        this.set_def(this.inventory.definitions.guns.getFromNumber(stream.read_uint16()))
+        this.set_def(this.inventory.owner.app.definitions.guns.getFromNumber(stream.read_uint16()))
         this.ammo=stream.read_uint16()
         this.use_delay=stream.read_float32()
         this.fire_sequence=stream.read_float(0,1,1)
@@ -247,7 +258,7 @@ export class MeleeItem extends InventoryItem{
         this.def=def
     }
     override on_fire():boolean{
-        const user=this.owner
+        const user=this.inventory.owner
         if(this.def.fire_mode===FireMode.Single&&!user.input.using_item_down)return false
         if(this.use_delay>0)return false
         user.actions.cancel()
@@ -255,12 +266,11 @@ export class MeleeItem extends InventoryItem{
         this.use_delay=this.def.attack_delay
         this.firing=true
         this.inventory.dirty.hand=true
-        user.emit_event(inventory_events.fire,this,user.position,user.rotation)
         user.animations.push({type:HumanAnimationType.Melee})
         return true
     }
     attack(){
-        const user=this.owner
+        const user=this.inventory.owner
         const hb=new CircleCollider2D(v2.add_rotate_RadAngle(user.position,this.def.offset,user.rotation),this.def.radius)
         const objs:SimObject[]=user.scene.cells.get_objects(hb,user.layer)
         for(const o of objs){
@@ -279,7 +289,7 @@ export class MeleeItem extends InventoryItem{
         }
     }
     override update(dt:number){
-        if(this.in_hand&&!this.owner.knocked){
+        if((this.inventory.slots[this.inventory.hand_index]?.item===this)&&!this.inventory.owner.knocked){
             for(let i=0;i<this.damage_times.length;i++){
                 this.damage_times[i]-=dt
                 if(this.damage_times[i]<=0){
@@ -342,7 +352,7 @@ export class GrenadeItem extends InventoryItem{
         if(this.slot)this.inventory.set_hand(this.slot.index)
     }
     override on_fire():boolean{
-        const user=this.owner
+        const user=this.inventory.owner
         if(this.holding)return true
         if(!this.slot||this.slot.count<=0||!user.input.using_item_down)return true
         this.holding={
@@ -358,7 +368,7 @@ export class GrenadeItem extends InventoryItem{
     override update(dt:number){
         const h=this.holding
         if(!h)return
-        if(!this.in_hand){
+        if(!(this.inventory.slots[this.inventory.hand_index]?.item===this)){
             this.holding=undefined
             return
         }
@@ -366,7 +376,7 @@ export class GrenadeItem extends InventoryItem{
             h.cook_time-=dt
             return
         }
-        const user=this.owner
+        const user=this.inventory.owner
         if(!user.input.use_weapon&&!h.activated){
             h.activated=true
             user.animations.push({type:HumanAnimationType.Throw})
@@ -388,7 +398,7 @@ export class GrenadeItem extends InventoryItem{
         this.holding=undefined
         const slot=this.slot
         if(!h||!slot||slot.empty)return
-        const user=this.owner as unknown as Human
+        const user=this.inventory.owner as unknown as Human
         const position=v2.scale(this.def.throw_position??v2(0.3,0.4),user.scale)
         v2m.rotate_RadAngle(position,user.rotation)
         v2m.add(position,position,user.position)
@@ -462,12 +472,12 @@ export class ConsumibleItem extends InventoryItem{
     can_consume():boolean{
         const c=this.def.consuming
         if(c.type!==0)return false
-        const user=this.owner as unknown as Human
+        const user=this.inventory.owner as unknown as Human
         if(user.knocked)return false
         return user.consuming_condition(this.def.condition??[],c.side_effects)
     }
     override on_use(){
-        const user=this.owner
+        const user=this.inventory.owner
         if(user.actions.current_action||!this.slot||!this.can_consume())return
         const action=new ConsumingAction(this,this.slot)
         user.actions.play(action)

@@ -19,9 +19,9 @@ export type ProjectileOwner={
 export type SimObjectDamageable=SimObject&{damage?(params:DamageParams):void}
 
 export class Projectile extends SimObject{
-    owner?:SimObject
+    owner?:ProjectileOwner
     source?:GameObjectDef
-    on_create(args:any){
+    on_create(args:any={}){
         if(args.position)this.position=args.position
         if(args.source)this.source=args.source
         if(args.owner)this.owner=args.owner

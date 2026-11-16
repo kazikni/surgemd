@@ -1,5 +1,4 @@
 import { Definition } from "../../../engine/core.ts";
-import { DamageReason } from "../utils.ts";
 import { SideEffect, SideEffectType } from "./effects.ts";
 
 export interface BoostDef extends Definition{
@@ -73,7 +72,6 @@ export function Boosts_Default_Init():BoostDef[]{
                         if(Number.isNaN(damage))damage=100
                         h.piercing_damage({
                             amount:(damage*0.009)*100,
-                            reason:DamageReason.Abstinence,
                             position:h.position,
                             critical:false,
                             direction:0,
@@ -136,7 +134,6 @@ export function Boosts_Default_Init():BoostDef[]{
                             amount:h.health.value,
                             critical:true,
                             position:h.position,
-                            reason:DamageReason.Abstinence,
                             direction:0,
                             penetration:1,
                         })

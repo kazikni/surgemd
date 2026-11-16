@@ -98,7 +98,7 @@ export class Application extends ClientApplication implements CommonApplication{
         //this.scene=this.menu_scene
 
         const params=new URLSearchParams(location.search)
-        const kind=(params.get("play")??"worker") as Exclude<PlaySceneKind,"none">
+        const kind=(params.get("play")??"local") as Exclude<PlaySceneKind,"none">
         const mode=params.get("mode")??undefined
         await this.play(kind,{
             url:params.get("server")??undefined,
@@ -114,6 +114,9 @@ export class Application extends ClientApplication implements CommonApplication{
     async play(kind:Exclude<PlaySceneKind,"none">,options?:WorkerGameOptions|OnlineGameOptions,join?:JoinData){
         const game=this.play_scene
         switch(kind){
+            case "local":
+                await game.local_initialize(options as WorkerGameOptions)
+                break
             case "worker":
                 await game.worker_initialize(options as WorkerGameOptions)
                 break

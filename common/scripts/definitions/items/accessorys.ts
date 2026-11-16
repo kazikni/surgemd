@@ -1,3 +1,4 @@
+import { object_instance_type } from "../../others/constants.ts";
 import { Definition, Numeric, tdm } from "../../../engine/core.ts";
 import { TD, TDType } from "../../../engine/core/lang/td.ts";
 import { ItemRank } from "../../others/item.ts";
@@ -26,9 +27,8 @@ export interface AccessoryDef extends Definition{
 
 export function AccessoryDropLootFromObstacle(table:string){
     return (e:any)=>{
-        const loot=e.human.game.get_loot_table(table)
-        for(const l of loot){
-            e.human.scene.add_loot(e.obstacle.collider.random_point(),{item:l.item,count:l.count},e.obstacle.layer)
+        for(const data of e.obstacle.scene.mode.get_loot(e.obstacle.scene.mode.loot_tables.tables.get(table))){
+            e.obstacle.scene.add_object(e.obstacle.scene.make_object(object_instance_type.loot),e.obstacle.layer,undefined,{data,position:e.obstacle.collider.random_point()})
         }
     }
 }
@@ -144,7 +144,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
                 "kill":(e)=>{
                     e.owner.give_boost(25)
                     e.owner.health.value+=25
-                    e.owner.side_effect({
+                    e.owner.apply_side_effect({
                         type:SideEffectType.AddEffect,
                         duration:4,
                         effect:"kill_haste"
@@ -172,7 +172,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
             rank:ItemRank.A,
             events:{
                 "damage":(e)=>{
-                    e.player.side_effect({
+                    e.player.apply_side_effect({
                         type:SideEffectType.AddEffect,
                         duration:2,
                         effect:"nature_help"
@@ -187,10 +187,10 @@ export function Accessorys_Default_Init():AccessoryDef[]{
             property:["infinity_ammo"],
             events:{
                 "pickup":(e)=>{
-                    e.user.inventory.infinity_ammo=e.user.inventory.accessorys.has_property("infinity_ammo")
+                    e.user.inventory.infinity_ammo=e.user.inventory.has_property("infinity_ammo")
                 },
                 "drop":(e)=>{
-                    e.user.inventory.infinity_ammo=e.user.inventory.accessorys.has_property("infinity_ammo")
+                    e.user.inventory.infinity_ammo=e.user.inventory.has_property("infinity_ammo")
                 }
             }
         },
@@ -200,10 +200,10 @@ export function Accessorys_Default_Init():AccessoryDef[]{
             property:["extended_capacity"],
             events:{
                 "pickup":(e)=>{
-                    e.user.inventory.extended_capacity=e.user.inventory.accessorys.has_property("extended_capacity")
+                    e.user.inventory.extended_capacity=e.user.inventory.has_property("extended_capacity")
                 },
                 "drop":(e)=>{
-                    e.user.inventory.extended_capacity=e.user.inventory.accessorys.has_property("extended_capacity")
+                    e.user.inventory.extended_capacity=e.user.inventory.has_property("extended_capacity")
                 }
             }
         },
@@ -213,10 +213,10 @@ export function Accessorys_Default_Init():AccessoryDef[]{
             property:["self_revive"],
             events:{
                 "pickup":(e)=>{
-                    e.user.human_data.self_revive=e.user.inventory.accessorys.has_property("self_revive")
+                    e.user.self_revive=e.user.inventory.has_property("self_revive")
                 },
                 "drop":(e)=>{
-                    e.user.human_data.self_revive=e.user.inventory.accessorys.has_property("self_revive")
+                    e.user.self_revive=e.user.inventory.has_property("self_revive")
                 }
             }
         },

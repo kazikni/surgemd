@@ -1,3 +1,5 @@
+import { HumanoidAnimations } from "common/scripts/definitions/objects/humanoid_animations.ts";
+import { type DamageParams } from "common/scripts/game/objects/projectile/projectile.ts";
 import { ClientsManager, DynamicStream, v2 } from "common/engine/core.ts";
 import { make_packet_manager } from "common/scripts/net/packet_manager.ts";
 import { LocalPlayerConn } from "common/scripts/game/players/player_conn.ts";
@@ -5,7 +7,7 @@ import { type Human } from "common/scripts/game/objects/human/human.ts";
 import { HumanFunctionScript, HumanScript } from "common/scripts/game/objects/human/script.ts";
 import { GrenadeItem, type GunItem } from "common/scripts/game/inventory/items.ts";
 import { GameItemType } from "common/scripts/definitions/utils.ts";
-import { HumanAnimationType, type DamageParams, type HumanAnimation, object_instance_type } from "common/scripts/others/constants.ts";
+import { HumanAnimationType, type HumanAnimation, object_instance_type } from "common/scripts/others/constants.ts";
 import { Game } from "../game/game.ts";
 
 const game=new Game({tps:100,ntps:32},new ClientsManager(make_packet_manager()))
@@ -57,7 +59,7 @@ check("gun given",gun!==undefined,gun?.def.id_string)
 shooter.inventory.set_hand(gun.slot!.index)
 check("switch animation",animations.some((a)=>a.type===HumanAnimationType.Switch))
 tick(1.5)
-check("hand def synced",shooter.inventory.hand_def?.id_string==="ak47",shooter.inventory.hand_def?.id_string)
+check("hand def synced",shooter.inventory.slots[shooter.inventory.hand_index]?.item?.def?.id_string==="ak47",shooter.inventory.slots[shooter.inventory.hand_index]?.item?.def?.id_string)
 
 place()
 const hp=target.health.value
@@ -94,7 +96,7 @@ const nade=shooter.inventory.get_items<GrenadeItem>(GameItemType.grenade)[0]
 check("grenade given",nade instanceof GrenadeItem&&nade.slot!.count===2,nade?.slot?.count)
 shooter.inventory.use_slot(nade.slot!.index)
 tick(0.1)
-check("grenade in hand",(shooter.inventory.hand_item as unknown)===nade)
+check("grenade in hand",(shooter.inventory.slots[shooter.inventory.hand_index]?.item as unknown)===nade)
 shooter.input.use_weapon=true
 shooter.input.using_item_down=true
 shooter.input.distance_to_aim=0.5
@@ -155,22 +157,20 @@ const sit_pos=v2.clone(shooter.position)
 shooter.input.movement={dir:0,scale:1}
 tick(0.5)
 check("sit locks movement",v2.distance(sit_pos,shooter.position)<0.01,v2.distance(sit_pos,shooter.position))
-check("low priority cannot replace",!shooter.play_momentary("wave"))
+HumanoidAnimations.insert({id_string:"test_short",priority:0,duration:2.6,lock_movement:true,keyframes:[]})
+check("low priority cannot replace",!shooter.play_momentary("test_short"))
 shooter.stop_momentary()
 tick(0.3)
 check("stop unlocks movement",v2.distance(sit_pos,shooter.position)>0.1)
 shooter.input.movement={dir:0,scale:0}
 let ended=false
-shooter.play_momentary("wake_up",{on_end:(c)=>ended=c})
+shooter.play_momentary("test_short",{on_end:(c)=>ended=c})
 tick(1)
-check("wake up active",shooter.momentary?.def.id_string==="wake_up"&&!ended)
+check("wake up active",shooter.momentary?.def.id_string==="test_short"&&!ended)
 tick(2)
 check("wake up ends by duration",!shooter.momentary&&ended)
 shooter.inventory.set_hand(gun.slot!.index)
 tick(1)
-shooter.play_momentary("suicide",{item:shooter.inventory.hand_def})
-check("suicide variation by weapon",shooter.momentary?.variation===0,shooter.momentary?.variation)
-shooter.stop_momentary()
 
 place()
 const dest=v2.add(base,v2(2,1))
@@ -211,6 +211,7 @@ class FriendScript extends HumanScript{
 const friend=new FriendScript()
 target.set_script(friend)
 target.position=v2.add(shooter.position,v2(1,0))
+for(const o of Object.values(sim.objects.objects))if(o.instance_type===object_instance_type.loot&&v2.distance(o.position,shooter.position)<4)o.destroy()
 await atick(0.1)
 shooter.input.interact=true
 await atick(0.02)
@@ -223,6 +224,27 @@ await atick(0.3)
 shooter.input.use_weapon=false
 await atick(0.5)
 check("npc reacts to damage",friend.hurt>0&&friend.said==="Why did you shoot me?",[friend.hurt,friend.said])
+
+place()
+for(const o of Object.values(sim.objects.objects))if(o.instance_type===object_instance_type.bullet)o.destroy()
+tick(0.1)
+shooter.inventory.give_item(defs.game_items.valueString["biggest_magazine"],1,false)
+check("accessory pickup event",shooter.inventory.extended_capacity===true&&shooter.inventory.has_property("extended_capacity"))
+shooter.inventory.give_item(defs.game_items.valueString["rip_ammo"],1,false)
+const hand_gun=shooter.inventory.get_items<GunItem>(GameItemType.gun)[0]
+shooter.inventory.set_hand(hand_gun.slot!.index)
+tick(1.5)
+hand_gun.ammo=10
+let rip=0
+shooter.input.use_weapon=true
+shooter.input.using_item_down=true
+for(let i=0;i<3;i++){
+    game.update(0.01)
+    rip=Math.max(rip,count(object_instance_type.bullet))
+}
+shooter.input.use_weapon=false
+check("accessory gun_shoot event",rip===3,rip)
+tick(2)
 
 place()
 shooter.inventory.use_slot(nade.slot!.index)

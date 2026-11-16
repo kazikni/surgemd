@@ -221,19 +221,19 @@ export function Helmets_Default_Init():HelmetDef[]{
                 "kill":(e)=>{
                     e.owner.give_boost(25)
                     e.owner.health.value+=25
-                    e.owner.side_effect({
+                    e.owner.apply_side_effect({
                         type:SideEffectType.AddEffect,
                         duration:4,
                         effect:"kill_haste"
                     })
                 },
                 "pickup":(e)=>{
-                    e.user.inventory.extended_capacity=e.user.inventory.accessorys.has_property("extended_capacity")
-                    e.user.inventory.infinity_ammo=e.user.inventory.accessorys.has_property("infinity_ammo")
+                    e.user.inventory.extended_capacity=e.user.inventory.has_property("extended_capacity")
+                    e.user.inventory.infinity_ammo=e.user.inventory.has_property("infinity_ammo")
                 },
                 "drop":(e)=>{
-                    e.user.inventory.extended_capacity=e.user.inventory.accessorys.has_property("extended_capacity")
-                    e.user.inventory.infinity_ammo=e.user.inventory.accessorys.has_property("infinity_ammo")
+                    e.user.inventory.extended_capacity=e.user.inventory.has_property("extended_capacity")
+                    e.user.inventory.infinity_ammo=e.user.inventory.has_property("infinity_ammo")
                 },
             }
         }),
@@ -241,10 +241,10 @@ export function Helmets_Default_Init():HelmetDef[]{
             property:["self_revive"],
             events:{
                 "pickup":(e)=>{
-                    e.user.human_data.self_revive=e.user.inventory.accessorys.has_property("self_revive")
+                    e.user.self_revive=e.user.inventory.has_property("self_revive")
                 },
                 "drop":(e)=>{
-                    e.user.human_data.self_revive=e.user.inventory.accessorys.has_property("self_revive")
+                    e.user.self_revive=e.user.inventory.has_property("self_revive")
                 }
             }
         })

@@ -1,25 +1,29 @@
 import { Vec2 } from "../../../../engine/core.ts";
-import { type SimObject, type SimulatedScene } from "../../base.ts";
-import { type Human } from "../human/human.ts";
-import { MovingBody } from "../moving_body.ts";
+import { GameObjectDef } from "../../../definitions/game_defs.ts";
+import { SimObject } from "../../base.ts";
 
-export interface ProjectileCreateArgs{
+export type DamageParams={
+    amount:number
+    owner?:ProjectileOwner
+    source?:GameObjectDef
     position?:Vec2
-    owner?:Human
-    source?:{id_string:string}
+    direction?:number
+    critical?:boolean
+    penetration?:number
+    resistence?:number
 }
+export type ProjectileOwner={
+    dead?:boolean
+}&SimObject
 
-export abstract class Projectile extends MovingBody{
-    owner?:Human
-    source?:{id_string:string}
+export type SimObjectDamageable=SimObject&{damage?(params:DamageParams):void}
 
-    on_create(args:ProjectileCreateArgs={}){
+export class Projectile extends SimObject{
+    owner?:SimObject
+    source?:GameObjectDef
+    on_create(args:any){
         if(args.position)this.position=args.position
-        this.owner=args.owner
-        this.source=args.source
+        if(args.source)this.source=args.source
+        if(args.owner)this.owner=args.owner
     }
-}
-
-export function spawn_projectile<T extends SimObject=SimObject>(scene:SimulatedScene,type:number,layer:number,args:ProjectileCreateArgs&Record<string,any>):T{
-    return scene.add_object(scene.make_object(type)!,layer,undefined,args) as T
 }

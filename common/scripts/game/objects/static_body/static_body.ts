@@ -17,7 +17,6 @@ export interface C_StaticBody extends CommonObject{
         reflect_projectiles?:boolean
 
         collider:Collider2D
-        interaction_collider?:Collider2D
     }
     interaction_collider?:Collider2D
 }
@@ -32,10 +31,6 @@ export const c_static_body:GELComponent<C_StaticBody>={
                 collider:this.collider
             }
         },
-        [gel_events.update_collider](): void {
-            if(this.physical.interaction_collider)this.interaction_collider=this.physical.interaction_collider.transform(this.position)
-            else delete this.interaction_collider
-        }
     }
 }
 export type SI_StaticBody=C_StaticBody&SimulatedObject&{

@@ -2,7 +2,6 @@ import { Angle, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type Human } from "../objects/human/human.ts";
 import { type Bullet } from "../objects/projectile/bullet.ts";
 import { type Grenade } from "../objects/projectile/grenade.ts";
-import { spawn_projectile } from "../objects/projectile/projectile.ts";
 import { type SI_StaticBody } from "../objects/static_body/static_body.ts";
 import { type InventoryItem } from "./inventory.ts";
 import { object_instance_type, ObjectType } from "common/scripts/others/constants.ts";
@@ -74,7 +73,7 @@ export function fire_item(user:Human,item:InventoryItem&FireState,position:Vec2,
                 const a=random.rad()
                 v2m.add(pos,pos,v2(Math.cos(a)*def.jitter_radius*0.5,Math.sin(a)*def.jitter_radius))
             }
-            const b=spawn_projectile<Bullet>(user.scene,object_instance_type.bullet,user.layer,{
+            const b:Bullet=user.scene.add_object(user.scene.make_object(object_instance_type.bullet),user.layer,undefined,{
                 position:pos,
                 owner:user,
                 source:item.def,
@@ -93,15 +92,16 @@ export function fire_item(user:Human,item:InventoryItem&FireState,position:Vec2,
         const gdef=user.app.definitions.grenades.getFromString(def.grenade.def)
         for(let i=0;i<count;i++){
             const pos=def.jitter_radius?v2.add(position,pattern[i]):v2.clone(position)
-            const p=spawn_projectile<Grenade>(user.scene,object_instance_type.grenade,user.layer,{
+
+            const g:Grenade=user.scene.add_object(user.scene.make_object(object_instance_type.grenade),user.layer,undefined,{
                 position:pos,
                 def:gdef,
                 owner:user,
             })
-            p.zpos=0.5
-            p.zpos_speed=1
+            g.zpos=0.5
+            g.zpos_speed=1
             const limit=gdef.throw_max_speed??0
-            p.push(Numeric.clamp(user.input.distance_to_aim*limit,0,limit),user.rotation,10)
+            g.push(Numeric.clamp(user.input.distance_to_aim*limit,0,limit),user.rotation,10)
         }
     }
     if(def.recoil){

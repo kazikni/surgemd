@@ -1,8 +1,6 @@
 import { Stream } from "../../../../engine/core.ts";
 import { GameDefinition } from "../../../definitions/game_defs.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../../../definitions/loadout/skins.ts";
-import { HumanAnimation, HumanAnimationType } from "../../../others/constants.ts";
-
 export interface HumanVisual{
     body:{
         def:LoadoutBodyDef
@@ -21,17 +19,6 @@ export interface HumanVisual{
     shirt:LoadoutShirtDef
     legs:LoadoutLegDef
     accessorys:LoadoutAccessoryDef[]
-    dirty:boolean
-}
-
-export function default_visual(definitions:GameDefinition):HumanVisual{
-    return {
-        accessorys:[],
-        body:{def:definitions.loadout.getFromString("body_1") as LoadoutBodyDef,tint:0x000000},
-        legs:definitions.loadout.getFromString("blue_jeans_pants") as LoadoutLegDef,
-        shirt:definitions.loadout.getFromString("black_shirt") as LoadoutShirtDef,
-        dirty:true,
-    }
 }
 
 export function encode_visual(stream:Stream,visual:HumanVisual){
@@ -65,37 +52,4 @@ export function decode_visual(stream:Stream,definitions:GameDefinition,visual:Hu
     }
     visual.body.tint=stream.read_uint32()
     visual.accessorys=stream.read_array(()=>definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutAccessoryDef,1)
-}
-
-export function encode_animation(stream:Stream,a:HumanAnimation){
-    stream.write_uint8(a.type)
-    switch(a.type){
-        case HumanAnimationType.Fire:
-            stream.write_boolean_group(a.alt,a.last,a.alt_func)
-            break
-        case HumanAnimationType.Reloading:
-            stream.write_boolean_group(a.alt_reload)
-            break
-        case HumanAnimationType.Consuming:
-        case HumanAnimationType.Switch:
-            stream.write_uint16(a.item)
-            break
-    }
-}
-
-export function decode_animation(stream:Stream):HumanAnimation{
-    const type=stream.read_uint8() as HumanAnimationType
-    switch(type){
-        case HumanAnimationType.Fire:{
-            const [alt,last,alt_func]=stream.read_boolean_group()
-            return {type,alt,last,alt_func}
-        }
-        case HumanAnimationType.Reloading:
-            return {type,alt_reload:stream.read_boolean_group()[0]}
-        case HumanAnimationType.Consuming:
-        case HumanAnimationType.Switch:
-            return {type,item:stream.read_uint16()}
-        default:
-            return {type} as HumanAnimation
-    }
 }

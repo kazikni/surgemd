@@ -5,24 +5,18 @@ import { type MeleeDef } from "../../definitions/items/melees.ts";
 import { type HelmetDef, type VestDef } from "../../definitions/items/equipaments.ts";
 import { type GrenadeDef } from "../../definitions/items/grenades.ts";
 import { type ConsumibleDef, type ConsumingAction as ConsumingActionDef } from "../../definitions/items/consumibles.ts";
-import { DamageReason, GameItemType } from "../../definitions/utils.ts";
-import { type DamageParams, HumanAnimationType, type LootData, object_instance_type } from "../../others/constants.ts";
+import { GameItemType } from "../../definitions/utils.ts";
+import { HumanAnimationType, type LootData, object_instance_type } from "../../others/constants.ts";
 import { FireMode } from "../../others/item.ts";
 import { type SimObject } from "../base.ts";
 import { type Human } from "../objects/human/human.ts";
-import { type Grenade } from "../objects/projectile/grenade.ts";
-import { spawn_projectile } from "../objects/projectile/projectile.ts";
 import { clip_muzzle, fire_item } from "./fire.ts";
 import { InventoryAction, inventory_events, InventoryItem, type InventoryOwner, type InventorySlot, type ItemFactories, type ItemGiveExtra } from "./inventory.ts";
+import { SimObjectDamageable } from "../objects/projectile/projectile.ts";
 
 export enum InventoryActionType{
     Reload,
     Consuming,
-}
-
-
-export type Damageable=SimObject&{
-    damage(params:DamageParams):void
 }
 
 export class ReloadAction extends InventoryAction{
@@ -136,7 +130,7 @@ export class GunItem extends InventoryItem{
     start_reload(){
         const user=this.owner
         if(!this.def.reload||user.knocked)return
-        const no_ammo=!this.infinity_ammo()&&!user.inventory.amount(this.def.ammo_type)
+        const no_ammo=!this.infinity_ammo()&&!this.inventory.amount(this.def.ammo_type)
         if(this.ammo>=this.get_capacity()||no_ammo||(!user.scene.mode.rules.humans.reload_while_shoot&&this.use_delay>0)){
             if(this.ammo>=this.get_capacity()||no_ammo)this.reloading=false
             return
@@ -174,8 +168,8 @@ export class GunItem extends InventoryItem{
         }else{
             this.use_delay=this.def.fire_delay??0
         }
-        user.inventory.dirty.hand=true
-        if(this.slot)user.inventory.dirty.slots.add(this.slot.index)
+        this.inventory.dirty.hand=true
+        if(this.slot)this.inventory.dirty.slots.add(this.slot.index)
         user.emit_event(inventory_events.fire,this,position,user.rotation)
         user.animations.push({type:HumanAnimationType.Fire,alt:this.dual_d,last:this.ammo===0,alt_func:false})
     }
@@ -260,7 +254,7 @@ export class MeleeItem extends InventoryItem{
         this.damage_times=[...this.def.damage_delays]
         this.use_delay=this.def.attack_delay
         this.firing=true
-        user.inventory.dirty.hand=true
+        this.inventory.dirty.hand=true
         user.emit_event(inventory_events.fire,this,user.position,user.rotation)
         user.animations.push({type:HumanAnimationType.Melee})
         return true
@@ -271,11 +265,10 @@ export class MeleeItem extends InventoryItem{
         const objs:SimObject[]=user.scene.cells.get_objects(hb,user.layer)
         for(const o of objs){
             if(o.id===user.id||o.destroyed)continue
-            const d=o as Damageable
+            const d=o as SimObjectDamageable
             if(typeof d.damage!=="function"||!hb.colliding_with(o.collider))continue
             d.damage({
                 amount:this.def.damage,
-                reason:DamageReason.Human,
                 owner:user,
                 source:this.def,
                 position:hb.position,
@@ -399,7 +392,7 @@ export class GrenadeItem extends InventoryItem{
         const position=v2.scale(this.def.throw_position??v2(0.3,0.4),user.scale)
         v2m.rotate_RadAngle(position,user.rotation)
         v2m.add(position,position,user.position)
-        const proj=spawn_projectile<Grenade>(user.scene,object_instance_type.grenade,user.layer,{
+        const proj=user.scene.add_object(user.scene.make_object(object_instance_type.grenade),user.layer,undefined,{
             position,
             def:this.def,
             owner:user,

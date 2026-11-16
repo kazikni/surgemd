@@ -1,4 +1,4 @@
-import { ActionsManager, BaseAction, Numeric, random, Stream, v2, Vec2 } from "../../../engine/core.ts";
+import { ActionsManager, BaseAction, BaseObject2D, BaseSceneObject2D, CircleCollider2D, Numeric, random, Stream, v2, Vec2 } from "../../../engine/core.ts";
 import { type GameDefinition, type GameItem } from "../../definitions/game_defs.ts";
 import { type BackpackDef } from "../../definitions/items/backpacks.ts";
 import { GameItemType } from "../../definitions/utils.ts";
@@ -17,13 +17,11 @@ export enum InventoryDisplay{
 
 export type InventoryGroupType="change"|"amount"|"include"|"normal"
 
-export interface InventoryOwner{
-    id:number
-    position:Vec2
-    rotation:number
-    layer:number
+export interface InventoryOwner extends BaseSceneObject2D{
     app:CommonApplication
     scene:SimulatedScene
+    id:number
+    rotation:number
     inventory:Inventory<any>
     actions:ActionsManager<any,InventoryAction>
     input:{
@@ -148,22 +146,6 @@ export class InventoryGroup{
     }
 }
 
-export class InventoryDirty{
-    full:boolean=true
-    slots=new Set<number>()
-    groups=new Set<number>()
-    hand:boolean=true
-    get any():boolean{
-        return this.full||this.hand||this.slots.size>0||this.groups.size>0
-    }
-    clear(){
-        this.full=false
-        this.hand=false
-        this.slots.clear()
-        this.groups.clear()
-    }
-}
-
 export const inventory_events={
     changed:"inventory_changed",
     hand:"inventory_hand",
@@ -185,7 +167,12 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
     extended_capacity:boolean=false
     hold_ammo:boolean=true
 
-    dirty:InventoryDirty=new InventoryDirty()
+    dirty={
+        full:true,
+        slots:new Set<number>(),
+        groups:new Set<number>(),
+        hand:true
+    }
 
     constructor(owner:Owner,factories:ItemFactories){
         this.owner=owner
@@ -615,13 +602,11 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
         this.hand_item?.reload()
     }
 
-    drop_loot(loots:LootData[],position?:Vec2,layer?:number){
+    drop_loot(loots:LootData[],position:Vec2=this.owner.position,layer?:number){
         const scene=this.owner.scene
         for(const l of loots){
             if(l.count<=0)continue
-            const pos=v2.clone(position??this.owner.position)
-            const loot=scene.add_object(scene.make_object(object_instance_type.loot),layer??this.owner.layer,undefined,{data:l,position:pos})
-            ;(loot as {push?:(speed:number,angle:number)=>void}).push?.(random.float(0.5,1.5),random.rad())
+            const loot=scene.add_object(scene.make_object(object_instance_type.loot),layer??this.owner.layer,undefined,{data:l,position})
             this.owner.emit_event(inventory_events.drop,loot)
         }
     }
@@ -650,20 +635,19 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
         this.drop_loot([{item:def,count:1}])
     }
     drop_all(){
-        for(const s of this.slots){
-            if(!s.item||s.empty||s.is_default)continue
-            if(s.item.droppable&&s.group.def.droppable!==false)this.drop_loot(s.item.drop(s.count))
-            this.remove_slot(s,s.count)
-        }
         for(const g of this.groups){
             if(g.def.droppable===false)continue
             if(g.type==="amount"){
                 for(const id in g.amounts){
                     const def=this.definitions.game_items.valueString[id]
                     let c=g.amounts[id]
+
+                    const dir=random.rad()
+                    const r=(this.owner.collider as CircleCollider2D).radius
+                    const pos=v2.add(this.owner.position,v2((Math.cos(dir)*r),(Math.sin(dir)*r)))
                     while(c>0){
                         const rc=Math.min(c,100)
-                        this.drop_loot([{item:def,count:rc}])
+                        this.drop_loot([{item:def,count:rc}],pos)
                         c-=rc
                     }
                 }
@@ -671,6 +655,11 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
             }else if(g.type==="include"){
                 for(const def of [...g.includes])this.drop_include(g,def)
             }
+        }
+        for(const s of this.slots){
+            if(!s.item||s.empty||s.is_default)continue
+            if(s.item.droppable&&s.group.def.droppable!==false)this.drop_loot(s.item.drop(s.count))
+            this.remove_slot(s,s.count)
         }
         this.refresh()
         this.select_default_hand()
@@ -707,7 +696,10 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
         }
     }
     net_update(){
-        this.dirty.clear()
+        this.dirty.full=false
+        this.dirty.hand=false
+        this.dirty.slots.clear()
+        this.dirty.groups.clear()
     }
 
     protected encode_slot(stream:Stream,s:InventorySlot,full:boolean,checkpoint:boolean){

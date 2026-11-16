@@ -1,4 +1,4 @@
-import { Packet, PolarMovement, Stream, Vec2 } from "../../engine/core.ts";
+import { cloneDeep, Packet, PolarMovement, Stream, Vec2 } from "../../engine/core.ts";
 import { PacketType } from "../definitions/utils.ts";
 
 export enum InputActionType{
@@ -58,27 +58,12 @@ export interface InputData{
 
     actions:InputAction[]
 }
-export function EmptyInputData():InputData{
-    return {
-        movement:{dir:0,scale:0},
-        rotation:0,
-        distance_to_aim:0,
-        auto_fire:false,
-        use_weapon:false,
-        alt_use_weapon:false,
-        interact:false,
-        cancel:false,
-        reload:false,
-        swap_guns:false,
-        actions:[]
-    }
-}
 
 export class InputPacket extends Packet{
     ID=PacketType.Input
     Name="input"
 
-    data:InputData=EmptyInputData()
+    data!:InputData
 
     constructor(data?:InputData){
         super()

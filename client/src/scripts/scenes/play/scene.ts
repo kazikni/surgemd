@@ -1,5 +1,5 @@
 import { BaseGELO, BasicSocket, Client, DefaultSignals, DynamicStream, SignalManager, Stream, WorkerSocket } from "common/engine/core.ts";
-import { HideElement, ShowElement } from "common/engine/web.ts";
+import { HideElement, ShowElement, UIRoot } from "common/engine/web.ts";
 import { gelo_instance_type } from "common/scripts/others/constants.ts";
 import { type JoinData, JoinedPacket, JoinPacket } from "common/scripts/net/join_packet.ts";
 import { make_packet_manager } from "common/scripts/net/packet_manager.ts";
@@ -80,6 +80,8 @@ export class PlayScene extends GameScene {
 
     timeout:number=10000
 
+    ui!:UIRoot<Application>
+
     constructor(app?:Application){
         super()
         if(app)this.init(app)
@@ -89,6 +91,7 @@ export class PlayScene extends GameScene {
         super.on_init()
         this.camera.aspect_lock=true
         this.gelo.make_gelo_net_cb=(tp)=>this.make_gelo(tp)
+        this.ui=new UIRoot(this.app,document.querySelector("#game-ui") as HTMLDivElement)
     }
 
     override make_object(type: number | string, ...args:any[]): GameObject | undefined {

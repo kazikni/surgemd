@@ -1,6 +1,6 @@
 import { Angle, gel_events, GELComponent, Numeric, Orientation, random, RotationMode, Stream, v2, Vec2 } from "../../../../engine/core.ts";
 import { ObstacleDef } from "../../../definitions/objects/obstacles.ts";
-import { DamageParams, LootData, object_instance_type } from "../../../others/constants.ts";
+import { DamageParams, LootData, object_instance_type, ObjectType } from "../../../others/constants.ts";
 import { type Human } from "../human/human.ts";
 import { type Loot } from "../loot.ts";
 import { static_body_events, SI_StaticBody, type C_StaticBody, c_static_body, si_static_body } from "./static_body.ts";
@@ -126,6 +126,9 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
                 loot.push(random.float(0.5,2),random.rad())
             }
             this.loot.length=0
+            if(this.def.onDestroyExplosion){
+                this.scene.add_object(this.scene.make_object(ObjectType.Explosion),this.layer,undefined,{position:this.position,def:this.app.scene})
+            }
             if(!this.def.keep_collision_on_die){
                 this.physical.no_collision=true
                 this.physical.no_projectiles_collision=true
@@ -204,7 +207,6 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
             this.max_scale=scale??(this.def.scale?.min&&this.def.scale.max?random.float(this.def.scale.min,this.def.scale.max):1)
 
             this.base_collider=this.physical.collider
-            this.physical.interaction_collider=this.physical.collider.transform(undefined,1.1)
 
             if(this.health){
                 this.health.dead=false

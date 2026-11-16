@@ -1,11 +1,14 @@
 import { LootTable as LootTableBase, Vec2 } from "../../engine/core.ts";
 import { GameDefinition, type GameItem } from "../definitions/game_defs.ts";
-import { DamageReason, GameItemType } from "../definitions/utils.ts";
+import {  GameItemType } from "../definitions/utils.ts";
 import { FloorType } from "./terrain.ts";
 
 export const GameConstants={
     humanoid:{
         radius:0.42,
+    },
+    human:{
+        default_boost:"adrenaline",
     },
     player:{
         defaultName:"Player",
@@ -275,15 +278,3 @@ export interface LootAditional{
 }
 
 export type LootTable<A=LootAditional>=LootTableBase<A>
-
-export type DamageParams={
-    amount:number
-    reason:DamageReason
-    owner?:{id:number}&Record<string,any>
-    source?:{id_string:string}
-    position?:Vec2
-    direction?:number
-    critical?:boolean
-    penetration?:number
-    resistence?:number
-}

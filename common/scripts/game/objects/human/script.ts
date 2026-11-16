@@ -88,7 +88,6 @@ export class HumanScript{
             if(h!==this.human&&this.alive)this.on_human_die(h,params)
         }
         human.scene.mode?.signals.on(mode_events.human_die,this._human_die_cb)
-        if(this.take_control)human.clear_input()
         this.on_start()
         this.run().then(()=>{
             this.running=false
@@ -108,7 +107,6 @@ export class HumanScript{
         for(const w of this.waits)w.cancel?.()
         this.waits.length=0
         this.move_state=undefined
-        if(this.take_control&&this.human)this.human.clear_input()
         this.on_stop()
     }
 

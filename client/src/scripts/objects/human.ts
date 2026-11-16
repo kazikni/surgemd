@@ -8,15 +8,16 @@ import { type MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { type ConsumibleDef, type ConsumingAction } from "common/scripts/definitions/items/consumibles.ts";
 import { type BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 import { type EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
-import { HumanoidAnimations, type HumanoidMomentaryState } from "common/scripts/definitions/objects/humanoid_animations.ts";
+import { HumanoidAnimations, HumanoidMomentaryDef } from "common/scripts/definitions/objects/humanoid_animations.ts";
 import { GameItemType, GameObjectDefinitionType, ItemQualitySettings } from "common/scripts/definitions/utils.ts";
-import { decode_animation, decode_visual, default_visual, type HumanVisual } from "common/scripts/game/objects/human/codec.ts";
+import { decode_visual, type HumanVisual } from "common/scripts/game/objects/human/codec.ts";
 import { type HumanAnimation, HumanAnimationType, GameConstants, object_instance_type, ObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { DefaultDownedWalkFistRig, DefaultFistRig, FistRig } from "common/scripts/others/item.ts";
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { GraphicsDConfig } from "../main/config.ts";
 import { GameObject } from "../main/gel.ts";
 import { cook_animation,throw_animation } from "common/scripts/others/animations.ts"
+import { LoadoutBodyDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 
 export interface HumanWalk{
     cycle:number
@@ -113,7 +114,11 @@ export class Human extends GameObject{
     helmet_skin?:number
     vest?:VestDef
     backpack?:BackpackDef
-    momentary?:HumanoidMomentaryState
+    momentary?:{
+        def:HumanoidMomentaryDef
+        time:number
+        duration?:number
+    }
 
     container!:AnimatedContainer2D
     sprites!:HumanSprites
@@ -153,7 +158,12 @@ export class Human extends GameObject{
     }
 
     on_create(){
-        this.visual=default_visual(this.app.definitions)
+        this.visual={
+            accessorys:[],
+            body:{def:this.app.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,tint:0x000000},
+            legs:this.app.definitions.loadout.getFromString("blue_jeans_pants") as LoadoutLegDef,
+            shirt:this.app.definitions.loadout.getFromString("red_shirt") as LoadoutShirtDef,
+        }
         this.container=new AnimatedContainer2D(this.app)
         this.container.animation_parent=this
         this.container.modes={...HumanModes}
@@ -364,17 +374,32 @@ export class Human extends GameObject{
             let changed=this.momentary!==undefined&&!has
             if(has){
                 const def=HumanoidAnimations.getFromNumber(stream.read_uint16())
-                const variation=stream.read_int8()
                 const time=stream.read_float32()
-                changed=this.momentary?.def!==def||this.momentary.variation!==variation||time<this.momentary.time
-                this.momentary={def,variation,time}
+                changed=this.momentary?.def!==def||time<this.momentary.time
+                this.momentary={def,time}
             }else{
                 this.momentary=undefined
             }
             if(changed)this.apply_momentary()
         }
         if(has_animations){
-            for(const a of stream.read_array(()=>decode_animation(stream),1))this.play_action_animation(a)
+            for(const a of stream.read_array(()=>{
+                const type=stream.read_uint8() as HumanAnimationType
+                switch(type){
+                    case HumanAnimationType.Fire:{
+                        const [alt,last,alt_func]=stream.read_boolean_group()
+                        return {type,alt,last,alt_func}
+                    }
+                    case HumanAnimationType.Reloading:
+                        return {type,alt_reload:stream.read_boolean_group()[0]}
+                    case HumanAnimationType.Consuming:
+                    case HumanAnimationType.Switch:
+                        return {type,item:stream.read_uint16()}
+                    default:
+                        return {type} as HumanAnimation
+                }
+            },1))
+            this.play_action_animation(a)
         }
         if(has_message)this.add_message(stream.read_string_sized(50))
         if(has_emote)this.add_emote(this.app.definitions.game_objects.valueNumber[stream.read_uint16()] as GameItem|EmoteDef)
@@ -451,7 +476,7 @@ export class Human extends GameObject{
         }
         this.container.stop_all_animations()
         if(m.def.hide_hand)this.hide_weapon()
-        const keyframes=m.variation>=0?m.def.variations?.[m.variation]?.keyframes:m.def.keyframes
+        const keyframes=m.def.keyframes
         if(keyframes&&keyframes.length>0)this.container.play_animation(keyframes,undefined,m.def.loop===true)
     }
     update_melee(){

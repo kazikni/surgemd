@@ -2,20 +2,14 @@ import { CircleCollider2D, random, Stream, v2, v2m, Vec2 } from "../../../../eng
 import { type ExplosionDef } from "../../../definitions/objects/explosions.ts";
 import { DamageReason } from "../../../definitions/utils.ts";
 import { type DamageParams, object_instance_type, ObjectType } from "../../../others/constants.ts";
-import { type SimObject } from "../../base.ts";
+import { SimObject } from "../../base.ts";
 import { type Human } from "../human/human.ts";
 import { type Loot } from "../loot.ts";
 import { type SI_StaticBody } from "../static_body/static_body.ts";
 import { type Bullet } from "./bullet.ts";
 import { type Grenade } from "./grenade.ts";
-import { Projectile, type ProjectileCreateArgs, spawn_projectile } from "./projectile.ts";
 
-export interface ExplosionCreateArgs extends ProjectileCreateArgs{
-    def:ExplosionDef
-    parent_velocity?:Vec2
-}
-
-export class Explosion extends Projectile{
+export class Explosion extends SimObject{
     def!:ExplosionDef
     delay:number=0.1
     exploded_base:boolean=false
@@ -30,8 +24,7 @@ export class Explosion extends Projectile{
         this.net_sync_deletion=false
     }
 
-    override on_create(args:ExplosionCreateArgs){
-        super.on_create(args)
+    override on_create(args:{def:ExplosionDef,parent_velocity?:Vec2}){
         this.def=args.def
         this.parent_velocity=args.parent_velocity
         this.base_collider=new CircleCollider2D(v2(0,0),args.def.size.end)

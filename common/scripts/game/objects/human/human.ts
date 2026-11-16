@@ -5,20 +5,20 @@ import { type MeleeDef } from "../../../definitions/items/melees.ts";
 import { type BadgeDef } from "../../../definitions/loadout/badges.ts";
 import { type EmoteDef } from "../../../definitions/loadout/emotes.ts";
 import { type LoadoutAccessoryDef, type LoadoutBodyDef, type LoadoutEyesDef, type LoadoutFootDef, type LoadoutHairDef, type LoadoutLegDef, type LoadoutShirtDef } from "../../../definitions/loadout/skins.ts";
-import { get_momentary_variation, HumanoidAnimations, type HumanoidMomentaryDef, type HumanoidMomentaryState, type MomentaryPlayOptions } from "../../../definitions/objects/humanoid_animations.ts";
+import { HumanoidAnimations, type HumanoidMomentaryDef, type MomentaryPlayOptions } from "../../../definitions/objects/humanoid_animations.ts";
 import { type BoostDef } from "../../../definitions/player/boosts.ts";
 import { type SideEffect, SideEffectType } from "../../../definitions/player/effects.ts";
 import { DamageReason, GameItemType, GameObjectDefinitionType, type LoadoutPreset } from "../../../definitions/utils.ts";
-import { EmptyInputData, InputActionType, type InputAction, type InputData } from "../../../net/input_packet.ts";
+import { InputActionType, type InputData } from "../../../net/input_packet.ts";
 import { type DamageParams, GameConstants, type HumanAnimation, HumanAnimationType, object_instance_type, ObjectType } from "../../../others/constants.ts";
 import { apply_modifiers } from "../../../others/functions.ts";
 import { Floors, FloorType } from "../../../others/terrain.ts";
 import { SimObject } from "../../base.ts";
-import { type InventoryAction, Inventory, type InventoryGroupDef, type InventoryOwner, type ItemFactories } from "../../inventory/inventory.ts";
+import { type InventoryAction, Inventory, type InventoryOwner } from "../../inventory/inventory.ts";
 import { armor_damage, DefaultItemFactories, type EquipmentItem, GrenadeItem } from "../../inventory/items.ts";
 import { HumanInventoryLayout } from "../../inventory/layouts.ts";
 import { MovingBody } from "../moving_body.ts";
-import { decode_visual, default_visual, encode_animation, encode_visual, type HumanVisual } from "./codec.ts";
+import { decode_visual, encode_visual, type HumanVisual } from "./codec.ts";
 import { human_events } from "./events.ts";
 import { type HumanScript } from "./script.ts";
 
@@ -33,8 +33,6 @@ export type Interactable=SimObject&{
     on_interact(user:Human):void
     auto_interact?(user:Human):boolean
 }
-
-const default_boost="adrenaline"
 
 export class Human extends MovingBody implements InventoryOwner{
     name:string=""
@@ -60,29 +58,43 @@ export class Human extends MovingBody implements InventoryOwner{
     secondary_acceleration:number=1
     current_floor:FloorType=FloorType.Void
 
-    visual!:HumanVisual
+    visual!:HumanVisual&{dirty:boolean}
     inventory!:Inventory<Human>
     actions!:ActionsManager<Human,InventoryAction>
-    inventory_layout:()=>InventoryGroupDef[]=HumanInventoryLayout
-    inventory_factories:ItemFactories=DefaultItemFactories
 
-    input:Omit<InputData,"actions">&{
-        actions:InputAction[]
+    input:InputData&{
         using_item_down:boolean
         emote?:GameItem|EmoteDef|BadgeDef
         message?:string
-    }={...EmptyInputData(),using_item_down:false}
+    }={
+        movement:{dir:0,scale:0},
+        rotation:0,
+        distance_to_aim:0,
+        auto_fire:false,
+        use_weapon:false,
+        alt_use_weapon:false,
+        interact:false,
+        cancel:false,
+        reload:false,
+        swap_guns:false,
+        actions:[],
+        using_item_down:false
+    }
     emote_time:number=0
 
     modifiers:Record<string,number>={}
     temp_modifiers:Record<string,number>={}
 
-    interaction={enabled:true,auto_pickup:false,radius:1.5}
+    interaction={enabled:true,auto_pickup:false,radius:1.1}
 
     animations:HumanAnimation[]=[]
-    momentary?:HumanoidMomentaryState
+    momentary?:{
+        def:HumanoidMomentaryDef
+        time:number
+        duration?:number
+        on_end?:(completed:boolean)=>void
+    }
     momentary_dirty:boolean=false
-    momentary_end?:(completed:boolean)=>void
 
     script?:HumanScript
 
@@ -102,11 +114,17 @@ export class Human extends MovingBody implements InventoryOwner{
     on_create(args:HumanCreateArgs={}){
         if(args.position)this.position=args.position
         this.name=args.name??""
-        this.visual=default_visual(this.app.definitions)
-        this.boost={value:0,max:100,def:this.app.definitions.boosts.getFromString(default_boost)}
+        this.visual={
+            accessorys:[],
+            body:{def:this.app.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,tint:0x000000},
+            legs:this.app.definitions.loadout.getFromString("blue_jeans_pants") as LoadoutLegDef,
+            shirt:this.app.definitions.loadout.getFromString("red_shirt") as LoadoutShirtDef,
+            dirty:true
+        }
+        this.boost={value:0,max:100,def:this.app.definitions.boosts.getFromString(GameConstants.human.default_boost)}
         this.actions=new ActionsManager(this)
-        this.inventory=new Inventory(this,this.inventory_factories)
-        this.inventory.initialize(this.inventory_layout())
+        this.inventory=new Inventory(this,DefaultItemFactories)
+        this.inventory.initialize(HumanInventoryLayout())
         this.inventory.hold_ammo=this.scene.mode.rules.humans.hold_ammo
         this.set_loadout_preset(args.loadout)
     }
@@ -121,7 +139,6 @@ export class Human extends MovingBody implements InventoryOwner{
     on_tick(dt:number){
         if(this.dead)return
         this.script?.tick(dt)
-        if(this.dead)return
         this.controlled=this.script!==undefined&&this.script.take_control
 
         this.inventory.update(dt)
@@ -223,11 +240,6 @@ export class Human extends MovingBody implements InventoryOwner{
         this.input.cancel=data.cancel||this.input.cancel
         this.input.actions.push(...data.actions)
     }
-    clear_input(){
-        Object.assign(this.input,EmptyInputData())
-        this.input.actions=[]
-        this.input.using_item_down=false
-    }
 
     tick_input(){
         const inv=this.inventory
@@ -315,7 +327,7 @@ export class Human extends MovingBody implements InventoryOwner{
     }
 
     get_interactables():Interactable[]{
-        const area=new CircleCollider2D(v2.clone(this.position),this.interaction.radius)
+        const area=new CircleCollider2D(this.position,this.interaction.radius)
         const ret=(this.scene.cells.get_objects(area,this.layer) as Interactable[]).filter((o)=>o.id!==this.id&&!o.destroyed&&typeof o.can_interact==="function"&&o.can_interact(this))
         return ret.sort((a,b)=>v2.distanceSquared(a.position,this.position)-v2.distanceSquared(b.position,this.position))
     }
@@ -420,7 +432,6 @@ export class Human extends MovingBody implements InventoryOwner{
         this.knocked=false
         this.downed=false
         this.health.value=0
-        this.clear_input()
         this.actions.cancel()
         this.stop_momentary(false)
         const script=this.script
@@ -446,7 +457,6 @@ export class Human extends MovingBody implements InventoryOwner{
         this.down_timer=0
         this.secondary_velocity=v2.zero()
         this.velocity=v2.zero()
-        this.clear_input()
         this.set_dirty_full()
         this.emit_event(human_events.revive)
     }
@@ -503,23 +513,19 @@ export class Human extends MovingBody implements InventoryOwner{
         const d=typeof def==="string"?HumanoidAnimations.getFromString(def):def
         if(this.momentary&&!options.force&&(this.momentary.def.priority??0)>(d.priority??0))return false
         this.stop_momentary(false)
-        const variation=get_momentary_variation(d,options.item as any)
-        const keyframes=variation>=0?d.variations?.[variation].keyframes:d.keyframes
-        let duration=(variation>=0?d.variations?.[variation].duration:undefined)??d.duration
+        const keyframes=d.keyframes
+        let duration=d.duration??d.duration
         if(duration===undefined&&!d.loop)duration=(keyframes??[]).reduce((t,k)=>t+k.time,0)
-        this.momentary={def:d,variation,time:0,duration:options.duration??duration}
-        this.momentary_end=options.on_end
+        this.momentary={def:d,time:0,duration:options.duration??duration,on_end:options.on_end}
         this.momentary_dirty=true
         this.actions.cancel()
         return true
     }
     stop_momentary(completed:boolean=false){
         if(!this.momentary)return
-        const end=this.momentary_end
+        this.momentary.on_end?.(completed)
         this.momentary=undefined
-        this.momentary_end=undefined
         this.momentary_dirty=true
-        end?.(completed)
     }
 
     set_script(script?:HumanScript){
@@ -581,9 +587,23 @@ export class Human extends MovingBody implements InventoryOwner{
         }
         if(momentary){
             stream.write_boolean_group(this.momentary!==undefined)
-            if(this.momentary)stream.write_uint16(this.momentary.def.id_number!).write_int8(this.momentary.variation).write_float32(this.momentary.time)
+            if(this.momentary)stream.write_uint16(this.momentary.def.id_number!).write_float32(this.momentary.time)
         }
-        if(this.animations.length>0)stream.write_array(this.animations,(a)=>encode_animation(stream,a),1)
+        if(this.animations.length>0)stream.write_array(this.animations,(a)=>{
+            stream.write_uint8(a.type)
+            switch(a.type){
+                case HumanAnimationType.Fire:
+                    stream.write_boolean_group(a.alt,a.last,a.alt_func)
+                    break
+                case HumanAnimationType.Reloading:
+                    stream.write_boolean_group(a.alt_reload)
+                    break
+                case HumanAnimationType.Consuming:
+                case HumanAnimationType.Switch:
+                    stream.write_uint16(a.item)
+                    break
+            }
+        },1)
         if(this.input.message!==undefined)stream.write_string_sized(this.input.message,50)
         if(this.input.emote!==undefined)stream.write_uint16(defs.game_objects.keysString[this.input.emote.id_string])
         if(full&&this.name.length>0)stream.write_string(this.name,1)

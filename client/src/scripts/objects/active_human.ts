@@ -1,14 +1,15 @@
 import { gel_events, GELComponent, Numeric, v2 } from "common/engine/core.ts";
-import { InputEvent, InputEventType } from "common/engine/web.ts";
+import { HideElement, InputEvent, InputEventType, ShowElement } from "common/engine/web.ts";
 import { InputAction, InputActionType, InputPacket, type InputData } from "common/scripts/net/input_packet.ts";
 import { type Human } from "./human.ts";
+import { type PlayScene } from "../scenes/play/scene.ts";
 
 export type ActiveHuman=Human&{
     active:{
         zoom:number
         input_listener?:(e:InputEvent)=>void
     }
-    scene:{client?:{emit_packet(p:InputPacket):void}}
+    scene:PlayScene
     read_input():InputData
     release_active():void
 }
@@ -24,6 +25,7 @@ export const active_human:GELComponent<ActiveHuman>={
             this.active.input_listener=()=>{}
             this.app.input.listener.on(InputEventType.ActionDown,this.active.input_listener)
             this.scene.camera.position=v2.clone(this.position)
+            ShowElement(this.scene.ui.parent)
         },
         [gel_events.tick](dt:number){
             const cam=this.scene.camera
@@ -32,7 +34,7 @@ export const active_human:GELComponent<ActiveHuman>={
             if(this.dead)return
             const input=this.read_input()
 
-            this._rotation_set=!this.app.save.settings.get_var("game_client_rot")||this.momentary!==undefined||this.downed
+            this._rotation_set=!this.app.save.settings.get_var("game_client_rot")||!this.controlled||this.downed
             if(!this._rotation_set){
                 this.rotation=input.rotation
                 this.container.rotation=input.rotation
@@ -41,6 +43,7 @@ export const active_human:GELComponent<ActiveHuman>={
         },
         [gel_events.destroy](){
             this.release_active()
+            HideElement(this.scene.ui.parent)
         },
     },
     methods:{

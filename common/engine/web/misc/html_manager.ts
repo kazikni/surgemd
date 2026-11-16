@@ -3,12 +3,12 @@ import {ColorM} from "../../core/math/color.ts"
 import { rect } from "../../core/math/geometry.ts"
 import { v2 } from "../../core/math/vec2.ts"
 
-export abstract class HTMLManager<Game> {
-    protected game!: Game
+export abstract class HTMLManager<Application> {
+    protected app!: Application
     content:Record<string,HTMLElement>={}
 
-    constructor(game:Game){
-        this.game=game
+    constructor(app:Application){
+        this.app=app
     }
     register_html(name:string,elem?:HTMLElement){
         if(elem&&!this.content[name])this.content[name]=elem
@@ -23,14 +23,14 @@ export abstract class HTMLManager<Game> {
     protected abstract onInit(): void
     protected abstract onDestroy(): void
 }
-export abstract class UIModule<Game> {
-    game!:Game
-    root!:UIRoot<Game>
+export abstract class UIModule<Application> {
+    app!:Application
+    root!:UIRoot<Application>
     constructor(){
 
     }
-    init(game: Game,root:UIRoot<Game>): void{
-        this.game=game
+    init(app: Application,root:UIRoot<Application>): void{
+        this.app=app
         this.root=root
         return this.on_init()
     }
@@ -50,13 +50,19 @@ export abstract class UIModule<Game> {
     abstract on_destroy():void
     abstract on_clear():void
 }
-export class UIRoot<Game> extends HTMLManager<Game> {
-    private modules: UIModule<Game>[] = []
+export class UIRoot<Application> extends HTMLManager<Application> {
+    private modules: UIModule<Application>[] = []
 
     initialized:boolean=false
-    add(module: UIModule<Game>) {
+
+    parent:HTMLElement
+    constructor(app:Application,parent=document.body){
+        super(app)
+        this.parent=parent
+    }
+    add(module: UIModule<Application>) {
         this.modules.push(module)
-        if(this.initialized)module.init(this.game,this)
+        if(this.initialized)module.init(this.app,this)
     }
     signal(signal:string,value:any){
         for (const m of this.modules) {
@@ -67,7 +73,7 @@ export class UIRoot<Game> extends HTMLManager<Game> {
     protected onInit() {
         this.initialized=true
         for (const m of this.modules) {
-            m.init(this.game,this)
+            m.init(this.app,this)
         }
     }
 

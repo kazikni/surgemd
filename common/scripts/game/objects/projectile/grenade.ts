@@ -7,7 +7,7 @@ import { type SimObject } from "../../base.ts";
 import { type Human } from "../human/human.ts";
 import { type SI_StaticBody } from "../static_body/static_body.ts";
 import { type Explosion } from "./explosion.ts";
-import { Projectile, type ProjectileCreateArgs, spawn_projectile } from "./projectile.ts";
+import { Projectile } from "./projectile.ts";
 
 export interface GrenadeCreateArgs extends ProjectileCreateArgs{
     def:GrenadeDef

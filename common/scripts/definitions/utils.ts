@@ -124,19 +124,6 @@ export interface GameItemBase extends Definition{
     item_type:GameItemType
     rank:ItemRank
 }
-export enum DamageReason{
-    Human,
-    Explosion,
-    Deadzone,
-    Abstinence,
-    SideEffect,
-    Disconnect,
-    Connection,
-    Bleend,
-    Airdrop,
-    VehicleJump,
-    VehicleCollision
-}
 export interface InventoryItemData{
     count:number
     type:GameItemType

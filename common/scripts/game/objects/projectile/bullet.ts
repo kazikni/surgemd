@@ -2,22 +2,13 @@ import { CircleCollider2D, Numeric, Stream, v2, v2m, Vec2 } from "../../../../en
 import { type AmmoDef } from "../../../definitions/items/ammo.ts";
 import { type VestDef } from "../../../definitions/items/equipaments.ts";
 import { type ExplosionDef } from "../../../definitions/objects/explosions.ts";
-import { BulletReflection, DamageReason, GameItemType, type BulletDef } from "../../../definitions/utils.ts";
-import { type DamageParams, object_instance_type, ObjectType } from "../../../others/constants.ts";
-import { type SimObject } from "../../base.ts";
+import { BulletReflection, GameItemType, type BulletDef } from "../../../definitions/utils.ts";
+import { object_instance_type, ObjectType } from "../../../others/constants.ts";
+import { SimObject } from "../../base.ts";
 import { type Human } from "../human/human.ts";
 import { type SI_StaticBody } from "../static_body/static_body.ts";
 import { type Explosion } from "./explosion.ts";
-import { Projectile, type ProjectileCreateArgs, spawn_projectile } from "./projectile.ts";
-
-export interface BulletCreateArgs extends ProjectileCreateArgs{
-    def?:BulletDef
-    ammo?:AmmoDef
-    critical?:boolean
-    angle?:number
-}
-
-type Damageable=SimObject&{damage?(params:DamageParams):void}
+import { Projectile } from "./projectile.ts";
 
 export class Bullet extends Projectile{
     speed:number=0
@@ -25,6 +16,8 @@ export class Bullet extends Projectile{
     angle:number=0
     reflection:BulletReflection=BulletReflection.Only_Reflective
     reflection_count:number=0
+
+    velocity:Vec2=v2.zero()
 
     tracer_color:number=0
     tracer_alpha:number=255
@@ -62,7 +55,7 @@ export class Bullet extends Projectile{
         this.base_collider=new CircleCollider2D(v2(0,0),0.2)
     }
 
-    override on_create(args:BulletCreateArgs={}){
+    override on_create(args:{def?:BulletDef,ammo?:AmmoDef,critical?:boolean,angle?:number}={}){
         super.on_create(args)
         this.initial_position=v2.clone(this.position)
         this.old_position=v2.clone(this.position)
@@ -157,7 +150,6 @@ export class Bullet extends Projectile{
             amount,
             owner:this.owner,
             source:this.source,
-            reason:DamageReason.Human,
             position:v2.clone(chosen.point),
             critical:this.critical,
             direction:this.angle+3.1415,

@@ -1,11 +1,8 @@
 import { ActionsManager, BaseAction, BaseSceneObject2D, CircleCollider2D, random, Stream, v2, Vec2 } from "../../../engine/core.ts";
 import { type GameItem } from "../../definitions/game_defs.ts";
 import { type BackpackDef } from "../../definitions/items/backpacks.ts";
-
 import { GameItemType } from "../../definitions/utils.ts";
-
 import { HumanAnimationType, type HumanAnimation, type LootData, object_instance_type } from "../../others/constants.ts";
-
 import { type CommonApplication, type SimulatedScene } from "../base.ts";
 
 

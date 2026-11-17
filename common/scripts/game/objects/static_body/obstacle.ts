@@ -29,7 +29,7 @@ export type C_Obstacle=C_StaticBody&{
 
     set_definition(def:ObstacleDef):void
     set_physical(position?:Vec2,scale?:number,rotation?:number):void
-    die():void
+    die(...params:any[]):void
 
     decode_obstacle(stream:Stream,full:boolean):boolean
 }
@@ -70,10 +70,10 @@ export const c_obstacle:GELComponent<C_Obstacle>={
         },
         set_physical(_position?:Vec2,_scale?:number,_rotation?:number){
         },
-        die(){
+        die(...params:any[]){
             if(!this.health||this.health.dead)return
             this.health.dead=true
-            this.emit_event(obstacle_events.die)
+            this.emit_event(obstacle_events.die,...params)
         },
     },
 }
@@ -121,7 +121,7 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
             this.physical.dirty_part=false
             this.physical.dirty=false
         },
-        [obstacle_events.die]:function(){
+        [obstacle_events.die]:function(params:DamageParams){
             const pos=v2.clone(this.position)
             for(const l of this.loot){
                 const loot=this.scene.add_object(this.scene.make_object(object_instance_type.loot)!,this.layer,undefined,{data:l,position:v2.add(pos,v2.random(-0.5,0.5))}) as Loot
@@ -129,7 +129,7 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
             }
             this.loot.length=0
             if(this.def.onDestroyExplosion){
-                this.scene.add_object(this.scene.make_object(object_instance_type.explosion),this.layer,undefined,{position:v2.clone(this.position),def:this.app.definitions.explosions.getFromString(this.def.onDestroyExplosion),source:this.def})
+                this.scene.add_object(this.scene.make_object(object_instance_type.explosion),this.layer,undefined,{position:this.position,owner:params.owner,def:this.app.definitions.explosions.getFromString(this.def.onDestroyExplosion),source:this.def})
             }
             if(!this.def.keep_collision_on_die){
                 this.physical.no_collision=true
@@ -176,7 +176,7 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
             if((this.def.resistence??0)>(params.resistence??0))return
             this.health.value=Math.max(this.health.value-params.amount,0)
             if(this.health.value<=0){
-                this.die()
+                this.die(params)
                 ;(params.owner as {inventory?:Inventory}|undefined)?.inventory?.emit_event("obstacle_destroy",{obstacle:this,human:params.owner})
             }else{
                 this.reset_scale()

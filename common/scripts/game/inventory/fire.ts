@@ -12,24 +12,6 @@ export interface FireState{
     fire_sequence:number
 }
 
-export function patterning_shape(count:number,radius:number):Vec2[]{
-    const shape=(points:number)=>(r:number,offset:number=0):Vec2[]=>Array.from({length:points},(_,i)=>v2.from_RadAngle(i*(Math.PI/points)+offset,r))
-    const [triangle,square,pentagon,hexagon]=[3,4,5,6].map(shape)
-    const half=Math.PI/2
-    switch(count){
-        case 1:return [v2(0,0)]
-        case 2:return [v2(0,radius),v2(0,-radius)]
-        case 3:return triangle(radius)
-        case 4:return [v2(0,0),...triangle(radius)]
-        case 5:return [v2(0,0),...square(radius)]
-        case 6:return [v2(0,0),...pentagon(radius)]
-        case 7:return [v2(0,0),...hexagon(radius,half)]
-        case 8:return [v2(0,0),...triangle(radius/2),...square(radius,half)]
-        case 9:return [v2(0,0),...triangle(radius/2),...pentagon(radius)]
-    }
-    return [v2(0,0),...shape(count-1)(radius)]
-}
-
 export function clip_muzzle(user:Human,muzzle:Vec2):Vec2{
     const start=user.position
     let best=v2.distance(start,muzzle)
@@ -89,11 +71,14 @@ export function fire_item(user:Human,item:InventoryItem&FireState,position:Vec2,
     }
     if(def.grenade){
         const count=def.grenade.count??1
-        const pattern=patterning_shape(count,def.jitter_radius??1)
         const gdef=user.app.definitions.grenades.getFromString(def.grenade.def)
         for(let i=0;i<count;i++){
-            const pos=def.jitter_radius?v2.add(position,pattern[i]):v2.clone(position)
-
+            const pos=v2.clone(position)
+            if(def.jitter_radius){
+                pos.x+=def.jitter_radius
+                const angle=random.rad()
+                v2m.add(pos,pos,v2(Math.cos(angle)*def.jitter_radius*0.25,Math.sin(angle)*def.jitter_radius))
+            }
             const g:Grenade=user.scene.add_object(user.scene.make_object(object_instance_type.grenade),user.layer,undefined,{
                 position:pos,
                 def:gdef,

@@ -34,7 +34,7 @@ export const active_human:GELComponent<ActiveHuman>={
             if(this.dead)return
             const input=this.read_input()
 
-            this._rotation_set=!this.app.save.settings.get_var("game_client_rot")||!this.controlled||this.downed
+            this._rotation_set=!this.app.save.settings.get_var("game_client_rot")&&this.controlled&&!this.downed
             if(!this._rotation_set){
                 this.rotation=input.rotation
                 this.container.rotation=input.rotation

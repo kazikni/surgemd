@@ -1,6 +1,6 @@
 import { CircleCollider2D, gel_events, GELComponent, Numeric, Stream, v2, v2m, Vec2 } from "../../../engine/core.ts";
 import { gelo_instance_type, Layers, Spawn } from "../../others/constants.ts";
-import { CommonGELO, SimulatedGELO } from "../base.ts";
+import { CommonGELO, GELONet, SimulatedGELO } from "../base.ts";
 
 export enum DeadzoneState{
     Deenabled,
@@ -210,6 +210,7 @@ export const si_deadzone: GELComponent<SI_Deadzone> = {
     events: {
         [gel_events.bind]: function () {
             this.instance_type=gelo_instance_type.deadzone
+            this.net=GELONet.General
             this.duration = 0
 
             this.damage = 0

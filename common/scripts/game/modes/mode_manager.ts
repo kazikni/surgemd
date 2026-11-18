@@ -390,9 +390,7 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
     }
     on_tick(_dt:number){}
 
-    net_update(){
-        for(const p of this.players.list())p.conn.net_update()
-    }
+    net_update(){}
 
     destroy(){
         this.destroyed=true

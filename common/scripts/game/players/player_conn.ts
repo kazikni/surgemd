@@ -39,7 +39,6 @@ export abstract class PlayerConn{
     on_game_finish(_win:boolean):void{}
 
     tick(_dt:number):void{}
-    net_update():void{}
 
     disconnect(){
         if(!this.connected)return

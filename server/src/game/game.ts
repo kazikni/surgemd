@@ -1,4 +1,4 @@
-import { AbstractApplication, Client, ClientsManager, SignalManager } from "common/engine/core.ts";
+import { AbstractApplication, ClientsManager, SignalManager } from "common/engine/core.ts";
 import { type GameDataBase, type ServerGameApplication } from "common/engine/server/server.ts";
 import { type GameConfig } from "common/scripts/config/config.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
@@ -6,7 +6,7 @@ import { type CommonApplication } from "common/scripts/game/base.ts";
 import { mode_events } from "common/scripts/game/modes/mode_manager.ts";
 import { setup_game_scene } from "common/scripts/game/modes/modes.ts";
 import { simulation_defs, SimulationDefs, SimulationScene } from "./scene.ts";
-import { NetPlayerConn, NetPlayerManager } from "./net_player_conn.ts";
+import { NetPlayerManager } from "./net_player_conn.ts";
 
 export interface GameData extends GameDataBase{
     initialized:boolean
@@ -43,7 +43,8 @@ export class Game extends AbstractApplication implements ServerGameApplication,C
     private net_timer:number=0
     private last_data:string=""
 
-    players:NetPlayerManager=new  NetPlayerManager()
+    players:NetPlayerManager=new NetPlayerManager(this)
+    handle_connection=this.players.connect.bind(this.players)
 
     constructor(config:GameAppConfig,clients:ClientsManager,defs:SimulationDefs=simulation_defs){
         super(config.tps)
@@ -107,26 +108,14 @@ export class Game extends AbstractApplication implements ServerGameApplication,C
         this.update_data()
     }
     net_tick(){
+        this.players.net_update()
         this.sim.mode.net_update()
         this.sim.net_update()
         this.sim.objects.apply_destroy_queue()
     }
-    handle_connection(client:Client,username:string){
-        if(!this.initialized||!this.running||!this.sim.mode.can_connect()){
-            client.disconnect()
-            return
-        }
-        const conn=new NetPlayerConn(this,client)
-        conn.username=username
-        if(!this.sim.mode.connect(conn)){
-            client.disconnect()
-            return
-        }
-        conn.send_start()
-    }
 
     override mainloop(rqf?:boolean,auto_mainloop?:boolean){
-        this.clients.onconnection=this.handle_connection.bind(this)
+        this.clients.onconnection=this.handle_connection
         super.mainloop(rqf,auto_mainloop)
         this.update_data(true)
         console.log(`[GAME-${this.id}] Running`)
@@ -134,6 +123,7 @@ export class Game extends AbstractApplication implements ServerGameApplication,C
     override on_stop(): void {
         this.update_data(true)
         this.clients.clear()
+        this.players.clear()
         console.log(`[GAME-${this.id}] Stopped`)
     }
 }

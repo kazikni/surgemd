@@ -290,7 +290,7 @@ export class GELOManager<GELO extends BaseGELO=BaseGELO>{
         }
     }
 
-    net_encode_gelo(gelo: GELO, stream: Stream) {
+    net_encode_gelo(gelo: GELO, stream: Stream, full: boolean) {
         const size_pos = stream.index
 
         stream.write_uint24(0)
@@ -299,8 +299,9 @@ export class GELOManager<GELO extends BaseGELO=BaseGELO>{
 
         stream.write_any(gelo.id)
         stream.write_uint8(gelo.instance_type)
+        stream.write_boolean_group(full)
 
-        gelo.emit_event(gel_events.net_encode, stream)
+        gelo.emit_event(gel_events.net_encode, stream, full)
 
         const end = stream.index
 
@@ -342,7 +343,8 @@ export class GELOManager<GELO extends BaseGELO=BaseGELO>{
                 )
             }
 
-            gelo.emit_event(gel_events.net_decode, stream)
+            const [full] = stream.read_boolean_group()
+            gelo.emit_event(gel_events.net_decode, stream, full)
 
             return gelo
         } catch (e) {
@@ -358,10 +360,10 @@ export class GELOManager<GELO extends BaseGELO=BaseGELO>{
         }
     }
 
-    net_encode_list(gelos:GELO[],stream:Stream){
+    net_encode_list(gelos:GELO[],stream:Stream,full:boolean){
         stream.write_uint16(gelos.length)
         for(const g of gelos){
-            this.net_encode_gelo(g,stream)
+            this.net_encode_gelo(g,stream,full)
         }
     }
     net_proccess_list(stream:Stream){

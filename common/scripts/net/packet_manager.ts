@@ -1,7 +1,7 @@
 import { PacketsManager } from "../../engine/core.ts";
 import { InputPacket } from "./input_packet.ts";
 import { JoinedPacket, JoinPacket } from "./join_packet.ts";
-import { StartPacket, UpdatePacket } from "./update_packet.ts";
+import { GeneralPacket, StartPacket, UpdatePacket } from "./update_packet.ts";
 
 export function make_packet_manager():PacketsManager{
     const pm=new PacketsManager()
@@ -10,6 +10,7 @@ export function make_packet_manager():PacketsManager{
     pm.add_packet(InputPacket)
     pm.add_packet(UpdatePacket)
     pm.add_packet(StartPacket)
+    pm.add_packet(GeneralPacket)
     return pm
 }
 

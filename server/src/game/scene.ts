@@ -1,5 +1,5 @@
 import { BaseGELO, CheckpointSettings, gel_component, GELComponent, Scene2D, Stream } from "common/engine/core.ts";
-import { type CommonApplication, SimObject, type SimulatedScene } from "common/scripts/game/base.ts";
+import { type CommonApplication, GELONet, SimObject, type SimulatedScene } from "common/scripts/game/base.ts";
 import { si_deadzone, type SI_Deadzone } from "common/scripts/game/gelo/deadzone.ts";
 import { si_gamemap, type SI_GameMap } from "common/scripts/game/gelo/map.ts";
 import { type ModeManager } from "common/scripts/game/modes/mode_manager.ts";
@@ -15,6 +15,8 @@ export type ServerObject=SimObject
 export class ServerGELO extends BaseGELO{
     declare app:CommonApplication
     declare scene:SimulationScene
+    net:GELONet=GELONet.None
+    net_dirty:boolean=true
 }
 
 export interface SimulationDefs{

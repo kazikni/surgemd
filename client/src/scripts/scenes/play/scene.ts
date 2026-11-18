@@ -3,7 +3,7 @@ import { HideElement, ShowElement, UIRoot } from "common/engine/web.ts";
 import { gelo_instance_type } from "common/scripts/others/constants.ts";
 import { type JoinData, JoinedPacket, JoinPacket } from "common/scripts/net/join_packet.ts";
 import { make_packet_manager } from "common/scripts/net/packet_manager.ts";
-import { type ActiveHumanState, StartPacket, UpdatePacket } from "common/scripts/net/update_packet.ts";
+import { type ActiveHumanState, type GeneralPacket, type StartPacket, type UpdatePacket } from "common/scripts/net/update_packet.ts";
 import { GameGELO, GameObject, GameScene } from "../../main/gel.ts";
 import { type Application } from "../../main/app.ts";
 import { type CC_GameMap } from "../../gelo/map.ts";
@@ -272,13 +272,17 @@ export class PlayScene extends GameScene {
     override update(dt: number): void {
         for(const p of this.packets_queue){
             switch(p.Name){
+                case "start":
+                case "joined":
+                case "general":
+                    this.gelo.net_proccess_list((p as StartPacket|JoinedPacket|GeneralPacket).gelos)
+                    break
                 case "update":{
-                    if((p as UpdatePacket).content)this.objects.proccess_net((p as UpdatePacket).content!,true)
-                    if((p as UpdatePacket).active){
-                        this.active_state=(p as UpdatePacket).active!
-                        if(this.active_id!==(p as UpdatePacket).active!.id){
-                            this.active_id=(p as UpdatePacket).active!.id
-                        }
+                    const up=p as UpdatePacket
+                    this.objects.proccess_net(up.content,true)
+                    if(up.active){
+                        this.active_state=up.active
+                        this.active_id=up.active.id
                     }
                     this.try_bind_active()
                     break

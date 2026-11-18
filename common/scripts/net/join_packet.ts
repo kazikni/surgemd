@@ -1,4 +1,4 @@
-import { Packet, Stream } from "../../engine/core.ts";
+import { DynamicStream, Packet, Stream } from "../../engine/core.ts";
 import { LoadoutPreset, PacketType } from "../definitions/utils.ts";
 import { GameConstants } from "../others/constants.ts";
 
@@ -34,22 +34,22 @@ export class JoinPacket extends Packet{
     }
 }
 
-/**
- * Resposta do servidor ao JoinPacket. Diz qual humano e o humano ativo do cliente.
- */
 export class JoinedPacket extends Packet{
     ID=PacketType.Joinned
     Name="joined"
 
     human_id:number=0
     ntps:number=32
+    gelos:Stream=new DynamicStream()
 
     encode(stream: Stream): void {
         stream.write_id(this.human_id)
         stream.write_uint8(this.ntps)
+        stream.write_stream_dynamic(this.gelos)
     }
     decode(stream: Stream): void {
         this.human_id=stream.read_id()
         this.ntps=stream.read_uint8()
+        this.gelos=stream.read_stream_dynamic()
     }
 }

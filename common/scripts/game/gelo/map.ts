@@ -3,7 +3,7 @@ import { MapBiomeDef, MapDef, MapObjectGeneration, MapStructureDef } from "../..
 import { ObstacleDef } from "../../definitions/objects/obstacles.ts";
 import { gelo_instance_type, Layers, object_instance_type,  Spawn, SpawnMode, SpawnModeType } from "../../others/constants.ts";
 import { FloorType, generate_terrain_shape, River, TerrainManager } from "../../others/terrain.ts";
-import { CommonGELO, CommonPlayScene, SimulatedGELO, SimulatedObject, SimulatedScene, type CommonApplication } from "../base.ts";
+import { CommonGELO, CommonPlayScene, GELONet, SimulatedGELO, SimulatedObject, SimulatedScene, type CommonApplication } from "../base.ts";
 import { type SI_Obstacle } from "../objects/static_body/obstacle.ts";
 import { type SI_StaticBody } from "../objects/static_body/static_body.ts";
 
@@ -125,6 +125,7 @@ export const si_gamemap:GELComponent<SI_GameMap>={
     extensions:[c_gamemap],
     events:{
         [gel_events.bind]:function(){
+            this.net=GELONet.Start
             this.bounds={min:v2.zero(),max:v2.zero()}
             this.air_bounds={min:v2.zero(),max:v2.zero()}
             this.default_spawn_mode=Spawn.grass
@@ -293,6 +294,7 @@ export const si_gamemap:GELComponent<SI_GameMap>={
             this.encode(this.map_stream)
             this.map_stream.lock()*/
 
+            this.net_dirty=true
             this.emit_event(gamemap_events.generated)
         },
 

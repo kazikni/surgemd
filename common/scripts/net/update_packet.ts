@@ -61,14 +61,25 @@ export class StartPacket extends Packet{
     Name="start"
 
     gelos:Stream=new DynamicStream()
-    ntps:number=32
 
     encode(stream: Stream): void {
-        stream.write_uint8(this.ntps)
         stream.write_stream_dynamic(this.gelos)
     }
     decode(stream: Stream): void {
-        this.ntps=stream.read_uint8()
+        this.gelos=stream.read_stream_dynamic()
+    }
+}
+
+export class GeneralPacket extends Packet{
+    ID=PacketType.GeneralUpdate
+    Name="general"
+
+    gelos:Stream=new DynamicStream()
+
+    encode(stream: Stream): void {
+        stream.write_stream_dynamic(this.gelos)
+    }
+    decode(stream: Stream): void {
         this.gelos=stream.read_stream_dynamic()
     }
 }

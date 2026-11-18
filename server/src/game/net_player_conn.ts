@@ -1,12 +1,13 @@
 import { type DamageParams } from "common/scripts/game/objects/projectile/projectile.ts";
 import { Client, DefaultSignals, DynamicStream, RectCollider2D, Stream, v2, Vec2 } from "common/engine/core.ts";
+import { GELONet } from "common/scripts/game/base.ts";
 import { type Human } from "common/scripts/game/objects/human/human.ts";
 import { PlayerConn } from "common/scripts/game/players/player_conn.ts";
 import { type InputPacket } from "common/scripts/net/input_packet.ts";
 import { JoinedPacket, type JoinPacket } from "common/scripts/net/join_packet.ts";
-import { StartPacket, UpdatePacket } from "common/scripts/net/update_packet.ts";
+import { GeneralPacket, StartPacket, UpdatePacket } from "common/scripts/net/update_packet.ts";
 import { type Game } from "./game.ts";
-import { type ServerObject } from "./scene.ts";
+import { type ServerGELO, type ServerObject } from "./scene.ts";
 
 export const PlayerViewSize=v2(26,16)
 
@@ -18,56 +19,22 @@ export class NetPlayerConn extends PlayerConn{
     view_objects:ServerObject[]=[]
     full_update:boolean=true
     last_position:Vec2=v2.zero()
+    send_joined:boolean=false
 
+    stream:DynamicStream=new DynamicStream(512)
     update:UpdatePacket=new UpdatePacket()
 
     constructor(game:Game,client:Client){
         super(client.ID)
         this.game=game
         this.client=client
-
         this.update.content=new DynamicStream(128)
-
-        client.on("join",(p:JoinPacket)=>this.on_join(p))
-        client.on("input",(p:InputPacket)=>{
-            const h=this.human
-            if(!h||h.dead||this.spectating)return
-            h.process_input(p.data)
-        })
-        client.on(DefaultSignals.DISCONNECT,()=>{
-            if(this.human)console.log(`[GAME-${this.game.id}] ${this.human.name} Disconnected`)
-            this.disconnect()
-        })
-    }
-
-    send_start(){
-        const p=new StartPacket()
-        this.client.emit_packet(p)
-    }
-
-    on_join(p:JoinPacket){
-        const mode=this.game.sim.mode
-        if(this.human&&!this.human.dead)return
-        const h=mode.join(this,p.data)
-        if(!h){
-            this.client.disconnect()
-            return
-        }
-        console.log(`[GAME-${this.game.id}] ${h.name} Joined`)
-        this.full_update=true
-        this.view_objects.length=0
-
-        const jp=new JoinedPacket()
-        jp.human_id=h.id
-        jp.ntps=this.game.ntps
-        this.client.emit_packet(jp)
     }
 
     override set_human(human?: Human): void {
         super.set_human(human)
         this.full_update=true
     }
-
     override on_human_die(_params: DamageParams): void {
         this.spectating=true
     }
@@ -75,45 +42,33 @@ export class NetPlayerConn extends PlayerConn{
         this.client.emit("game_over",{win})
     }
 
-    get_view_objects():ServerObject[]{
+    net_update(general:Stream){
+        if(!this.client.opened)return
         const sim=this.game.sim
-        const center=this.human&&!this.human.destroyed?this.human.position:this.last_position
-        this.last_position=v2.clone(center)
-        const rect=new RectCollider2D(v2.sub(center,PlayerViewSize),v2.add(center,PlayerViewSize))
-        const layer=this.human?.layer??sim.map.default_layer
-        return sim.cells.get_objects_layers(rect,[layer-1,layer,layer+1])
-    }
+        this.stream.clear()
+        this.stream.write_stream(general)
 
-    override net_update(): void {
-        if(!this.client.opened||!this.join)return
-        const sim=this.game.sim
-
-        this.update.content.clear()
-
-        const objs=this.get_view_objects()
-        const full=this.full_update
-
-        const o=sim.objects.encode_list_net(objs,this.view_objects,full,full,undefined,this.update.content)
-
-
-        this.view_objects=o.last
-        this.full_update=false
-
-        /*this.gelo_stream.clear()
-        this.gelo_stream.write_uint16()
-        up.gelos=this.gelo_stream
-        for(const g in this.game.sim.gelo.content){
-            const gelo=this.game.sim.gelo.content[g]
-            sim.gelo.encode([],this.gelo_stream)
-            gelo.
+        if(this.send_joined){
+            this.send_joined=false
+            const jp=new JoinedPacket()
+            jp.human_id=this.human?.id??0
+            jp.ntps=this.game.ntps
+            sim.gelo.net_encode_list(Object.values(sim.gelo.content).filter((g)=>g.net===GELONet.Joined),jp.gelos,true)
+            this.client.manager.encode(jp,this.stream)
         }
-        if(sim.deadzone){
-            sim.gelo.encode([sim.deadzone],this.gelo_stream)
-        }*/
 
-        const h=this.human
-        if(h){
-            this.update.active={
+        if(this.join){
+            const center=this.human&&!this.human.destroyed?this.human.position:this.last_position
+            this.last_position=v2.clone(center)
+            const layer=this.human?.layer??sim.map.default_layer
+            const objs=sim.cells.get_objects_layers(new RectCollider2D(v2.sub(center,PlayerViewSize),v2.add(center,PlayerViewSize)),[layer-1,layer,layer+1])
+
+            this.update.content.clear()
+            this.view_objects=sim.objects.encode_list_net(objs,this.view_objects,this.full_update,this.full_update,undefined,this.update.content).last
+            this.full_update=false
+
+            const h=this.human
+            this.update.active=h?{
                 id:h.id,
                 spectating:this.spectating,
                 knocked:h.knocked,
@@ -122,12 +77,94 @@ export class NetPlayerConn extends PlayerConn{
                 boost:h.boost.value,
                 max_boost:h.boost.max,
                 boost_def:h.boost.def.id_number??0,
-            }
-        }else{
-            this.update.active=undefined
+            }:undefined
+            this.client.manager.encode(this.update,this.stream)
         }
-        this.client.emit_packet(this.update)
+
+        if(this.stream.length>0)this.client.send_stream(this.stream)
     }
 }
+
 export class NetPlayerManager{
+    game:Game
+    conns=new Map<number,NetPlayerConn>()
+
+    start?:DynamicStream
+    general:GeneralPacket=new GeneralPacket()
+    general_stream:DynamicStream=new DynamicStream(256)
+
+    constructor(game:Game){
+        this.game=game
+    }
+
+    connect(client:Client,username:string){
+        const game=this.game
+        if(!game.initialized||!game.running||!game.sim.mode.can_connect()||this.conns.has(client.ID)){
+            client.disconnect()
+            return
+        }
+        const conn=new NetPlayerConn(game,client)
+        conn.username=username
+        if(!game.sim.mode.connect(conn)){
+            client.disconnect()
+            return
+        }
+        this.conns.set(client.ID,conn)
+
+        client.on("join",(p:JoinPacket)=>{
+            if(conn.human&&!conn.human.dead)return
+            const h=game.sim.mode.join(conn,p.data)
+            if(!h){
+                client.disconnect()
+                return
+            }
+            console.log(`[GAME-${game.id}] ${h.name} Joined`)
+            conn.full_update=true
+            conn.view_objects.length=0
+            conn.send_joined=true
+        })
+        client.on("input",(p:InputPacket)=>{
+            const h=conn.human
+            if(!h||h.dead||conn.spectating)return
+            h.process_input(p.data)
+        })
+        client.on(DefaultSignals.DISCONNECT,()=>{
+            if(conn.human)console.log(`[GAME-${game.id}] ${conn.human.name} Disconnected`)
+            this.conns.delete(client.ID)
+            conn.disconnect()
+        })
+
+        if(!this.start){
+            const sim=game.sim
+            const sp=new StartPacket()
+            sim.gelo.net_encode_list(Object.values(sim.gelo.content).filter((g)=>g.net===GELONet.Start),sp.gelos,true)
+            this.start=new DynamicStream(sp.gelos.length+16)
+            client.manager.encode(sp,this.start)
+        }
+        client.send_stream(this.start)
+    }
+
+    net_update(){
+        const sim=this.game.sim
+        const gelos:ServerGELO[]=Object.values(sim.gelo.content).filter((g)=>g.net===GELONet.General||(g.net!==GELONet.None&&g.net_dirty))
+
+        this.general_stream.clear()
+        if(gelos.length>0){
+            this.general.gelos.clear()
+            sim.gelo.net_encode_list(gelos,this.general.gelos,false)
+            this.game.clients.packets_manager.encode(this.general,this.general_stream)
+        }
+
+        for(const conn of this.conns.values())conn.net_update(this.general_stream)
+
+        for(const g of gelos){
+            if(g.net===GELONet.Start&&g.net_dirty)this.start=undefined
+            g.net_dirty=false
+        }
+    }
+
+    clear(){
+        this.conns.clear()
+        this.start=undefined
+    }
 }

@@ -31,9 +31,16 @@ export type SimulatedObject=BaseSceneObject2D&{
     scene:SimulatedScene
     app:CommonApplication
 }
+export enum GELONet{
+    None,
+    General,
+    Start,
+    Joined,
+}
 export type SimulatedGELO=SceneGELO&{
     app:CommonApplication
     scene:SimulatedScene
+    net:GELONet
     net_dirty:boolean
 }
 

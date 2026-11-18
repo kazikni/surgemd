@@ -123,9 +123,6 @@ export const ccn_deadzone:GELComponent<CC_Deadzone>={
         [gel_events.tick]:function(_dt){
             this.sprite.position=this.position
         },
-        [gel_events.net_decode]:function(stream:Stream){
-            this.decode_deadzone(stream)
-        },
     },
     extensions:[cc_deadzone]
 }

@@ -15,19 +15,33 @@ export const GameConstants={
         max_name_size:27,
     },
     loot:{
-        radius:{
-            [GameItemType.ammo]:0.5,
-            [GameItemType.consumible]:0.5,
-            [GameItemType.backpack]:0.5,
-            [GameItemType.helmet]:0.5,
-            [GameItemType.vest]:0.5,
-            [GameItemType.scope]:0.5,
-            [GameItemType.grenade]:0.5,
+        collision_radius:{
+            [GameItemType.ammo]:0.45,
+            [GameItemType.consumible]:0.45,
+            [GameItemType.backpack]:0.45,
+            [GameItemType.helmet]:0.45,
+            [GameItemType.vest]:0.45,
+            [GameItemType.scope]:0.45,
+            [GameItemType.grenade]:0.45,
 
-            [GameItemType.gun]:0.59,
-            [GameItemType.melee]:0.59,
+            [GameItemType.gun]:0.45,
+            [GameItemType.melee]:0.45,
 
-            [GameItemType.accessory]:0.6,
+            [GameItemType.accessory]:0.45,
+        }satisfies Record<GameItemType,number>,
+        main_radius:{
+            [GameItemType.ammo]:0.6,
+            [GameItemType.consumible]:0.6,
+            [GameItemType.backpack]:0.6,
+            [GameItemType.helmet]:0.6,
+            [GameItemType.vest]:0.6,
+            [GameItemType.scope]:0.6,
+            [GameItemType.grenade]:0.6,
+
+            [GameItemType.gun]:0.63,
+            [GameItemType.melee]:0.63,
+
+            [GameItemType.accessory]:0.63,
         }satisfies Record<GameItemType,number>
     },
     collision:{

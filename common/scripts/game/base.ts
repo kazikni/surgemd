@@ -34,6 +34,7 @@ export type SimulatedObject=BaseSceneObject2D&{
 export type SimulatedGELO=SceneGELO&{
     app:CommonApplication
     scene:SimulatedScene
+    net_dirty:boolean
 }
 
 export class SimObject extends BaseSceneObject2D{

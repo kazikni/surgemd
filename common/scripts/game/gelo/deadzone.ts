@@ -21,9 +21,6 @@ export type C_Deadzone={
     aspect:number
 
     set_current(state:DeadzoneState,position:Vec2,radius:number):void
-
-    encode_deadzone(stream:Stream):void
-    decode_deadzone(stream:Stream):void
 }&CommonGELO
 export const c_deadzone:GELComponent<C_Deadzone>={
     id_string:"c_deadzone",
@@ -40,6 +37,23 @@ export const c_deadzone:GELComponent<C_Deadzone>={
         },
         [gel_events.registry]:function(){
             this.aspect=Math.max(this.scene.map.size.x,this.scene.map.size.y)/100
+        },
+        [gel_events.net_encode](stream:Stream){
+            stream.write_uint8(this.state)
+            stream.write_pos2(this.position)
+            stream.write_float32(this.radius)
+            stream.write_pos2(this.new_position)
+            stream.write_float32(this.new_radius)
+            stream.write_float32(this.timer)
+        },
+        [gel_events.net_decode](stream:Stream){
+            const state=stream.read_uint8() as DeadzoneState
+            const position=stream.read_pos2()
+            const radius=stream.read_float32()
+            this.new_position=stream.read_pos2()
+            this.new_radius=stream.read_float32()
+            this.timer=stream.read_float32()
+            this.set_current(state,position,radius)
         }
     },
     methods:{
@@ -51,23 +65,6 @@ export const c_deadzone:GELComponent<C_Deadzone>={
             this.position=position
             this.radius=radius
         },
-        encode_deadzone(stream:Stream){
-            stream.write_uint8(this.state)
-            stream.write_pos2(this.position)
-            stream.write_float32(this.radius)
-            stream.write_pos2(this.new_position)
-            stream.write_float32(this.new_radius)
-            stream.write_float32(this.timer)
-        },
-        decode_deadzone(stream:Stream){
-            const state=stream.read_uint8() as DeadzoneState
-            const position=stream.read_pos2()
-            const radius=stream.read_float32()
-            this.new_position=stream.read_pos2()
-            this.new_radius=stream.read_float32()
-            this.timer=stream.read_float32()
-            this.set_current(state,position,radius)
-        }
     }
 }
 
@@ -227,9 +224,6 @@ export const si_deadzone: GELComponent<SI_Deadzone> = {
         },
         [gel_events.registry]: function () {
             this.reset()
-        },
-        [gel_events.net_encode]: function (stream:Stream) {
-            this.encode_deadzone(stream)
         },
         [gel_events.tick]: function (dt: number) {
             if(this.state===DeadzoneState.Deenabled)return

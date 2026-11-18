@@ -163,9 +163,6 @@ export abstract class AbstractGameContainer<
     abstract stop():void
     abstract get_address():string
 }
-/**
- * O que um container precisa de um jogo (Application) rodando no servidor.
- */
 export interface ServerGameApplication extends AbstractApplication{
     id:number
     signals:SignalManager

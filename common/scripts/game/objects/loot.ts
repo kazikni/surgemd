@@ -1,15 +1,18 @@
-import { CircleCollider2D, Stream, v2, v2m } from "../../../engine/core.ts";
+import { CircleCollider2D, Collider2D, OverlapCollision2D, Stream, v2, v2m, Vec2 } from "../../../engine/core.ts";
 import { GameConstants, ObjectType, LootData, object_instance_type } from "../../others/constants.ts";
 import { decode_loot_data, encode_loot_data } from "../../others/functions.ts";
 import { Floors, FloorType } from "../../others/terrain.ts";
-import { type SimObject } from "../base.ts";
+import { SimObject } from "../base.ts";
 import { type Human } from "./human/human.ts";
-import { MovingBody } from "./moving_body.ts";
+import { SI_StaticBody } from "./static_body/static_body.ts";
 
-export class Loot extends MovingBody{
+export class Loot extends SimObject{
     loot_data!:LootData
     old_position=v2(-1,-1)
+    velocity:Vec2=v2.zero()
     current_floor:FloorType=FloorType.Water
+
+    collision_collider:CircleCollider2D=new CircleCollider2D(v2.zero(),0)
 
     constructor(){
         super()
@@ -18,9 +21,13 @@ export class Loot extends MovingBody{
         this.allow_tick=true
     }
 
+    push(speed:number,direction:number){
+        v2m.add(this.velocity,this.velocity,v2.from_RadAngle(direction,speed))
+    }
     set_loot_data(data:LootData){
         this.loot_data=data
-        this.base_collider=new CircleCollider2D(v2(0,0),GameConstants.loot.radius[data.item.item_type!]??0.5)
+        this.base_collider=new CircleCollider2D(v2(0,0),GameConstants.loot.main_radius[data.item.item_type!]??0.5)
+        this.collision_collider.radius=GameConstants.loot.collision_radius[data.item.item_type!]??0.5
     }
 
     on_create(args:{data?:LootData,position?:{x:number,y:number}}={}){
@@ -28,11 +35,13 @@ export class Loot extends MovingBody{
         if(args.data)this.set_loot_data(args.data)
     }
 
-    override on_collided(obj:SimObject,dt:number){
+    on_collided(obj:SimObject,dt:number){
         if(obj.object_type===ObjectType.StaticBody){
-            super.on_collided(obj,dt)
+            if((obj as unknown as SI_StaticBody).physical.no_collision)return
+            const collisions:OverlapCollision2D[]=this.collision_collider.overlap_collisions(obj.collider)
+            for(const col of collisions)v2m.sub(this.position,this.position,v2.scale(col.dir,col.pen))
         }else if(obj.object_type===ObjectType.Loot){
-            const col=this.collider.overlap_collision(obj.collider)
+            const col=this.collider.overlap_collision((obj as Loot).collider)
             if(!col)return
             const pen=col.pen*2.5*dt
             const dir=col.pen<=0.0001?v2.random(-1,1):col.dir
@@ -55,6 +64,7 @@ export class Loot extends MovingBody{
         }
         const speed=Floors[this.current_floor].speed_mult??1
         const pos=v2.add(this.position,v2.scale(this.velocity,speed*dt))
+        this.collision_collider.position=pos
         v2m.scale(this.velocity,this.velocity,1/(1+dt*2.5))
         this.position=this.scene.map.clamp_collider(pos,this.base_collider)
         if(!v2.is(this.position,this.old_position)){

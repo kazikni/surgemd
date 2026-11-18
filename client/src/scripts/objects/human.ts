@@ -1,32 +1,19 @@
 import { Angle, CircleCollider2D, ColorM, ease, matrix4, Numeric, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
-
 import { ABParticle2D, type AudioInstance, Container2D, type Sound, Sprite2D } from "common/engine/web.ts";
 import { type GameItem, type WeaponDef } from "common/scripts/definitions/game_defs.ts";
-
 import { type BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
-
 import { type HelmetDef, type VestDef } from "common/scripts/definitions/items/equipaments.ts";
-
 import { type GunDef } from "common/scripts/definitions/items/guns.ts";
-
 import { type MeleeDef } from "common/scripts/definitions/items/melees.ts";
-
 import { type ConsumibleDef, type ConsumingAction } from "common/scripts/definitions/items/consumibles.ts";
-
 import { type BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
-
 import { type EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
-
 import { GameItemType, GameObjectDefinitionType, ItemQualitySettings } from "common/scripts/definitions/utils.ts";
-
 import { type HumanAnimation, HumanAnimationType, object_instance_type, ObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { DefaultFistRig } from "common/scripts/others/item.ts";
 import { GraphicsDConfig } from "../main/config.ts";
-
 import { GameObject } from "../main/gel.ts";
-
 import { Humanoid, type HumanoidSprites } from "./humanoid.ts";
-
 import { cook_animation,throw_animation } from "common/scripts/others/animations.ts"
 
 export interface HumanWeaponAssets{

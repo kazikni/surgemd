@@ -1,8 +1,4 @@
-import {
-BackgroundEDef,
-    gel_events,
-    DynamicGELComponent,
-} from "common/engine/core.ts";
+import { BackgroundEDef,gel_events,DynamicGELComponent } from "common/engine/core.ts";
 
 import { HideElement, ShowTab } from "common/engine/web.ts";
 import { BackgroundManager } from "common/engine/web/misc/background.ts";

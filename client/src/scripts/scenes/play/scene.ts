@@ -1,4 +1,4 @@
-import { BaseGELO, BasicSocket, Client, ClientsManager, DefaultSignals, DynamicStream, SignalManager, Stream, WorkerSocket } from "common/engine/core.ts";
+import { BaseGELO, BasicSocket, Client, ClientsManager, DefaultSignals, DynamicStream, Packet, SignalManager, Stream, WorkerSocket } from "common/engine/core.ts";
 import { HideElement, ShowElement, UIRoot } from "common/engine/web.ts";
 import { gelo_instance_type } from "common/scripts/others/constants.ts";
 import { type JoinData, JoinedPacket, JoinPacket } from "common/scripts/net/join_packet.ts";
@@ -13,7 +13,6 @@ import { net_scene_defs } from "./netdefs.ts";
 import { cc_freecam } from "../../gelo/free_cam.ts";
 import { api_server } from "../../main/config.ts";
 import { FindGameData, FindGameResult } from "common/scripts/config/config.ts";
-import { Game } from "../../../../../server/src/game/game.ts";
 
 export interface PlaySceneDefs{
     objects:Record<number|string,(...args: any)=>GameObject>
@@ -67,22 +66,17 @@ export class PlayScene extends GameScene {
     events=new SignalManager()
 
     client?:Client
-    game?:Game
     worker?:Worker
 
     active_human?:ActiveHuman
     active_id?:number
     active_state?:ActiveHumanState
 
-    info={
-        started:false,
-        living_count:0,
-        ntps:32,
-    }
-
-    timeout:number=10000
-
     ui!:UIRoot<Application>
+
+    packets_queue:Packet[]=[]
+    ntps:number=32
+    timeout:number=10000
 
     constructor(app?:Application){
         super()
@@ -114,7 +108,7 @@ export class PlayScene extends GameScene {
         }
     }
 
-    async local_initialize(options:WorkerGameOptions={}){
+    /*async local_initialize(options:WorkerGameOptions={}){
         await this.close()
         this.kind="local"
         const clients=new ClientsManager(make_packet_manager())
@@ -126,7 +120,7 @@ export class PlayScene extends GameScene {
             game.mainloop()
             clients.fake_connect_other_s(server_socket)
         })
-    }
+    }*/
     async worker_initialize(options:WorkerGameOptions={}){
         await this.close()
         this.kind="worker"
@@ -182,11 +176,7 @@ export class PlayScene extends GameScene {
         const client=new Client(socket,make_packet_manager())
         this.client=client
 
-        client.on("start",(p:StartPacket)=>{
-            this.info.ntps=p.ntps
-            this.gelo.decode(p.gelos)
-        })
-        client.on("update",(p:UpdatePacket)=>this.on_update_packet(p))
+        client.on("packet",(p:Packet)=>this.packets_queue.push(p))
         client.on("game_over",(msg:{win:boolean})=>this.events.emit(play_events.game_over,msg))
         client.on(DefaultSignals.DISCONNECT,()=>{
             if(this.client===client)this.events.emit(play_events.disconnected)
@@ -210,7 +200,7 @@ export class PlayScene extends GameScene {
         client.emit_packet(new JoinPacket(data))
 
         const p=await Promise.race([joined,disconnected])
-        this.info.ntps=p.ntps
+        this.ntps=p.ntps
         this.active_id=p.human_id
         this.try_bind_active()
         this.events.emit(play_events.joined,this.active_human)
@@ -237,20 +227,6 @@ export class PlayScene extends GameScene {
         if(obj)this.set_active_human(obj)
     }
 
-    private on_update_packet(p:UpdatePacket){
-        if(p.objects)this.objects.proccess_net(p.objects,true)
-        if(p.gelos)this.gelo.decode(p.gelos)
-        this.info.started=p.started
-        this.info.living_count=p.living_count
-        if(p.active){
-            this.active_state=p.active
-            if(this.active_id!==p.active.id){
-                this.active_id=p.active.id
-            }
-        }
-        this.try_bind_active()
-    }
-
     async close(){
         if(this.kind==="none")return
         const client=this.client
@@ -260,8 +236,6 @@ export class PlayScene extends GameScene {
             this.worker.terminate()
             this.worker=undefined
         }
-        this.game?.stop()
-        this.game=undefined
         this.active_human?.release_active()
         this.active_human=undefined
         this.active_id=undefined
@@ -272,11 +246,10 @@ export class PlayScene extends GameScene {
             this.gelo.unregistry(id)
         }
         this.deadzone=undefined
-        this.info.started=false
-        this.info.living_count=0
 
         this.kind="none"
         this.events.emit(play_events.closed)
+        this.packets_queue.length=0
         await Promise.resolve()
     }
 
@@ -287,7 +260,6 @@ export class PlayScene extends GameScene {
         if(this.kind==="worker"&&this.worker){
             this.worker.postMessage({type:"set_state",pause:false} as WorkerMessage)
         }
-        if(this.game)this.game.clock.time_scale=1
     }
     override on_unset(): void {
         HideElement(this.game_div)
@@ -295,10 +267,25 @@ export class PlayScene extends GameScene {
         if(this.kind==="worker"&&this.worker){
             this.worker.postMessage({type:"set_state",pause:true} as WorkerMessage)
         }
-        if(this.game)this.game.clock.time_scale=0
     }
 
     override update(dt: number): void {
+        for(const p of this.packets_queue){
+            switch(p.Name){
+                case "update":{
+                    if((p as UpdatePacket).content)this.objects.proccess_net((p as UpdatePacket).content!,true)
+                    if((p as UpdatePacket).active){
+                        this.active_state=(p as UpdatePacket).active!
+                        if(this.active_id!==(p as UpdatePacket).active!.id){
+                            this.active_id=(p as UpdatePacket).active!.id
+                        }
+                    }
+                    this.try_bind_active()
+                    break
+                }
+            }
+        }
+        this.packets_queue.length=0
         super.update(dt,true,true)
     }
 }

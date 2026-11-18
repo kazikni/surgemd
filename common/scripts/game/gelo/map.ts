@@ -31,29 +31,12 @@ export type C_GameMap=CommonGELO&{
 
     default_layer:number
     default_floor:FloorType
-
-    /** Codifica o que o cliente precisa para desenhar o mapa (terreno, bioma, tamanho...) */
-    encode_map(stream:Stream):void
-    /** Decodifica o que foi codificado no encode_map e emite gamemap_events.generated */
-    decode_map(stream:Stream):void
 }
 
 export const c_gamemap:GELComponent<C_GameMap>={
     id_string:"c_gamemap",
     events:{
-        [gel_events.bind]:function(){
-            this.instance_type=gelo_instance_type.map
-            this.terrain=new TerrainManager()
-            this.seed=0
-            this.size=v2.zero()
-            this.regions=[]
-            this.default_layer=Layers.Normal
-            this.default_floor=FloorType.Void
-            this.biome={floors:{},particles:[],musics:[],textures:[]}
-        }
-    },
-    methods:{
-        encode_map(stream:Stream){
+        [gel_events.net_encode](stream:Stream){
             stream.write_uint32(this.seed)
             stream.write_pos2(this.size)
             stream.write_uint8(this.default_floor)
@@ -68,7 +51,7 @@ export const c_gamemap:GELComponent<C_GameMap>={
                 stream.write_collider(f.hb)
             },3)
         },
-        decode_map(stream:Stream){
+        [gel_events.net_decode](stream:Stream){
             this.seed=stream.read_uint32()
             this.size=stream.read_pos2()
             this.default_floor=stream.read_uint8()
@@ -86,6 +69,16 @@ export const c_gamemap:GELComponent<C_GameMap>={
             },3)
             this.emit_event(gamemap_events.generated)
         },
+        [gel_events.bind]:function(){
+            this.instance_type=gelo_instance_type.map
+            this.terrain=new TerrainManager()
+            this.seed=0
+            this.size=v2.zero()
+            this.regions=[]
+            this.default_layer=Layers.Normal
+            this.default_floor=FloorType.Void
+            this.biome={floors:{},particles:[],musics:[],textures:[]}
+        }
     }
 }
 
@@ -137,9 +130,6 @@ export const si_gamemap:GELComponent<SI_GameMap>={
             this.default_spawn_mode=Spawn.grass
             this.rivers=[]
             this.structures=[]
-        },
-        [gel_events.net_encode]:function(stream:Stream){
-            this.encode_map(stream)
         },
     },
     methods:{

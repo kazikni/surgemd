@@ -2,7 +2,6 @@ import { gel_component, GELComponent } from "common/engine/core.ts";
 import { gelo_instance_type, object_instance_type } from "common/scripts/others/constants.ts";
 import { c_draw_collider } from "../../components/draw.ts";
 import { ccn_deadzone } from "../../gelo/deadzone.ts";
-import { ccn_gamemap } from "../../gelo/map.ts";
 import { Debug_Colliders } from "../../main/config.ts";
 import { GameGELO, GameObject } from "../../main/gel.ts";
 import { Loot } from "../../objects/loot.ts";
@@ -12,6 +11,7 @@ import { Bullet } from "../../objects/projectile/bullet.ts";
 import { Explosion } from "../../objects/projectile/explosion.ts";
 import { Grenade } from "../../objects/projectile/grenade.ts";
 import { type PlaySceneDefs } from "./scene.ts";
+import { cc_gamemap } from "../../gelo/map.ts";
 
 function obj(component:GELComponent<any>){
     const merged=gel_component.merge_deep(component)
@@ -33,7 +33,7 @@ function gelo(component:GELComponent<any>){
 
 export const net_scene_defs:PlaySceneDefs={
     gelo:{
-        [gelo_instance_type.map]:gelo(ccn_gamemap),
+        [gelo_instance_type.map]:gelo(cc_gamemap),
         [gelo_instance_type.deadzone]:gelo(ccn_deadzone),
     },
     objects:{

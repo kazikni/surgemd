@@ -8,6 +8,8 @@ import { GameItemType, ItemQualitySettings } from "common/scripts/definitions/ut
 import { decode_loot_data } from "common/scripts/others/functions.ts";
 import { GameConstants, type LootData, object_instance_type, ObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../main/gel.ts";
+import { Debug_Colliders } from "../main/config.ts";
+import { c_draw_collider } from "../components/draw.ts";
 
 export class Loot extends GameObject{
     loot_data!:LootData
@@ -30,6 +32,10 @@ export class Loot extends GameObject{
         this.sprite_outline.visible=false
         this.sprite_outline.zIndex=0
         this.container.add_child(this.sprite_main)
+
+        if(Debug_Colliders){
+            this.add_component(c_draw_collider)
+        }
     }
 
     on_create(){
@@ -56,7 +62,7 @@ export class Loot extends GameObject{
 
     set_loot_data(data:LootData){
         this.loot_data=data
-        this.base_collider=new CircleCollider2D(v2(0,0),GameConstants.loot.radius[data.item.item_type!]??0.5)
+        this.base_collider=new CircleCollider2D(v2(0,0),GameConstants.loot.main_radius[data.item.item_type!]??0.5)
         switch(data.item.item_type!){
             case GameItemType.gun:
                 this.sprite_main.frame=this.app.resources.get_frame((data.item as GunDef).assets?.item??data.item.id_string)

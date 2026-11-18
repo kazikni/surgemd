@@ -119,15 +119,3 @@ export const cc_gamemap:GELComponent<CC_GameMap>={
         },
     },
 }
-/**
- * Mapa vindo da rede: o servidor manda o terreno no StartPacket.
- */
-export const ccn_gamemap:GELComponent<CC_GameMap>={
-    id_string:"ccn_gamemap",
-    extensions:[cc_gamemap],
-    events:{
-        [gel_events.net_decode]:function(stream:Stream){
-            this.decode_map(stream)
-        },
-    },
-}

@@ -1,5 +1,5 @@
 import { type DamageParams } from "common/scripts/game/objects/projectile/projectile.ts";
-import { Client, DefaultSignals, DynamicStream, RectCollider2D, v2, Vec2 } from "common/engine/core.ts";
+import { Client, DefaultSignals, DynamicStream, RectCollider2D, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { type Human } from "common/scripts/game/objects/human/human.ts";
 import { PlayerConn } from "common/scripts/game/players/player_conn.ts";
 import { type InputPacket } from "common/scripts/net/input_packet.ts";
@@ -19,12 +19,14 @@ export class NetPlayerConn extends PlayerConn{
     full_update:boolean=true
     last_position:Vec2=v2.zero()
 
-    gelo_stream=new DynamicStream(256)
+    update:UpdatePacket=new UpdatePacket()
 
     constructor(game:Game,client:Client){
         super(client.ID)
         this.game=game
         this.client=client
+
+        this.update.content=new DynamicStream(128)
 
         client.on("join",(p:JoinPacket)=>this.on_join(p))
         client.on("input",(p:InputPacket)=>{
@@ -39,11 +41,7 @@ export class NetPlayerConn extends PlayerConn{
     }
 
     send_start(){
-        const sim=this.game.sim
         const p=new StartPacket()
-        p.ntps=this.game.ntps
-        const gelos=[sim.map,...(sim.deadzone?[sim.deadzone]:[])]
-        sim.gelo.encode(gelos,p.gelos)
         this.client.emit_packet(p)
     }
 
@@ -90,26 +88,32 @@ export class NetPlayerConn extends PlayerConn{
         if(!this.client.opened||!this.join)return
         const sim=this.game.sim
 
-        const up=new UpdatePacket()
-        up.started=sim.mode.started
-        up.living_count=sim.mode.get_living_count()
+        this.update.content.clear()
 
         const objs=this.get_view_objects()
         const full=this.full_update
-        const o=sim.objects.encode_list_net(objs,this.view_objects,full,full)
+
+        const o=sim.objects.encode_list_net(objs,this.view_objects,full,full,undefined,this.update.content)
+
+
         this.view_objects=o.last
-        up.objects=o.strm
         this.full_update=false
 
-        if(sim.deadzone){
-            this.gelo_stream.clear()
-            sim.gelo.encode([sim.deadzone],this.gelo_stream)
-            up.gelos=this.gelo_stream
+        /*this.gelo_stream.clear()
+        this.gelo_stream.write_uint16()
+        up.gelos=this.gelo_stream
+        for(const g in this.game.sim.gelo.content){
+            const gelo=this.game.sim.gelo.content[g]
+            sim.gelo.encode([],this.gelo_stream)
+            gelo.
         }
+        if(sim.deadzone){
+            sim.gelo.encode([sim.deadzone],this.gelo_stream)
+        }*/
 
         const h=this.human
         if(h){
-            up.active={
+            this.update.active={
                 id:h.id,
                 spectating:this.spectating,
                 knocked:h.knocked,
@@ -119,7 +123,11 @@ export class NetPlayerConn extends PlayerConn{
                 max_boost:h.boost.max,
                 boost_def:h.boost.def.id_number??0,
             }
+        }else{
+            this.update.active=undefined
         }
-        this.client.emit_packet(up)
+        this.client.emit_packet(this.update)
     }
+}
+export class NetPlayerManager{
 }

@@ -19,19 +19,12 @@ export class UpdatePacket extends Packet{
     ID=PacketType.Update
     Name="update"
 
-    objects?:Stream
-    gelos?:Stream
-
+    content!:Stream
     active?:ActiveHumanState
 
-    started:boolean=false
-    living_count:number=0
-
     encode(stream: Stream): void {
-        stream.write_boolean_group(this.objects!==undefined,this.gelos!==undefined,this.active!==undefined,this.started)
-        stream.write_uint16(this.living_count)
-        if(this.objects)stream.write_stream_dynamic(this.objects)
-        if(this.gelos)stream.write_stream_dynamic(this.gelos)
+        stream.write_boolean_group(this.active!==undefined)
+        stream.write_stream_dynamic(this.content)
         if(this.active){
             const a=this.active
             stream.write_id(a.id)
@@ -44,11 +37,8 @@ export class UpdatePacket extends Packet{
         }
     }
     decode(stream: Stream): void {
-        const [has_objects,has_gelos,has_active,started]=stream.read_boolean_group()
-        this.started=started
-        this.living_count=stream.read_uint16()
-        if(has_objects)this.objects=stream.read_stream_dynamic()
-        if(has_gelos)this.gelos=stream.read_stream_dynamic()
+        const [has_active]=stream.read_boolean_group()
+        this.content=stream.read_stream_dynamic()
         if(has_active){
             const id=stream.read_id()
             const [spectating,knocked]=stream.read_boolean_group()

@@ -147,6 +147,7 @@ export class Client{
                         break
                     default:
                         this.signals.emit(packet.Name, packet)
+                        this.signals.emit("packet", packet)
                         break
                 }
                 packet=this.manager.decode(stream)

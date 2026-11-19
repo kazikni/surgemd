@@ -1,5 +1,5 @@
 import { gel_events,  Vec2, v2, RotationMode, Angle, Orientation, ColorM, Numeric, GELComponent, Stream, random, GELMethod } from "common/engine/core.ts";
-import { Container2D, Sprite2D } from "common/engine/web.ts";
+import { Container2D, Shadow2D, Sprite2D } from "common/engine/web.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { obstacle_events, c_obstacle, C_Obstacle } from "common/scripts/game/objects/static_body/obstacle.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
@@ -14,6 +14,7 @@ export function GetObstacleBaseFrame(def:ObstacleDef,variation:number):string{
 export type CC_Obstacle=C_Obstacle&CC_StaticBody&{
     container:Container2D
     sprite:Sprite2D
+    shadow?:Shadow2D
     aditional_sprite:Sprite2D[]
     update_frame():void
     on_die():void
@@ -31,9 +32,9 @@ export const cc_obstacle:GELComponent<CC_Obstacle>={
             this.sprite=new Sprite2D()
 
             this.container.add_child(this.sprite)
-
         },
         [gel_events.create]:function(){
+            this.shadow=this.scene.camera.lighting.create_shadow(this.sprite)
             this.scene.camera.add_object(this.container)
         },
         [gel_events.destroy]:function(){
@@ -85,12 +86,14 @@ export const cc_obstacle:GELComponent<CC_Obstacle>={
                     spr.visible=false
                 }
                 if(this.def.assets?.frame?.dead_transform)this.sprite.transform_frame(this.def.assets?.frame.dead_transform)
+                if(this.shadow)this.shadow.visible=false
             }else{
                 this.sprite.frame=this.app.resources.get_frame(GetObstacleBaseFrame(this.def,this.variation))
                 this.container.zIndex=this.def.zIndex?.base===undefined?zIndexes.Obstacles1:this.def.zIndex?.base
                 for(const spr of this.aditional_sprite){
                     spr.visible=true
                 }
+                if(this.shadow)this.shadow.visible=true
             }
             const tid=this.def.assets?.frame?.tint_variations
             if(tid){

@@ -3,6 +3,7 @@ export * from "./2d/base.ts"
 export * from "./2d/camera.ts"
 export * from "./2d/container.ts"
 export * from "./2d/graphics.ts"
+export * from "./2d/lighting.ts"
 export * from "./2d/others.ts"
 export * from "./2d/sprite.ts"
 

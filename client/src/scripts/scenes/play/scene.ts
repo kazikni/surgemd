@@ -256,6 +256,9 @@ export class PlayScene extends GameScene {
         super.on_set()
         ShowElement(this.game_div)
         ShowElement(this.app.renderer.canvas)
+
+        this.camera.lighting.shadows_enabled=this.app.save.settings.get_var("graphics_shadows")
+
         if(this.kind==="worker"&&this.worker){
             this.worker.postMessage({type:"set_state",pause:false} as WorkerMessage)
         }

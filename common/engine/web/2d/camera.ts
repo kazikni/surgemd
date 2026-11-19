@@ -7,6 +7,7 @@ import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Container2D } from "./container.ts";
 import { circle, Rect } from "../../core/math/geometry.ts";
 import { Vec2 } from "../../core.ts";
+import { Lighting2D } from "./lighting.ts";
 export function cam_sort_callback(a:Container2DObject,b:Container2DObject):number{
     return (a._layer-b._layer)||(a._zIndex-b._zIndex)||(a.id_on_parent-b.id_on_parent)
 }
@@ -56,6 +57,8 @@ export class Camera2D{
         duration:number
         priority:number
     }
+
+    lighting:Lighting2D=new Lighting2D(this)
 
     visible_callback?:(obj:Container2DObject)=>boolean
     sort_callback?:(a:Container2DObject,b:Container2DObject)=>number

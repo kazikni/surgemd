@@ -1,5 +1,5 @@
 import { CircleCollider2D, ColorM, ease, Numeric, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
-import { ABParticle2D, type AnimatedContainerModeCallback, AnimatedContainer2D, AnimatedSprite2D, Container2D, type Frame, Shape2D, Sprite2D } from "common/engine/web.ts";
+import { ABParticle2D, type AnimatedContainerModeCallback, AnimatedContainer2D, AnimatedSprite2D, Container2D, type Frame, Shape2D, Sprite2D, Shadow2D } from "common/engine/web.ts";
 import { HumanoidAnimations, type HumanoidMomentaryDef } from "common/scripts/definitions/objects/humanoid_animations.ts";
 import { type LoadoutBodyDef, type LoadoutLegDef, type LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { decode_visual, type HumanVisual } from "common/scripts/game/objects/human/codec.ts";
@@ -36,7 +36,6 @@ export interface HumanoidSprites{
     right_leg_l:Sprite2D
     left_leg_foot:Sprite2D
     right_leg_foot:Sprite2D
-    shadow?:Shape2D
     accessorys:Sprite2D[]
 }
 

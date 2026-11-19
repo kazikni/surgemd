@@ -1,5 +1,5 @@
 import { Angle, CircleCollider2D, ColorM, ease, matrix4, Numeric, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
-import { ABParticle2D, type AudioInstance, Container2D, type Sound, Sprite2D } from "common/engine/web.ts";
+import { ABParticle2D, type AudioInstance, Container2D, Shadow2D, type Sound, Sprite2D } from "common/engine/web.ts";
 import { type GameItem, type WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { type BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { type HelmetDef, type VestDef } from "common/scripts/definitions/items/equipaments.ts";

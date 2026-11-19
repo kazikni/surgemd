@@ -48,7 +48,8 @@ export const HumanoidModes:Record<string,AnimatedContainerModeCallback>={
 
 export class Humanoid extends GameObject{
     name:string=""
-    dead:boolean=false
+    dead:boolean=true
+    dead_timer:number=0
     downed:boolean=false
     swimming:boolean=false
     scale:number=1
@@ -65,6 +66,8 @@ export class Humanoid extends GameObject{
     assets:{
         eyes?:Frame[]
         mounth?:Frame[]
+        arm_shirt_frame_small?:Frame
+        arm_shirt_frame_medium?:Frame
         arm_frame_small?:Frame
         arm_frame_medium?:Frame
     }={}
@@ -126,7 +129,6 @@ export class Humanoid extends GameObject{
             scale:1.2,
         })
         this.sprites.left_hand.transform_frame({
-            hotspot:v2.half_one,
             zIndex:0,
             scale:1.2,
         })
@@ -136,7 +138,6 @@ export class Humanoid extends GameObject{
             scale:1.2,
         })
         this.sprites.right_hand.transform_frame({
-            hotspot:v2.half_one,
             zIndex:0,
             scale:1.2,
         })
@@ -152,7 +153,7 @@ export class Humanoid extends GameObject{
         this.sprites.right_leg.add_child(this.sprites.right_leg_foot)
 
         this.scene.camera.add_object(this.container)
-        this.scene.camera.add_object(this.container)
+        this.container.visible=false
     }
     on_layer_set(){
         this.container.layer=this.layer
@@ -162,32 +163,50 @@ export class Humanoid extends GameObject{
     }
 
     on_tick(dt:number){
-        const pos=this.container.position
+        if(this.dead){
+            this.dead_timer+=dt
+            if(this.dead_timer>=5){
+                this.destroy()
+            }
+            return
+        }
         if(this.app.save.settings.get_var("game_interpolation")){
-            const t=Numeric.clamp(dt*20,0,1)
-            v2m.lerp(pos,this.position,t)
-            if(this._rotation_set)this.container.rotation=Numeric.lerp_rad(this.container.rotation,this.rotation,t)
+            v2m.lerp(this.container.position,this.position,this.scene.global_interpolation)
+            if(this._rotation_set)this.container.rotation=Numeric.lerp_rad(this.container.rotation,this.rotation,this.scene.global_interpolation)
         }else{
-            this.container.position=v2.clone(this.position)
+            this.container.position=this.position
             if(this._rotation_set)this.container.rotation=this.rotation
         }
         const last=this.walk.last_position
-        const distance=last?v2.distance(last,pos):0
-        this.walk.last_position=v2.clone(pos)
+        const distance=last?v2.distance(last,this.position):0
+        this.walk.last_position=v2.clone(this.position)
         if(!this.momentary)this.tick_walk(dt,distance)
         for(const side of ["left","right"] as const){
             const arm=this.sprites[`${side}_arm`]
-            this.sprites[`${side}_shirt_arm`].frame=v2.len(arm.position)<=0.6?this.assets.arm_frame_small:this.assets.arm_frame_medium
+            this.sprites[`${side}_shirt_arm`].frame=v2.len(arm.position)<=0.6?this.assets.arm_shirt_frame_small:this.assets.arm_shirt_frame_medium
+            if(v2.len(arm.position)<=0.6){
+                this.sprites[`${side}_hand`].frame=this.assets.arm_frame_small
+                this.sprites[`${side}_hand`].hotspot=v2(0.7,0.5)
+            }else{
+                this.sprites[`${side}_hand`].hotspot=v2(0.84,0.5)
+                this.sprites[`${side}_hand`].frame=this.assets.arm_frame_medium
+            }
         }
-        if(this.dead)return
         const map=this.scene.map
-        const floor=map?map.terrain.get_floor_type(pos,this.layer,map.default_floor) as FloorType:FloorType.Void
+        const floor=map?map.terrain.get_floor_type(this.position,this.layer,map.default_floor) as FloorType:FloorType.Void
         this.tick_footsteps(distance,floor,!this.swimming)
     }
 
+    on_die(){}
     on_decode_net(stream:Stream,full:boolean){
         const [visual,momentary,dead,downed,swimming,has_name]=stream.read_boolean_group()
         const state_changed=dead!==this.dead||downed!==this.downed||swimming!==this.swimming
+        if(this.dead&&!dead){
+            this.container.visible=true
+        }else if(!this.dead&&dead){
+            this.on_die()
+            this.dead_timer=0
+        }
         this.dead=dead
         this.downed=downed
         this.swimming=swimming
@@ -221,25 +240,29 @@ export class Humanoid extends GameObject{
     }
 
     reset_pose(){
+        this.container.stop_all_animations()
+        this.set_eyes()
+        this.set_mounth()
+
         v2m.set(this.sprites.left_leg.scale,1.4,1.4)
         v2m.set(this.sprites.right_leg.scale,1.4,1.4)
 
-        this.sprites.left_leg.rotation=0.05
+        this.sprites.left_leg.rotation=0.1
         this.sprites.left_leg.position=v2(-0.6,-0.2)
-        this.sprites.left_leg.zIndex=1
         this.sprites.left_leg_foot.position=v2(0.05,0)
 
-        this.sprites.right_leg.rotation=3.19
+        this.sprites.right_leg.rotation=-0.1
         this.sprites.right_leg.position=v2(0.6,0.2)
-        this.sprites.right_leg.zIndex=1
         this.sprites.right_leg_foot.position=v2(0.05,0)
+
+        if(this.visual.foot?.frame){
+            this.sprites.left_leg_foot.set_frame(this.visual.foot!.frame!,this.app.resources)
+            this.sprites.right_leg_foot.set_frame(this.visual.foot!.frame!,this.app.resources)
+        }
 
         this.sprites.chest.position=v2(-0.25,0)
         this.sprites.chest.visible=false
 
-        this.container.stop_all_animations()
-        this.set_eyes()
-        this.set_mounth()
         if(this.downed_pose){
             this.set_downed_pose(true)
         }else{
@@ -248,8 +271,6 @@ export class Humanoid extends GameObject{
             this.sprites.right_leg.visible=false
             this.sprites.left_leg.position=v2(-0.3,-0.2)
             this.sprites.right_leg.position=v2(0.3,0.2)
-            this.sprites.left_leg.rotation=0
-            this.sprites.right_leg.rotation=Math.PI
 
             this.walk.cycle=0
             this.walk.time=0
@@ -261,10 +282,12 @@ export class Humanoid extends GameObject{
         this.sprites.left_leg.visible=downed
         this.sprites.right_leg.visible=downed
         if(downed){
+            if(this.visual.foot?.downed_frame){
+                this.sprites.left_leg_foot.set_frame(this.visual.foot!.downed_frame!,this.app.resources)
+                this.sprites.right_leg_foot.set_frame(this.visual.foot!.downed_frame!,this.app.resources)
+            }
             this.sprites.left_leg.position=v2(-0.8,-0.22)
             this.sprites.right_leg.position=v2(-0.8,0.22)
-            this.sprites.left_leg.rotation=Math.PI
-            this.sprites.right_leg.rotation=Math.PI
             const normal=this.arms_rig
             this.set_arms_rig(DefaultDownedWalkFistRig)
             this.arms_rig=normal
@@ -294,7 +317,6 @@ export class Humanoid extends GameObject{
         const body_t=ColorM.number(this.visual.body.tint)
 
         const body_f=this.visual.body.def.frame?.base??"human_"+this.visual.body.def.id_string
-        const hand_f=this.visual.body.def.frame?.hand??"human_"+this.visual.body.def.id_string+"_hand"
 
         if(this.visual.hair){
             this.sprites.hair.tint=ColorM.number(this.visual.hair.tint)
@@ -325,11 +347,11 @@ export class Humanoid extends GameObject{
 
         this.sprites.body.tint=body_t
 
-        this.assets.arm_frame_small=this.app.resources.get_frame(arm_f+"_1")
-        this.assets.arm_frame_medium=this.app.resources.get_frame(arm_f+"_2")
+        this.assets.arm_shirt_frame_small=this.app.resources.get_frame(arm_f+"_1")
+        this.assets.arm_shirt_frame_medium=this.app.resources.get_frame(arm_f+"_2")
 
-        this.sprites.left_hand.frame=this.app.resources.get_frame(hand_f)
-        this.sprites.right_hand.frame=this.app.resources.get_frame(hand_f)
+        this.assets.arm_frame_small=this.app.resources.get_frame(this.visual.body.def.frame.arm1)
+        this.assets.arm_frame_medium=this.app.resources.get_frame(this.visual.body.def.frame.arm2)
         this.sprites.left_hand.tint=body_t
         this.sprites.right_hand.tint=body_t
 
@@ -417,7 +439,7 @@ export class Humanoid extends GameObject{
     tick_walk(dt:number,distance:number){
         const w=this.walk
         if(distance>0.001){
-            w.speed=distance
+            w.speed=distance/2
             w.idle=0
             if(w.cycle===0){
                 w.cycle=1
@@ -435,30 +457,30 @@ export class Humanoid extends GameObject{
             if(w.cycle===0||w.speed<=0)return
             w.time+=dt*1.8
             const t=ease.sineIn(Math.min(w.time,1))
-            const rig=this.arms_rig??DefaultFistRig
             switch(w.cycle){
                 case 1:
-                    this.sprites.right_arm.position=v2.lerp(rig.right!.position,DefaultDownedWalkFistRig.right!.position,t)
-                    this.sprites.right_arm.rotation=Numeric.lerp_rad(rig.right!.rotation,DefaultDownedWalkFistRig.right!.rotation,t)
-                    this.sprites.left_leg.position=v2.lerp(v2(-0.8,-0.22),v2(-0.7,-0.2),t)
-                    this.sprites.left_arm.position=rig.left!.position
-                    this.sprites.left_arm.rotation=rig.left!.rotation
-                    this.sprites.right_leg.position=v2(-0.8,0.22)
+                    this.sprites.right_arm.position=v2.lerp(DefaultFistRig.right!.position,DefaultDownedWalkFistRig.right!.position,t)
+                    this.sprites.right_arm.rotation=Numeric.lerp_rad(DefaultFistRig.right!.rotation,DefaultDownedWalkFistRig.right!.rotation,t)
+                    this.sprites.left_leg.position=v2.lerp({x:-0.8,y:-0.22},{x:-0.7,y:-0.20},t)
+
+                    this.sprites.left_arm.position=DefaultFistRig.left!.position
+                    this.sprites.left_arm.rotation=DefaultFistRig.left!.rotation
+                    this.sprites.right_leg.position={x:-0.8,y:0.22}
                     break
                 case 2:
-                    this.sprites.right_arm.position=v2.lerp(DefaultDownedWalkFistRig.right!.position,rig.right!.position,t)
-                    this.sprites.right_arm.rotation=Numeric.lerp_rad(DefaultDownedWalkFistRig.right!.rotation,rig.right!.rotation,t)
-                    this.sprites.left_leg.position=v2.lerp(v2(-0.7,-0.2),v2(-0.8,-0.22),t)
+                    this.sprites.right_arm.position=v2.lerp(DefaultDownedWalkFistRig.right!.position,DefaultFistRig.right!.position,t)
+                    this.sprites.right_arm.rotation=Numeric.lerp_rad(DefaultDownedWalkFistRig.right!.rotation,DefaultFistRig.right!.rotation,t)
+                    this.sprites.left_leg.position=v2.lerp({x:-0.7,y:-0.20},{x:-0.8,y:-0.22},t)
                     break
                 case 3:
-                    this.sprites.left_arm.position=v2.lerp(rig.left!.position,DefaultDownedWalkFistRig.left!.position,t)
-                    this.sprites.left_arm.rotation=Numeric.lerp_rad(rig.left!.rotation,DefaultDownedWalkFistRig.left!.rotation,t)
-                    this.sprites.right_leg.position=v2.lerp(v2(-0.8,0.22),v2(-0.7,0.2),t)
+                    this.sprites.left_arm.position=v2.lerp(DefaultFistRig.left!.position,DefaultDownedWalkFistRig.left!.position,t)
+                    this.sprites.left_arm.rotation=Numeric.lerp_rad(DefaultFistRig.left!.rotation,DefaultDownedWalkFistRig.left!.rotation,t)
+                    this.sprites.right_leg.position=v2.lerp({x:-0.8,y:0.22},{x:-0.7,y:0.20},t)
                     break
                 case 4:
-                    this.sprites.left_arm.position=v2.lerp(DefaultDownedWalkFistRig.left!.position,rig.left!.position,t)
-                    this.sprites.left_arm.rotation=Numeric.lerp_rad(DefaultDownedWalkFistRig.left!.rotation,rig.left!.rotation,t)
-                    this.sprites.right_leg.position=v2.lerp(v2(-0.7,0.2),v2(-0.8,0.22),t)
+                    this.sprites.left_arm.position=v2.lerp(DefaultDownedWalkFistRig.left!.position,DefaultFistRig.left!.position,t)
+                    this.sprites.left_arm.rotation=Numeric.lerp_rad(DefaultDownedWalkFistRig.left!.rotation,DefaultFistRig.left!.rotation,t)
+                    this.sprites.right_leg.position=v2.lerp({x:-0.7,y:0.20},{x:-0.8,y:0.22},t)
                     break
             }
             if(w.time>=1){
@@ -529,7 +551,7 @@ export class Humanoid extends GameObject{
         if(sounds&&sounds.length>0){
             w.footstep_sound?.stop()
             w.footstep_sound=this.app.sounds.play(this.app.resources.get_sound(random.choose(sounds)),{
-                position:v2.clone(this.position),
+                position:this.position,
                 max_distance:15,
                 volume:0.3,
                 bus:"objects",
@@ -546,7 +568,7 @@ export class Humanoid extends GameObject{
                     scale:0,
                 },
                 life_time:0.5,
-                position:v2.clone(this.container.position),
+                position:this.container.position,
                 speed:0,
                 to:{
                     scale:3,

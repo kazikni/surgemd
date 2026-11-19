@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import { Numeric, parseJSONC, TranslationManager } from "common/engine/core.ts";
-import { BrowserFileManager, formatToHtml, Frame, SaveManager, ResourcesManager, is_mobile, SettingOption, SettingDef, build_setting_input } from "common/engine/web.ts";
+import { BrowserFileManager, formatToHtml, Frame, SaveManager, ResourcesManager, is_mobile, SettingOption, SettingDef, build_setting_input, ShowElement, HideElement } from "common/engine/web.ts";
 import { type MenuScene } from "./scene.ts";
 import { type mtctx, type PopupFunction, type CTabs, type MenuSubTabDef, type SubMenuOption } from "./components.ts";
 import { LoadoutItemKind } from "common/scripts/definitions/loadout/skins.ts";
@@ -1095,6 +1095,13 @@ export async function MenuInitDefault(c:CTabs,menu:MenuScene){
                                 {name:"Minimum",value:"1"},
                                 {name:"Normal",value:"2"},
                             ],
+                            on_set(val){
+                                if(val>0)ShowElement(document.querySelector("#vignetting-gfx") as HTMLDivElement)
+                                else HideElement(document.querySelector("#vignetting-gfx") as HTMLDivElement)
+
+                                if(val>1)ShowElement(document.querySelector("#tiltshift-gfx") as HTMLDivElement)
+                                else HideElement(document.querySelector("#tiltshift-gfx") as HTMLDivElement)
+                            }
                         },
 //#if defined(is_desktop_port)
                         (mobile)?undefined:{

@@ -1,12 +1,13 @@
 import { Rect } from "../../core/math/geometry.ts";
 import { v2 } from "../../core/math/vec2.ts";
 import { type ResourcesManager } from "../resources/resources.ts";
-import { type CamA, Container2DObject } from "./base.ts";
+import { type CamA, Container2DObject, type RenderizableObject2D } from "./base.ts";
 import { Sprite2D } from "./sprite.ts";
 
 export class Container2D extends Container2DObject{
     object_type:string="container2d"
     children:Container2DObject[]=[]
+    simple_children:RenderizableObject2D[]=[]
 
     dirty_zindex:boolean=true
     dirty_children:boolean=true

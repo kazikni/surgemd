@@ -1,43 +1,24 @@
 import { type DamageParams, type ProjectileOwner } from "../projectile/projectile.ts";
-
 import { ActionsManager, CheckpointContext, CircleCollider2D, Collider2D, Numeric, Stream, v2, v2m, Vec2 } from "../../../../engine/core.ts";
-
 import { type GameItem } from "../../../definitions/game_defs.ts";
-
 import { ConsumibleCondition } from "../../../definitions/items/consumibles.ts";
-
 import { type MeleeDef } from "../../../definitions/items/melees.ts";
-
 import { type BadgeDef } from "../../../definitions/loadout/badges.ts";
-
 import { type EmoteDef } from "../../../definitions/loadout/emotes.ts";
-
 import { type HumanoidMomentaryDef, type MomentaryPlayOptions } from "../../../definitions/objects/humanoid_animations.ts";
 import { type BoostDef } from "../../../definitions/player/boosts.ts";
-
 import { type SideEffect, SideEffectType } from "../../../definitions/player/effects.ts";
-
 import { GameItemType, GameObjectDefinitionType, type LoadoutPreset } from "../../../definitions/utils.ts";
-
 import { InputActionType, type InputData } from "../../../net/input_packet.ts";
-
 import { GameConstants, type HumanAnimation, HumanAnimationType, object_instance_type, ObjectType } from "../../../others/constants.ts";
-
 import { apply_modifiers } from "../../../others/functions.ts";
-
 import { Floors } from "../../../others/terrain.ts";
 import { SimObject } from "../../base.ts";
-
 import { type InventoryAction, Inventory, type InventoryOwner } from "../../inventory/inventory.ts";
-
 import { armor_damage, DefaultItemFactories, type EquipmentItem, GrenadeItem } from "../../inventory/items.ts";
-
 import { HumanInventoryLayout } from "../../inventory/layouts.ts";
-
 import { Humanoid } from "./humanoid.ts";
-
 import { human_events } from "./events.ts";
-
 import { type HumanScript } from "./script.ts";
 
 
@@ -419,6 +400,7 @@ export class Human extends Humanoid implements InventoryOwner{
         this.dead=true
         this.knocked=false
         this.downed=false
+        this.net_sync_deletion=false
         this.health.value=0
         this.actions.cancel()
         this.stop_momentary(false)
@@ -522,7 +504,7 @@ export class Human extends Humanoid implements InventoryOwner{
             hand,equipment,
             this.animations.length>0,
             this.input.message!==undefined,this.input.emote!==undefined,
-            this.controlled,this.knocked
+            this.controlled,this.downed,this.dead
         )
         const hand_def=inv.slots[inv.hand_index]?.item?.def
         if(hand)stream.write_int16(hand_def?defs.game_items.keysString[hand_def.id_string]:-1)

@@ -1,4 +1,4 @@
-import { BaseGELO, BasicSocket, Client, ClientsManager, DefaultSignals, DynamicStream, Packet, SignalManager, Stream, WorkerSocket } from "common/engine/core.ts";
+import { BaseGELO, BasicSocket, Client, DefaultSignals, Numeric, Packet, SignalManager, WorkerSocket } from "common/engine/core.ts";
 import { HideElement, ShowElement, UIRoot } from "common/engine/web.ts";
 import { gelo_instance_type } from "common/scripts/others/constants.ts";
 import { type JoinData, JoinedPacket, JoinPacket } from "common/scripts/net/join_packet.ts";
@@ -19,7 +19,7 @@ export interface PlaySceneDefs{
     gelo:Record<number|string,(...args: any)=>GameGELO>
 }
 
-export type PlaySceneKind="none"|"local"|"worker"|"online"
+export type PlaySceneKind="none"|"worker"|"online"
 
 export interface WorkerGameOptions{
     mode?:string
@@ -75,7 +75,6 @@ export class PlayScene extends GameScene {
     ui!:UIRoot<Application>
 
     packets_queue:Packet[]=[]
-    ntps:number=32
     timeout:number=10000
 
     constructor(app?:Application){
@@ -290,6 +289,7 @@ export class PlayScene extends GameScene {
             }
         }
         this.packets_queue.length=0
+        this.global_interpolation=Numeric.get_interpolation_t(this.ntps,dt)
         super.update(dt,true,true)
     }
 }

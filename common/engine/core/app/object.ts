@@ -751,7 +751,6 @@ export class ObjectManager2D<GameObject extends BaseObject2D>{
             object.net_sync_creation, //Dirty Creation
             object.is_new
         ]
-        if(object.is_new)console.log(object)
         stream.write_boolean_group(bools[0],bools[1],bools[2],bools[3],bools[4])
         if(bools[0]||bools[1]||bools[2]){
             stream.write_id(object.id)

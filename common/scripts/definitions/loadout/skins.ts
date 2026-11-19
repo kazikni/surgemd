@@ -12,9 +12,10 @@ export enum LoadoutItemKind{
 }
 export interface LoadoutBodyDef extends Definition{
     item:LoadoutItemKind.Body
-    frame?:{
+    frame:{
         base?:string
-        hand?:string
+        arm1:string
+        arm2:string
     }
     mounth?:{
         position:Vec2
@@ -74,7 +75,8 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
             id_string:"body_1",
             rank:ItemRank.E,
             frame:{
-                hand:"human_hand_1",
+                arm1:"human_hand_1_1",
+                arm2:"human_hand_1_2",
             },
             mounth:{
                 position:v2(0.33,0),

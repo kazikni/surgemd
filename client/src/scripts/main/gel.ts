@@ -14,4 +14,6 @@ export class GameGELO extends BaseGELO implements SceneGELO{
 export class GameScene extends ClientScene2D<GameObject,GameGELO> {
     declare app:Application
     map!:CC_GameMap
+    global_interpolation:number=1
+    ntps:number=32
 }

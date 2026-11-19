@@ -128,6 +128,12 @@ export const ccn_obstacle:GELComponent<CC_Obstacle>={
                 this.set_definition(this.app.definitions.obstacles.getFromNumber(stream.read_uint16()))
                 this.update_frame()
             }
+            if(dead){
+                if(!this.def.keep_collision_on_die){
+                    this.physical.no_collision=true
+                    this.physical.no_projectiles_collision=true
+                }
+            }
             if(physical_dirty||full){
                 this.variation=stream.read_uint8()
                 this.rotation=stream.read_rad()
@@ -147,6 +153,8 @@ export const ccn_obstacle:GELComponent<CC_Obstacle>={
                 }else if(!dead&&this.health.dead){
                     this.health.dead=false
                     this.update_frame()
+                    this.physical.no_collision=this.def.no_collision
+                    this.physical.no_projectiles_collision=this.def.no_projectiles_collision
                 }
                 this.health.value=stream.read_float(0,1,1)
             }

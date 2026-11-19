@@ -774,6 +774,63 @@ export class Human extends Humanoid{
         const mounth=this.assets.mounth
         if(mounth?.[0]&&mounth[1])this.sprites.mounth.frames=[{delay:0.15,image:mounth[0].id},{delay:0.15,image:mounth[1].id}]
     }
+    override on_die(){
+        for(let i=0;i<5;i++){
+            const angle=random.rad()
+            this.scene.particles.add_particle(new ABParticle2D({
+                frame:{
+                    image:`blood_splash_${random.int(1,3)}`,
+                    layer:this.layer,
+                },
+
+                scale:0.1,
+                direction:angle,
+                angle:angle,
+                position:this.position,
+                zIndex:zIndexes.Particles,
+
+                life_time:random.float(2,4),
+                speed:random.float(0.5,1),
+                tint:ColorM.rgba(170,10,40),
+                to:{
+                    scale:random.float(2,5),
+                    tint:ColorM.rgba(170,10,40,0),
+                    angle:angle+random.neg_float(0.5,3)
+                },
+            }))
+        }
+        for(let i=0;i<4;i++){
+            const angle=random.rad()
+            this.scene.particles.add_particle(new ABParticle2D({
+                frame:{
+                    image:`human_gore_${random.int(1,2)}`,
+                    layer:this.layer,
+                },
+                scale:0.1,
+                direction:angle,
+                angle:angle,
+                position:this.position,
+                zIndex:zIndexes.Particles,
+
+                life_time:random.float(1,2),
+                speed:random.float(1,3),
+                tint:ColorM.default.white,
+                to:{
+                    scale:random.float(1.7,3),
+                    tint:ColorM.default.transparent,
+                    tint_ease:ease.quarticIn,
+                    angle:angle+random.neg_float(0.5,3)
+                },
+            }))
+        }
+        /*const d=new ClientDecal()
+
+        d.sprite.frame=h.game.resources.get_frame(`blood_decal_${random.int(1,2)}`)
+        d.sprite.scale=v2.random(2,3)
+        d.sprite.rotation=random.rad()
+        d.sprite.position=h.position
+        h.game.scene_2d.objects.add_object(d,h.layer)*/
+    }
     on_hitted(position:Vec2,critical:boolean=false,sound?:string,reflected:boolean=false,_weight:number=0){
         if(reflected){
             this.app.sounds.play(this.app.resources.get_sound(sound??"human_metal_hit"),{

@@ -46,9 +46,9 @@ export function Boosts_Default_Init():BoostDef[]{
             color:"#08f",
             animation_color:"#08f7",
             shield:{
-                multiplier:1.2,
+                multiplier:1.1,
                 penetrate:2.2,
-                break_invensibility:0.3
+                break_invensibility:0.4
             },
             particle:"boost_shield_particle"
         },

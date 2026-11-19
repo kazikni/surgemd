@@ -48,7 +48,7 @@ export class Loot extends GameObject{
         this.container.layer=this.layer
     }
     on_tick(){
-        v2m.lerp(this.container.position,this.position,this.app.global_interpolation)
+        v2m.lerp(this.container.position,this.position,this.scene.global_interpolation)
     }
     on_decode_net(stream:Stream,full:boolean){
         this.position=stream.read_pos2()

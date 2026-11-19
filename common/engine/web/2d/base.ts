@@ -19,7 +19,12 @@ export interface CamA{
     sort_function:(a:Container2DObject,b:Container2DObject)=>number
     draw_function?:(obj:Container2DObject)=>void
 }
-export abstract class Container2DObject {
+export interface RenderizableObject2D{
+    zIndex:number
+    id_on_parent:number
+    draw(cam:CamA): void;
+}
+export abstract class Container2DObject implements RenderizableObject2D{
     abstract object_type: string
 
     parent?: Container2D
@@ -69,6 +74,7 @@ export abstract class Container2DObject {
         return this._rotation
     }
     set rotation(val:number){
+        if(this._rotation===val)return
         this._rotation=val
         this.dirty_reals=true
     }

@@ -1,4 +1,4 @@
-import { ClientApplication, Renderer } from "common/engine/web.ts"
+import { ClientApplication, HideElement, Renderer, ShowElement } from "common/engine/web.ts"
 import { api, api_server, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues, sources } from "./config.ts"
 import { LoadingScreenScene } from "../scenes/loading_screen.ts";
 import { MenuScene } from "../scenes/menu/scene.ts";
@@ -23,8 +23,6 @@ export class Application extends ClientApplication implements CommonApplication{
     translation:TranslationManager=new TranslationManager()
 
     api_public?:ApiSettings
-
-    global_interpolation:number=1
 
     world_shadow:{
         enabled:boolean
@@ -66,6 +64,12 @@ export class Application extends ClientApplication implements CommonApplication{
             key:sources.save.key
         })
 
+        const post_proccess=this.save.settings.get_var("graphics_post_proccess")
+        if(post_proccess>0)ShowElement(document.querySelector("#vignetting-gfx") as HTMLDivElement)
+        else HideElement(document.querySelector("#vignetting-gfx") as HTMLDivElement)
+
+        if(post_proccess>1)ShowElement(document.querySelector("#tiltshift-gfx") as HTMLDivElement)
+        else HideElement(document.querySelector("#tiltshift-gfx") as HTMLDivElement)
         this.sounds.master_bus.set_volume(Numeric.clamp(this.save.settings.get_var("sounds_master_volume"),0,1))
         this.sounds.buses.get("music")!.set_volume(Numeric.clamp(this.save.settings.get_var("sounds_music_volume"),0,1))
         this.sounds.buses.get("ambient")!.set_volume(Numeric.clamp(this.save.settings.get_var("sounds_ambient_volume"),0,1))
@@ -94,23 +98,25 @@ export class Application extends ClientApplication implements CommonApplication{
 
         this.play_scene=new PlayScene(this)
 
-        //this.scene=this.menu_scene
-
         const params=new URLSearchParams(location.search)
-        const kind=(params.get("play")??"worker") as Exclude<PlaySceneKind,"none">
-        const mode=params.get("mode")??undefined
-        await this.play(kind,{
-            url:params.get("server")??undefined,
-            mode,
-            settings:{},
-        })
+        const kind=(params.get("play")??"none")
+        if(kind!=="none"){
+            const mode=params.get("mode")??undefined
+            await this.play(kind as PlaySceneKind,{
+                url:params.get("server")??undefined,
+                mode,
+                settings:{},
+            })
+        }else{
+            this.scene=this.menu_scene
+        }
     }
     override on_update(dt: number): void {
-        this.global_interpolation=Numeric.get_interpolation_t(this.tps,dt)
         super.on_update(dt)
     }
 
-    async play(kind:Exclude<PlaySceneKind,"none">,options?:WorkerGameOptions|OnlineGameOptions,join?:JoinData){
+    async play(kind:PlaySceneKind,options?:WorkerGameOptions|OnlineGameOptions,join?:JoinData){
+        if(kind==="none")return
         const game=this.play_scene
         switch(kind){
             case "worker":

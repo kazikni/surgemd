@@ -163,7 +163,6 @@ export const si_obstacle:GELComponent<SI_Obstacle>={
         [obstacle_events.set_definition]:function(def:ObstacleDef){
             this.physical.no_spawn_collision=this.def.no_spawn_collision
             this.physical.no_pathfinding_collision=this.def.no_pathfinding_collision
-            this.physical.passable_by_projectiles=def.passable_by_bullets
         }
     },
     methods:{

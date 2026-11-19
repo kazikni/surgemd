@@ -50,10 +50,10 @@ export class SMDE_Menu extends HTMLElement {
         this._connected=false
         this.hover=false
     }
-    get innerHTML(){
+    override get innerHTML(){
         return super.innerHTML
     }
-    set innerHTML(val){
+    override set innerHTML(val){
         super.innerHTML=val
         if(this._connected){
             this.rebuild()

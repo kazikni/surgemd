@@ -106,8 +106,8 @@ export class Application extends ClientApplication implements CommonApplication{
         })
     }
     override on_update(dt: number): void {
-        super.on_update(dt)
         this.global_interpolation=Numeric.get_interpolation_t(this.tps,dt)
+        super.on_update(dt)
     }
 
     async play(kind:Exclude<PlaySceneKind,"none">,options?:WorkerGameOptions|OnlineGameOptions,join?:JoinData){

@@ -43,10 +43,10 @@ export class Loot extends SimObject{
         }else if(obj.object_type===ObjectType.Loot){
             const col=this.collider.overlap_collision((obj as Loot).collider)
             if(!col)return
-            const pen=col.pen*2.5*dt
-            const dir=col.pen<=0.0001?v2.random(-1,1):col.dir
-            v2m.sub(this.velocity,this.velocity,v2.scale(dir,pen))
-            v2m.sub(this.position,this.position,v2.scale(dir,pen))
+            const pen=col.pen*dt
+            const dir=col.pen<=0.00001?v2.random(-1,1):col.dir
+            v2m.sub(this.velocity,this.velocity,v2.scale(dir,pen*3))
+            v2m.sub(this.position,this.position,v2.scale(dir,pen*2.5))
         }
     }
 

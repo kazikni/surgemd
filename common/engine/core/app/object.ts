@@ -100,7 +100,7 @@ export abstract class BaseObject2D extends BaseGEL{
     allow_dirty:boolean=true
     allow_checkpoint:boolean=true
 
-    checkpoint_clear_resistance:boolean=false
+    checkpoint_clear_resistance?:boolean
 
     net_sync_can_unsee:boolean=true
     net_sync_deletion:boolean=true
@@ -751,6 +751,7 @@ export class ObjectManager2D<GameObject extends BaseObject2D>{
             object.net_sync_creation, //Dirty Creation
             object.is_new
         ]
+        if(object.is_new)console.log(object)
         stream.write_boolean_group(bools[0],bools[1],bools[2],bools[3],bools[4])
         if(bools[0]||bools[1]||bools[2]){
             stream.write_id(object.id)
@@ -779,7 +780,7 @@ export class ObjectManager2D<GameObject extends BaseObject2D>{
         }
         stream.write_uint8(100) // All Encode
         stream.write_boolean_group(force_full,delete_all)
-    
+
         const list:GameObject[]=force_full?Object.values(this.objects):[...Object.values(this.part_dirty_objects),...Object.values(this.full_dirty_objects)]
         stream.write_id(list.length)
         for(const obj of list){
@@ -965,6 +966,8 @@ export class ObjectManager2D<GameObject extends BaseObject2D>{
     update_to_net(){
         for(const n of this.news_queue.values()){
             n.is_new=false
+            if(this.full_dirty_cache[n.id])delete this.full_dirty_cache[n.id]
+            if(this.part_dirty_cache[n.id])delete this.part_dirty_cache[n.id]
         }
         this.news_queue.clear()
         for(const id in this.full_dirty_objects){
@@ -988,5 +991,3 @@ export class ObjectManager2D<GameObject extends BaseObject2D>{
         this.destroy_queue.length=0
     }
 }
-
-export { gel_events };

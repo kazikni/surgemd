@@ -1,6 +1,3 @@
-import { ID } from "../math/utils.ts";
-import { BaseSceneObject2D } from "../app/app.ts";
-import { Client, ClientsManager } from "./client.ts";
 export type HandlerFunc = (req: Request, url_path: string[], info: any) => Response | null;
 export type HandlerFuncAsync = (req: Request, url_path: string[], info: any) => Promise<Response | null>;
 //Definitions

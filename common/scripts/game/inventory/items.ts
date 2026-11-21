@@ -1,29 +1,16 @@
 import { CircleCollider2D, Numeric, Stream, v2, v2m, Vec2 } from "../../../engine/core.ts";
-
 import { type GameItem } from "../../definitions/game_defs.ts";
-
 import { type GunDef } from "../../definitions/items/guns.ts";
-
 import { type MeleeDef } from "../../definitions/items/melees.ts";
-
 import { type HelmetDef, type VestDef } from "../../definitions/items/equipaments.ts";
-
 import { type GrenadeDef } from "../../definitions/items/grenades.ts";
-
 import { type ConsumibleDef, type ConsumingAction as ConsumingActionDef } from "../../definitions/items/consumibles.ts";
-
 import { GameItemType } from "../../definitions/utils.ts";
-
-import { HumanAnimationType, type LootData, object_instance_type } from "../../others/constants.ts";
-
+import { HumanAnimationType, type LootData, object_instance_type, ObjectType } from "../../others/constants.ts";
 import { FireMode } from "../../others/item.ts";
-
 import { type SimObject } from "../base.ts";
-
 import { type Human } from "../objects/human/human.ts";
-
 import { clip_muzzle, fire_item } from "./fire.ts";
-
 import { InventoryAction, InventoryItem, type InventoryOwner, type InventorySlot, type ItemFactories, type ItemGiveExtra } from "./inventory.ts";
 import { SimObjectDamageable, type DamageParams } from "../objects/projectile/projectile.ts";
 
@@ -277,8 +264,10 @@ export class MeleeItem extends InventoryItem{
             if(o.id===user.id||o.destroyed)continue
             const d=o as SimObjectDamageable
             if(typeof d.damage!=="function"||!hb.colliding_with(o.collider))continue
+            let damage=this.def.damage
+            if(o.object_type===ObjectType.StaticBody&&this.def.obstacle_multiplier!==undefined)damage*=this.def.obstacle_multiplier
             d.damage({
-                amount:this.def.damage,
+                amount:damage,
                 owner:user,
                 source:this.def,
                 position:hb.position,

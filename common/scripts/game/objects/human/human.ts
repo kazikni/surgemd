@@ -14,7 +14,7 @@ import { GameConstants, type HumanAnimation, HumanAnimationType, object_instance
 import { apply_modifiers } from "../../../others/functions.ts";
 import { Floors } from "../../../others/terrain.ts";
 import { SimObject } from "../../base.ts";
-import { type InventoryAction, Inventory, type InventoryOwner } from "../../inventory/inventory.ts";
+import { type InventoryAction, Inventory, type InventoryOwner, InventoryGroupDef } from "../../inventory/inventory.ts";
 import { armor_damage, DefaultItemFactories, type EquipmentItem, GrenadeItem } from "../../inventory/items.ts";
 import { HumanInventoryLayout } from "../../inventory/layouts.ts";
 import { Humanoid } from "./humanoid.ts";
@@ -26,6 +26,7 @@ export interface HumanCreateArgs{
     position?:Vec2
     name?:string
     loadout?:LoadoutPreset
+    inventory_loadout?:InventoryGroupDef[]
 }
 
 export type Interactable=SimObject&{
@@ -48,6 +49,7 @@ export class Human extends Humanoid implements InventoryOwner{
     movement_enabled:boolean=true
     combat_enabled:boolean=true
     pacific_enabled:boolean=false
+    drop_on_death_enabled:boolean=true
 
     inventory!:Inventory<Human>
     actions!:ActionsManager<Human,InventoryAction>
@@ -96,7 +98,7 @@ export class Human extends Humanoid implements InventoryOwner{
         this.boost={value:0,max:100,def:this.app.definitions.boosts.getFromString(GameConstants.human.default_boost)}
         this.actions=new ActionsManager(this)
         this.inventory=new Inventory(this,DefaultItemFactories)
-        this.inventory.initialize(HumanInventoryLayout())
+        this.inventory.initialize(args.inventory_loadout??HumanInventoryLayout())
         this.inventory.hold_ammo=this.scene.mode.rules.humans.hold_ammo
     }
     on_destroy(){
@@ -375,7 +377,7 @@ export class Human extends Humanoid implements InventoryOwner{
         this.health.value=this.health.max
         this.health.invencibility=0.4
         this.boost.value=0
-        if(params.direction!==undefined)this.push(-10,params.direction)
+        if(params.direction!==undefined)this.push(-1,params.direction)
         this.actions.cancel()
         const fist=this.inventory.hand_slots[0]
         if(fist)this.inventory.set_hand(fist.index)

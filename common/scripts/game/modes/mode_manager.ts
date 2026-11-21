@@ -332,7 +332,7 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
         this.signals.emit(mode_events.human_knocked,h,params)
     }
     on_human_die(h:Human,params:DamageParams){
-        if(this.rules.humans.drop_inventory)h.inventory?.drop_all()
+        if(this.rules.humans.drop_inventory&&h.drop_on_death_enabled)h.inventory?.drop_all()
         const p=this.players.of(h)
         const killer=params.owner&&params.owner.id!==h.id?this.players.of(params.owner.id):undefined
         if(killer&&killer.human&&!this.is_ally(h,killer.human)){

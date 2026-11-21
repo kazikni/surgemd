@@ -4,6 +4,7 @@ import { type BackpackDef } from "../../definitions/items/backpacks.ts";
 import { GameItemType } from "../../definitions/utils.ts";
 import { HumanAnimationType, type HumanAnimation, type LootData, object_instance_type } from "../../others/constants.ts";
 import { type CommonApplication, type SimulatedScene } from "../base.ts";
+import { type Loot } from "../objects/loot.ts";
 
 
 export enum InventoryDisplay{
@@ -589,38 +590,42 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
         this.slots[this.hand_index]?.item?.reload()
     }
 
-    drop_loot(loots:LootData[],position:Vec2=this.owner.position,layer?:number){
+    drop_loot(loots:LootData[],position:Vec2=this.owner.position,layer?:number):Loot[]{
         const scene=this.owner.scene
+        const ret:Loot[]=[]
         for(const l of loots){
             if(l.count<=0)continue
-            scene.add_object(scene.make_object(object_instance_type.loot),layer??this.owner.layer,undefined,{data:l,position})
+            ret.push(scene.add_object(scene.make_object(object_instance_type.loot),layer??this.owner.layer,undefined,{data:l,position}))
         }
+        return ret
     }
-    drop_slot(index:number,count?:number){
+    drop_slot(index:number,count?:number):Loot[]{
         const s=this.slots[index]
-        if(!s?.item||s.empty||s.is_default||!s.item.droppable||s.group.def.droppable===false)return
+        if(!s?.item||s.empty||s.is_default||!s.item.droppable||s.group.def.droppable===false)return []
         const c=Math.min(count??s.count,s.count)
         const loots=s.item.drop(c)
         this.owner.actions.cancel()
         this.remove_slot(s,c)
-        this.drop_loot(loots)
+        return this.drop_loot(loots)
     }
-    drop_amount(id:string,count?:number){
+    drop_amount(id:string,count?:number):Loot[]{
         const def=this.owner.app.definitions.game_items.valueString[id]
-        if(!def)return
+        if(!def)return []
         const c=this.consume_amount(id,count??Math.ceil(this.amount(id)/2))
-        if(c>0)this.drop_loot([{item:def,count:c}])
+        if(c>0)return this.drop_loot([{item:def,count:c}])
+        return []
     }
-    drop_include(group:InventoryGroup,def:GameItem){
+    drop_include(group:InventoryGroup,def:GameItem):Loot[]{
         const idx=group.includes.indexOf(def)
-        if(idx===-1||group.def.default===def.id_string||group.def.droppable===false)return
-        if((def as {droppable?:boolean}).droppable===false)return
+        if(idx===-1||group.def.default===def.id_string||group.def.droppable===false)return []
+        if((def as {droppable?:boolean}).droppable===false)return []
         group.includes.splice(idx,1)
         if(group.selected===def)group.selected=group.includes[group.includes.length-1]
         this.dirty.groups.add(group.index)
-        this.drop_loot([{item:def,count:1}])
+        return this.drop_loot([{item:def,count:1}])
     }
     drop_all(){
+        const ret:Loot[]=[]
         for(const g of this.groups){
             if(g.def.droppable===false)continue
             if(g.def.type==="amount"){
@@ -633,23 +638,24 @@ export class Inventory<Owner extends InventoryOwner=InventoryOwner>{
                     const pos=v2.add(this.owner.position,v2((Math.cos(dir)*r),(Math.sin(dir)*r)))
                     while(c>0){
                         const rc=Math.min(c,100)
-                        this.drop_loot([{item:def,count:rc}],pos)
+                        ret.push(...this.drop_loot([{item:def,count:rc}],pos))
                         c-=rc
                     }
                 }
                 g.amounts={}
             }else if(g.def.type==="include"){
-                for(const def of [...g.includes])this.drop_include(g,def)
+                for(const def of [...g.includes])ret.push(...this.drop_include(g,def))
             }
         }
         for(const s of this.slots){
             if(!s.item||s.empty||s.is_default)continue
-            if(s.item.droppable&&s.group.def.droppable!==false)this.drop_loot(s.item.drop(s.count))
+            if(s.item.droppable&&s.group.def.droppable!==false)ret.push(...this.drop_loot(s.item.drop(s.count),this.owner.collider.random_point()))
             this.remove_slot(s,s.count)
         }
         this.refresh()
         this.select_default_hand()
         this.dirty.full=true
+        return ret
     }
     clear(keep_defaults:boolean=true){
         for(const s of this.slots){

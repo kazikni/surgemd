@@ -12,6 +12,7 @@ export interface MeleeDef extends Definition{
     offset:Vec2
     radius:number
     damage:number
+    obstacle_multiplier?:number
     resistence_damage?:number
     fire_mode?:FireMode
 
@@ -413,7 +414,7 @@ export function Melees_Default_Init():MeleeDef[]{
             rank:ItemRank.E,
             offset:v2(0.5,0),
             radius:0.3,
-            damage:18,
+            damage:20,
             attack_delay:0.25,
             switch_delay:0.1,
             damage_delays:[0.11],
@@ -921,5 +922,86 @@ export function Melees_Default_Init():MeleeDef[]{
                 }
             }
         },
+        {
+            id_string:"chainsaw",
+            rank:ItemRank.S,
+            offset:v2(1,0.15),
+            radius:0.4,
+            damage:5,
+            obstacle_multiplier:2,
+
+            speed_mod:0.9,
+            attack_delay:0.075,
+            switch_delay:2.2,
+            //damage_delays:[0,0.075,0.15,0.225],
+            damage_delays:[0],
+            rig_arms:{
+                left:{
+                    position:v2(0.43,0),
+                    rotation:0.3,
+                    zIndex:2,
+                },
+                right:{
+                    position:v2(0.5,0.2),
+                    rotation:0,
+                    zIndex:2,
+                },
+            },
+            rig_image:{
+                position:v2(1,0.1),
+                rotation:0,
+                zIndex:1,
+                hotspot:v2(0.5,0.5)
+            },
+            animation:[],
+            assets:{
+                use_sound:"chainsaw_use",
+                hit_sound:"human_hit_1",
+                switch_sound:"chainsaw_switch",
+                world:"chainsaw_world_1",
+                load_animation:[
+                    {
+                        time:0.2,
+                        actions:[
+                            {type:"tween",ease:ease.quadraticInOut,fuser:"left_arm",to:{position:v2(0.62,-0.08),rotation:0.25}}
+                        ]
+                    },
+
+                    {
+                        time:0.2,
+                        actions:[
+                            {type:"tween",ease:ease.quadraticInOut,fuser:"left_arm",to:{position:v2(0.65,-0.35),rotation:-0.4}}
+                        ]
+                    },
+                    {time:0.1,actions:[]},
+                    {
+                        time:0.2,
+                        actions:[
+                            {type:"tween",ease:ease.quadraticInOut,fuser:"left_arm",to:{position:v2(0.62,-0.08),rotation:0.25}}
+                        ]
+                    },
+                    {time:0.3,actions:[]},
+
+                    {
+                        time:0.15,
+                        actions:[
+                            {type:"tween",ease:ease.quadraticInOut,fuser:"left_arm",to:{position:v2(0.65,-0.35),rotation:-0.4}}
+                        ]
+                    },
+                    {time:0.15,actions:[]},
+                    {
+                        time:0.15,
+                        actions:[
+                            {type:"tween",ease:ease.quadraticInOut,fuser:"left_arm",to:{position:v2(0.55,-0.1),rotation:0.25}}
+                        ]
+                    },
+                    {time:0.5,actions:[]},
+                    {time:0.2,actions:[
+                            {type:"tween",ease:ease.quadraticInOut,fuser:"left_arm",to:{position:v2(0.43,0),rotation:0.3}}
+                        ]
+                    },
+                ]
+            }
+        }
     ]
 }

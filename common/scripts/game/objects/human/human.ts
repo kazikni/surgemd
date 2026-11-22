@@ -295,7 +295,6 @@ export class Human extends Humanoid implements InventoryOwner{
         this.input.interact=false
         this.input.reload=false
         this.input.cancel=false
-        this.input.using_item_down=false
         this.input.actions.length=0
     }
 
@@ -496,17 +495,46 @@ export class Human extends Humanoid implements InventoryOwner{
         return true
     }
 
+    override on_encode_checkpoint(stream:Stream,ctx:CheckpointContext){
+        super.on_encode_checkpoint(stream,ctx)
+        stream.write_boolean_group(this.knocked)
+        .write_float32(this.health.value)
+        .write_float32(this.health.max)
+        .write_float32(this.boost.value)
+        .write_float32(this.boost.max)
+        .write_uint8(this.boost.def.id_number!)
+        this.inventory.encode_checkpoint(stream)
+    }
+    override on_decode_checkpoint(stream:Stream,ctx:CheckpointContext){
+        super.on_decode_checkpoint(stream,ctx)
+        this.knocked=stream.read_boolean_group()[0]
+        this.health.value=stream.read_float32()
+        this.health.max=stream.read_float32()
+        this.boost.value=stream.read_float32()
+        this.boost.max=stream.read_float32()
+        this.boost.def=this.app.definitions.boosts.getFromNumber(stream.read_uint8())
+        this.inventory.decode_checkpoint(stream)
+    }
+    override on_net_update(){
+        super.on_net_update()
+        this.animations.length=0
+        this.input.message=undefined
+        this.input.emote=undefined
+        this.inventory.net_update()
+        this.actions.net_update()
+    }
     override on_encode_net(stream:Stream,full:boolean){
         super.on_encode_net(stream,full)
         const inv=this.inventory
         const defs=this.app.definitions
         const hand=full||inv.dirty.hand
         const equipment=full||inv.dirty.full||inv.dirty.slots.size>0||inv.dirty.groups.size>0
-        stream.write_boolean_group(
+        stream.write_boolean_group2(
             hand,equipment,
             this.animations.length>0,
             this.input.message!==undefined,this.input.emote!==undefined,
-            this.controlled,this.downed,this.dead
+            this.controlled,this.knocked,
+            this.boost.value>0&&this.boost.def.shield!==undefined
         )
         const hand_def=inv.slots[inv.hand_index]?.item?.def
         if(hand)stream.write_int16(hand_def?defs.game_items.keysString[hand_def.id_string]:-1)
@@ -536,34 +564,5 @@ export class Human extends Humanoid implements InventoryOwner{
         },1)
         if(this.input.message!==undefined)stream.write_string_sized(this.input.message,50)
         if(this.input.emote!==undefined)stream.write_uint16(defs.game_objects.keysString[this.input.emote.id_string])
-    }
-    override on_net_update(){
-        super.on_net_update()
-        this.animations.length=0
-        this.input.message=undefined
-        this.input.emote=undefined
-        this.inventory.net_update()
-        this.actions.net_update()
-    }
-
-    override on_encode_checkpoint(stream:Stream,ctx:CheckpointContext){
-        super.on_encode_checkpoint(stream,ctx)
-        stream.write_boolean_group(this.knocked)
-        .write_float32(this.health.value)
-        .write_float32(this.health.max)
-        .write_float32(this.boost.value)
-        .write_float32(this.boost.max)
-        .write_string(this.boost.def.id_string,1)
-        this.inventory.encode_checkpoint(stream)
-    }
-    override on_decode_checkpoint(stream:Stream,ctx:CheckpointContext){
-        super.on_decode_checkpoint(stream,ctx)
-        this.knocked=stream.read_boolean_group()[0]
-        this.health.value=stream.read_float32()
-        this.health.max=stream.read_float32()
-        this.boost.value=stream.read_float32()
-        this.boost.max=stream.read_float32()
-        this.boost.def=this.app.definitions.boosts.getFromString(stream.read_string(1))
-        this.inventory.decode_checkpoint(stream)
     }
 }

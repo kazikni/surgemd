@@ -1,5 +1,5 @@
 import { Angle, CircleCollider2D, ColorM, ease, matrix4, Numeric, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
-import { ABParticle2D, type AudioInstance, Container2D, Shadow2D, type Sound, Sprite2D } from "common/engine/web.ts";
+import { ABParticle2D, type AudioInstance, Container2D, Container2DObject, type Sound, Sprite2D } from "common/engine/web.ts";
 import { type GameItem, type WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { type BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { type HelmetDef, type VestDef } from "common/scripts/definitions/items/equipaments.ts";
@@ -15,7 +15,8 @@ import { GraphicsDConfig } from "../main/config.ts";
 import { GameObject } from "../main/gel.ts";
 import { Humanoid, type HumanoidSprites } from "./humanoid.ts";
 import { cook_animation,throw_animation } from "common/scripts/others/animations.ts"
-
+import { EffectDef } from "common/scripts/definitions/player/effects.ts";
+export type HumanParticleAnim={lifetime:number,sprite:Container2DObject}
 export interface HumanWeaponAssets{
     fire?:Sound
     fire_last?:Sound
@@ -60,6 +61,9 @@ export class Human extends Humanoid{
     knocked:boolean=false
     controlled:boolean=false
 
+    shield:boolean=false
+    effects:{def:EffectDef,lifetime:number}[]=[]
+
     hand?:GameItem
     melee?:MeleeDef
     helmet?:HelmetDef
@@ -91,6 +95,7 @@ export class Human extends Humanoid{
 
     override on_create(){
         super.on_create()
+        this.shield=true
         this.container.modes.fire=(h:Human)=>{
             if(h.hand?.item_type===GameItemType.gun)h.play_fire_animation(h.hand as unknown as GunDef,false,true,false)
         }
@@ -173,59 +178,6 @@ export class Human extends Humanoid{
                 })
             }
         }
-    }
-
-    override on_decode_net(stream:Stream,full:boolean){
-        super.on_decode_net(stream,full)
-        const [hand,equipment,has_animations,has_message,has_emote,controlled,knocked]=stream.read_boolean_group()
-        this.controlled=controlled
-        this.knocked=knocked
-        if(hand){
-            const id=stream.read_int16()
-            this.hand=id>=0?this.app.definitions.game_items.valueNumber[id]:undefined
-            this.set_hand_visual(this.hand)
-            this.update_melee()
-        }
-        if(equipment){
-            const [has_skin]=stream.read_boolean_group()
-
-            this.helmet=this.app.definitions.helmets.getFromNumberSafe(stream.read_uint8()-1)
-            this.helmet_skin=has_skin?stream.read_uint8():undefined
-            this.sprites.helmet.position=this.helmet?.position?v2(this.helmet.position.x,this.helmet.position.y):v2(0,0)
-            this.sprites.helmet.frame=this.helmet?this.app.resources.get_frame((this.helmet_skin!==undefined&&this.helmet.skins?.[this.helmet_skin]?this.helmet.skins[this.helmet_skin]:this.helmet.id_string)+"_world"):undefined
-
-            this.vest=this.app.definitions.vests.getFromNumberSafe(stream.read_uint8()-1)
-            this.sprites.vest.visible=this.vest!==undefined
-            if(this.vest)this.sprites.vest.tint=ColorM.number(this.vest.tint)
-    
-            this.backpack=this.app.definitions.backpacks.getFromNumberSafe(stream.read_uint8()-1)
-            this.sprites.backpack.frame=this.backpack&&!this.backpack.no_world_image?this.app.resources.get_frame(this.backpack.id_string+"_world"):undefined
-
-            this.melee=this.app.definitions.melees.getFromNumberSafe(stream.read_uint16()-1)
-
-            this.update_melee()
-        }
-        if(has_animations){
-            for(const a of stream.read_array(()=>{
-                const type=stream.read_uint8() as HumanAnimationType
-                switch(type){
-                    case HumanAnimationType.Fire:{
-                        const [alt,last,alt_func]=stream.read_boolean_group()
-                        return {type,alt,last,alt_func}
-                    }
-                    case HumanAnimationType.Reloading:
-                        return {type,alt_reload:stream.read_boolean_group()[0]}
-                    case HumanAnimationType.Consuming:
-                    case HumanAnimationType.Switch:
-                        return {type,item:stream.read_uint16()}
-                    default:
-                        return {type} as HumanAnimation
-                }
-            },1))
-            this.play_action_animation(a)
-        }
-        if(has_message)this.add_message(stream.read_string_sized(50))
-        if(has_emote)this.add_emote(this.app.definitions.game_objects.valueNumber[stream.read_uint16()] as GameItem|EmoteDef)
     }
 
     override reset_pose(){
@@ -838,35 +790,110 @@ export class Human extends Humanoid{
                 max_distance:10,
                 bus:"humans",
             })
-            return
-        }
-        const tint=random.choose([ColorM.rgba(170,10,40),ColorM.rgba(255,10,40)])
-        if(this.app.save.settings.get_var("graphics_particles")>=GraphicsDConfig.Normal){
-            this.scene.particles.add_particle(new ABParticle2D({
-                scale:0.1,
-                frame:{
-                    image:`blood_splash_${random.int(1,3)}`,
-                    layer:this.layer,
+        }else if(this.shield){
+            let shield:HumanParticleAnim|undefined
+            for(const p of h.animation.particles){
+                if((p.sprite instanceof Sprite2D)&&p.sprite.frame?.id==="human_shield"){
+                    shield=p
+                    break
+                }
+            }
+            if(shield){
+                shield.lifetime=0.5
+            }else{
+                shield={lifetime:0.5,sprite:new Sprite2D()}
+                ;(shield.sprite as Sprite2D).set_frame({image:"human_shield",hotspot:v2.half_one,zIndex:10,scale:2},h.game.resources)
+                h.container.add_child(shield.sprite)
+                h.animation.particles.push(shield)
+            }
+            h.game.sounds.play(h.game.resources.get_sound("human_hit_shield"),{
+                position:h.position,
+                max_distance:15,
+                bus:"humans"
+            })
+        }else{
+            const tint=random.choose([ColorM.rgba(170,10,40),ColorM.rgba(255,10,40)])
+            if(this.app.save.settings.get_var("graphics_particles")>=GraphicsDConfig.Normal){
+                this.scene.particles.add_particle(new ABParticle2D({
+                    scale:0.1,
+                    frame:{
+                        image:`blood_splash_${random.int(1,3)}`,
+                        layer:this.layer,
+                        zIndex:zIndexes.Particles,
+                    },
+                    direction:random.rad(),
+                    life_time:random.float(0.7,0.8),
+                    position,
+                    speed:random.float(0.1,0.4),
+                    angle:random.rad(),
+                    tint,
+                    to:{
+                        scale:1.5,
+                        tint:ColorM.mult_hsv(tint,undefined,undefined,undefined,0),
+                        tint_ease:ease.quarticIn,
+                    },
                     zIndex:zIndexes.Particles,
-                },
-                direction:random.rad(),
-                life_time:random.float(0.7,0.8),
-                position,
-                speed:random.float(0.1,0.4),
-                angle:random.rad(),
-                tint,
-                to:{
-                    scale:1.5,
-                    tint:ColorM.mult_hsv(tint,undefined,undefined,undefined,0),
-                    tint_ease:ease.quarticIn,
-                },
-                zIndex:zIndexes.Particles,
-            }))
+                }))
+            }
+            this.app.sounds.play(this.app.resources.get_sound(sound??(critical?"human_headshot":`human_hit_${random.int(1,2)}`)),{
+                position:v2.clone(this.position),
+                max_distance:15,
+                bus:"humans",
+            })
         }
-        this.app.sounds.play(this.app.resources.get_sound(sound??(critical?"human_headshot":`human_hit_${random.int(1,2)}`)),{
-            position:v2.clone(this.position),
-            max_distance:15,
-            bus:"humans",
-        })
+    }
+
+    override on_decode_net(stream:Stream,full:boolean){
+        super.on_decode_net(stream,full)
+        const [hand,equipment,has_animations,has_message,has_emote,controlled,knocked,shield]=stream.read_boolean_group2()
+        this.controlled=controlled
+        this.knocked=knocked
+        this.shield=shield
+        if(hand){
+            const id=stream.read_int16()
+            this.hand=id>=0?this.app.definitions.game_items.valueNumber[id]:undefined
+            this.set_hand_visual(this.hand)
+            this.update_melee()
+        }
+        if(equipment){
+            const [has_skin]=stream.read_boolean_group()
+
+            this.helmet=this.app.definitions.helmets.getFromNumberSafe(stream.read_uint8()-1)
+            this.helmet_skin=has_skin?stream.read_uint8():undefined
+            this.sprites.helmet.position=this.helmet?.position?v2(this.helmet.position.x,this.helmet.position.y):v2(0,0)
+            this.sprites.helmet.frame=this.helmet?this.app.resources.get_frame((this.helmet_skin!==undefined&&this.helmet.skins?.[this.helmet_skin]?this.helmet.skins[this.helmet_skin]:this.helmet.id_string)+"_world"):undefined
+
+            this.vest=this.app.definitions.vests.getFromNumberSafe(stream.read_uint8()-1)
+            this.sprites.vest.visible=this.vest!==undefined
+            if(this.vest)this.sprites.vest.tint=ColorM.number(this.vest.tint)
+    
+            this.backpack=this.app.definitions.backpacks.getFromNumberSafe(stream.read_uint8()-1)
+            this.sprites.backpack.frame=this.backpack&&!this.backpack.no_world_image?this.app.resources.get_frame(this.backpack.id_string+"_world"):undefined
+
+            this.melee=this.app.definitions.melees.getFromNumberSafe(stream.read_uint16()-1)
+
+            this.update_melee()
+        }
+        if(has_animations){
+            for(const a of stream.read_array(()=>{
+                const type=stream.read_uint8() as HumanAnimationType
+                switch(type){
+                    case HumanAnimationType.Fire:{
+                        const [alt,last,alt_func]=stream.read_boolean_group()
+                        return {type,alt,last,alt_func}
+                    }
+                    case HumanAnimationType.Reloading:
+                        return {type,alt_reload:stream.read_boolean_group()[0]}
+                    case HumanAnimationType.Consuming:
+                    case HumanAnimationType.Switch:
+                        return {type,item:stream.read_uint16()}
+                    default:
+                        return {type} as HumanAnimation
+                }
+            },1))
+            this.play_action_animation(a)
+        }
+        if(has_message)this.add_message(stream.read_string_sized(50))
+        if(has_emote)this.add_emote(this.app.definitions.game_objects.valueNumber[stream.read_uint16()] as GameItem|EmoteDef)
     }
 }

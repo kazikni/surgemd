@@ -148,7 +148,7 @@ export const bullets_factory={
     },
     buckshot(power:number,tracer=tracers.medium):BulletDef{
         return {
-            damage:8.04 * power,
+            damage:8.7 * power,
             speed:26 * (1 + (power - 1) * 0.4),
             range:30 * (1 + (power - 1) * 0.4),
 
@@ -159,7 +159,7 @@ export const bullets_factory={
     },
     birdshot(power:number,tracer=tracers.tiny):BulletDef{
         return {
-            damage:3.6*power,
+            damage:3.3*power,
             speed:24*(1+(power-1)*0.4),
             range:32*(1+(power-1)*0.4),
 
@@ -1343,7 +1343,7 @@ export function Guns_Default_Init():GunDef[]{
 
             bullet:{
                 def:bullets_factory.birdshot(1),
-                count:16
+                count:15
             },
             reload:{
                 delay:0.8,
@@ -1567,7 +1567,7 @@ export function Guns_Default_Init():GunDef[]{
             },
             bullet:{
                 def:{
-                    damage:5,
+                    damage:15,
                     range:70,
                     falloff:0.5,
                     on_hit_explosion:"rocket_explosion",

@@ -1,5 +1,5 @@
 import { BaseGELO, BasicSocket, Client, DefaultSignals, Numeric, Packet, SignalManager, WorkerSocket } from "common/engine/core.ts";
-import { HideElement, ShowElement, UIRoot } from "common/engine/web.ts";
+import { disableContextMenuPrevent, enableContextMenuPrevent, HideElement, ShowElement, UIRoot } from "common/engine/web.ts";
 import { gelo_instance_type } from "common/scripts/others/constants.ts";
 import { type JoinData, JoinedPacket, JoinPacket } from "common/scripts/net/join_packet.ts";
 import { make_packet_manager } from "common/scripts/net/packet_manager.ts";
@@ -262,6 +262,8 @@ export class PlayScene extends GameScene {
         if(this.kind==="worker"&&this.worker){
             this.worker.postMessage({type:"set_state",pause:false} as WorkerMessage)
         }
+
+        enableContextMenuPrevent()
     }
     override on_unset(): void {
         HideElement(this.game_div)
@@ -269,6 +271,7 @@ export class PlayScene extends GameScene {
         if(this.kind==="worker"&&this.worker){
             this.worker.postMessage({type:"set_state",pause:true} as WorkerMessage)
         }
+        disableContextMenuPrevent()
     }
 
     override update(dt: number): void {

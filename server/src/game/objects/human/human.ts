@@ -6,7 +6,7 @@ import { type MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { type BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 import { type EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { type LoadoutAccessoryDef, type LoadoutBodyDef, type LoadoutEyesDef, type LoadoutFootDef, type LoadoutHairDef, type LoadoutLegDef, type LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
-import { HumanoidAnimations, type HumanoidMomentaryDef, type MomentaryPlayOptions } from "common/scripts/definitions/objects/humanoid_animations.ts";
+import { HumanAnimations, type HumanoidMomentaryDef, type MomentaryPlayOptions } from "common/scripts/definitions/player/human_animations.ts";
 import { type BoostDef } from "common/scripts/definitions/player/boosts.ts";
 import { type EffectInstance, type SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts";
 import { GameItemType, GameObjectDefinitionType, type LoadoutPreset } from "common/scripts/definitions/utils.ts";
@@ -79,8 +79,6 @@ export class Human extends MovingBody implements InventoryOwner{
 
     input:InputData&{
         using_item_down:boolean
-        emote?:GameItem|EmoteDef|BadgeDef
-        message?:string
     }={
         movement:{dir:0,scale:0},
         rotation:0,
@@ -293,14 +291,13 @@ export class Human extends MovingBody implements InventoryOwner{
                     const def=this.app.definitions.game_objects.valueNumber[a.id] as EmoteDef|GameItem|BadgeDef|undefined
                     if(!(def?.def_type===GameObjectDefinitionType.badge||def?.def_type===GameObjectDefinitionType.emote||def?.def_type===GameObjectDefinitionType.item))break
                     this.emote_time=2.5
-                    this.input.emote=def
+                    this.animations.push({type:HumanAnimationType.Emote,id:a.id})
                     break
                 }
                 case InputActionType.message:
                     if(this.emote_time>0&&a.value.length>0)break
                     this.emote_time=1.5
-                    this.input.message=a.value
-                    this.input.emote=undefined
+                    this.animations.push({type:HumanAnimationType.Message,msg:a.value})
                     break
                 case InputActionType.drop:
                     if(a.drop<0)break
@@ -473,6 +470,7 @@ export class Human extends MovingBody implements InventoryOwner{
         }
         this.health.value=0
         this.actions.cancel()
+        this.animations.push({type:HumanAnimationType.Die})
         this.stop_momentary(false)
         const script=this.script
         if(script){
@@ -575,7 +573,7 @@ export class Human extends MovingBody implements InventoryOwner{
     }
 
     play_momentary(def:string|HumanoidMomentaryDef,options:MomentaryPlayOptions={}):boolean{
-        const d=typeof def==="string"?HumanoidAnimations.getFromString(def):def
+        const d=typeof def==="string"?HumanAnimations.getFromString(def):def
         if(this.momentary&&!options.force&&(this.momentary.def.priority??0)>(d.priority??0))return false
         this.stop_momentary(false)
         let duration=d.duration
@@ -665,15 +663,26 @@ export class Human extends MovingBody implements InventoryOwner{
         this.momentary_dirty=false
         this.effects_dirty=false
         this.animations.length=0
-        this.input.message=undefined
-        this.input.emote=undefined
         this.inventory.net_update()
         this.actions.net_update()
     }
     on_encode_net(stream:Stream,full:boolean){
         const visual=full||this.visual.dirty
         const momentary=full||this.momentary_dirty
-        stream.write_boolean_group(visual,momentary,this.dead,this.downed,this.swimming,full&&this.name.length>0)
+        const inv=this.inventory
+        const defs=this.app.definitions
+        const hand=full||inv.dirty.hand
+        const equipment=full||inv.dirty.full||inv.dirty.slots.size>0||inv.dirty.groups.size>0
+        const effects=full||this.effects_dirty
+    
+        stream.write_boolean_group3(
+            visual,momentary,this.dead,this.downed,this.swimming,full&&this.name.length>0,
+            hand,equipment,
+            this.animations.length>0,
+            this.controlled,this.knocked,
+            this.boost.value>0&&this.boost.def.shield!==undefined,
+            effects
+        )
         stream.write_pos2(this.position).write_rad(this.rotation)
         if(full)stream.write_float32(this.scale)
         if(visual)encode_visual(stream,this.visual)
@@ -682,19 +691,6 @@ export class Human extends MovingBody implements InventoryOwner{
             if(this.momentary)stream.write_uint16(this.momentary.def.id_number!).write_float32(this.momentary.time)
         }
         if(full&&this.name.length>0)stream.write_string(this.name,1)
-        const inv=this.inventory
-        const defs=this.app.definitions
-        const hand=full||inv.dirty.hand
-        const equipment=full||inv.dirty.full||inv.dirty.slots.size>0||inv.dirty.groups.size>0
-        const effects=full||this.effects_dirty
-        stream.write_boolean_group2(
-            hand,equipment,
-            this.animations.length>0,
-            this.input.message!==undefined,this.input.emote!==undefined,
-            this.controlled,this.knocked,
-            this.boost.value>0&&this.boost.def.shield!==undefined,
-            effects
-        )
         const hand_def=inv.slots[inv.hand_index]?.item?.def
         if(hand)stream.write_int16(hand_def?defs.game_items.keysString[hand_def.id_string]:-1)
         if(equipment){
@@ -719,10 +715,13 @@ export class Human extends MovingBody implements InventoryOwner{
                 case HumanAnimationType.Switch:
                     stream.write_uint16(a.item)
                     break
+                case HumanAnimationType.Emote:
+                    stream.write_uint16(a.id)
+                    break
+                case HumanAnimationType.Message:
+                    stream.write_string_sized(a.msg,50)
             }
         },1)
-        if(this.input.message!==undefined)stream.write_string_sized(this.input.message,50)
-        if(this.input.emote!==undefined)stream.write_uint16(defs.game_objects.keysString[this.input.emote.id_string])
         if(effects)stream.write_array(Array.from(this.effects.values()),(e)=>stream.write_uint16(e.effect.id_number!),1)
     }
 }

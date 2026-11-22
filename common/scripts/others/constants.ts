@@ -103,6 +103,10 @@ export enum HumanAnimationType{
     Throw,
     Reset,
     Switch,
+    Die,
+
+    Emote,
+    Message
 }
 export type HumanAnimation={
 }&({
@@ -119,14 +123,16 @@ export type HumanAnimation={
     alt:boolean
     alt_func:boolean
 }|{
-    type:HumanAnimationType.Cook
-}|{
-    type:HumanAnimationType.Throw
-}|{
-    type:HumanAnimationType.Reset
-}|{
     type:HumanAnimationType.Switch
     item:number
+}|{
+    type:HumanAnimationType.Emote
+    id:number
+}|{
+    type:HumanAnimationType.Message
+    msg:string
+}|{
+    type:HumanAnimationType.Cook|HumanAnimationType.Throw|HumanAnimationType.Reset|HumanAnimationType.Die
 })
 export enum Layers{
     Underground=-1,

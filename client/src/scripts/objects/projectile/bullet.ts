@@ -3,7 +3,7 @@ import { Sprite2D } from "common/engine/web.ts";
 import { type CC_StaticBody } from "../static_body/static_body.ts";
 import { object_instance_type, ObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../../main/gel.ts";
-import { type Human } from "../human.ts";
+import { type Human } from "../human/human.ts";
 
 type Hittable=GameObject&{
     on_hitted(position:Vec2,critical?:boolean,sound?:string,reflected?:boolean,weight?:number):void
@@ -115,7 +115,7 @@ export class Bullet extends GameObject{
             if(!col_body&&!col_reflect)return
             const is_reflect=(col_reflect?v2.distance(this.old_position,col_reflect.point):Infinity)<(col_body?v2.distance(this.old_position,col_body.point):Infinity)
             this.collided_with.add(obj.id)
-            human.on_hitted((is_reflect?col_reflect:col_body)!.point,this.critical,undefined,is_reflect,this.weight)
+            human.container.callmode("hitted",(is_reflect?col_reflect:col_body)!.point,this.critical,undefined,is_reflect,this.weight)
             if(!(this.pass_through_humans||this.pass_through_everthing)||is_reflect)this.die()
         }else if(obj.object_type===ObjectType.StaticBody){
             const body=obj as Hittable&CC_StaticBody

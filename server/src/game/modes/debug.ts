@@ -2,12 +2,12 @@ import { type DamageParams } from "../objects/projectile/projectile.ts";
 import { random, v2, Vec2 } from "common/engine/core.ts";
 import { type MapDef } from "../maps/base.ts";
 import { get_map_def } from "../maps/maps.ts";
-import { HumanoidAnimations } from "common/scripts/definitions/objects/humanoid_animations.ts";
-import { gelo_instance_type, LootData, object_instance_type } from "common/scripts/others/constants.ts";
+import { gelo_instance_type, HumanAnimationType, LootData, object_instance_type } from "common/scripts/others/constants.ts";
 import { type SI_GameMap } from "../gelo/map.ts";
 import { type Human } from "../objects/human/human.ts";
 import { DefaultHumanLoadout, DefaultPlayerStatus, ModeManager, type PlayerStatus } from "./mode_manager.ts";
 import { human_events } from "../objects/human/events.ts";
+import { HumanAnimations } from "common/scripts/definitions/player/human_animations.ts";
 
 export interface DebugModeSettings{
     respawn_time?:number
@@ -42,6 +42,7 @@ export class DebugMode extends ModeManager<PlayerStatus,DebugModeSettings>{
                 for(let j=0;j<gift.length;j++){
                     h.inventory.give_loot(gift[j],false)
                 }
+                h.animations.push({type:HumanAnimationType.Emote,id:this.app.definitions.game_objects.keysString["skull"]})
                 h.position=position
                 this.app.clock.add_timeout(()=>{
                     h.revive()
@@ -53,6 +54,9 @@ export class DebugMode extends ModeManager<PlayerStatus,DebugModeSettings>{
             switch(i){
                 case 1:{
                     h.self_revive=true
+                    h.on(human_events.knocked,()=>{
+                        h.animations.push({type:HumanAnimationType.Emote,id:this.app.definitions.game_objects.keysString["heart"]})
+                    })
                     break
                 }
                 case 2:{
@@ -117,8 +121,8 @@ export class DebugMode extends ModeManager<PlayerStatus,DebugModeSettings>{
         return this.players.count>0
     }
     override on_player_spawn(_p:unknown,h:Human){
-        /*h.play_momentary(HumanoidAnimations.getFromString("sit"),{force:true,duration:2})
-        h.app.clock.add_timeout(()=>h.play_momentary(HumanoidAnimations.getFromString("suicide"),{force:true}),5)*/
+        //h.play_momentary(HumanAnimations.getFromString("sit"),{force:true,duration:2})
+        //h.app.clock.add_timeout(()=>h.play_momentary(HumanAnimations.getFromString("suicide"),{force:true}),5)
     }
     override on_human_die(h:Human,params:DamageParams){
         super.on_human_die(h,params)

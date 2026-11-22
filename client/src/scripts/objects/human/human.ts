@@ -1,26 +1,21 @@
 import { Angle, CircleCollider2D, ColorM, ease, matrix4, Numeric, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
-import { ABParticle2D, type AnimatedContainerModeCallback, AnimatedContainer2D, AnimatedSprite2D, type AudioInstance, Container2D, Container2DObject, type Frame, type Sound, Sprite2D } from "common/engine/web.ts";
+import { ABParticle2D, AnimatedContainer2D, AnimatedSprite2D, type AudioInstance, Container2D, Container2DObject, type Frame, type Sound, Sprite2D } from "common/engine/web.ts";
 import { type GameItem, type WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { type BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { type HelmetDef, type VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { type GunDef } from "common/scripts/definitions/items/guns.ts";
 import { type MeleeDef } from "common/scripts/definitions/items/melees.ts";
-import { type ConsumibleDef, type ConsumingAction } from "common/scripts/definitions/items/consumibles.ts";
-import { type BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
-import { type EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { type LoadoutBodyDef, type LoadoutLegDef, type LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
-import { HumanoidAnimations, type HumanoidMomentaryDef } from "common/scripts/definitions/objects/humanoid_animations.ts";
+import { HumanAnimations, type HumanoidMomentaryDef } from "common/scripts/definitions/player/human_animations.ts";
 import { type EffectDef } from "common/scripts/definitions/player/effects.ts";
-import { GameItemType, GameObjectDefinitionType, ItemQualitySettings } from "common/scripts/definitions/utils.ts";
+import { GameItemType } from "common/scripts/definitions/utils.ts";
 import { decode_visual, type HumanVisual } from "common/scripts/net/visual.ts";
 import { GameConstants, type HumanAnimation, HumanAnimationType, object_instance_type, ObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { DefaultDownedWalkFistRig, DefaultFistRig, type FistRig } from "common/scripts/others/item.ts";
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { cook_animation,throw_animation } from "common/scripts/others/animations.ts"
-import { GraphicsDConfig } from "../main/config.ts";
-import { GameObject } from "../main/gel.ts";
-import { ClientDecal } from "./client_decal.ts";
-
+import { GameObject } from "../../main/gel.ts";
+import { DefaultHumanModes } from "./animation.ts";
 
 export interface HumanWalk{
     cycle:number
@@ -33,17 +28,7 @@ export interface HumanWalk{
     last_position?:Vec2
 }
 
-export const HumanModes:Record<string,AnimatedContainerModeCallback>={
-    eyes:(h:Human,state:number=0,animated:boolean=true)=>h.set_eyes(state,animated),
-    mounth:(h:Human,state:number=0,enabled:boolean=true)=>h.set_mounth(state,enabled),
-    reset:(h:Human)=>h.reset_pose(),
-    fire:(h:Human)=>{
-        if(h.hand?.item_type===GameItemType.gun)h.play_fire_animation(h.hand as unknown as GunDef,false,true,false)
-    },
-}
-
 export type HumanParticleAnim={lifetime:number,sprite:Container2DObject}
-export const blood_decal_chances:number[]=[0.05,0.1,0.15,0.75,1]
 export interface HumanWeaponAssets{
     fire?:Sound
     fire_last?:Sound
@@ -69,37 +54,6 @@ export interface HumanActionState{
     emote_tween?:{kill():void}
     emote_sound?:AudioInstance
     emote_is_message:boolean
-}
-export interface HumanSprites{
-    hair:Sprite2D
-    body:Sprite2D
-    eyes:AnimatedSprite2D
-    mounth:AnimatedSprite2D
-    left_arm:Container2D
-    right_arm:Container2D
-    left_shirt_arm:Sprite2D
-    left_hand:Sprite2D
-    right_shirt_arm:Sprite2D
-    right_hand:Sprite2D
-    chest:Sprite2D
-    left_leg:Container2D
-    right_leg:Container2D
-    left_leg_l:Sprite2D
-    right_leg_l:Sprite2D
-    left_leg_foot:Sprite2D
-    right_leg_foot:Sprite2D
-    accessorys:Sprite2D[]
-    helmet:Sprite2D
-    backpack:Sprite2D
-    vest:Sprite2D
-    melee_world:Sprite2D
-    weapon:Sprite2D
-    weapon2:Sprite2D
-    item3:Sprite2D
-    muzzle_flash:Sprite2D
-    emote_container:Container2D
-    emote_bg:Sprite2D
-    emote_sprite:Sprite2D
 }
 
 export class Human extends GameObject{
@@ -132,7 +86,37 @@ export class Human extends GameObject{
     backpack?:BackpackDef
 
     container!:AnimatedContainer2D
-    sprites!:HumanSprites
+    sprites!:{
+        hair:Sprite2D
+        body:Sprite2D
+        eyes:AnimatedSprite2D
+        mounth:AnimatedSprite2D
+        left_arm:Container2D
+        right_arm:Container2D
+        left_shirt_arm:Sprite2D
+        left_hand:Sprite2D
+        right_shirt_arm:Sprite2D
+        right_hand:Sprite2D
+        chest:Sprite2D
+        left_leg:Container2D
+        right_leg:Container2D
+        left_leg_l:Sprite2D
+        right_leg_l:Sprite2D
+        left_leg_foot:Sprite2D
+        right_leg_foot:Sprite2D
+        accessorys:Sprite2D[]
+        helmet:Sprite2D
+        backpack:Sprite2D
+        vest:Sprite2D
+        melee_world:Sprite2D
+        weapon:Sprite2D
+        weapon2:Sprite2D
+        item3:Sprite2D
+        muzzle_flash:Sprite2D
+        emote_container:Container2D
+        emote_bg:Sprite2D
+        emote_sprite:Sprite2D
+    }
     assets:{
         eyes?:Frame[]
         mounth?:Frame[]
@@ -146,7 +130,6 @@ export class Human extends GameObject{
     downed_pose:boolean=false
 
     _rotation_set:boolean=true
-    _net_first:boolean=true
 
     weapon_assets:HumanWeaponAssets={consumible_particle:"healing_particle"}
     action:HumanActionState={
@@ -180,7 +163,7 @@ export class Human extends GameObject{
         }
         this.container=new AnimatedContainer2D(this.app)
         this.container.animation_parent=this
-        this.container.modes={...HumanModes}
+        this.container.modes={...DefaultHumanModes}
         this.container.zIndex=zIndexes.Humans
         this.sprites={
             body:this.container.add_animated_sprite("body",{scale:1.5,zIndex:4,hotspot:v2.half_one}),
@@ -200,15 +183,30 @@ export class Human extends GameObject{
             left_leg:this.container.add_container("left_leg"),
             right_leg:this.container.add_container("right_leg"),
 
-            left_leg_l:this.container.registry(new Sprite2D,"left_leg_l",{hotspot:v2(0,0.5),zIndex:1}),
-            left_leg_foot:this.container.registry(new Sprite2D,"left_leg_foot",{hotspot:v2.half_one,zIndex:0}),
-            right_leg_l:this.container.registry(new Sprite2D,"right_leg_l",{hotspot:v2(0,0.5),zIndex:1}),
-            right_leg_foot:this.container.registry(new Sprite2D,"right_leg_foot",{hotspot:v2.half_one,zIndex:0}),
+            left_leg_l:this.container.registry(new Sprite2D,"left_leg_l",{hotspot:v2(0,0.5),zIndex:1}) as Sprite2D,
+            left_leg_foot:this.container.registry(new Sprite2D,"left_leg_foot",{hotspot:v2.half_one,zIndex:0}) as Sprite2D,
+            right_leg_l:this.container.registry(new Sprite2D,"right_leg_l",{hotspot:v2(0,0.5),zIndex:1}) as Sprite2D,
+            right_leg_foot:this.container.registry(new Sprite2D,"right_leg_foot",{hotspot:v2.half_one,zIndex:0}) as Sprite2D,
 
             chest:this.container.add_sprite("chest",{scale:1.4,hotspot:v2.half_one,zIndex:1}),
 
-            accessorys:[]
-        } as unknown as HumanSprites
+            accessorys:[],
+
+            helmet:this.container.add_sprite("helmet",{zIndex:8,scale:1.5,hotspot:v2.half_one}),
+            backpack:this.container.add_sprite("backpack",{position:v2(-0.27,0),hotspot:v2(1,0.5),scale:1.5,zIndex:3}),
+            vest:this.container.add_sprite("vest",{scale:1.45,hotspot:v2.half_one,visible:false}),
+
+            melee_world:this.container.add_sprite("melee_world",{zIndex:2,hotspot:v2.half_one}),
+            weapon:this.container.add_sprite("weapon",{visible:false}),
+            weapon2:this.container.add_sprite("weapon2",{visible:false}),
+            item3:this.container.add_sprite("item3",{visible:false}),
+
+            muzzle_flash:this.container.add_sprite("muzzle_flash",{visible:false,zIndex:6,hotspot:v2(0,0.5)}),
+
+            emote_container:new Container2D(),
+            emote_sprite:new Sprite2D(),
+            emote_bg:new Sprite2D()
+        }
 
         this.sprites.left_shirt_arm.transform_frame({
             hotspot:v2(1,0.5),
@@ -240,21 +238,11 @@ export class Human extends GameObject{
         this.sprites.right_leg.add_child(this.sprites.right_leg_foot)
 
         this.scene.camera.add_object(this.container)
-        this.container.visible=false
-        this.sprites.helmet=this.container.add_sprite("helmet",{zIndex:8,scale:1.5,hotspot:v2.half_one})
-        this.sprites.backpack=this.container.add_sprite("backpack",{position:v2(-0.27,0),hotspot:v2(1,0.5),scale:1.5,zIndex:3})
-        this.sprites.vest=this.container.add_sprite("vest",{scale:1.45,hotspot:v2.half_one,visible:false})
+
         this.sprites.vest.sync_rotation=false
         this.sprites.vest.frame=this.app.resources.get_frame("human_vest")
-        this.sprites.melee_world=this.container.add_sprite("melee_world",{zIndex:2,hotspot:v2.half_one})
-        this.sprites.weapon=this.container.add_sprite("weapon",{visible:false})
-        this.sprites.weapon2=this.container.add_sprite("weapon2",{visible:false})
-        this.sprites.item3=this.container.add_sprite("item3",{visible:false})
-        this.sprites.muzzle_flash=this.container.add_sprite("muzzle_flash",{visible:false,zIndex:6,hotspot:v2(0,0.5)})
-        this.sprites.emote_container=new Container2D()
+
         this.sprites.emote_container.transform_frame({zIndex:zIndexes.DamageSplashs,visible:false})
-        this.sprites.emote_bg=new Sprite2D()
-        this.sprites.emote_sprite=new Sprite2D()
         this.sprites.emote_bg.hotspot=v2.half_one
         this.sprites.emote_sprite.hotspot=v2.half_one
         this.sprites.emote_container.add_child(this.sprites.emote_bg)
@@ -278,7 +266,7 @@ export class Human extends GameObject{
         })
 
         this.update_visual()
-        this.reset_pose()
+        this.container.callmode("reset_pose")
     }
     on_layer_set(){
         this.container.layer=this.layer
@@ -351,141 +339,11 @@ export class Human extends GameObject{
             }
         }
     }
-    on_decode_net(stream:Stream,full:boolean){
-        const [visual,momentary,dead,downed,swimming,has_name]=stream.read_boolean_group()
-        const state_changed=dead!==this.dead||downed!==this.downed||swimming!==this.swimming
-        if(this.dead&&!dead){
-            this.container.visible=true
-        }else if(!this.dead&&dead){
-            this.on_die()
-            this.dead_timer=0
-        }
-        this.dead=dead
-        this.downed=downed
-        this.swimming=swimming
-        this.position=stream.read_pos2()
-        this.rotation=stream.read_rad()
-        if(full)this.scale=stream.read_float32()
-        if(visual){
-            decode_visual(stream,this.app.definitions,this.visual)
-            this.update_visual()
-        }
-        if(momentary){
-            const [has]=stream.read_boolean_group()
-            let changed=this.momentary!==undefined&&!has
-            if(has){
-                const def=HumanoidAnimations.getFromNumber(stream.read_uint16())
-                const time=stream.read_float32()
-                changed=this.momentary?.def!==def||time<this.momentary.time
-                this.momentary={def,time}
-            }else{
-                this.momentary=undefined
-            }
-            if(changed)this.apply_momentary()
-        }
-        if(has_name)this.name=stream.read_string(1)
-        if(state_changed||this._net_first)this.update_pose()
-        if(full||this._net_first||!this.app.save.settings.get_var("game_interpolation")){
-            this.container.position=v2.clone(this.position)
-            if(this._rotation_set)this.container.rotation=this.rotation
-        }
-        this._net_first=false
-        const [hand,equipment,has_animations,has_message,has_emote,controlled,knocked,shield,has_effects]=stream.read_boolean_group2()
-        this.controlled=controlled
-        this.knocked=knocked
-        if(this.shield&&!shield&&!this.dead)this.break_shield()
-        this.shield=shield
-        if(hand){
-            const id=stream.read_int16()
-            this.hand=id>=0?this.app.definitions.game_items.valueNumber[id]:undefined
-            this.set_hand_visual(this.hand)
-            this.update_melee()
-        }
-        if(equipment){
-            const [has_skin]=stream.read_boolean_group()
-
-            this.helmet=this.app.definitions.helmets.getFromNumberSafe(stream.read_uint8()-1)
-            this.helmet_skin=has_skin?stream.read_uint8():undefined
-            this.sprites.helmet.position=this.helmet?.position?v2(this.helmet.position.x,this.helmet.position.y):v2(0,0)
-            this.sprites.helmet.frame=this.helmet?this.app.resources.get_frame((this.helmet_skin!==undefined&&this.helmet.skins?.[this.helmet_skin]?this.helmet.skins[this.helmet_skin]:this.helmet.id_string)+"_world"):undefined
-
-            this.vest=this.app.definitions.vests.getFromNumberSafe(stream.read_uint8()-1)
-            this.sprites.vest.visible=this.vest!==undefined
-            if(this.vest)this.sprites.vest.tint=ColorM.number(this.vest.tint)
-    
-            this.backpack=this.app.definitions.backpacks.getFromNumberSafe(stream.read_uint8()-1)
-            this.sprites.backpack.frame=this.backpack&&!this.backpack.no_world_image?this.app.resources.get_frame(this.backpack.id_string+"_world"):undefined
-
-            this.melee=this.app.definitions.melees.getFromNumberSafe(stream.read_uint16()-1)
-
-            this.update_melee()
-        }
-        if(has_animations){
-            for(const a of stream.read_array(()=>{
-                const type=stream.read_uint8() as HumanAnimationType
-                switch(type){
-                    case HumanAnimationType.Fire:{
-                        const [alt,last,alt_func]=stream.read_boolean_group()
-                        return {type,alt,last,alt_func}
-                    }
-                    case HumanAnimationType.Reloading:
-                        return {type,alt_reload:stream.read_boolean_group()[0]}
-                    case HumanAnimationType.Consuming:
-                    case HumanAnimationType.Switch:
-                        return {type,item:stream.read_uint16()}
-                    default:
-                        return {type} as HumanAnimation
-                }
-            },1))
-            this.play_action_animation(a)
-        }
-        if(has_message)this.add_message(stream.read_string_sized(50))
-        if(has_emote)this.add_emote(this.app.definitions.game_objects.valueNumber[stream.read_uint16()] as GameItem|EmoteDef)
-        if(has_effects)this.update_effects(stream.read_array(()=>this.app.definitions.effects.getFromNumber(stream.read_uint16()),1))
-    }
-    reset_pose(){
-        this.container.stop_all_animations()
-        this.set_eyes()
-        this.set_mounth()
-
-        v2m.set(this.sprites.left_leg.scale,1.4,1.4)
-        v2m.set(this.sprites.right_leg.scale,1.4,1.4)
-
-        this.sprites.left_leg.rotation=0.1
-        this.sprites.left_leg.position=v2(-0.6,-0.2)
-        this.sprites.left_leg_foot.position=v2(0.05,0)
-
-        this.sprites.right_leg.rotation=-0.1
-        this.sprites.right_leg.position=v2(0.6,0.2)
-        this.sprites.right_leg_foot.position=v2(0.05,0)
-
-        if(this.visual.foot?.frame){
-            this.sprites.left_leg_foot.set_frame(this.visual.foot!.frame!,this.app.resources)
-            this.sprites.right_leg_foot.set_frame(this.visual.foot!.frame!,this.app.resources)
-        }
-
-        this.sprites.chest.position=v2(-0.25,0)
-        this.sprites.chest.visible=false
-
-        if(this.downed_pose){
-            this.set_downed_pose(true)
-        }else{
-            this.set_arms_rig(this.arms_rig??DefaultFistRig)
-            this.sprites.left_leg.visible=false
-            this.sprites.right_leg.visible=false
-            this.sprites.left_leg.position=v2(-0.3,-0.2)
-            this.sprites.right_leg.position=v2(0.3,0.2)
-
-            this.walk.cycle=0
-            this.walk.time=0
-        }
-        if(!this.downed_pose)this.update_weapon(this.hand)
-    }
     apply_momentary(){
-        this.reset_action_animation(false)
+        this.container.callmode("reset_action",false)
         const m=this.momentary
         if(!m){
-            this.reset_pose()
+            this.container.callmode("reset_pose")
             return
         }
         this.container.stop_all_animations()
@@ -497,7 +355,7 @@ export class Human extends GameObject{
         const downed=this.downed||this.swimming
         const changed=downed!==this.downed_pose
         if(changed){
-            this.reset_action_animation(false)
+            this.container.callmode("reset_action",false)
             this.set_downed_pose(downed)
             this.container.zIndex=downed?zIndexes.DownedHumans:zIndexes.Humans
         }
@@ -632,8 +490,7 @@ export class Human extends GameObject{
             this.container.add_child(spr)
             this.sprites.accessorys.push(spr)
         }
-
-        this.reset_pose()
+        this.container.callmode("reset_pose")
     }
     set_mounth(state:number=0,enabled:boolean=true){
         if(!enabled||!this.assets.mounth){
@@ -926,30 +783,6 @@ export class Human extends GameObject{
             s.weapon2.set_frame((weapon as GunDef).rig_image2!,this.app.resources)
         }
     }
-    reset_action_animation(hard:boolean=true){
-        if(this.action.sound){
-            this.action.sound.stop()
-            this.action.sound=undefined
-        }
-        this.sprites.muzzle_flash.visible=false
-        this.action.cycle_sound_time=undefined
-        this.action.recoil_state=-1
-        this.action.recoil_time=0
-        this.sprites.left_arm.matrix=undefined
-        this.sprites.right_arm.matrix=undefined
-        this.sprites.weapon.matrix=undefined
-        this.sprites.weapon2.matrix=undefined
-        this.sprites.muzzle_flash.matrix=undefined
-        this.consumible_particles.enabled=false
-        if(hard){
-            this.container.stop_all_animations()
-            this.set_mounth()
-            this.set_eyes()
-            if(!this.downed_pose)this.set_hand_visual(this.hand)
-        }else if(!this.downed_pose&&!this.momentary){
-            this.update_weapon(this.hand)
-        }
-    }
     tick_action_animations(dt:number){
         const a=this.action
         if(a.weapon_time>0)a.weapon_time-=dt
@@ -1063,166 +896,39 @@ export class Human extends GameObject{
             })
         },0.75)
     }
-    play_fire_animation(def:GunDef,alt:boolean,last:boolean,alt_func:boolean){
-        const a=this.action
-        let barrel_offset=def.barrel_offset??0
-        a.weapon_time=2
-        if(def.recoil_animation){
-            a.recoil_time_scale=def.recoil_animation.time_scale
-            a.recoil_walk=def.recoil_animation.walk
-            if(def.dual_from){
-                a.recoil_state=0
-                a.recoil_time=0
-                if(alt){
-                    barrel_offset+=def.dual_offset
-                    a.recoil_type=1
-                }else{
-                    barrel_offset-=def.dual_offset
-                    a.recoil_type=2
-                }
-            }else{
-                a.recoil_type=0
-                if(a.recoil_state===-1){
-                    a.recoil_state=0
-                    a.recoil_time=0
-                }else{
-                    a.recoil_time+=0.1
-                }
-            }
-        }
-        const barrel_position=v2(def.barrel_length,barrel_offset)
-        v2m.rotate_RadAngle(barrel_position,this.container.rotation)
-        v2m.add(barrel_position,this.container.position,barrel_position)
-
-        const cycle_time=(def.fire_delay??0)*0.4
-        if(!def.case_particle?.at_begin){
-            this.app.clock.add_timeout(()=>{
-                if(!this.destroyed)this.play_casing_particle(def)
-            },cycle_time*1.25)
-        }
-        if(def.assets?.cycle_animation)this.container.play_animation(def.assets.cycle_animation)
-
-        let sound:Sound|undefined
-        if(alt_func)sound=this.weapon_assets.fire_alt_func??this.weapon_assets.fire
-        else if(last)sound=this.weapon_assets.fire_last??this.weapon_assets.fire
-        else sound=this.weapon_assets.fire
-        if(sound){
-            this.app.sounds.play(sound,{
-                position:barrel_position,
-                max_distance:15,
-                volume:0.7,
-                bus:"humans",
-            })
-        }
-        if(this.weapon_assets.cycle)a.cycle_sound_time=cycle_time
-        if(def.muzzle_flash&&!this.sprites.muzzle_flash.visible){
-            const m=this.sprites.muzzle_flash
-            m.visible=true
-            m.frame=this.app.resources.get_frame(def.muzzle_flash.sprite)
-            m.position=v2(def.barrel_length,barrel_offset)
-            a.muzzle_flash_time=Math.min((def.fire_delay??0)*0.9,0.2)
-        }
-    }
     get_reflect_collider():CircleCollider2D|undefined{
         const reflective=this.melee?.reflective
         const reflect=this.hand===this.melee?reflective?.equipped:reflective?.unequipped
         if(!reflect)return undefined
         return new CircleCollider2D(v2.add_rotate_RadAngle(this.position,reflect.offset,this.rotation),reflect.radius)
     }
-    play_melee_animation(def:MeleeDef){
-        const animation=def.alt_animation!==undefined?(this.action.melee_alt?def.alt_animation:def.animation):def.animation
-        this.action.melee_alt=!this.action.melee_alt
-        if(animation)this.container.play_animation(animation)
-        const attack=()=>{
-            if(this.destroyed||this.dead)return
-            if(def.assets?.use_sound){
-                this.app.sounds.play(this.app.resources.get_sound(def.assets.use_sound),{
-                    position:this.position,
-                    max_distance:12,
-                    volume:0.7,
-                    bus:"humans",
-                })
-            }
-            const hb=new CircleCollider2D(v2.add_rotate_RadAngle(this.position,def.offset,this.rotation),def.radius)
-            for(const o of this.manager.cells.get_objects(hb,this.layer) as GameObject[]){
-                if(o.id===this.id||!hb.colliding_with(o.collider))continue
-                if(o.object_type===ObjectType.StaticBody){
-                    if((o as unknown as {physical:{no_projectiles_collision?:boolean}}).physical.no_projectiles_collision)continue
-                    ;(o as unknown as {on_hitted(position:Vec2,critical:boolean):void}).on_hitted(hb.position,true)
-                    break
-                }
-                if(o.object_type===ObjectType.Human&&!(o as Human).dead){
-                    ;(o as Human).on_hitted(hb.position,false,def.assets?.hit_sound)
-                    break
-                }
-            }
-        }
-        for(const delay of def.damage_delays??[])this.app.clock.add_timeout(attack,delay)
-    }
     play_action_animation(animation:HumanAnimation){
+        switch(animation.type){
+            case HumanAnimationType.Die:
+                this.container.callmode("die")
+                break
+            case HumanAnimationType.Emote:
+                this.container.callmode("emote",this.app.definitions.game_objects.valueNumber[animation.id])
+                break
+            case HumanAnimationType.Message:
+                this.container.callmode("message",animation.msg)
+                break
+        }
         if(this.dead||this.momentary)return
         const hand=this.hand
         switch(animation.type){
             case HumanAnimationType.Fire:
-                if(hand?.item_type===GameItemType.gun)this.play_fire_animation(hand as unknown as GunDef,animation.alt,animation.last,animation.alt_func)
+                this.container.callmode("fire",hand,animation.alt,animation.last,animation.alt_func)
                 break
             case HumanAnimationType.Melee:
-                if(hand?.item_type===GameItemType.melee)this.play_melee_animation(hand as unknown as MeleeDef)
+                this.container.callmode("melee",hand)
                 break
             case HumanAnimationType.Reloading:{
-                if(hand?.item_type!==GameItemType.gun)break
-                const d=hand as unknown as GunDef
-                const reload_alt=d.reload?.reload_alt!==undefined&&animation.alt_reload
-                const sound=reload_alt?this.weapon_assets.reload_alt:this.weapon_assets.reload
-                if(sound){
-                    this.action.sound?.stop()
-                    this.action.sound=this.app.sounds.play(sound,{
-                        position:this.position,
-                        max_distance:10,
-                        bus:"humans",
-                        on_complete:()=>{
-                            this.action.sound=undefined
-                        },
-                    })
-                }
-                if(reload_alt&&d.assets?.reload_alt_animation)this.container.play_animation(d.assets.reload_alt_animation)
-                else if(!reload_alt&&d.assets?.reload_animation)this.container.play_animation(d.assets.reload_animation)
-                if(d.case_particle?.at_begin){
-                    if(d.dual_from){
-                        this.play_casing_particle(d,undefined,v2(0,-d.dual_offset))
-                        this.play_casing_particle(d,undefined,v2(0,d.dual_offset))
-                    }else{
-                        this.play_casing_particle(d)
-                    }
-                }
+                this.container.callmode("reloading",hand,animation.alt_reload)
                 break
             }
             case HumanAnimationType.Consuming:{
-                this.action.recoil_state=-1
-                const def=this.app.definitions.consumibles.getFromNumberSafe(animation.item) as ConsumibleDef|undefined
-                if(!def)break
-                const consuming=def.consuming as ConsumingAction&{type:0}
-                const sound=this.app.resources.get_sound(def.assets?.using_sound??`using_${def.id_string}`)
-                if(sound){
-                    this.action.sound?.stop()
-                    this.action.sound=this.app.sounds.play(sound,{
-                        position:this.position,
-                        max_distance:10,
-                        bus:"humans",
-                        on_complete:()=>{
-                            this.action.sound=undefined
-                        },
-                    })
-                }
-                if(def.assets?.using_particle){
-                    this.weapon_assets.consumible_particle=def.assets.using_particle
-                }else if(consuming.boost_def===undefined){
-                    this.weapon_assets.consumible_particle="healing_particle"
-                }else{
-                    this.weapon_assets.consumible_particle=this.app.definitions.boosts.getFromStringSafe(consuming.boost_def)?.particle??"healing_particle"
-                }
-                this.consumible_particles.enabled=true
-                if(consuming.animation)this.container.play_animation(consuming.animation)
+                this.container.callmode("consuming",this.app.definitions.consumibles.getFromNumberSafe(animation.item))
                 break
             }
             case HumanAnimationType.Cook:
@@ -1234,7 +940,7 @@ export class Human extends GameObject{
                 })
                 break
             case HumanAnimationType.Reset:
-                this.reset_action_animation()
+                this.container.callmode("reset_action")
                 break
             case HumanAnimationType.Switch:{
                 const def=this.app.definitions.game_items.valueNumber[animation.item]
@@ -1242,7 +948,7 @@ export class Human extends GameObject{
                     this.hand=def
                     this.set_hand_visual(def)
                 }
-                this.reset_action_animation()
+                this.container.callmode("reset_action")
                 if(this.weapon_assets.switch){
                     this.action.sound=this.app.sounds.play(this.weapon_assets.switch,{
                         position:this.position,
@@ -1261,74 +967,6 @@ export class Human extends GameObject{
             }
         }
     }
-    add_emote(emote:EmoteDef|BadgeDef|GameItem){
-        const s=this.sprites
-        const sound:AudioInstance|undefined=this.app.sounds.play(this.app.resources.get_sound((emote as EmoteDef).use_sound??"emote_play"),{
-            position:this.position,
-            max_distance:50,
-            volume:0.7,
-            bus:"humans",
-            on_complete:()=>{
-                if(this.action.emote_sound===sound)this.action.emote_sound=undefined
-            },
-        })
-        if((emote as EmoteDef).block_old_sound){
-            this.action.emote_sound?.stop()
-            this.action.emote_sound=sound
-        }
-        this.action.emote_time=2.5
-        s.emote_container.visible=true
-        s.emote_container.scale=v2(0,0)
-        v2m.single(s.emote_sprite.scale,1)
-        s.emote_sprite.rotation=0
-        s.emote_bg.set_frame({image:"emote_background",tint:0xffffff,scale:2},this.app.resources)
-        let frame=emote.id_string
-        switch(emote.def_type){
-            case GameObjectDefinitionType.emote:
-                frame="emote_"+frame
-                v2m.single(s.emote_sprite.scale,2.6)
-                break
-            case GameObjectDefinitionType.item:
-                v2m.single(s.emote_sprite.scale,emote.item_type===GameItemType.ammo?1:1.75)
-                if(emote.item_type===GameItemType.gun||emote.item_type===GameItemType.melee)s.emote_sprite.rotation=-0.523599
-                s.emote_bg.set_frame({image:"rarity_outline",tint:ItemQualitySettings[emote.rank].tint},this.app.resources)
-                break
-            case GameObjectDefinitionType.badge:
-                s.emote_bg.frame=this.app.resources.get_frame("emote_badge_background")
-                v2m.single(s.emote_bg.scale,1)
-                v2m.single(s.emote_sprite.scale,2)
-                break
-        }
-        s.emote_sprite.frame=this.app.resources.get_frame(frame)
-        this.action.emote_is_message=false
-        this.play_speak_animation()
-    }
-    add_message(message:string){
-        const s=this.sprites
-        this.app.sounds.play(this.app.resources.get_sound("emote_play"),{
-            position:this.position,
-            max_distance:50,
-            volume:0.7,
-            bus:"humans",
-        })
-        this.action.emote_time=5
-        s.emote_container.visible=true
-        s.emote_container.scale=v2(0,0)
-        s.emote_bg.set_frame({image:"dialog_background_1",scale:2},this.app.resources)
-        s.emote_sprite.rotation=0
-        v2m.single(s.emote_sprite.scale,1)
-        s.emote_sprite.frame=undefined
-        this.app.resources.render_text(message,40,"#ffffff","Russo-One",620).then((frame)=>{
-            if(this.destroyed){
-                frame.free()
-                return
-            }
-            if(this.action.emote_is_message)s.emote_sprite.frame?.free()
-            s.emote_sprite.frame=frame
-            this.action.emote_is_message=true
-        })
-        this.play_speak_animation()
-    }
     play_speak_animation(){
         this.action.emote_tween?.kill()
         this.action.emote_tween=this.app.clock.add_tween({
@@ -1342,184 +980,6 @@ export class Human extends GameObject{
         })
         const mounth=this.assets.mounth
         if(mounth?.[0]&&mounth[1])this.sprites.mounth.frames=[{delay:0.15,image:mounth[0].id},{delay:0.15,image:mounth[1].id}]
-    }
-    on_die(){
-        for(let i=0;i<5;i++){
-            const angle=random.rad()
-            this.scene.particles.add_particle(new ABParticle2D({
-                frame:{
-                    image:`blood_splash_${random.int(1,3)}`,
-                    layer:this.layer,
-                },
-
-                scale:0.1,
-                direction:angle,
-                angle:angle,
-                position:this.position,
-                zIndex:zIndexes.Particles,
-
-                life_time:random.float(2,4),
-                speed:random.float(0.5,1),
-                tint:ColorM.rgba(170,10,40),
-                to:{
-                    scale:random.float(2,5),
-                    tint:ColorM.rgba(170,10,40,0),
-                    angle:angle+random.neg_float(0.5,3)
-                },
-            }))
-        }
-        for(let i=0;i<4;i++){
-            const angle=random.rad()
-            this.scene.particles.add_particle(new ABParticle2D({
-                frame:{
-                    image:`human_gore_${random.int(1,2)}`,
-                    layer:this.layer,
-                },
-                scale:0.1,
-                direction:angle,
-                angle:angle,
-                position:this.position,
-                zIndex:zIndexes.Particles,
-
-                life_time:random.float(1,2),
-                speed:random.float(1,3),
-                tint:ColorM.default.white,
-                to:{
-                    scale:random.float(1.7,3),
-                    tint:ColorM.default.transparent,
-                    tint_ease:ease.quarticIn,
-                    angle:angle+random.neg_float(0.5,3)
-                },
-            }))
-        }
-        ClientDecal.spawn(this.scene,this.layer,{
-            image:`liquid_decal_${random.int(1,2)}`,
-            tint:random.choose([0xaa0a28,0xff0a28]),
-            alpha:210,
-            scale:random.float(2,3),
-            rotation:random.rad(),
-            position:v2.clone(this.position),
-        })
-    }
-    on_hitted(position:Vec2,critical:boolean=false,sound?:string,reflected:boolean=false,weight:number=0){
-        if(reflected){
-            this.app.sounds.play(this.app.resources.get_sound(sound??"human_metal_hit"),{
-                position:v2.clone(this.position),
-                max_distance:10,
-                bus:"humans",
-            })
-        }else if(this.shield){
-            let shield=this.particles.find((p)=>p.sprite instanceof Sprite2D&&p.sprite.frame?.id==="human_shield")
-            if(shield){
-                shield.lifetime=0.5
-            }else{
-                const sprite=new Sprite2D()
-                sprite.set_frame({image:"human_shield",hotspot:v2.half_one,zIndex:10,scale:2},this.app.resources)
-                this.container.add_child(sprite)
-                shield={lifetime:0.5,sprite}
-                this.particles.push(shield)
-            }
-            this.app.sounds.play(this.app.resources.get_sound("human_hit_shield"),{
-                position:v2.clone(this.position),
-                max_distance:15,
-                bus:"humans",
-            })
-        }else{
-            const tint=random.choose([ColorM.rgba(170,10,40),ColorM.rgba(255,10,40)])
-            if(Math.random()<=(blood_decal_chances[weight]??blood_decal_chances[0])){
-                ClientDecal.spawn(this.scene,this.layer,{
-                    image:`liquid_decal_${random.int(1,2)}`,
-                    tint:random.choose([0xaa0a28,0xff0a28]),
-                    alpha:210,
-                    scale:random.float(0.7,1.4),
-                    rotation:random.rad(),
-                    position:v2.clone(position),
-                })
-            }
-            if(this.app.save.settings.get_var("graphics_particles")>=GraphicsDConfig.Normal){
-                this.scene.particles.add_particle(new ABParticle2D({
-                    scale:0.1,
-                    frame:{
-                        image:`blood_splash_${random.int(1,3)}`,
-                        layer:this.layer,
-                        zIndex:zIndexes.Particles,
-                    },
-                    direction:random.rad(),
-                    life_time:random.float(0.7,0.8),
-                    position,
-                    speed:random.float(0.1,0.4),
-                    angle:random.rad(),
-                    tint,
-                    to:{
-                        scale:1.5,
-                        tint:ColorM.mult_hsv(tint,undefined,undefined,undefined,0),
-                        tint_ease:ease.quarticIn,
-                    },
-                    zIndex:zIndexes.Particles,
-                }))
-            }
-            this.app.sounds.play(this.app.resources.get_sound(sound??(critical?"human_headshot":`human_hit_${random.int(1,2)}`)),{
-                position:v2.clone(this.position),
-                max_distance:15,
-                bus:"humans",
-            })
-        }
-    }
-
-    break_shield(){
-        const particles=this.app.save.settings.get_var("graphics_particles")
-        if(particles>=GraphicsDConfig.Advanced){
-            for(let i=0;i<14;i++){
-                this.scene.particles.add_particle(new ABParticle2D({
-                    direction:random.rad(),
-                    life_time:0.5+(Math.random()*0.5),
-                    position:v2.clone(this.position),
-                    speed:7,
-                    scale:random.float(2,3),
-                    frame:{
-                        layer:this.layer,
-                        zIndex:zIndexes.Particles,
-                        image:"shield_part",
-                    },
-                    angle:random.rad(),
-                    tint:ColorM.default.white,
-                    to:{
-                        tint:ColorM.default.transparent,
-                        tint_ease:ease.quarticIn,
-                        scale:0.3,
-                        angle:random.float(-10,10),
-                        speed:5,
-                    },
-                }))
-            }
-        }
-        if(particles>=GraphicsDConfig.Normal){
-            this.scene.particles.add_particle(new ABParticle2D({
-                direction:0,
-                life_time:0.4,
-                position:v2.clone(this.position),
-                speed:0,
-                scale:0.1,
-                frame:{
-                    image:"shockwave",
-                    layer:this.layer,
-                    zIndex:zIndexes.Particles,
-                    hotspot:v2.half_one,
-                },
-                tint:ColorM.rgba(255,255,255,255),
-                to:{
-                    tint:ColorM.rgba(255,255,255,0),
-                    scale:10,
-                },
-            }))
-        }
-        this.app.sounds.play(this.app.resources.get_sound("shield_break"),{
-            position:v2.clone(this.position),
-            max_distance:15,
-            bus:"humans",
-        })
-        const shield=this.particles.find((p)=>p.sprite instanceof Sprite2D&&p.sprite.frame?.id==="human_shield")
-        if(shield)shield.lifetime=0
     }
 
     update_effects(effects:EffectDef[]){
@@ -1595,4 +1055,99 @@ export class Human extends GameObject{
         }
     }
 
+    on_decode_net(stream:Stream,full:boolean){
+        const [visual,momentary,dead,downed,swimming,has_name,hand,equipment,has_animations,controlled,knocked,shield,has_effects]=stream.read_boolean_group3()
+        const state_changed=dead!==this.dead||downed!==this.downed||swimming!==this.swimming
+
+        if(dead){
+            this.container.visible=false
+        }else{
+            this.container.visible=true
+            this.dead_timer=0
+        }
+
+        this.dead=dead
+        this.downed=downed
+        this.swimming=swimming
+        this.controlled=controlled
+        this.knocked=knocked
+        this.shield=shield
+        this.position=stream.read_pos2()
+        this.rotation=stream.read_rad()
+        if(full)this.scale=stream.read_float32()
+        if(visual){
+            decode_visual(stream,this.app.definitions,this.visual)
+            this.update_visual()
+        }
+        if(momentary){
+            const [has]=stream.read_boolean_group()
+            let changed=this.momentary!==undefined&&!has
+            if(has){
+                const def=HumanAnimations.getFromNumber(stream.read_uint16())
+                const time=stream.read_float32()
+                changed=this.momentary?.def!==def||time<this.momentary.time
+                this.momentary={def,time}
+            }else{
+                this.momentary=undefined
+            }
+            if(changed)this.apply_momentary()
+        }
+        if(has_name)this.name=stream.read_string(1)
+        if(state_changed||full)this.update_pose()
+        if(full||!this.app.save.settings.get_var("game_interpolation")){
+            this.container.position=v2.clone(this.position)
+            if(this._rotation_set)this.container.rotation=this.rotation
+        }
+        if(hand){
+            const id=stream.read_int16()
+            this.hand=id>=0?this.app.definitions.game_items.valueNumber[id]:undefined
+            this.set_hand_visual(this.hand)
+            this.update_melee()
+        }
+        if(equipment){
+            const [has_skin]=stream.read_boolean_group()
+
+            this.helmet=this.app.definitions.helmets.getFromNumberSafe(stream.read_uint8()-1)
+            this.helmet_skin=has_skin?stream.read_uint8():undefined
+            this.sprites.helmet.position=this.helmet?.position?v2(this.helmet.position.x,this.helmet.position.y):v2(0,0)
+            this.sprites.helmet.frame=this.helmet?this.app.resources.get_frame((this.helmet_skin!==undefined&&this.helmet.skins?.[this.helmet_skin]?this.helmet.skins[this.helmet_skin]:this.helmet.id_string)+"_world"):undefined
+
+            this.vest=this.app.definitions.vests.getFromNumberSafe(stream.read_uint8()-1)
+            this.sprites.vest.visible=this.vest!==undefined
+            if(this.vest)this.sprites.vest.tint=ColorM.number(this.vest.tint)
+    
+            this.backpack=this.app.definitions.backpacks.getFromNumberSafe(stream.read_uint8()-1)
+            this.sprites.backpack.frame=this.backpack&&!this.backpack.no_world_image?this.app.resources.get_frame(this.backpack.id_string+"_world"):undefined
+
+            this.melee=this.app.definitions.melees.getFromNumberSafe(stream.read_uint16()-1)
+
+            this.update_melee()
+        }
+        if(has_animations){
+            const animation:HumanAnimation[]=stream.read_array(()=>{
+                const type=stream.read_uint8() as HumanAnimationType
+                switch(type){
+                    case HumanAnimationType.Fire:{
+                        const [alt,last,alt_func]=stream.read_boolean_group()
+                        return {type,alt,last,alt_func}
+                    }
+                    case HumanAnimationType.Reloading:
+                        return {type,alt_reload:stream.read_boolean_group()[0]}
+                    case HumanAnimationType.Consuming:
+                    case HumanAnimationType.Switch:
+                        return {type,item:stream.read_uint16()}
+                    case HumanAnimationType.Emote:
+                        return {type,id:stream.read_uint16()}
+                    case HumanAnimationType.Message:
+                        return {type,msg:stream.read_string_sized(50)}
+                    default:
+                        return {type} as HumanAnimation
+                }
+            },1)
+            for(const a of animation){
+                this.play_action_animation(a)
+            }
+        }
+        if(has_effects)this.update_effects(stream.read_array(()=>this.app.definitions.effects.getFromNumber(stream.read_uint16()),1))
+    }
 }

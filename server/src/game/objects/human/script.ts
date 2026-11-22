@@ -1,8 +1,8 @@
 import { type DamageParams } from "../projectile/projectile.ts";
 import { Angle, astar_path2d, BaseObject2D, Collider2D, Numeric, ObjectManager2D, random, Random1, v2, Vec2 } from "common/engine/core.ts";
-import { ObjectType } from "common/scripts/others/constants.ts";
+import { HumanAnimationType, ObjectType } from "common/scripts/others/constants.ts";
 import { mode_events } from "../../modes/mode_manager.ts";
-import { type MomentaryPlayOptions } from "common/scripts/definitions/objects/humanoid_animations.ts";
+import { type MomentaryPlayOptions } from "common/scripts/definitions/player/human_animations.ts";
 import { type SI_StaticBody } from "../static_body/static_body.ts";
 import { type Human } from "./human.ts";
 
@@ -195,7 +195,7 @@ export class HumanScript{
     }
 
     say(text:string,time:number=3,wait:boolean=true):Promise<boolean>{
-        this.human.input.message=text
+        this.human.animations.push({type:HumanAnimationType.Message,msg:text})
         if(!wait)return Promise.resolve(true)
         return this.sleep(time)
     }

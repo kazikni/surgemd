@@ -10,6 +10,9 @@ export interface BoostDef extends Definition{
         multiplier:number
         penetrate:number
         break_invensibility:number
+
+        hit_animation:string
+        break_animation:string
     }
     se?:{
         update_modifiers?:(human:any)=>Record<string,number>
@@ -48,7 +51,10 @@ export function Boosts_Default_Init():BoostDef[]{
             shield:{
                 multiplier:1.1,
                 penetrate:2.2,
-                break_invensibility:0.4
+                break_invensibility:0.4,
+
+                break_animation:"shield_break",
+                hit_animation:"shield_hit",
             },
             particle:"boost_shield_particle"
         },
@@ -97,7 +103,9 @@ export function Boosts_Default_Init():BoostDef[]{
             shield:{
                 multiplier:4,
                 penetrate:2,
-                break_invensibility:0.2
+                break_invensibility:0.2,
+                break_animation:"shield_break",
+                hit_animation:"shield_hit",
             },
             se:{
                 tick(dt,h){

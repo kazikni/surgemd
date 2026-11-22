@@ -26,8 +26,8 @@ export interface MomentaryPlayOptions{
     on_end?:(completed:boolean)=>void
 }
 
-export const HumanoidAnimations=new Definitions<HumanoidMomentaryDef,{}>()
-HumanoidAnimations.insert(
+export const HumanAnimations=new Definitions<HumanoidMomentaryDef,{}>()
+HumanAnimations.insert(
     {
         id_string:"sit",
         priority:1,
@@ -37,6 +37,10 @@ HumanoidAnimations.insert(
         lock_hand:true,
         hide_hand:true,
         keyframes:[
+            {
+                time:0,
+                actions:[{type:"callmode",mode:"message",args:["Good"]}]
+            },
             {
                 time:0.3,
                 actions:[

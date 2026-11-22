@@ -8,7 +8,7 @@ import { GameGELO, GameObject, GameScene } from "../../main/gel.ts";
 import { type Application } from "../../main/app.ts";
 import { type CC_GameMap } from "../../gelo/map.ts";
 import { type CC_Deadzone } from "../../gelo/deadzone.ts";
-import { active_human, type ActiveHuman } from "../../objects/active_human.ts";
+import { active_human, type ActiveHuman } from "../../objects/human/active_human.ts";
 import { net_scene_defs } from "./netdefs.ts";
 import { cc_freecam } from "../../gelo/free_cam.ts";
 import { api_server } from "../../main/config.ts";

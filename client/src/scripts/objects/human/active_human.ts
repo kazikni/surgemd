@@ -2,7 +2,7 @@ import { gel_events, GELComponent, Numeric, v2 } from "common/engine/core.ts";
 import { HideElement, InputEvent, InputEventType, ShowElement } from "common/engine/web.ts";
 import { InputAction, InputActionType, InputPacket, type InputData } from "common/scripts/net/input_packet.ts";
 import { type Human } from "./human.ts";
-import { type PlayScene } from "../scenes/play/scene.ts";
+import { type PlayScene } from "../../scenes/play/scene.ts";
 
 export type ActiveHuman=Human&{
     active:{

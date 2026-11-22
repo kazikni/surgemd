@@ -5,7 +5,7 @@ import { ccn_deadzone } from "../../gelo/deadzone.ts";
 import { Debug_Colliders } from "../../main/config.ts";
 import { GameGELO, GameObject } from "../../main/gel.ts";
 import { Loot } from "../../objects/loot.ts";
-import { Human } from "../../objects/human.ts";
+import { Human } from "../../objects/human/human.ts";
 import { ccn_obstacle } from "../../objects/static_body/obstacle.ts";
 import { Bullet } from "../../objects/projectile/bullet.ts";
 import { Explosion } from "../../objects/projectile/explosion.ts";

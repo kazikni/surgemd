@@ -21,6 +21,7 @@ import { Obstacles_Default_Init, obstacles_factory } from "./objects/obstacles.t
 import { SyncedParticles_Default_Init } from "./objects/synced_particles.ts";
 import { Vehicles_Default_Init } from "./objects/vehicles.ts";
 import { Boosts_Default_Init } from "./player/boosts.ts";
+import { Effects_Default_Init } from "./player/effects.ts";
 
 export const DefaultDefinitions:GameADefinitions={
     items:{
@@ -52,7 +53,8 @@ export const DefaultDefinitions:GameADefinitions={
         synced_particles:SyncedParticles_Default_Init()
     },
     others:{
-        boosts:Boosts_Default_Init()
+        boosts:Boosts_Default_Init(),
+        effects:Effects_Default_Init()
     }
 }
 

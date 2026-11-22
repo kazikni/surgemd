@@ -7,12 +7,11 @@ import { Color, ColorM, FileManager, Language, Matrix, matrix4, Numeric, Path, S
 import { ApiSettings, game_version } from "common/scripts/config/config.ts";
 import { warning_popup } from "../scenes/menu/def.ts";
 import { CutsceneScene } from "../scenes/cutscene/scene.ts";
-import { CommonApplication } from "common/scripts/game/base.ts";
 import { OnlineGameOptions, PlayScene, WorkerGameOptions, type PlaySceneKind } from "../scenes/play/scene.ts";
 import { InitialScreenScene } from "../scenes/initial_screen/scene.ts";
 import { JoinData } from "common/scripts/net/join_packet.ts";
 
-export class Application extends ClientApplication implements CommonApplication{
+export class Application extends ClientApplication{
     menu_scene=new MenuScene()
     loading_scene=new LoadingScreenScene()
     cutscene_scene=new CutsceneScene()

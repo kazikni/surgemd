@@ -1,11 +1,19 @@
-import { C_GameMap, c_gamemap, gamemap_events } from "common/scripts/game/gelo/map.ts";
 import { Graphics2D, Grid2D } from "common/engine/web.ts";
-import { ColorM, gel_events, GELComponent, Stream, v2, v2m } from "common/engine/core.ts";
-import { Layers, zIndexes } from "common/scripts/others/constants.ts";
-import { Floors, FloorType } from "common/scripts/others/terrain.ts";
+import { ColorM, gel_events, GELComponent, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { gelo_instance_type, Layers, zIndexes } from "common/scripts/others/constants.ts";
+import { Floors, FloorType, type MapBiomeDef, type MapRegion, TerrainManager } from "common/scripts/others/terrain.ts";
 import { GameGELO } from "../main/gel.ts";
 
-export type CC_GameMap=GameGELO&C_GameMap&{
+export type CC_GameMap=GameGELO&{
+    terrain:TerrainManager
+    seed:number
+    size:Vec2
+    biome:MapBiomeDef
+    regions:MapRegion[]
+
+    default_layer:number
+    default_floor:FloorType
+
     grid_gfx:Grid2D
     terrain_gfx:Record<number,Graphics2D>
 
@@ -14,10 +22,18 @@ export type CC_GameMap=GameGELO&C_GameMap&{
 
 export const cc_gamemap:GELComponent<CC_GameMap>={
     id_string:"cc_gamemap",
-    extensions:[c_gamemap],
 
     events:{
         [gel_events.bind]:function(){
+            this.instance_type=gelo_instance_type.map
+            this.terrain=new TerrainManager()
+            this.seed=0
+            this.size=v2.zero()
+            this.regions=[]
+            this.default_layer=Layers.Normal
+            this.default_floor=FloorType.Void
+            this.biome={floors:{},particles:[],musics:[],textures:[]}
+
             this.terrain_gfx={}
 
             this.grid_gfx=new Grid2D()
@@ -65,7 +81,22 @@ export const cc_gamemap:GELComponent<CC_GameMap>={
             grid.end=end
         },
 
-        [gamemap_events.generated]:function(){
+        [gel_events.net_decode](stream:Stream){
+            this.seed=stream.read_uint32()
+            this.size=stream.read_pos2()
+            this.default_floor=stream.read_uint8()
+            this.default_layer=stream.read_int8()
+            this.biome=stream.read_any(2,2)
+            this.regions=stream.read_any(2,2)??[]
+            this.terrain.clear()
+            stream.read_array(()=>{
+                const type=stream.read_uint8()
+                const layer=stream.read_int8()
+                const [smooth,visible,has_tint]=stream.read_boolean_group()
+                const tint=has_tint?stream.read_uint32():undefined
+                const hb=stream.read_collider()
+                this.terrain.add_floor({type,layer,smooth,visible,tint,hb})
+            },3)
             this.draw_terrain()
         },
     },

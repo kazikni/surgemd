@@ -2,9 +2,9 @@ import { AbstractApplication, ClientsManager, SignalManager } from "common/engin
 import { type GameDataBase, type ServerGameApplication } from "common/engine/server/server.ts";
 import { type GameConfig } from "common/scripts/config/config.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
-import { type CommonApplication } from "common/scripts/game/base.ts";
-import { mode_events } from "common/scripts/game/modes/mode_manager.ts";
-import { setup_game_scene } from "common/scripts/game/modes/modes.ts";
+import { type SimApplication } from "./base.ts";
+import { mode_events } from "./modes/mode_manager.ts";
+import { setup_game_scene } from "./modes/modes.ts";
 import { simulation_defs, SimulationDefs, SimulationScene } from "./scene.ts";
 import { NetPlayerManager } from "./net_player_conn.ts";
 
@@ -27,7 +27,7 @@ export interface GameAppConfig{
     }
 }
 
-export class Game extends AbstractApplication implements ServerGameApplication,CommonApplication{
+export class Game extends AbstractApplication implements ServerGameApplication,SimApplication{
     id:number=0
     definitions:GameDefinition=new GameDefinition()
     signals:SignalManager=new SignalManager()

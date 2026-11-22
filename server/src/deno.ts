@@ -6,5 +6,5 @@ if (import.meta.main) {
 }
 
 //deno run -A ./server/src/deno.ts kspr extract client/dist/assets/kspr/main/sheets/sheet_low.kspr
-//deno run -A ./server/src/deno.ts game map compile common/scripts/definitions/maps/tundra.ts
+//deno run -A ./server/src/deno.ts game map compile server/src/game/maps/tundra.ts
 //deno run -A ./server/src/deno.ts audio compile client/public/assets/sounds/game/main

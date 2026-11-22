@@ -10,6 +10,8 @@ import { ccn_obstacle } from "../../objects/static_body/obstacle.ts";
 import { Bullet } from "../../objects/projectile/bullet.ts";
 import { Explosion } from "../../objects/projectile/explosion.ts";
 import { Grenade } from "../../objects/projectile/grenade.ts";
+import { Decal } from "../../objects/decal.ts";
+import { SyncedParticle } from "../../objects/synced_particle.ts";
 import { type PlaySceneDefs } from "./scene.ts";
 import { cc_gamemap } from "../../gelo/map.ts";
 
@@ -43,5 +45,7 @@ export const net_scene_defs:PlaySceneDefs={
         [object_instance_type.bullet]:()=>new Bullet(),
         [object_instance_type.explosion]:()=>new Explosion(),
         [object_instance_type.grenade]:()=>new Grenade(),
+        [object_instance_type.decal]:()=>new Decal(),
+        [object_instance_type.synced_particle]:()=>new SyncedParticle(),
     }
 }

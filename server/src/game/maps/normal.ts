@@ -1,0 +1,312 @@
+import { cloneDeep, mergeDeep, RectCollider2D, RotationMode, v2 } from "common/engine/core.ts";
+import { Spawn, zIndexes } from "common/scripts/others/constants.ts";
+import { FloorType, RiverLayerDef } from "common/scripts/others/terrain.ts";
+import { LootTables } from "common/scripts/definitions/loot_tables.ts";
+import { hit_sounds } from "common/scripts/definitions/utils.ts";
+import { type MapDef } from "./base.ts";
+import { type MapBiomeDef } from "common/scripts/others/terrain.ts";
+export const NormalBiome:MapBiomeDef={
+    floors:{
+
+    },
+    textures:[
+        "/assets/kspr/common"
+    ],
+    particles:["leaf_1_particle_1"],
+    particles_tint:0x2b7317,
+    musics:[
+        "/assets/sounds/musics/online/game_normal_music_1.mp3",
+        "/assets/sounds/musics/online/game_normal_music_2.mp3",
+        "/assets/sounds/musics/online/game_normal_music_3.mp3",
+        "/assets/sounds/musics/online/game_normal_music_4.mp3",
+    ]
+}
+export const SnowBiome:MapBiomeDef={
+    floors:{
+        [FloorType.Sand]:0x505659
+    },
+    skin:"snow",
+    textures:["/assets/kspr/common","/assets/kspr/snow"],
+    ambient_sound:"snowstorm_ambience",
+    musics:[],
+    particles:[],
+    particles_tint:0
+}
+export const DesertBiome:MapBiomeDef={
+    floors:{
+        [FloorType.Sand]:0xa1761a
+    },
+    textures:["/assets/kspr/common","/assets/kspr/desert"],
+    musics:[],
+    particles:[],
+}
+export const FallBiome:MapBiomeDef={
+    floors:{
+        [FloorType.Grass]:0x75782f,//97bf39
+    },
+    skin:"fall",
+    skins_replace:{
+        "oak_tree":["fall_1","fall_2"],
+        "pine_tree":["fall_1","fall_2"],
+        "bush":["fall_1","fall_2"],
+        "squared_bush":["fall_1","fall_2"],
+    },
+    skin_chance:0.2,
+    textures:["/assets/kspr/common","/assets/kspr/fall"],
+    musics:[
+        "/assets/sounds/musics/online/game_fall_music_1.mp3",
+        "/assets/sounds/musics/online/game_fall_music_2.mp3",
+    ],
+    particles:[],
+}
+export const map_spawns={
+    trees:[
+        {def:"oak_tree",weight:100},
+        {def:"pine_tree",weight:5},
+    ],
+    containers:[
+        {def:"blue_container_1",weight:20},
+        {def:"blue_container_2",weight:20},
+        {def:"red_container_1",weight:20},
+        {def:"red_container_2",weight:20},
+        {def:"yellow_container_1",weight:20},
+        {def:"yellow_container_2",weight:20},
+        {def:"green_container_1",weight:20},
+        {def:"green_container_2",weight:20},
+        {def:"black_container",weight:1},
+    ],
+    crates:[
+        {def:"wood_crate",weight:1000},
+        {def:"copper_crate",weight:100},
+        {def:"campfire_crate",weight:20},
+        {def:"knife_crate",weight:10},
+        {def:"iron_crate",weight:1},
+        {def:"gold_crate",weight:0.05},
+    ],
+    rocks:[
+        {def:"rock",weight:130},
+        {def:"golden_rock",weight:0.05},
+        {def:"platinum_rock",weight:0.05},
+    ]
+}
+export const NormalMap:MapDef={
+    loot_tables:LootTables,
+    biome:mergeDeep(cloneDeep(NormalBiome),{
+        textures:[...NormalBiome.textures,"/assets/kspr/maps/normal"]
+    }),
+    definitions:{
+        objects:{
+            obstacles:[{
+                id_string:"gas_pump",
+                health:200,
+                onDestroyExplosion:"barrel_explosion",
+                collider:new RectCollider2D(v2(-0.58,-1.1),v2(0.58,1.1)),
+                scale:{
+                    destroy:0.85
+                },
+                zIndex:{base:zIndexes.Obstacles2},
+                assets:{
+                    frame:{
+                        transform:{
+                            hotspot:v2(0.33,0.5)
+                        }
+                    },
+                    particles:{
+                        particle:"metal_particle",
+                        tint:0x868d94
+                    },
+                    sounds:hit_sounds.heavy_metal,
+                },
+                rotation_mode:RotationMode.limited,
+                reflect_bullets:true,
+            }]
+        }
+    },
+    size:v2(600,600),
+    generation:{
+        base:FloorType.Water,
+        spawn:[
+            {def:"small_house_1",count:4},
+            {def:"storehouse_1",count:4},
+            {def:"watchtower",count:4},
+            {def:"bunker_1",count:2},
+            {def:"shed",count:20},
+            {def:map_spawns.containers,count:20},
+
+            {def:"golden_stone",count:1},
+
+            {def:"sillo",count:7},
+            {def:map_spawns.crates,count:430},
+            {def:map_spawns.trees,count:700},
+            {def:"river_rock",count:50},
+            {def:map_spawns.rocks,count:500},
+            {def:"bush",count:300},
+            {def:"barrel",count:130},
+
+            {def:"normal_loot",count:100},
+            {def:"jeep",count:5},
+            {def:"bike",count:5},
+        ],
+        islands:[{
+            structures:[
+                {
+                    floors:[],
+                    radius:60,
+                    variation:15,
+                    passes:1,
+                    points:10,
+                    spawn:[
+                        {def:map_spawns.trees,count:400,spawn:Spawn.grass_only},
+                    ],
+                    region:{
+                        name:"Soul Forest",
+                        position:v2(0,0)
+                    }
+                },
+                {
+                    floors:[
+                        {
+                            type:FloorType.Water,
+                            padding:0,
+                            spacing:2,
+                            variation:2,
+                        },
+                        {
+                            type:FloorType.Sand,
+                            padding:10,
+                            spacing:2,
+                            variation:2,
+                        },
+                        {
+                            type:FloorType.Grass,
+                            padding:15,
+                            spacing:2,
+                            variation:2,
+                        },
+                    ],
+                    spawn:[
+                        {def:"bunker_2",count:1},
+                    ],
+                    radius:100,
+                    variation:15,
+                    passes:1,
+                    points:10,
+                    region:{
+                        name:"Sub Island",
+                        position:v2(0,0)
+                    }
+                },
+            ],
+            terrain:{
+                radius:265,
+                passes:3,
+                points:6,
+                variation:60,
+                rivers:{
+                    divisions:50,
+                    spawn_floor:1,
+                    expansion:32,
+                    defs:[
+                        {
+                            rivers:[
+                                {width:15,width_variation:2},
+                                {width:15,width_variation:2},
+                                {width:15,width_variation:2},
+                                {width:9,width_variation:2},
+                                {width:9,width_variation:2},
+                            ],
+                            weight:1
+                        },
+                        {
+                            rivers:[
+                                {width:25,width_variation:2},
+                                {width:15,width_variation:2},
+                                {width:15,width_variation:2},
+                                {width:15,width_variation:2},
+                            ],
+                            weight:1
+                        },
+                        {
+                            rivers:[
+                                {width:25,width_variation:2},
+                                {width:25,width_variation:2},
+                                {width:25,width_variation:2},
+                            ],
+                            weight:1
+                        },
+                    ]
+                },
+                floors:[
+                    {
+                        padding:0,
+                        type:FloorType.Sand,
+                        spacing:3,
+                        variation:3,
+                    },
+                    {
+                        padding:10,
+                        type:FloorType.Grass,
+                        spacing:3,
+                        variation:3,
+                    },
+                ]
+            }
+        }]
+    },
+}
+export const NormalLobby:MapDef={
+    loot_tables:NormalMap.loot_tables,
+    size:v2(100,100),
+    generation:{
+        base:FloorType.Water,
+        spawn:[
+            {def:map_spawns.containers,count:2},
+
+            {def:"sillo",count:2},
+
+            {def:"jeep",count:1},
+            {def:"bike",count:1},
+
+            {def:"oak_tree",count:80},
+            {def:"stone",count:50},
+            {def:"bush",count:30},
+
+            {def:"wood_crate",count:30},
+            {def:"copper_crate",count:6},
+            {def:"barrel",count:13},
+            {def:"normal_loot",count:20},
+        ],
+        islands:[{
+            terrain:{
+                radius:50,
+                passes:1,
+                points:5,
+                variation:1,
+                floors:[
+                    {
+                        padding:0,
+                        type:FloorType.Sand,
+                        spacing:1,
+                        variation:1,
+                    },
+                    {
+                        padding:10,
+                        type:FloorType.Grass,
+                        spacing:1,
+                        variation:1,
+                    }
+                ]
+            }
+        }]
+    },
+    biome:NormalBiome,
+}
+export const river_layers={
+    ice:[
+        {
+            floor:FloorType.Ice,
+            push:false,
+        }
+    ]
+} satisfies Record<string,RiverLayerDef[]>
+export const map=NormalMap

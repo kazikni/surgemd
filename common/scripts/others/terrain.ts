@@ -1,6 +1,5 @@
 import { Collision, Collider2D, polygon2, Polygon2D, PolygonCollider2D, SeededRandom, v2, v2m, Vec2 } from "../../engine/core.ts"
 import { BasicTerrainManager, FloorBase } from "../../engine/core/app/terrain.ts"
-import { TerrainLayerDef, TerrainShapeDef } from "../definitions/maps/base.ts"
 
 export enum FloorType {
     Void = 0,
@@ -171,6 +170,41 @@ export interface RiverDef{
     push_force?:number
     min_distance?:number
     layers?:RiverLayerDef[]
+}
+export interface TerrainLayerDef {
+    type:FloorType
+    tint?:number
+    layer?:number
+    padding:number
+    variation:number
+    spacing:number
+}
+export interface TerrainShapeDef {
+    radius:number
+
+    position?:Vec2
+
+    variation?:number
+    points?:number
+    passes?:number
+    variation_decay?:number
+
+    floors:TerrainLayerDef[]
+}
+export interface MapRegion{
+    name:string
+    position:Vec2
+}
+export interface MapBiomeDef{
+    skin?:string
+    skin_chance?:number
+    skins_replace?:Record<string,string|string[]>
+    floors:Partial<Record<FloorType,number>>
+    particles:string[]
+    particles_tint?:number
+    ambient_sound?:string
+    musics:string[]
+    textures:string[]
 }
 export interface TerrainShapeResult{
     base:Polygon2D

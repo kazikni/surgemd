@@ -1,12 +1,20 @@
-import { Color, ColorM, ease, gel_events, GELComponent, random, Vec2 } from "common/engine/core.ts";
+import { Collider2D, Color, ColorM, ease, gel_events, GELComponent, random, Vec2 } from "common/engine/core.ts";
 import { ABParticle2D, Sound } from "common/engine/web.ts";
-import { c_static_body, C_StaticBody } from "common/scripts/game/objects/static_body/static_body.ts";
 import { HitParticlesDef, HitSoundsDef } from "common/scripts/definitions/utils.ts";
-import { zIndexes } from "common/scripts/others/constants.ts";
+import { ObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GraphicsDConfig } from "../../main/config.ts";
 import { GameObject } from "../../main/gel.ts";
 
-export type CC_StaticBody=C_StaticBody&GameObject&{
+export type CC_StaticBody=GameObject&{
+    physical:{
+        no_collision?:boolean
+        no_projectiles_collision?:boolean
+        no_pathfinding_collision?:boolean
+        passable_by_projectiles?:boolean
+        reflect_projectiles?:boolean
+
+        collider:Collider2D
+    }
     assets:{
         particles:{
             tint?:Color
@@ -24,9 +32,12 @@ export type CC_StaticBody=C_StaticBody&GameObject&{
 }
 export const cc_static_body:GELComponent<CC_StaticBody>={
     id_string:"cc_static_body",
-    extensions:[c_static_body],
     events:{
         [gel_events.bind]:function(){
+            this.object_type=ObjectType.StaticBody
+            this.physical={
+                collider:this.collider
+            }
             this.assets={
                 particles:{images:[]},
                 sounds:{}

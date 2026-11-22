@@ -1,4 +1,4 @@
-import { Definition, Definitions, FrameDef } from "../../../engine/core.ts";
+import { Definition, FrameDef } from "../../../engine/core.ts";
 
 export enum EffectType{
     Buff,
@@ -61,14 +61,14 @@ export type SideEffect=({
 }|{
     type:SideEffectType.Parachute,
 })
-export const Effects=new Definitions<EffectDef,{}>()
 
 export interface EffectInstance{
     effect:EffectDef
     time:number
     tick_time:number
 }
-Effects.insert(
+export function Effects_Default_Init():EffectDef[]{
+    return [
     {
         id_string:"fire",
         effect_type:EffectType.Debuff,
@@ -150,4 +150,5 @@ Effects.insert(
             },
         ],
     }
-)
+]
+}

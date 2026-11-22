@@ -1,10 +1,9 @@
-import { c_deadzone, C_Deadzone, DeadzoneState } from "common/scripts/game/gelo/deadzone.ts";
 import { CircleCollider2D, Color, ColorM, ease, gel_events, GELComponent, model2d, Numeric, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { Graphics2D, Sound, SoundController } from "common/engine/web.ts";
-import { zIndexes } from "common/scripts/others/constants.ts";
+import { DeadzoneState, gelo_instance_type, zIndexes } from "common/scripts/others/constants.ts";
 import { GameGELO } from "../main/gel.ts";
 
-export type CC_Deadzone = GameGELO & C_Deadzone & {
+export type CC_Deadzone = GameGELO & {
     collider: CircleCollider2D
     state: DeadzoneState
     position: Vec2
@@ -13,6 +12,8 @@ export type CC_Deadzone = GameGELO & C_Deadzone & {
     new_radius: number
     timer: number
     aspect: number
+
+    set_current(state:DeadzoneState,position:Vec2,radius:number):void
 
     sprite: Graphics2D
     color: Color
@@ -28,10 +29,18 @@ export type CC_Deadzone = GameGELO & C_Deadzone & {
 
 export const cc_deadzone: GELComponent<CC_Deadzone> = {
     id_string: "cc_deadzone",
-    extensions: [c_deadzone],
 
     events: {
         [gel_events.bind]: function () {
+            this.instance_type=gelo_instance_type.deadzone
+            this.state=DeadzoneState.Deenabled
+            this.position=v2.zero()
+            this.radius=100
+            this.new_position=v2.zero()
+            this.new_radius=100
+            this.timer=0
+            this.collider=new CircleCollider2D(this.position,this.radius)
+
             this.sprite = new Graphics2D()
             this.sprite.zIndex = zIndexes.Deadzone
 
@@ -39,6 +48,7 @@ export const cc_deadzone: GELComponent<CC_Deadzone> = {
         },
 
         [gel_events.registry]: function () {
+            this.aspect=Math.max(this.scene.map.size.x,this.scene.map.size.y)/100
             this.sprite.initialize(this.scene.camera.ctx)
             this.scene.camera.add_object(this.sprite)
 
@@ -46,6 +56,16 @@ export const cc_deadzone: GELComponent<CC_Deadzone> = {
             this.ambience_sound = this.app.resources.get_sound("deadzone_ambience")
 
             this.set_current(DeadzoneState.Deenabled, v2(0, 0), 10)
+        },
+
+        [gel_events.net_decode](stream:Stream){
+            const state=stream.read_uint8() as DeadzoneState
+            const position=stream.read_pos2()
+            const radius=stream.read_float32()
+            this.new_position=stream.read_pos2()
+            this.new_radius=stream.read_float32()
+            this.timer=stream.read_float32()
+            this.set_current(state,position,radius)
         },
 
         [gel_events.unregistry]: function () {
@@ -114,6 +134,16 @@ export const cc_deadzone: GELComponent<CC_Deadzone> = {
                     }
                 }
             }
+        },
+    },
+    methods: {
+        set_current(state:DeadzoneState,position:Vec2,radius:number){
+            this.collider.position=position
+            this.collider.radius=radius
+
+            this.state=state
+            this.position=position
+            this.radius=radius
         },
     },
 }

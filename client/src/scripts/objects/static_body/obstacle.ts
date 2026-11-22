@@ -1,8 +1,7 @@
 import { gel_events,  Vec2, v2, RotationMode, Angle, Orientation, ColorM, Numeric, GELComponent, Stream, random, GELMethod } from "common/engine/core.ts";
 import { Container2D, Shadow2D, Sprite2D } from "common/engine/web.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
-import { obstacle_events, c_obstacle, C_Obstacle } from "common/scripts/game/objects/static_body/obstacle.ts";
-import { zIndexes } from "common/scripts/others/constants.ts";
+import { object_instance_type, zIndexes } from "common/scripts/others/constants.ts";
 import { cc_static_body, CC_StaticBody } from "./static_body.ts";
 
 export function GetObstacleBaseFrame(def:ObstacleDef,variation:number):string{
@@ -11,7 +10,23 @@ export function GetObstacleBaseFrame(def:ObstacleDef,variation:number):string{
     return spr
 }
 
-export type CC_Obstacle=C_Obstacle&CC_StaticBody&{
+export type CC_Obstacle=CC_StaticBody&{
+    def:ObstacleDef
+
+    scale:number
+    rotation:number
+
+    variation:number
+
+    health?:{
+        dead:boolean
+        value:number
+    }
+
+    set_definition(def:ObstacleDef):void
+    set_physical(position?:Vec2,scale?:number,rotation?:number):void
+    die():void
+
     container:Container2D
     sprite:Sprite2D
     shadow?:Shadow2D
@@ -21,9 +36,14 @@ export type CC_Obstacle=C_Obstacle&CC_StaticBody&{
 }
 export const cc_obstacle:GELComponent<CC_Obstacle>={
     id_string:"cc_obstacle",
-    extensions:[c_obstacle,cc_static_body],
+    extensions:[cc_static_body],
     events:{
         [gel_events.bind]:function(){
+            this.instance_type=object_instance_type.obstacle
+            this.rotation=0
+            this.scale=1
+            this.variation=0
+
             this.aditional_sprite=[]
 
             this.container=new Container2D()
@@ -43,16 +63,32 @@ export const cc_obstacle:GELComponent<CC_Obstacle>={
         [gel_events.layer_set]:function(){
             this.container.layer=this.layer
         },
-        [obstacle_events.set_definition](def:ObstacleDef){
+    },
+    methods:{
+        set_definition(def:ObstacleDef){
+            this.def=def
+            if(this.def.health!==undefined&&!this.def.imortal){
+                this.health={
+                    value:0,
+                    dead:true
+                }
+            }
+            this.physical.no_collision=this.def.no_collision??false
+            this.physical.no_projectiles_collision=this.def.no_projectiles_collision??false
+            this.physical.reflect_projectiles=this.def.reflect_bullets??false
+            this.physical.passable_by_projectiles=this.def.passable_by_bullets??false
+
             this.assets={
                 particles:{images:[]},
                 sounds:{}
             }
-            if(def.assets?.sounds)this.set_hit_sounds_def(def.assets?.sounds)
-            if(def.assets?.particles)this.set_hit_particles_def(def.id_string,this.variation,this.def.assets!.particles!)
+            if(def.assets?.sounds)this.set_hit_sounds_def(def.assets.sounds)
+            if(def.assets?.particles)this.set_hit_particles_def(def.id_string,this.variation,def.assets.particles)
             this.update_frame()
         },
-        [obstacle_events.die](){
+        die(){
+            if(!this.health||this.health.dead)return
+            this.health.dead=true
             if(this.assets.sounds.break){
                 this.app.sounds.play(this.assets.sounds.break,{
                     position:this.position,
@@ -66,8 +102,6 @@ export const cc_obstacle:GELComponent<CC_Obstacle>={
             }
             this.update_frame()
         },
-    },
-    methods:{
         update_frame(){
             this.sprite.transform_frame({
                 visible:true,

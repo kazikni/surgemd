@@ -24,6 +24,7 @@ import { ObstacleDef, ObstacleTD } from "./objects/obstacles.ts";
 import { SyncedParticleDef } from "./objects/synced_particles.ts";
 import { VehicleDef} from "./objects/vehicles.ts";
 import { BoostDef } from "./player/boosts.ts";
+import { EffectDef } from "./player/effects.ts";
 import { GameItemType, GameObjectDefinitionType } from "./utils.ts";
 
 export type GameItem=GunDef|MeleeDef|GrenadeDef|AmmoDef|ConsumibleDef|VestDef|HelmetDef|BackpackDef|AccessoryDef|ScopeDef
@@ -40,8 +41,8 @@ export type DefinitionLoadoutCategoryType="loadout"|"badges"|"emotes"|"wrapping"
 export const DefinitionObjectsCategoryList:DefinitionObjectsCategoryType[]=["buildings","creatures","decals","explosions","obstacles","vehicles","synced_particles"]
 export type DefinitionObjectsCategoryType="buildings"|"creatures"|"decals"|"explosions"|"obstacles"|"vehicles"|"synced_particles"
 
-export const DefinitionOthersCategoryList:DefinitionOthersCategoryType[]=["boosts"]
-export type DefinitionOthersCategoryType="boosts"
+export const DefinitionOthersCategoryList:DefinitionOthersCategoryType[]=["boosts","effects"]
+export type DefinitionOthersCategoryType="boosts"|"effects"
 
 export interface GameADefinitions{
     items?:{
@@ -74,6 +75,7 @@ export interface GameADefinitions{
     }
     others?:{
         boosts?:BoostDef[]
+        effects?:EffectDef[]
     }
 }
 export class GameDefinition{
@@ -191,6 +193,7 @@ export class GameDefinition{
 
     // Others
     boosts=new Definitions<BoostDef,{}>()
+    effects=new Definitions<EffectDef,{}>()
 
     game_items=new DefinitionsMerge<GameItem>()
     game_objects=new DefinitionsMerge<GameObjectDef>()

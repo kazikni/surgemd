@@ -1,6 +1,6 @@
 import { CircleCollider2D, ColorM, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Sprite2D } from "common/engine/web.ts";
-import { type C_StaticBody } from "common/scripts/game/objects/static_body/static_body.ts";
+import { type CC_StaticBody } from "../static_body/static_body.ts";
 import { object_instance_type, ObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../../main/gel.ts";
 import { type Human } from "../human.ts";
@@ -118,7 +118,7 @@ export class Bullet extends GameObject{
             human.on_hitted((is_reflect?col_reflect:col_body)!.point,this.critical,undefined,is_reflect,this.weight)
             if(!(this.pass_through_humans||this.pass_through_everthing)||is_reflect)this.die()
         }else if(obj.object_type===ObjectType.StaticBody){
-            const body=obj as Hittable&C_StaticBody
+            const body=obj as Hittable&CC_StaticBody
             if(body.physical.no_projectiles_collision||!obj.collider.overlap_line(this.old_position,this.position))return
             this.collided_with.add(obj.id)
             body.on_hitted(this.position,this.critical)

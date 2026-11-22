@@ -1,8 +1,7 @@
-import { ColorM, gel_events, GELComponent } from "common/engine/core.ts";
-import { type SI_StaticBody } from "common/scripts/game/objects/static_body/static_body.ts";
+import { Collider2D, ColorM, gel_events, GELComponent } from "common/engine/core.ts";
 import { GameObject } from "../main/gel.ts";
 
-export const c_draw_collider:GELComponent<GameObject&SI_StaticBody>={
+export const c_draw_collider:GELComponent<GameObject&{spawn_collider?:Collider2D}>={
     id_string:"draw_collider", // Loot Network Client
     events:{
         [gel_events.bind]:function(){

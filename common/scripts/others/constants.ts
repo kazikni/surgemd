@@ -57,6 +57,14 @@ export const object_instance_type={
     bullet:5,
     explosion:6,
     grenade:7,
+    decal:8,
+    synced_particle:9,
+}
+export enum DeadzoneState{
+    Deenabled,
+    Advancing,
+    Waiting,
+    Finished
 }
 export const gelo_instance_type={
     map:1,

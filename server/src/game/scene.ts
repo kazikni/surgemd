@@ -1,19 +1,21 @@
 import { BaseGELO, CheckpointSettings, gel_component, GELComponent, Scene2D, Stream } from "common/engine/core.ts";
-import { type CommonApplication, GELONet, SimObject, type SimulatedScene } from "common/scripts/game/base.ts";
-import { si_deadzone, type SI_Deadzone } from "common/scripts/game/gelo/deadzone.ts";
-import { si_gamemap, type SI_GameMap } from "common/scripts/game/gelo/map.ts";
-import { type ModeManager } from "common/scripts/game/modes/mode_manager.ts";
-import { Loot } from "common/scripts/game/objects/loot.ts";
-import { Human } from "common/scripts/game/objects/human/human.ts";
-import { si_obstacle } from "common/scripts/game/objects/static_body/obstacle.ts";
-import { Bullet } from "common/scripts/game/objects/projectile/bullet.ts";
-import { Explosion } from "common/scripts/game/objects/projectile/explosion.ts";
-import { Grenade } from "common/scripts/game/objects/projectile/grenade.ts";
+import { type SimApplication, GELONet, SimObject, type SimulatedScene } from "./base.ts";
+import { si_deadzone, type SI_Deadzone } from "./gelo/deadzone.ts";
+import { si_gamemap, type SI_GameMap } from "./gelo/map.ts";
+import { type ModeManager } from "./modes/mode_manager.ts";
+import { Loot } from "./objects/loot.ts";
+import { Human } from "./objects/human/human.ts";
+import { si_obstacle } from "./objects/static_body/obstacle.ts";
+import { Bullet } from "./objects/projectile/bullet.ts";
+import { Explosion } from "./objects/projectile/explosion.ts";
+import { Grenade } from "./objects/projectile/grenade.ts";
+import { Decal } from "./objects/decal.ts";
+import { SyncedParticle } from "./objects/synced_particle.ts";
 import { gelo_instance_type, object_instance_type } from "common/scripts/others/constants.ts";
 
 export type ServerObject=SimObject
 export class ServerGELO extends BaseGELO{
-    declare app:CommonApplication
+    declare app:SimApplication
     declare scene:SimulationScene
     net:GELONet=GELONet.None
     net_dirty:boolean=true
@@ -49,6 +51,8 @@ export const simulation_defs:SimulationDefs={
         [object_instance_type.bullet]:()=>new Bullet(),
         [object_instance_type.explosion]:()=>new Explosion(),
         [object_instance_type.grenade]:()=>new Grenade(),
+        [object_instance_type.decal]:()=>new Decal(),
+        [object_instance_type.synced_particle]:()=>new SyncedParticle(),
     },
     gelo:{
         [gelo_instance_type.map]:gelo(si_gamemap),
@@ -57,7 +61,7 @@ export const simulation_defs:SimulationDefs={
 }
 
 export class SimulationScene extends Scene2D<ServerObject,ServerGELO> implements SimulatedScene{
-    declare app:CommonApplication
+    declare app:SimApplication
     map!:SI_GameMap&ServerGELO
     mode!:ModeManager<any,any>
     deadzone?:SI_Deadzone&ServerGELO

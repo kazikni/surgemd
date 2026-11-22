@@ -1,7 +1,7 @@
-import { LootTable as LootTableBase, Vec2 } from "../../engine/core.ts";
-import { GameDefinition, type GameItem } from "../definitions/game_defs.ts";
-import {  GameItemType } from "../definitions/utils.ts";
-import { FloorType } from "./terrain.ts";
+import { LootTable as LootTableBase, Vec2 } from "../../engine/core.ts"
+import { GameDefinition, type GameItem } from "../definitions/game_defs.ts"
+import {  GameItemType } from "../definitions/utils.ts"
+import { FloorType } from "./terrain.ts"
 
 export const GameConstants={
     humanoid:{
@@ -106,7 +106,9 @@ export enum HumanAnimationType{
     Die,
 
     Emote,
-    Message
+    Message,
+
+    ShieldBreak
 }
 export type HumanAnimation={
 }&({
@@ -131,6 +133,9 @@ export type HumanAnimation={
 }|{
     type:HumanAnimationType.Message
     msg:string
+}|{
+    type:HumanAnimationType.ShieldBreak
+    id:number
 }|{
     type:HumanAnimationType.Cook|HumanAnimationType.Throw|HumanAnimationType.Reset|HumanAnimationType.Die
 })

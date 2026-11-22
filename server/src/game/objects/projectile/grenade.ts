@@ -3,7 +3,7 @@ import { type GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { type ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { object_instance_type, ObjectType } from "common/scripts/others/constants.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { type SimObject } from "../../base.ts";
+import { type SimObject } from "../../main/base.ts";
 import { type Human } from "../human/human.ts";
 import { type SI_StaticBody } from "../static_body/static_body.ts";
 import { Projectile } from "./projectile.ts";

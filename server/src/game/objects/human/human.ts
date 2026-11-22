@@ -15,7 +15,7 @@ import { GameConstants, type HumanAnimation, HumanAnimationType, object_instance
 import { apply_modifiers } from "common/scripts/others/functions.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { decode_visual, encode_visual, type HumanVisual } from "common/scripts/net/visual.ts";
-import { SimObject } from "../../base.ts";
+import { SimObject } from "../../main/base.ts";
 import { MovingBody } from "../moving_body.ts";
 import { type InventoryAction, Inventory, type InventoryOwner, InventoryGroupDef } from "../../inventory/inventory.ts";
 import { armor_damage, DefaultItemFactories, type EquipmentItem, GrenadeItem } from "../../inventory/items.ts";
@@ -413,7 +413,10 @@ export class Human extends MovingBody implements InventoryOwner{
             }else{
                 this.boost.value-=shield_damage
             }
-            if(this.boost.value===0)this.health.invencibility+=shield.break_invensibility
+            if(this.boost.value===0){
+                this.animations.push({type:HumanAnimationType.ShieldBreak,id:this.boost.def.id_number!})
+                this.health.invencibility+=shield.break_invensibility
+            }
         }else{
             health_damage=params.amount
         }

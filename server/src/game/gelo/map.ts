@@ -3,7 +3,7 @@ import { MapDef, MapObjectGeneration, MapStructureDef } from "../maps/base.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { gelo_instance_type, Layers, object_instance_type,  Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts";
 import { FloorType, generate_terrain_shape, type MapBiomeDef, type MapRegion, River, TerrainManager } from "common/scripts/others/terrain.ts";
-import { GELONet, SimulatedGELO, SimulatedObject, SimulatedScene } from "../base.ts";
+import { GELONet, SimulatedGELO, SimulatedObject, SimulatedScene } from "../main/base.ts";
 import { type SI_Obstacle } from "../objects/static_body/obstacle.ts";
 import { type SI_StaticBody } from "../objects/static_body/static_body.ts";
 

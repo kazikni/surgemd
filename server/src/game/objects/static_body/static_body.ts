@@ -1,6 +1,6 @@
 import { Collider2D, gel_events, GELComponent } from "common/engine/core.ts";
 import { ObjectType } from "common/scripts/others/constants.ts";
-import { SimulatedObject } from "../../base.ts";
+import { SimulatedObject } from "../../main/base.ts";
 
 export const static_body_events={
     collided:gel_events.last+1,

@@ -1,6 +1,6 @@
 import { ClientsManager, WorkerSocket } from "common/engine/core.ts";
 import { make_packet_manager } from "common/scripts/net/packet_manager.ts";
-import { Game } from "../../../../../server/src/game/game.ts";
+import { Game } from "../../../../../server/src/game/main/game.ts";
 import type { WorkerMessage } from "./scene.ts";
 
 let game:Game|undefined

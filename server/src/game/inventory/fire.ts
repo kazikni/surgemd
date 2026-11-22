@@ -7,7 +7,7 @@ import { type SI_StaticBody } from "../objects/static_body/static_body.ts";
 import { type InventoryItem } from "./inventory.ts";
 import { object_instance_type, ObjectType } from "common/scripts/others/constants.ts";
 import { ItemFireDefinition } from "common/scripts/definitions/utils.ts";
-import { SimObject } from "../base.ts";
+import { SimObject } from "../main/base.ts";
 
 export interface FireState{
     fire_sequence:number

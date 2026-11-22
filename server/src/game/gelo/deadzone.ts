@@ -1,6 +1,6 @@
 import { CircleCollider2D, gel_events, GELComponent, Numeric, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { DeadzoneState, gelo_instance_type, Layers, Spawn } from "common/scripts/others/constants.ts";
-import { GELONet, SimulatedGELO } from "../base.ts";
+import { GELONet, SimulatedGELO } from "../main/base.ts";
 
 export function MakeDeadzoneStages(settings: MakeDeadzoneSettings): DeadzoneStage[] {
     const stages: DeadzoneStage[] = []

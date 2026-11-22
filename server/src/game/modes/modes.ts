@@ -1,5 +1,5 @@
 import { type GameConfig } from "common/scripts/config/config.ts";
-import { type SimulatedScene } from "../base.ts";
+import { type SimulatedScene } from "../main/base.ts";
 import { BattleRoyale } from "./battle_royale.ts";
 import { DebugMode } from "./debug.ts";
 import { ModeManager } from "./mode_manager.ts";

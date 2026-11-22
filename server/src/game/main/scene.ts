@@ -1,16 +1,16 @@
 import { BaseGELO, CheckpointSettings, gel_component, GELComponent, Scene2D, Stream } from "common/engine/core.ts";
 import { type SimApplication, GELONet, SimObject, type SimulatedScene } from "./base.ts";
-import { si_deadzone, type SI_Deadzone } from "./gelo/deadzone.ts";
-import { si_gamemap, type SI_GameMap } from "./gelo/map.ts";
-import { type ModeManager } from "./modes/mode_manager.ts";
-import { Loot } from "./objects/loot.ts";
-import { Human } from "./objects/human/human.ts";
-import { si_obstacle } from "./objects/static_body/obstacle.ts";
-import { Bullet } from "./objects/projectile/bullet.ts";
-import { Explosion } from "./objects/projectile/explosion.ts";
-import { Grenade } from "./objects/projectile/grenade.ts";
-import { Decal } from "./objects/decal.ts";
-import { SyncedParticle } from "./objects/synced_particle.ts";
+import { si_deadzone, type SI_Deadzone } from "../gelo/deadzone.ts";
+import { si_gamemap, type SI_GameMap } from "../gelo/map.ts";
+import { type ModeManager } from "../modes/mode_manager.ts";
+import { Loot } from "../objects/loot.ts";
+import { Human } from "../objects/human/human.ts";
+import { si_obstacle } from "../objects/static_body/obstacle.ts";
+import { Bullet } from "../objects/projectile/bullet.ts";
+import { Explosion } from "../objects/projectile/explosion.ts";
+import { Grenade } from "../objects/projectile/grenade.ts";
+import { Decal } from "../objects/decal.ts";
+import { SyncedParticle } from "../objects/synced_particle.ts";
 import { gelo_instance_type, object_instance_type } from "common/scripts/others/constants.ts";
 
 export type ServerObject=SimObject

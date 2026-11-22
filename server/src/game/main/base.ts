@@ -1,8 +1,8 @@
 import { BaseSceneObject2D, type AbstractApplication, Scene2D, SceneGELO } from "common/engine/core.ts";
 import { type GameDefinition } from "common/scripts/definitions/game_defs.ts";
-import { type SI_GameMap } from "./gelo/map.ts";
-import { type SI_Deadzone } from "./gelo/deadzone.ts";
-import { ModeManager } from "./modes/mode_manager.ts";
+import { type SI_GameMap } from "../gelo/map.ts";
+import { type SI_Deadzone } from "../gelo/deadzone.ts";
+import { ModeManager } from "../modes/mode_manager.ts";
 
 export type SimApplication={
     definitions:GameDefinition

@@ -3,7 +3,7 @@ import { type GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { GameItemType } from "common/scripts/definitions/utils.ts";
 import { HumanAnimationType, type HumanAnimation, type LootData, object_instance_type } from "common/scripts/others/constants.ts";
-import { type SimApplication, type SimulatedScene } from "../base.ts";
+import { type SimApplication, type SimulatedScene } from "../main/base.ts";
 import { type Loot } from "../objects/loot.ts";
 
 

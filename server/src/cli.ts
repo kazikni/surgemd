@@ -1,9 +1,9 @@
 import { ClientsManager, ConsoleContext, FileManager, AppConsole, PacketsManager, parseJSONC, StaticStream } from "common/engine/core.ts";
 import { KSPRImageFormat,kspr } from "common/engine/core/lang/kspr.ts";
 import { make_packet_manager } from "common/scripts/net/packet_manager.ts";
-import { Game } from "./game/game.ts";
+import { Game } from "./game/main/game.ts";
 import { ConfigType } from "common/scripts/config/config.ts";
-import { GameServer } from "./game/server.ts";
+import { GameServer } from "./game/main/server.ts";
 import { ApiServer } from "./api/server.ts";
 import { server_factory } from "common/engine/server/server.ts";
 

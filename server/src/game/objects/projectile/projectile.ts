@@ -1,6 +1,6 @@
 import { Vec2 } from "common/engine/core.ts";
 import { GameObjectDef } from "common/scripts/definitions/game_defs.ts";
-import { SimObject } from "../../base.ts";
+import { SimObject } from "../../main/base.ts";
 
 export type DamageParams={
     amount:number

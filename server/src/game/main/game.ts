@@ -3,10 +3,10 @@ import { type GameDataBase, type ServerGameApplication } from "common/engine/ser
 import { type GameConfig } from "common/scripts/config/config.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { type SimApplication } from "./base.ts";
-import { mode_events } from "./modes/mode_manager.ts";
-import { setup_game_scene } from "./modes/modes.ts";
+import { mode_events } from "../modes/mode_manager.ts";
+import { setup_game_scene } from "../modes/modes.ts";
 import { simulation_defs, SimulationDefs, SimulationScene } from "./scene.ts";
-import { NetPlayerManager } from "./net_player_conn.ts";
+import { NetPlayerManager } from "../players/net_player_conn.ts";
 
 export interface GameData extends GameDataBase{
     initialized:boolean

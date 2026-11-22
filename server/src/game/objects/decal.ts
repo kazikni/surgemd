@@ -1,7 +1,7 @@
 import { CheckpointContext, CircleCollider2D, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { type DecalDef, type DecalTint } from "common/scripts/definitions/objects/decals.ts";
 import { object_instance_type, ObjectType } from "common/scripts/others/constants.ts";
-import { SimObject } from "../base.ts";
+import { SimObject } from "../main/base.ts";
 
 export class Decal extends SimObject{
     def!:DecalDef

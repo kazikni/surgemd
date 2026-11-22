@@ -1,6 +1,6 @@
 import { OverlapCollision2D, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { ObjectType } from "common/scripts/others/constants.ts";
-import { SimObject } from "../base.ts";
+import { SimObject } from "../main/base.ts";
 import { type SI_StaticBody } from "./static_body/static_body.ts";
 
 export abstract class MovingBody extends SimObject{

@@ -4,7 +4,7 @@ import { type LoadoutPreset } from "common/scripts/definitions/utils.ts";
 import { type JoinData } from "common/scripts/net/join_packet.ts";
 import { GameConstants, Layers, object_instance_type, Spawn, type SpawnMode, type LootAditional, type LootData, type LootSetting, type LootTable } from "common/scripts/others/constants.ts";
 import { loot_table_get_item } from "common/scripts/others/functions.ts";
-import { type SimApplication, type SimulatedScene } from "../base.ts";
+import { type SimApplication, type SimulatedScene } from "../main/base.ts";
 import { human_events } from "../objects/human/events.ts";
 import { type Human } from "../objects/human/human.ts";
 import { type PlayerConn } from "../players/player_conn.ts";

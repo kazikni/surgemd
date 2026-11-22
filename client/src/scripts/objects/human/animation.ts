@@ -2,7 +2,7 @@ import { CircleCollider2D, ColorM, ease, random, v2, v2m, Vec2 } from "common/en
 import { type Human } from "./human.ts";
 import { ClientDecal } from "../client_decal.ts";
 import { ABParticle2D, AudioInstance, Sound, Sprite2D } from "common/engine/web.ts";
-import { HumanAnimationType, ObjectType, zIndexes } from "common/scripts/others/constants.ts";
+import { ObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GraphicsDConfig } from "../../main/config.ts";
 import { GameItemType, GameObjectDefinitionType, ItemQualitySettings } from "common/scripts/definitions/utils.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
@@ -175,7 +175,7 @@ export const DefaultHumanModes={
                     break
                 }
                 if(o.object_type===ObjectType.Human&&!(o as Human).dead){
-                    h.container.callmode("hitted",hb.position,false,def.assets?.hit_sound)
+                    (o as Human).container.callmode("hitted",hb.position,false,def.assets?.hit_sound)
                     break
                 }
             }
@@ -192,6 +192,7 @@ export const DefaultHumanModes={
     },
     reloading(h:Human,def:GunDef,alt_reload:boolean=false){
         if(def?.item_type!==GameItemType.gun)return
+        h.container.callmode("reset_action",false)
         const d=def as unknown as GunDef
         const reload_alt=d.reload?.reload_alt!==undefined&&alt_reload
         const sound=reload_alt?h.weapon_assets.reload_alt:h.weapon_assets.reload
@@ -219,6 +220,7 @@ export const DefaultHumanModes={
     },
     consuming(h:Human,def?:ConsumibleDef){
         if(!def)return
+        h.container.callmode("reset_action",false)
         h.action.recoil_state=-1
         const consuming=def.consuming as ConsumingAction&{type:0}
         const sound=h.app.resources.get_sound(def.assets?.using_sound??`using_${def.id_string}`)
@@ -293,7 +295,7 @@ export const DefaultHumanModes={
         }
         h.app.sounds.play(h.app.resources.get_sound("shield_break"),{
             position:v2.clone(h.position),
-            max_distance:15,
+            max_distance:30,
             bus:"humans",
         })
         const shield=h.particles.find((p)=>p.sprite instanceof Sprite2D&&p.sprite.frame?.id==="human_shield")
@@ -302,8 +304,8 @@ export const DefaultHumanModes={
     hitted(h:Human,position:Vec2,critical:boolean=false,sound?:string,reflected:boolean=false,weight:number=0){
         if(reflected){
             h.app.sounds.play(h.app.resources.get_sound(sound??"human_metal_hit"),{
-                position:v2.clone(h.position),
-                max_distance:10,
+                position:h.position,
+                max_distance:20,
                 bus:"humans",
             })
         }else if(h.shield){
@@ -318,8 +320,8 @@ export const DefaultHumanModes={
                 h.particles.push(shield)
             }
             h.app.sounds.play(h.app.resources.get_sound("human_hit_shield"),{
-                position:v2.clone(h.position),
-                max_distance:15,
+                position:h.position,
+                max_distance:17,
                 bus:"humans",
             })
         }else{
@@ -331,7 +333,7 @@ export const DefaultHumanModes={
                     alpha:210,
                     scale:random.float(0.7,1),
                     rotation:random.rad(),
-                    position:v2.clone(position),
+                    position:position,
                 })
             }
             if(h.app.save.settings.get_var("graphics_particles")>=GraphicsDConfig.Normal){
@@ -357,8 +359,8 @@ export const DefaultHumanModes={
                 }))
             }
             h.app.sounds.play(h.app.resources.get_sound(sound??(critical?"human_headshot":`human_hit_${random.int(1,2)}`)),{
-                position:v2.clone(h.position),
-                max_distance:15,
+                position:h.position,
+                max_distance:17,
                 bus:"humans",
             })
         }

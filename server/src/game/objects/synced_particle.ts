@@ -2,7 +2,7 @@ import { Angle, CircleCollider2D, random, Stream, v2, v2m, Vec2 } from "common/e
 import { type SyncedParticleDef } from "common/scripts/definitions/objects/synced_particles.ts";
 import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
 import { object_instance_type, ObjectType } from "common/scripts/others/constants.ts";
-import { type SimObject } from "../base.ts";
+import { type SimObject } from "../main/base.ts";
 import { type Human } from "./human/human.ts";
 import { MovingBody } from "./moving_body.ts";
 import { type DamageParams, type ProjectileOwner } from "./projectile/projectile.ts";

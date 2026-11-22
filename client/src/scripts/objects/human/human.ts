@@ -16,6 +16,7 @@ import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { cook_animation,throw_animation } from "common/scripts/others/animations.ts"
 import { GameObject } from "../../main/gel.ts";
 import { DefaultHumanModes } from "./animation.ts";
+import { ClientDecal } from "../client_decal.ts";
 
 export interface HumanWalk{
     cycle:number
@@ -58,13 +59,14 @@ export interface HumanActionState{
 
 export class Human extends GameObject{
     name:string=""
+
+    scale:number=1
+    rotation:number=0
+
     dead:boolean=true
     dead_timer:number=0
     downed:boolean=false
     swimming:boolean=false
-    scale:number=1
-    rotation:number=0
-
     knocked:boolean=false
     controlled:boolean=false
 
@@ -293,7 +295,6 @@ export class Human extends GameObject{
             }
             const last=this.walk.last_position
             const distance=last?v2.distance(last,this.position):0
-            this.walk.last_position=v2.clone(this.position)
             if(!this.momentary)this.tick_walk(dt,distance)
             for(const side of ["left","right"] as const){
                 const arm=this.sprites[`${side}_arm`]
@@ -309,6 +310,7 @@ export class Human extends GameObject{
             const map=this.scene.map
             const floor=map?map.terrain.get_floor_type(this.position,this.layer,map.default_floor) as FloorType:FloorType.Void
             this.tick_footsteps(distance,floor,!this.swimming)
+            this.walk.last_position=v2.clone(this.position)
         }
         this.tick_particles(dt)
         const pos=this.container.position
@@ -616,43 +618,57 @@ export class Human extends GameObject{
         }
     }
     tick_footsteps(distance:number,floor:FloorType,on_ground:boolean=true,footstep_distance:number=2){
-        const w=this.walk
         if(distance<=0.001||!on_ground)return
+        const w=this.walk
+        const walk_dir:number=w.last_position?v2.lookTo(this.position,w.last_position):this.rotation
         w.footstep_distance+=distance
-        if(w.footstep_distance<footstep_distance)return
-        w.footstep_distance=0
-        const def=Floors[floor]
-        if(!def)return
-        const sounds=def.footstep_sounds
-        if(sounds&&sounds.length>0){
-            w.footstep_sound?.stop()
-            w.footstep_sound=this.app.sounds.play(this.app.resources.get_sound(random.choose(sounds)),{
-                position:this.position,
-                max_distance:15,
-                volume:0.3,
-                bus:"objects",
-            })
+        if(w.footstep_distance>=footstep_distance){
+            w.footstep_distance=0
+
+            const def=Floors[floor]
+            if(!def)return
+
+            const sounds=def.footstep_sounds
+            if(sounds&&sounds.length>0){
+                w.footstep_sound?.stop()
+                w.footstep_sound=this.app.sounds.play(this.app.resources.get_sound(random.choose(sounds)),{
+                    position:this.position,
+                    max_distance:15,
+                    volume:0.3,
+                    bus:"objects",
+                })
+            }
+            if(def.floor_kind===FloorKind.Liquid){
+                this.scene.particles.add_particle(new ABParticle2D({
+                    direction:0,
+                    frame:{
+                        image:"riple",
+                        hotspot:v2.half_one,
+                        zIndex:zIndexes.Decals,
+                        layer:this.layer,
+                        scale:0,
+                    },
+                    life_time:0.5,
+                    position:this.container.position,
+                    speed:0,
+                    to:{
+                        scale:3,
+                        tint:ColorM.default.transparent,
+                    },
+                }))
+            }
+            if(def.footstep_decal&&!this.downed){
+                const pos=v2(0,(w.footstep_alternate?0.3:-0.3)*this.scale)
+                v2m.rotate_RadAngle(pos,this.rotation)
+                ClientDecal.spawn(this.scene,this.layer,{
+                    image:"human_footstep",
+                    rotation:walk_dir,
+                    position:v2.add(this.position,pos),
+                },30)
+            }
+            w.footstep_alternate=!w.footstep_alternate
         }
-        if(def.floor_kind===FloorKind.Liquid){
-            this.scene.particles.add_particle(new ABParticle2D({
-                direction:0,
-                frame:{
-                    image:"riple",
-                    hotspot:v2.half_one,
-                    zIndex:zIndexes.Decals,
-                    layer:this.layer,
-                    scale:0,
-                },
-                life_time:0.5,
-                position:this.container.position,
-                speed:0,
-                to:{
-                    scale:3,
-                    tint:ColorM.default.transparent,
-                },
-            }))
-        }
-        w.footstep_alternate=!w.footstep_alternate
+        
     }
     set_arms_rig(rig?:FistRig){
         this.arms_rig=rig
@@ -912,6 +928,9 @@ export class Human extends GameObject{
                 break
             case HumanAnimationType.Message:
                 this.container.callmode("message",animation.msg)
+                break
+            case HumanAnimationType.ShieldBreak:
+                this.container.callmode("broke_shield")
                 break
         }
         if(this.dead||this.momentary)return

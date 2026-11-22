@@ -2,7 +2,7 @@ import { CircleCollider2D, Collider2D, OverlapCollision2D, Stream, v2, v2m, Vec2
 import { GameConstants, ObjectType, LootData, object_instance_type } from "common/scripts/others/constants.ts";
 import { decode_loot_data, encode_loot_data } from "common/scripts/others/functions.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { SimObject } from "../base.ts";
+import { SimObject } from "../main/base.ts";
 import { type Human } from "./human/human.ts";
 import { SI_StaticBody } from "./static_body/static_body.ts";
 

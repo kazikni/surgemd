@@ -8,7 +8,7 @@ import { type ConsumibleDef, type ConsumingAction as ConsumingActionDef } from "
 import { GameItemType } from "common/scripts/definitions/utils.ts";
 import { HumanAnimationType, type LootData, object_instance_type, ObjectType } from "common/scripts/others/constants.ts";
 import { FireMode } from "common/scripts/others/item.ts";
-import { type SimObject } from "../base.ts";
+import { type SimObject } from "../main/base.ts";
 import { type Human } from "../objects/human/human.ts";
 import { clip_muzzle, fire_item } from "./fire.ts";
 import { InventoryAction, InventoryItem, type InventoryOwner, type InventorySlot, type ItemFactories, type ItemGiveExtra } from "./inventory.ts";

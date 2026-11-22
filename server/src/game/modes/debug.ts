@@ -8,6 +8,7 @@ import { type Human } from "../objects/human/human.ts";
 import { DefaultHumanLoadout, DefaultPlayerStatus, ModeManager, type PlayerStatus } from "./mode_manager.ts";
 import { human_events } from "../objects/human/events.ts";
 import { HumanAnimations } from "common/scripts/definitions/player/human_animations.ts";
+import { BoostDef } from "common/scripts/definitions/player/boosts.ts";
 
 export interface DebugModeSettings{
     respawn_time?:number
@@ -37,6 +38,8 @@ export class DebugMode extends ModeManager<PlayerStatus,DebugModeSettings>{
             }) as Human
             let gift:LootData[]=[]
             h.drop_on_death_enabled=false
+            let boost_v:number=0
+            let boost_def:BoostDef=this.app.definitions.boosts.getFromString("adrenaline")
             h.on(human_events.die,(params:DamageParams,health_damage:number)=>{
                 const loots=h.inventory.drop_all()
                 for(let j=0;j<gift.length;j++){
@@ -50,6 +53,8 @@ export class DebugMode extends ModeManager<PlayerStatus,DebugModeSettings>{
                         l.destroy()
                     }
                 },respawn_time)
+                h.boost.def=boost_def
+                h.boost.value=boost_v
             })
             switch(i){
                 case 1:{
@@ -65,6 +70,8 @@ export class DebugMode extends ModeManager<PlayerStatus,DebugModeSettings>{
                         {count:1,item:this.app.definitions.game_items.valueString["bike_helmet"]},
                         {count:1,item:this.app.definitions.game_items.valueString["basic_pack"]},
                     )
+                    boost_v=100
+                    boost_def=this.app.definitions.boosts.getFromString("adrenaline")
                     break
                 }
                 case 3:{
@@ -73,6 +80,8 @@ export class DebugMode extends ModeManager<PlayerStatus,DebugModeSettings>{
                         {count:1,item:this.app.definitions.game_items.valueString["military_helmet"]},
                         {count:1,item:this.app.definitions.game_items.valueString["military_pack"]},
                     )
+                    boost_v=100
+                    boost_def=this.app.definitions.boosts.getFromString("shield")
                     break
                 }
                 case 4:{
@@ -81,6 +90,8 @@ export class DebugMode extends ModeManager<PlayerStatus,DebugModeSettings>{
                         {count:1,item:this.app.definitions.game_items.valueString["tactical_helmet"]},
                         {count:1,item:this.app.definitions.game_items.valueString["tactical_pack"]},
                     )
+                    boost_v=100
+                    boost_def=this.app.definitions.boosts.getFromString("green_bless")
                     break
                 }
             }
@@ -109,6 +120,8 @@ export class DebugMode extends ModeManager<PlayerStatus,DebugModeSettings>{
                     {count:1,item:this.app.definitions.game_items.valueString["scope_3"]},
                     {count:1,item:this.app.definitions.game_items.valueString["scope_4"]},
                 )
+                h.boost.def=boost_def
+                h.boost.value=boost_v
             }
             for(let j=0;j<gift.length;j++){
                 h.inventory.give_loot(gift[j],false)

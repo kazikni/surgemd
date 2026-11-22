@@ -1,13 +1,13 @@
-import { type DamageParams } from "./objects/projectile/projectile.ts";
+import { type DamageParams } from "../objects/projectile/projectile.ts";
 import { Client, DefaultSignals, DynamicStream, RectCollider2D, Stream, v2, Vec2 } from "common/engine/core.ts";
-import { GELONet } from "./base.ts";
-import { type Human } from "./objects/human/human.ts";
-import { PlayerConn } from "./players/player_conn.ts";
+import { GELONet } from "../main/base.ts";
+import { type Human } from "../objects/human/human.ts";
+import { PlayerConn } from "./player_conn.ts";
 import { type InputPacket } from "common/scripts/net/input_packet.ts";
 import { JoinedPacket, type JoinPacket } from "common/scripts/net/join_packet.ts";
 import { GeneralPacket, StartPacket, UpdatePacket } from "common/scripts/net/update_packet.ts";
-import { type Game } from "./game.ts";
-import { type ServerGELO, type ServerObject } from "./scene.ts";
+import { type Game } from "../main/game.ts";
+import { type ServerGELO, type ServerObject } from "../main/scene.ts";
 
 export const PlayerViewSize=v2(26,16)
 

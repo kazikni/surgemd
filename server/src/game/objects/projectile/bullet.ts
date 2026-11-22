@@ -5,7 +5,7 @@ import { type ExplosionDef } from "common/scripts/definitions/objects/explosions
 import { type SideEffect } from "common/scripts/definitions/player/effects.ts";
 import { BulletReflection, GameItemType, type BulletDef } from "common/scripts/definitions/utils.ts";
 import { object_instance_type, ObjectType } from "common/scripts/others/constants.ts";
-import { SimObject } from "../../base.ts";
+import { SimObject } from "../../main/base.ts";
 import { type Inventory } from "../../inventory/inventory.ts";
 import { type Human } from "../human/human.ts";
 import { type SI_StaticBody } from "../static_body/static_body.ts";

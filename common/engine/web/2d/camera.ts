@@ -204,6 +204,7 @@ export class Camera2D{
 
     render(){
         this.ctx.render(this.renderer)
+        this.lighting.render()
         this.ctx.clear()
     }
 

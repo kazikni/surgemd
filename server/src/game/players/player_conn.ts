@@ -1,5 +1,4 @@
 import { type DamageParams } from "../objects/projectile/projectile.ts";
-import { Numeric, random, v2 } from "common/engine/core.ts";
 import { type JoinData } from "common/scripts/net/join_packet.ts";
 import { type ModeManager } from "../modes/mode_manager.ts";
 import { type Human } from "../objects/human/human.ts";

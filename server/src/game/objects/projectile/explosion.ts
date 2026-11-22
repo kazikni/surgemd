@@ -2,7 +2,7 @@ import { CircleCollider2D, random, Stream, v2, v2m, Vec2 } from "common/engine/c
 import { type ExplosionDef } from "common/scripts/definitions/objects/explosions.ts";
 import { object_instance_type, ObjectType } from "common/scripts/others/constants.ts";
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { type SimObject } from "../../base.ts";
+import { type SimObject } from "../../main/base.ts";
 import { type Human } from "../human/human.ts";
 import { type Loot } from "../loot.ts";
 import { type SI_StaticBody } from "../static_body/static_body.ts";

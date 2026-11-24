@@ -14,9 +14,6 @@ export interface SoundPlaybackOptions{
 
     spatial?: boolean
 
-    fade_in?: number
-    fade_out?: number
-
     bus?: string
 
     on_complete?:()=>void
@@ -101,7 +98,6 @@ export class AudioInstance {
     ref_distance = 1
 
     stopping = false
-    fade_out = 80
 
     on_complete?:(instance:AudioInstance)=>void
 
@@ -125,7 +121,6 @@ export class AudioInstance {
         this.max_distance=Math.max(options.max_distance??20,0.001)
         this.ref_distance=Math.min(Math.max(options.ref_distance??1,0.001),this.max_distance)
 
-        this.fade_out=options.fade_out??80
         this.on_complete=options.on_complete
 
         this.offset=options.offset ?? 0
@@ -164,14 +159,6 @@ export class AudioInstance {
         const now=this.ctx.currentTime
 
         this.gain.gain.cancelScheduledValues(now)
-        const fadeIn=Math.max(options.fade_in??0)/1000
-        if(fadeIn>0){
-            const targetVolume = this.compute_volume()
-            this.gain.gain.setValueAtTime(0, now)
-            this.gain.gain.linearRampToValueAtTime(targetVolume,now+fadeIn)
-        }else{
-            this.update_volume()
-        }
 
         source.onended=()=>{
             this.finish()
@@ -179,11 +166,12 @@ export class AudioInstance {
 
         const delay=Math.max(0,options.delay??0)
         const startTime=now+delay
-        source.start(startTime,sliceStart+this.offset,this.loop?undefined:(sliceDuration-this.offset))
-
         this.started_at=startTime
         this.state=VoiceState.playing
         this.stopping=false
+        this.update_volume()
+        source.start(startTime,sliceStart+this.offset,this.loop?undefined:(sliceDuration-this.offset))
+
     }
 
     compute_volume(): number {
@@ -237,7 +225,7 @@ export class AudioInstance {
         }
 
         const now=this.ctx.currentTime
-        const end=now+this.fade_out / 1000
+        const end=now/1000
 
         this.gain.gain.cancelScheduledValues(now)
         this.gain.gain.setValueAtTime(

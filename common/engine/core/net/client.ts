@@ -119,8 +119,6 @@ export class Client{
         this.emit_packet(p)
     }
     emit_packet(packet: Packet) {
-        // Copia e limpa ANTES de mandar: com sockets sincronos (OfflineSocket) o _send pode
-        // chamar emit_packet de novo (reentrancia) e o buffer compartilhado misturava os pacotes.
         this.stream_cache.clear()
         this.manager.encode(packet, this.stream_cache)
         const data=this.stream_cache.data.slice(0,this.stream_cache.length)
@@ -143,6 +141,7 @@ export class Client{
                         this.signals.emit(packet.Name, (packet as MessagePacket).msg)
                         break
                     case 65529:
+                        if(this.manager.packets_name[(packet as SignalMessagePacket).signal]!==undefined)return
                         this.signals.emit((packet as SignalMessagePacket).signal,(packet as SignalMessagePacket).msg)
                         break
                     default:

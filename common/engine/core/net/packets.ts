@@ -14,9 +14,11 @@ export abstract class Packet{
 
 export class PacketsManager{
     packets:Map<PacketID,new () => Packet>
+    packets_name:Record<string,number>
     pre_packet?:(packet:Packet)=>void
     constructor(){
         this.packets=new Map()
+        this.packets_name={}
         this.add_packet(InvalidPacket)
         this.add_packet(ConnectPacket)
         this.add_packet(DisconnectPacket)
@@ -28,7 +30,6 @@ export class PacketsManager{
     }
     encode(packet:Packet,stream:Stream):Stream{
         stream.write_uint16(packet.ID)
-        //console.log(packet.ID,"send")
         packet.encode(stream)
         stream.write_uint16(2314) // Passcode
         return stream
@@ -57,6 +58,7 @@ export class PacketsManager{
     add_packet(pack:new () => Packet){
         const p=new pack()
         this.packets.set(p.ID,pack)
+        this.packets_name[p.Name]=p.ID
     }
 }
 

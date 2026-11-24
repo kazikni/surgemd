@@ -112,21 +112,28 @@ export class NetPlayerManager{
         this.conns.set(client.ID,conn)
 
         client.on("join",(p:JoinPacket)=>{
-            if(conn.human&&!conn.human.dead)return
-            const h=game.sim.mode.join(conn,p.data)
-            if(!h){
+            try{
+                if(conn.human&&!conn.human.dead)return
+                const h=game.sim.mode.join(conn,p.data)
+                if(!h){
+                    client.disconnect()
+                    return
+                }
+                console.log(`[GAME-${game.id}] ${h.name} Joined`)
+                conn.full_update=true
+                conn.view_objects.length=0
+                conn.send_joined=true
+            }catch{
                 client.disconnect()
                 return
             }
-            console.log(`[GAME-${game.id}] ${h.name} Joined`)
-            conn.full_update=true
-            conn.view_objects.length=0
-            conn.send_joined=true
         })
         client.on("input",(p:InputPacket)=>{
-            const h=conn.human
-            if(!h||h.dead||conn.spectating)return
-            h.process_input(p.data)
+            try{
+                const h=conn.human
+                if(!h||h.dead||conn.spectating)return
+                h.process_input(p.data)
+            }catch{}
         })
         client.on(DefaultSignals.DISCONNECT,()=>{
             if(conn.human)console.log(`[GAME-${game.id}] ${conn.human.name} Disconnected`)

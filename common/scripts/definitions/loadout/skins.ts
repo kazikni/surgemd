@@ -176,6 +176,19 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
         },
         {
             item:LoadoutItemKind.Shirt,
+            id_string:"blue_shirt_2",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_2_arm",
+                chest:{
+                    image:"human_shirt_1_chest",
+                    tint:0x0066ff
+                },
+                arm_tint:0x0066ff
+            }
+        },
+        {
+            item:LoadoutItemKind.Shirt,
             id_string:"black_shirt",
             rank:ItemRank.E,
             frame:{
@@ -193,6 +206,19 @@ export function Loadout_Default_Init():LoadoutItemDef[]{
             rank:ItemRank.E,
             frame:{
                 arm:"human_shirt_1_arm",
+                chest:{
+                    image:"human_shirt_1_chest",
+                    tint:0xe5ce0c
+                },
+                arm_tint:0xe5ce0c
+            }
+        },
+        {
+            item:LoadoutItemKind.Shirt,
+            id_string:"yellow_shirt_2",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_2_arm",
                 chest:{
                     image:"human_shirt_1_chest",
                     tint:0xe5ce0c

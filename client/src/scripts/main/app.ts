@@ -10,6 +10,7 @@ import { CutsceneScene } from "../scenes/cutscene/scene.ts";
 import { OnlineGameOptions, PlayScene, WorkerGameOptions, type PlaySceneKind } from "../scenes/play/scene.ts";
 import { InitialScreenScene } from "../scenes/initial_screen/scene.ts";
 import { JoinData } from "common/scripts/net/join_packet.ts";
+import { LoadoutFootDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 
 export class Application extends ClientApplication{
     menu_scene=new MenuScene()
@@ -125,8 +126,20 @@ export class Application extends ClientApplication{
                 await game.online_initialize(options as OnlineGameOptions)
                 break
         }
+
+        const female=this.save.settings.get_var("loadout_female")
         await game.join(join??{
             name:this.save.settings.get_var("loadout_name")??"",
+            loadout:{
+                body: "body_1",
+                body_tint:ColorM.hex2number(this.save.settings.get_var("loadout_body_tint")),
+                eyes:female?"eyes_2":"eyes_1",
+                hair:this.save.settings.get_var("loadout_hair"),
+                hair_tint:ColorM.hex2number(this.save.settings.get_var("loadout_hair_tint")),
+                shirt:this.save.settings.get_var("loadout_shirt"),
+                legs:this.save.settings.get_var("loadout_legs"),
+                foot:this.save.settings.get_var("loadout_foot"),
+            }
         })
         //game.free_cam()
         this.scene=game

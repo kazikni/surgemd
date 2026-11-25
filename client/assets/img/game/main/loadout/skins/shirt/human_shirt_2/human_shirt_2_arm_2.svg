@@ -5,7 +5,7 @@
    viewBox="0 0 27.622983 10.982632"
    version="1.1"
    id="svg340"
-   sodipodi:docname="human_shirt_1_arm_2.svg"
+   sodipodi:docname="human_shirt_2_arm_2.svg"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -23,7 +23,7 @@
      inkscape:deskcolor="#d1d1d1"
      showgrid="false"
      inkscape:zoom="4.3853841"
-     inkscape:cx="40.133315"
+     inkscape:cx="-10.945449"
      inkscape:cy="33.976499"
      inkscape:window-width="1920"
      inkscape:window-height="1008"
@@ -68,7 +68,7 @@
      transform="translate(2.2400411e-4,0.27417941)">
     <path
        fill="url(#a)"
-       d="M 9.3787692,9.5382916 0.89505549,9.802946 0.89509291,0.63132373 9.3787692,0.89588832 c 2.2898898,1.10004508 2.3437688,7.18989478 0,8.64240328 z"
+       d="M 12.87141,9.5382916 0.89505549,9.802946 0.89509291,0.63132373 12.87141,0.89588832 c 2.28989,1.10004508 2.343769,7.18989478 0,8.64240328 z"
        style="fill:url(#b);stroke:#7a8385;stroke-width:1.79123;stroke-dasharray:none;stroke-opacity:1"
        id="path336"
        sodipodi:nodetypes="ccccc" />

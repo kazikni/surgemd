@@ -1,8 +1,8 @@
-import { DenoClientsManager, DenoFileManager, DenoServer } from "common/engine/deno.ts";
+import { DenoClientsManager, DenoFileManager, DenoServer, RawHttpServer } from "common/engine/deno.ts";
 import {main} from "./cli.ts"
 import { createCanvas } from "@napi-rs/canvas";
 if (import.meta.main) {
-    await main(Deno.args,import.meta.filename?.endsWith(".ts")?"../deno/worker.ts":"../deno/worker.js",new DenoFileManager(),createCanvas,DenoServer,DenoClientsManager)
+    await main(Deno.args,import.meta.filename?.endsWith(".ts")?"../deno/worker.ts":"../deno/worker.js",new DenoFileManager(),createCanvas,RawHttpServer,DenoClientsManager)
 }
 
 //deno run -A ./server/src/deno.ts kspr extract client/dist/assets/kspr/main/sheets/sheet_low.kspr

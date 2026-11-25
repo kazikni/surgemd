@@ -6,7 +6,6 @@ import { ConfigType } from "common/scripts/config/config.ts";
 import { GameServer } from "./game/main/server.ts";
 import { ApiServer } from "./api/server.ts";
 import { server_factory } from "common/engine/server/server.ts";
-import { RawWsClientsManager, RawWsServer } from "../../common/engine/deno/rawws.ts";
 
 async function saveAtlasPNG(image: Uint8Array,width: number,height: number,format: KSPRImageFormat,output: string,canvas:any,ctx:any,fs:FileManager) {
     canvas.width=width
@@ -103,9 +102,9 @@ export async function main(args:string[],default_worker_file:string,fs:FileManag
                     "ntps":{type:"number",default:32},
                 },
                 async execute(ctx){
-                    const clients=new RawWsClientsManager(make_packet_manager())
-                    const server=new RawWsServer(ctx.args.port)
-                    clients.attach(server,"/api/ws")
+                    const server=new ctx.server(ctx.args.port)
+                    const clients=new ctx.clients_factory(make_packet_manager())
+                    server.route("/api/ws",clients.handler())
                     const game=new Game({
                         tps:ctx.args.tps,
                         ntps:ctx.args.ntps,

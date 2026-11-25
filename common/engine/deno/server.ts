@@ -4,6 +4,7 @@ import { serveFile } from "https://deno.land/std/http/file_server.ts";
 import { Path } from "../core/math/utils.ts";
 import { Router, Server } from "../server/server.ts";
 import { HandlerFunc, HandlerFuncAsync } from "../core/net/server_base.ts";
+import { upgradeWebSocket } from "./rawws.ts";
 
 export interface RequestLimitConfig {
     enabled: boolean
@@ -76,7 +77,7 @@ export const default_handlers={
             return {response:new Response("Request isn't trying to upgrade to WebSocket.", { status: 406 })}
         }
 
-        const result = Deno.upgradeWebSocket(req)
+        const result = upgradeWebSocket(req)
         return result
     },
     cors(res: Response): Response {

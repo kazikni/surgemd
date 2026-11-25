@@ -1,5 +1,6 @@
 import { random } from "../core/math/random.ts";
 import { BasicSocket, ClientsManager } from "../core/net/client.ts";
+import { upgradeWebSocket } from "./rawws.ts";
 
 export class DenoClientsManager extends ClientsManager {
     override handler(IDGen?: () => number): (req: Request, url: string[], info: Deno.ServeHandlerInfo) => Response | null {
@@ -51,7 +52,8 @@ export class DenoClientsManager extends ClientsManager {
                 return new Response("Too many connections", { status: 429 })
             }
 
-            const { socket, response } = Deno.upgradeWebSocket(req,{idleTimeout: 10})
+            const {socket,response}=upgradeWebSocket(req,{idleTimeout:10})
+            //const { socket, response } = Deno.upgradeWebSocket(req,{idleTimeout: 10})
 
             //@ts-ignore
             socket.remoteAddr&&socket.remoteAddr.transport==="tcp"&&socket.setNoDelay(true)

@@ -51,7 +51,7 @@ export class DenoClientsManager extends ClientsManager {
                 return new Response("Too many connections", { status: 429 })
             }
 
-            const { socket, response } = Deno.upgradeWebSocket(req)
+            const { socket, response } = Deno.upgradeWebSocket(req,{idleTimeout: 10})
 
             //@ts-ignore
             socket.remoteAddr&&socket.remoteAddr.transport==="tcp"&&socket.setNoDelay(true)

@@ -4,10 +4,12 @@ import { type LoadoutPreset } from "common/scripts/definitions/utils.ts";
 import { type JoinData } from "common/scripts/net/join_packet.ts";
 import { GameConstants, Layers, object_instance_type, Spawn, type SpawnMode, type LootAditional, type LootData, type LootSetting, type LootTable } from "common/scripts/others/constants.ts";
 import { loot_table_get_item } from "common/scripts/others/functions.ts";
-import { type SimApplication, type SimulatedScene } from "../main/base.ts";
+import { type SimObject, type SimApplication, type SimulatedScene } from "../main/base.ts";
 import { human_events } from "../objects/human/events.ts";
 import { type Human } from "../objects/human/human.ts";
 import { type PlayerConn } from "../players/player_conn.ts";
+import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
+import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 
 export const mode_events={
     map_generated:"map_generated",
@@ -395,6 +397,27 @@ export abstract class ModeManager<S extends object=PlayerStatus,Settings={}>{
     destroy(){
         this.destroyed=true
         this.players.clear()
+    }
+
+    spawn_airdrop(position:Vec2,obstacle?:ObstacleDef){
+        if(!obstacle)obstacle=this.app.definitions.obstacles.getFromString("airdrop_locked")
+        this.scene.add_object(this.scene.make_object(object_instance_type.plane)!,Layers.Normal,undefined,{
+            speed: 21,
+            obstacle,
+            type: 0,
+            target_pos:position
+        })
+    }
+    spawn_airstrike(position:Vec2,grenade:GrenadeDef,count:number,radius:number,owner?:SimObject){
+        this.scene.add_object(this.scene.make_object(object_instance_type.plane)!,Layers.Normal,undefined,{
+            target_pos:position,
+            speed: 130,
+            grenade,
+            count,
+            radius,
+            owner,
+            type: 1
+        })
     }
 
     encode_checkpoint(stream:Stream){

@@ -33,6 +33,25 @@ export class Grenade extends Projectile{
         this.source??=args.def
         this.fuse_delay=args.fuse??args.def.fuse?.time??0
         this.base_collider=new CircleCollider2D(v2(0,0),args.def.radius)
+        
+        if(this.def.call_airdrop){
+            this.app.clock.add_timeout(()=>{
+                this.scene.mode.spawn_airdrop(this.position)
+            },this.def.call_airdrop.delay)
+        }
+        if(this.def.call_airstrike){
+            this.app.clock.add_timeout(()=>{
+                const pos=v2.clone(this.position)
+                const def=this.app.definitions.grenades.getFromString(this.def.call_airstrike!.bomb.def)
+                const count=this.def.call_airstrike?.count??1
+                const gap=this.def.call_airstrike?.delay_gap??1
+                for(let c=0;c<count;c++){
+                    this.app.clock.add_timeout(()=>{
+                        this.scene.mode.spawn_airstrike(pos,def,this.def.call_airstrike?.bomb.count??1,this.def.call_airstrike?.bomb.radius??0,this.owner)
+                    },c*gap)
+                }
+            },this.def.call_airstrike.delay)
+        }
     }
 
     push(speed:number,direction:number,angular_velocity:number=10){

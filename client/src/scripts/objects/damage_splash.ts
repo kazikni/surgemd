@@ -6,7 +6,6 @@ import { zIndexes } from "common/scripts/others/constants.ts";
 export class DamageSplash extends GameObject{
     count?:number
 
-
     ////////////////////////////
     // Visual                 //
     ////////////////////////////
@@ -103,6 +102,6 @@ export class DamageSplash extends GameObject{
         const [critical,shield]=stream.read_boolean_group()
         const position=stream.read_pos2()
         const count=stream.read_uint16()
-        this._start({critical,shield,count,position,})
+        this._start({critical,shield,count,position})
     }
 }

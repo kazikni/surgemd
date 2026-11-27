@@ -1,6 +1,6 @@
 import { type DamageParams } from "../objects/projectile/projectile.ts";
 import { Client, DefaultSignals, DynamicStream, RectCollider2D, Stream, v2, Vec2 } from "common/engine/core.ts";
-import { GELONet } from "../main/base.ts";
+import { GELONet, type SimObject } from "../main/base.ts";
 import { type Human } from "../objects/human/human.ts";
 import { PlayerConn } from "./player_conn.ts";
 import { type InputPacket } from "common/scripts/net/input_packet.ts";
@@ -56,12 +56,11 @@ export class NetPlayerConn extends PlayerConn{
             sim.gelo.net_encode_list(Object.values(sim.gelo.content).filter((g)=>g.net===GELONet.Joined),jp.gelos,true)
             this.client.manager.encode(jp,this.stream)
         }
-
         if(this.join){
             const center=this.human&&!this.human.destroyed?this.human.position:this.last_position
             this.last_position=v2.clone(center)
             const layer=this.human?.layer??sim.map.default_layer
-            const objs=sim.cells.get_objects_layers(new RectCollider2D(v2.sub(center,PlayerViewSize),v2.add(center,PlayerViewSize)),[layer-1,layer,layer+1])
+            const objs:SimObject[]=[...Object.values(sim.global_objects),...sim.cells.get_objects_layers(new RectCollider2D(v2.sub(center,PlayerViewSize),v2.add(center,PlayerViewSize)),[layer-1,layer,layer+1])]
 
             this.update.content.clear()
             this.view_objects=sim.objects.encode_list_net(objs,this.view_objects,this.full_update,this.full_update,undefined,this.update.content).last

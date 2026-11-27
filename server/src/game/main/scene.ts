@@ -1,6 +1,6 @@
-import { BaseGELO, CheckpointSettings, gel_component, GELComponent, Scene2D, Stream } from "common/engine/core.ts";
+import { BaseGELO, CheckpointSettings, gel_component, GELComponent, Scene2D, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { type SimApplication, GELONet, SimObject, type SimulatedScene } from "./base.ts";
-import { si_deadzone, type SI_Deadzone } from "../gelo/deadzone.ts";
+import { si_deadzone } from "../gelo/deadzone.ts";
 import { si_gamemap, type SI_GameMap } from "../gelo/map.ts";
 import { type ModeManager } from "../modes/mode_manager.ts";
 import { Loot } from "../objects/loot.ts";
@@ -11,8 +11,9 @@ import { Explosion } from "../objects/projectile/explosion.ts";
 import { Grenade } from "../objects/projectile/grenade.ts";
 import { Decal } from "../objects/decal.ts";
 import { SyncedParticle } from "../objects/synced_particle.ts";
-import { gelo_instance_type, object_instance_type } from "common/scripts/others/constants.ts";
+import { gelo_instance_type, Layers, object_instance_type } from "common/scripts/others/constants.ts";
 import { DamageSplash } from "../objects/damage_splash.ts";
+import { Plane } from "../objects/global/plane.ts";
 
 export type ServerObject=SimObject
 export class ServerGELO extends BaseGELO{
@@ -55,6 +56,7 @@ export const simulation_defs:SimulationDefs={
         [object_instance_type.decal]:()=>new Decal(),
         [object_instance_type.synced_particle]:()=>new SyncedParticle(),
         [object_instance_type.damage_splash]:()=>new DamageSplash(),
+        [object_instance_type.plane]:()=>new Plane(),
     },
     gelo:{
         [gelo_instance_type.map]:gelo(si_gamemap),
@@ -66,10 +68,10 @@ export class SimulationScene extends Scene2D<ServerObject,ServerGELO> implements
     declare app:SimApplication
     map!:SI_GameMap&ServerGELO
     mode!:ModeManager<any,any>
-    deadzone?:SI_Deadzone&ServerGELO
 
     defs:SimulationDefs
 
+    global_objects: Record<number, SimObject>={}
     damage_splashes: Record<number, DamageSplash[]>={}
 
     constructor(defs:SimulationDefs=simulation_defs){

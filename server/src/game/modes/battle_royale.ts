@@ -54,7 +54,6 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
         const config=this.settings.deadzone
         if(config===false)return
         this.deadzone=this.scene.make_gelo(gelo_instance_type.deadzone) as SI_Deadzone
-        this.scene.deadzone=this.deadzone
         this.deadzone.config={...DefaultDeadzone,...config}
         if(this.deadzone.config.stages)this.deadzone.stages=this.deadzone.config.stages
         this.scene.gelo.registry(this.deadzone,"deadzone")
@@ -91,13 +90,7 @@ export class BattleRoyale extends ModeManager<BattleRoyaleStatus,BattleRoyaleSet
     override on_tick(dt:number){
         this.teams?.tick(dt)
         this.groups?.tick(dt)
-        if(!this.started||this.finished||!this.deadzone?.do_damage)return
-        for(const p of this.players.living()){
-            if(this.finished)break
-            const h=p.human!
-            const dmg=this.deadzone.damage_at(h.position)
-            if(dmg>0)h.piercing_damage({amount:dmg})
-        }
+        if(!this.started||this.finished)return
     }
     override net_update(){
         super.net_update()

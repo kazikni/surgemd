@@ -13,8 +13,8 @@ export type SimulatedScene={
     app:SimApplication
     map:SI_GameMap
     mode:ModeManager<any,any>
-    deadzone?:SI_Deadzone
     damage_splashes:Record<number,DamageSplash[]>
+    global_objects:Record<number,SimObject>
 }&Scene2D<any,any>
 export type SimulatedObject=BaseSceneObject2D&{
     scene:SimulatedScene

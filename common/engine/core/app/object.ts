@@ -50,18 +50,6 @@ export abstract class BaseObject2D extends BaseGEL{
     public id!:GameObjectID
     public layer!:number
 
-    /*on_registry(){}
-    on_create(args:any){}
-    on_destroy():void{}
-    on_tick(dt:number):void{}
-    on_render(dt:number):void{}
-    on_net_update():void{}
-    on_net_encode(stream:Stream,full:boolean,args?:any):void{}
-    on_net_decode(stream:Stream,full:boolean,args?:any):void{}
-    on_checkpoint_encode(stream:Stream,ctx:CheckpointContext):void{}
-    on_checkpoint_decode(stream:Stream,ctx:CheckpointContext):void{}
-    on_layer_set():void{}*/
-
     constructor(){
         super()
         this._position=new Vec2M(0,0,this.update_collider.bind(this))

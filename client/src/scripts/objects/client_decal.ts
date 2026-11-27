@@ -4,8 +4,6 @@ import { zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject, type GameScene } from "../main/gel.ts";
 
 export class ClientDecal extends GameObject{
-    static next_id:number=0x1000000
-
     sprite:Sprite2D=new Sprite2D()
     lifetime:number=15
 
@@ -19,7 +17,7 @@ export class ClientDecal extends GameObject{
     static spawn(scene:GameScene,layer:number,frame:FrameDef,lifetime?:number):ClientDecal{
         const decal=new ClientDecal()
         if(lifetime!==undefined)decal.lifetime=lifetime
-        scene.add_object(decal,layer,ClientDecal.next_id++)
+        scene.add_object(decal,layer)
         decal.sprite.set_frame(frame,scene.app.resources)
         return decal
     }

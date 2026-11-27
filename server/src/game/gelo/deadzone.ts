@@ -208,6 +208,11 @@ export const si_deadzone: GELComponent<SI_Deadzone> = {
             }else{
                 this.do_damage_timer=1
                 this.do_damage=true
+                for(const p of this.scene.mode.players.living()){
+                    const h=p.human!
+                    const dmg=this.damage_at(h.position)
+                    if(dmg>0)h.piercing_damage({amount:dmg})
+                }
             }
         }
     },

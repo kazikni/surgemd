@@ -60,6 +60,7 @@ export const object_instance_type={
     decal:8,
     damage_splash:9,
     synced_particle:10,
+    plane:11,
 }
 export enum DeadzoneState{
     Deenabled,
@@ -75,6 +76,7 @@ export const gelo_instance_type={
 export enum ObjectType{
     StaticBody,
     MovingBody,
+    AirBody,
 
     Projectile,
 
@@ -92,7 +94,6 @@ export enum ObjectType{
     Creature,
     Parachute,
     SyncedParticle,
-    Plane,
     Drone,
 }
 

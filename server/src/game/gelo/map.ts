@@ -1,11 +1,11 @@
 import { CircleCollider2D, Collider2D, gel_events, GELComponent, Polygon2D, PolygonCollider2D, random, Rect, RectCollider2D, SeededRandom, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { MapDef, MapObjectGeneration, MapStructureDef } from "../maps/base.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
-import { gelo_instance_type, Layers, object_instance_type,  Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts";
+import { gelo_instance_type, Layers, object_instance_type,  ObjectType,  Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts";
 import { FloorType, generate_terrain_shape, type MapBiomeDef, type MapRegion, River, TerrainManager } from "common/scripts/others/terrain.ts";
 import { GELONet, SimulatedGELO, SimulatedObject, SimulatedScene } from "../main/base.ts";
-import { type SI_Obstacle } from "../objects/static_body/obstacle.ts";
-import { type SI_StaticBody } from "../objects/static_body/static_body.ts";
+import { type Obstacle } from "../objects/static_body/obstacle.ts";
+import { type StaticBody } from "../objects/static_body/static_body.ts";
 
 export type map_gen_position=(collider:Collider2D,map:SI_GameMap)=>Vec2
 export type map_gen_valid=(collider:Collider2D,id:number,layer:number,mode:SpawnMode,map:SI_GameMap)=>boolean
@@ -48,7 +48,7 @@ export type SI_GameMap=SimulatedGELO&{
 
     get_random_position(collider:Collider2D,id:number,layer:number,mode:SpawnMode,gp?:map_gen_position,valid?:map_gen_valid,maxAttempts?:number):Vec2|undefined
     
-    generate_obstacle(def:ObstacleDef,spawn?:SpawnMode,layer?:Layers,gen_position?:map_gen_position,gen_valid?:map_gen_valid):SI_Obstacle|undefined
+    generate_obstacle(def:ObstacleDef,spawn?:SpawnMode,layer?:Layers,gen_position?:map_gen_position,gen_valid?:map_gen_valid):Obstacle|undefined
     generate_object(name:string,layer?:Layers,spawn?:SpawnMode,gen_position?:map_gen_position,gen_valid?:map_gen_valid):SimulatedObject
     generate_objects(obj:MapObjectGeneration,gen_position?:map_gen_position,gen_valid?:map_gen_valid):void
 
@@ -135,7 +135,7 @@ export const si_gamemap:GELComponent<SI_GameMap>={
             const objs:SimulatedObject[]=map.scene.cells.get_objects(collider,layer)
             for(const o of objs){
                 if(o.id!==id){
-                    if((o.__components.has("c_static_body"))&&!(o as SI_StaticBody).physical.no_spawn_collision&&collider.colliding_with((o as SI_StaticBody).spawn_collider??o.collider)){
+                    if((o.object_type===ObjectType.StaticBody)&&!(o as StaticBody).physical.no_spawn_collision&&collider.colliding_with((o as StaticBody).spawn_collider??o.collider)){
                         return false
                     }
                 }
@@ -258,8 +258,8 @@ export const si_gamemap:GELComponent<SI_GameMap>={
             this.net_dirty=true
         },
 
-        generate_obstacle(def:ObstacleDef,spawn?:SpawnMode,layer?:number,gen_position?:map_gen_position,gen_valid?:map_gen_valid):SI_Obstacle|undefined{
-            const o=this.scene.add_object(this.scene.make_object(object_instance_type.obstacle),layer??this.default_layer,undefined,{def}) as SI_Obstacle
+        generate_obstacle(def:ObstacleDef,spawn?:SpawnMode,layer?:number,gen_position?:map_gen_position,gen_valid?:map_gen_valid):Obstacle|undefined{
+            const o=this.scene.add_object(this.scene.make_object(object_instance_type.obstacle),layer??this.default_layer,undefined,{def}) as Obstacle
             o.init()
             const p=this.get_random_position(o.physical.spawn_collider??o.base_collider,o.id,o.layer,spawn??o.def.spawnMode??this.default_spawn_mode,gen_position,gen_valid)
             if(!p){

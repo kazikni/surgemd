@@ -4,7 +4,7 @@ import { HitParticlesDef, HitSoundsDef } from "common/scripts/definitions/utils.
 import { ObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GraphicsDConfig } from "../../main/config.ts";
 import { GameObject } from "../../main/gel.ts";
-
+/*
 export type CC_StaticBody=GameObject&{
     physical:{
         no_collision?:boolean
@@ -123,12 +123,18 @@ export const cc_static_body:GELComponent<CC_StaticBody>={
             }
         },
     }
-}
-
-
-/*
+}*/
 
 export class StaticBody extends GameObject{
+    physical:{
+        no_collision?:boolean
+        no_projectiles_collision?:boolean
+        no_pathfinding_collision?:boolean
+        passable_by_projectiles?:boolean
+        reflect_projectiles?:boolean
+
+        collider:Collider2D
+    }
     assets!:{
         particles:{
             tint?:Color
@@ -142,6 +148,13 @@ export class StaticBody extends GameObject{
     constructor(){
         super()
         this.object_type=ObjectType.StaticBody
+        this.physical={
+            collider:this.collider
+        }
+        this.assets={
+            particles:{images:[]},
+            sounds:{}
+        }
     }
     add_own_particle(position:Vec2,force=1,small=false){
         const particles=this.assets.particles
@@ -221,4 +234,3 @@ export class StaticBody extends GameObject{
         }
     }
 }
-*/

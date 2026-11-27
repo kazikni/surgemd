@@ -4,7 +4,7 @@ import { decode_loot_data, encode_loot_data } from "common/scripts/others/functi
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { SimObject } from "../main/base.ts";
 import { type Human } from "./human/human.ts";
-import { SI_StaticBody } from "./static_body/static_body.ts";
+import { StaticBody } from "./static_body/static_body.ts";
 
 export class Loot extends SimObject{
     loot_data!:LootData
@@ -37,7 +37,7 @@ export class Loot extends SimObject{
 
     on_collided(obj:SimObject,dt:number){
         if(obj.object_type===ObjectType.StaticBody){
-            if((obj as unknown as SI_StaticBody).physical.no_collision)return
+            if((obj as unknown as StaticBody).physical.no_collision)return
             const collisions:OverlapCollision2D[]=this.collision_collider.overlap_collisions(obj.collider)
             for(const col of collisions)v2m.sub(this.position,this.position,v2.scale(col.dir,col.pen))
         }else if(obj.object_type===ObjectType.Loot){

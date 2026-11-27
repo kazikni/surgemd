@@ -5,7 +5,7 @@ import { object_instance_type, ObjectType } from "common/scripts/others/constant
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { type SimObject } from "../../main/base.ts";
 import { type Human } from "../human/human.ts";
-import { type SI_StaticBody } from "../static_body/static_body.ts";
+import { type StaticBody } from "../static_body/static_body.ts";
 import { Projectile } from "./projectile.ts";
 
 export class Grenade extends Projectile{
@@ -74,7 +74,7 @@ export class Grenade extends Projectile{
 
     on_collided(obj:SimObject){
         if(obj.object_type===ObjectType.StaticBody){
-            if((obj as SI_StaticBody).physical.no_collision)return
+            if((obj as StaticBody).physical.no_collision)return
             const height=(obj as unknown as {def?:ObstacleDef}).def?.height
             if(height===2||(height===1&&this.zpos>=0.5))return
         }else if(obj.object_type===ObjectType.Human){

@@ -5,7 +5,6 @@ import { si_gamemap, type SI_GameMap } from "../gelo/map.ts";
 import { type ModeManager } from "../modes/mode_manager.ts";
 import { Loot } from "../objects/loot.ts";
 import { Human } from "../objects/human/human.ts";
-import { si_obstacle } from "../objects/static_body/obstacle.ts";
 import { Bullet } from "../objects/projectile/bullet.ts";
 import { Explosion } from "../objects/projectile/explosion.ts";
 import { Grenade } from "../objects/projectile/grenade.ts";
@@ -14,6 +13,7 @@ import { SyncedParticle } from "../objects/synced_particle.ts";
 import { gelo_instance_type, Layers, object_instance_type } from "common/scripts/others/constants.ts";
 import { DamageSplash } from "../objects/damage_splash.ts";
 import { Plane } from "../objects/global/plane.ts";
+import { Obstacle } from "../objects/static_body/obstacle.ts";
 
 export type ServerObject=SimObject
 export class ServerGELO extends BaseGELO{
@@ -26,15 +26,6 @@ export class ServerGELO extends BaseGELO{
 export interface SimulationDefs{
     objects:Record<number|string,(...args:any[])=>ServerObject>
     gelo:Record<number|string,(...args:any[])=>ServerGELO>
-}
-
-function obj(component:GELComponent<any>){
-    const merged=gel_component.merge_deep(component)
-    return ()=>{
-        const o=new SimObject()
-        o.add_component(merged)
-        return o
-    }
 }
 function gelo(component:GELComponent<any>){
     const merged=gel_component.merge_deep(component)
@@ -49,7 +40,7 @@ export const simulation_defs:SimulationDefs={
     objects:{
         [object_instance_type.human]:()=>new Human(),
         [object_instance_type.loot]:()=>new Loot(),
-        [object_instance_type.obstacle]:obj(si_obstacle),
+        [object_instance_type.obstacle]:()=>new Obstacle(),
         [object_instance_type.bullet]:()=>new Bullet(),
         [object_instance_type.explosion]:()=>new Explosion(),
         [object_instance_type.grenade]:()=>new Grenade(),

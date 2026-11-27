@@ -3,7 +3,7 @@ import { Angle, astar_path2d, BaseObject2D, Collider2D, Numeric, ObjectManager2D
 import { HumanAnimationType, ObjectType } from "common/scripts/others/constants.ts";
 import { mode_events } from "../../modes/mode_manager.ts";
 import { type MomentaryPlayOptions } from "common/scripts/definitions/player/human_animations.ts";
-import { type SI_StaticBody } from "../static_body/static_body.ts";
+import { type StaticBody } from "../static_body/static_body.ts";
 import { type Human } from "./human.ts";
 
 export interface HumanScriptWait{
@@ -38,7 +38,7 @@ export interface HumanScriptPathOptions{
 export function human_path_blocked(manager:ObjectManager2D<BaseObject2D>,collider:Collider2D,_x:number,_y:number,layer:number):boolean{
     for(const obj of manager.cells.get_objects(collider,layer)){
         if(obj.object_type!==ObjectType.StaticBody)continue
-        const sb=obj as unknown as SI_StaticBody
+        const sb=obj as unknown as StaticBody
         if(sb.physical.no_collision||sb.physical.no_pathfinding_collision)continue
         if(collider.colliding_with(obj.collider))return true
     }

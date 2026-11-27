@@ -8,7 +8,7 @@ import { object_instance_type, ObjectType } from "common/scripts/others/constant
 import { SimObject } from "../../main/base.ts";
 import { type Inventory } from "../../inventory/inventory.ts";
 import { type Human } from "../human/human.ts";
-import { type SI_StaticBody } from "../static_body/static_body.ts";
+import { type StaticBody } from "../static_body/static_body.ts";
 import { Projectile, type SimObjectDamageable } from "./projectile.ts";
 
 export class Bullet extends Projectile{
@@ -107,7 +107,7 @@ export class Bullet extends Projectile{
             if(this.destroyed)break
             if(obj.id===this.id)continue
             if(obj.object_type===ObjectType.Human)this.collide_human(obj as Human,distance_t)
-            else if(obj.object_type===ObjectType.StaticBody)this.collide_static(obj as SI_StaticBody&SimObjectDamageable)
+            else if(obj.object_type===ObjectType.StaticBody)this.collide_static(obj as StaticBody&SimObjectDamageable)
         }
         if(!this.destroyed&&v2.distance(this.initial_position,this.position)>this.max_distance)this.on_hit()
     }
@@ -170,7 +170,7 @@ export class Bullet extends Projectile{
             this.on_hit()
         }
     }
-    collide_static(obj:SI_StaticBody&SimObjectDamageable){
+    collide_static(obj:StaticBody&SimObjectDamageable){
         if(obj.physical.no_projectiles_collision||this.collided_with.has(obj.id))return
         const col=obj.collider.overlap_line(this.old_position,this.position)
         if(!col)return

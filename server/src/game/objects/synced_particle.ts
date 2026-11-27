@@ -6,7 +6,7 @@ import { type SimObject } from "../main/base.ts";
 import { type Human } from "./human/human.ts";
 import { MovingBody } from "./moving_body.ts";
 import { type DamageParams, type ProjectileOwner } from "./projectile/projectile.ts";
-import { type SI_StaticBody } from "./static_body/static_body.ts";
+import { type StaticBody } from "./static_body/static_body.ts";
 
 export class SyncedParticle extends MovingBody{
     owner?:ProjectileOwner
@@ -43,7 +43,7 @@ export class SyncedParticle extends MovingBody{
         const effects=this.def.side_effect
         const ready=effects!==undefined&&this.action_tick>=this.action_time
         if(obj.object_type===ObjectType.StaticBody){
-            const body=obj as unknown as SI_StaticBody&{damage?(params:DamageParams):void}
+            const body=obj as StaticBody&{damage?(params:DamageParams):void}
             if(ready&&body.damage&&this.collider.colliding_with(obj.collider)){
                 for(const sf of effects){
                     if(sf.type===SideEffectType.Damage)body.damage({amount:sf.amount*(sf.obstacle_mult??1),owner:this.owner,source:this.def,position:this.position})
@@ -51,7 +51,7 @@ export class SyncedParticle extends MovingBody{
             }
             if(this.def.movement?.type==="direction")super.on_collided(obj,dt)
         }else if(obj.object_type===ObjectType.Human){
-            const human=obj as unknown as Human
+            const human=obj as Human
             if(human.dead||(this.def.single_use&&this.hitted))return
             const col=this.collider.overlap_collision(human.collider)
             if(!col)return

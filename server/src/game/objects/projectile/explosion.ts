@@ -5,7 +5,7 @@ import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { type SimObject } from "../../main/base.ts";
 import { type Human } from "../human/human.ts";
 import { type Loot } from "../loot.ts";
-import { type SI_StaticBody } from "../static_body/static_body.ts";
+import { type StaticBody } from "../static_body/static_body.ts";
 import { type Bullet } from "./bullet.ts";
 import { type Grenade } from "./grenade.ts";
 import { type DamageParams, Projectile } from "./projectile.ts";
@@ -108,9 +108,9 @@ export class Explosion extends Projectile{
                 case ObjectType.StaticBody:
                     if(damage>0){
                         params.amount*=this.def.obstacle_mult??1
-                        ;(obj as SI_StaticBody&{damage?(p:DamageParams):void}).damage?.(params)
+                        ;(obj as StaticBody&{damage?(p:DamageParams):void}).damage?.(params)
                     }
-                    if(!(obj as SI_StaticBody).physical.no_collision)blocks.push(obj)
+                    if(!(obj as StaticBody).physical.no_collision)blocks.push(obj)
                     break
                 case ObjectType.Human:
                     if(damage>0)(obj as Human).damage(params)

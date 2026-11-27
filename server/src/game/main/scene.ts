@@ -12,6 +12,7 @@ import { Grenade } from "../objects/projectile/grenade.ts";
 import { Decal } from "../objects/decal.ts";
 import { SyncedParticle } from "../objects/synced_particle.ts";
 import { gelo_instance_type, object_instance_type } from "common/scripts/others/constants.ts";
+import { DamageSplash } from "../objects/damage_splash.ts";
 
 export type ServerObject=SimObject
 export class ServerGELO extends BaseGELO{
@@ -53,6 +54,7 @@ export const simulation_defs:SimulationDefs={
         [object_instance_type.grenade]:()=>new Grenade(),
         [object_instance_type.decal]:()=>new Decal(),
         [object_instance_type.synced_particle]:()=>new SyncedParticle(),
+        [object_instance_type.damage_splash]:()=>new DamageSplash(),
     },
     gelo:{
         [gelo_instance_type.map]:gelo(si_gamemap),
@@ -67,6 +69,8 @@ export class SimulationScene extends Scene2D<ServerObject,ServerGELO> implements
     deadzone?:SI_Deadzone&ServerGELO
 
     defs:SimulationDefs
+
+    damage_splashes: Record<number, DamageSplash[]>={}
 
     constructor(defs:SimulationDefs=simulation_defs){
         super()

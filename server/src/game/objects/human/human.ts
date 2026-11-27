@@ -417,11 +417,17 @@ export class Human extends MovingBody implements InventoryOwner{
                 this.animations.push({type:HumanAnimationType.ShieldBreak,id:this.boost.def.id_number!})
                 this.health.invencibility+=shield.break_invensibility
             }
+            if(shield_damage>0){
+            this.scene.add_object(this.scene.make_object(object_instance_type.damage_splash),this.layer,undefined,{owner:params.owner,victim:this,count:shield_damage,shield:true,position:params.position,critical:params.critical})
+            }
         }else{
             health_damage=params.amount
         }
         if(params.owner&&params.owner.id!==this.id)this.last_damage_by=params.owner
-        if(health_damage>0)this.health.value=Math.max(this.health.value-health_damage,0)
+        if(health_damage>0){
+            this.health.value=Math.max(this.health.value-health_damage,0)
+            this.scene.add_object(this.scene.make_object(object_instance_type.damage_splash),this.layer,undefined,{owner:params.owner,victim:this,count:health_damage,position:params.position,critical:params.critical})
+        }
         this.emit_event(human_events.damaged,params,health_damage,shield_damage)
         this.script?.on_damaged(params,health_damage)
         this.boost.def.se?.on_hitted?.(this)

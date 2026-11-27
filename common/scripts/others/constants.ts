@@ -58,7 +58,8 @@ export const object_instance_type={
     explosion:6,
     grenade:7,
     decal:8,
-    synced_particle:9,
+    damage_splash:9,
+    synced_particle:10,
 }
 export enum DeadzoneState{
     Deenabled,
@@ -84,6 +85,7 @@ export enum ObjectType{
     Bullet,
     Decal,
     GraphicVisual,
+    DamageSplash,
     Explosion,
     Grenade,
     Vehicle,
@@ -91,7 +93,7 @@ export enum ObjectType{
     Parachute,
     SyncedParticle,
     Plane,
-    Drone
+    Drone,
 }
 
 export enum HumanAnimationType{

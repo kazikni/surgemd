@@ -3,6 +3,7 @@ import { type GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { type SI_GameMap } from "../gelo/map.ts";
 import { type SI_Deadzone } from "../gelo/deadzone.ts";
 import { ModeManager } from "../modes/mode_manager.ts";
+import { type DamageSplash } from "../objects/damage_splash.ts";
 
 export type SimApplication={
     definitions:GameDefinition
@@ -13,6 +14,7 @@ export type SimulatedScene={
     map:SI_GameMap
     mode:ModeManager<any,any>
     deadzone?:SI_Deadzone
+    damage_splashes:Record<number,DamageSplash[]>
 }&Scene2D<any,any>
 export type SimulatedObject=BaseSceneObject2D&{
     scene:SimulatedScene

@@ -10,7 +10,6 @@ import { CutsceneScene } from "../scenes/cutscene/scene.ts";
 import { OnlineGameOptions, PlayScene, WorkerGameOptions, type PlaySceneKind } from "../scenes/play/scene.ts";
 import { InitialScreenScene } from "../scenes/initial_screen/scene.ts";
 import { JoinData } from "common/scripts/net/join_packet.ts";
-import { LoadoutFootDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 
 export class Application extends ClientApplication{
     menu_scene=new MenuScene()
@@ -31,6 +30,8 @@ export class Application extends ClientApplication{
         offset: Vec2
         scale: Vec2
     }
+
+    theme_colors:Record<string,string>={}
 
     constructor(fs:FileManager,renderer:Renderer){
         super(renderer)
@@ -207,6 +208,24 @@ export class Application extends ClientApplication{
         super.on_run()
     }
 
+    get_theme_color(name:string):string{
+        if(this.theme_colors[name])return this.theme_colors[name]
+        switch(name){
+            case "primary":
+                return this.save.settings.get_var("ui_primary_color")
+            case "secondary":
+                return this.save.settings.get_var("ui_secondary_color")
+            case "tertiary":
+                return this.save.settings.get_var("ui_tertiary_color")
+            case "positive":
+                return this.save.settings.get_var("ui_positive_color")
+            case "negative":
+                return this.save.settings.get_var("ui_negative_color")
+            case "special":
+                return this.save.settings.get_var("ui_special_color")
+        }
+        return "#ffffff"
+    }
     show_error(error:string){
 
     }

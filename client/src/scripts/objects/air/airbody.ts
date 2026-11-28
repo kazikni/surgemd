@@ -1,6 +1,6 @@
-import { zIndexes } from "common/scripts/others/constants.ts"
+import { ObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { AudioInstance, Container2DObject } from "common/engine/web.ts";
-import { Numeric, Stream, v2, v2m} from "common/engine/core.ts";
+import { Numeric, Stream, v2m} from "common/engine/core.ts";
 import { GameObject } from "../../main/gel.ts";
 
 export abstract class AirBody extends GameObject {
@@ -11,6 +11,8 @@ export abstract class AirBody extends GameObject {
 
     constructor() {
         super()
+        this.object_type=ObjectType.AirBody
+        this.allow_tick=true
     }
 
     on_create(args: Record<string, any>): void {
@@ -20,7 +22,6 @@ export abstract class AirBody extends GameObject {
         this.scene.camera.add_object(this.shadow)
     }
     on_tick(dt: number) {
-        this.shadow.position=v2(275,275)
         if(this.app.save.settings.get_var("game_interpolation")){
             v2m.lerp(this.shadow.position,this.position,this.scene.global_interpolation)
             this.shadow.rotation=Numeric.lerp_rad(this.shadow.rotation,this.rotation,this.scene.global_interpolation)

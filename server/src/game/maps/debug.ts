@@ -1,6 +1,6 @@
 import { v2 } from "common/engine/core.ts";
 import { Layers, type LootData, object_instance_type } from "common/scripts/others/constants.ts";
-import { type SI_Obstacle } from "../objects/static_body/obstacle.ts";
+import { type Obstacle } from "../objects/static_body/obstacle.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
 import { MapDef } from "./base.ts";
 import { NormalBiome, NormalMap } from "./normal.ts";
@@ -65,7 +65,7 @@ export const DebugMap:MapDef={
             y=center.y-10
             i=0
             for(const def of Object.values(defs.obstacles.valueNumber)){
-                const o=scene.add_object(scene.make_object(object_instance_type.obstacle),Layers.Normal,undefined,{def}) as SI_Obstacle
+                const o=scene.add_object(scene.make_object(object_instance_type.obstacle),Layers.Normal,undefined,{def}) as Obstacle
                 o.init(0)
                 o.set_position(v2(x,y))
                 next(25,5,-5)

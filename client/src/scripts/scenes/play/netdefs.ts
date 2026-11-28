@@ -13,6 +13,7 @@ import { type PlaySceneDefs } from "./scene.ts";
 import { cc_gamemap } from "../../gelo/map.ts";
 import { DamageSplash } from "../../objects/damage_splash.ts";
 import { Plane } from "../../objects/air/plane.ts";
+import { Parachute } from "../../objects/parachute.ts";
 import { Obstacle } from "../../objects/static_body/obstacle.ts";
 
 function gelo(component:GELComponent<any>){
@@ -40,5 +41,6 @@ export const net_scene_defs:PlaySceneDefs={
         [object_instance_type.damage_splash]:()=>new DamageSplash(),
         [object_instance_type.synced_particle]:()=>new SyncedParticle(),
         [object_instance_type.plane]:()=>new Plane(),
+        [object_instance_type.parachute]:()=>new Parachute(),
     }
 }

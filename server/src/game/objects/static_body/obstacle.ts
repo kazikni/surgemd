@@ -6,6 +6,7 @@ import { type Inventory } from "../../inventory/inventory.ts";
 import { type Human } from "../human/human.ts";
 import { type Loot } from "../loot.ts"
 import { StaticBody } from "./static_body.ts";
+import { obstacle_behaviors, obstacle_events } from "./behaviors.ts";
 
 export class Obstacle extends StaticBody{
     override physical:{
@@ -27,7 +28,7 @@ export class Obstacle extends StaticBody{
     max_scale:number=1
     loot:LootData[]
 
-    transform_into_data?:{activated:boolean,def:number}
+    interactable:boolean=false
 
     constructor(){
         super()
@@ -60,6 +61,8 @@ export class Obstacle extends StaticBody{
         this.physical.passable_by_projectiles=this.def.passable_by_bullets??false
         this.physical.no_spawn_collision=this.def.no_spawn_collision
         this.physical.no_pathfinding_collision=this.def.no_pathfinding_collision
+        const behavior=this.def.expanded_behavior&&obstacle_behaviors[this.def.expanded_behavior.type]
+        if(behavior)this.add_component(behavior)
     }
     die(params:DamageParams){
         if(!this.health||this.health.dead)return
@@ -96,13 +99,16 @@ export class Obstacle extends StaticBody{
         if(this.def.loot_table)this.loot.push(...this.scene.mode.get_loot(this.def.loot_table))
     }
     can_interact(user:Human):boolean{
-        if(this.destroyed||!this.def.interactDestroy||!this.health||this.health.dead)return false
+        if(this.destroyed||this.health?.dead)return false
+        if(!this.interactable&&!(this.def.interactDestroy&&this.health))return false
         return new CircleCollider2D(user.position,user.interaction.radius).colliding_with(this.collider)
     }
     on_interact(user:Human):void{
         if(this.def.interactDestroy){
             this.die({amount:9999,owner:user})
+            return
         }
+        this.emit_event(obstacle_events.interact,user)
     }
     init(rotation?:number,scale?:number,variation?:number,parent_side?:number):void{
         if(this.def.rotation_mode===RotationMode.limited){
@@ -122,6 +128,7 @@ export class Obstacle extends StaticBody{
         this.max_scale=scale??(this.def.scale?.min&&this.def.scale.max?random.float(this.def.scale.min,this.def.scale.max):1)
 
         this.base_collider=this.physical.collider
+        this.emit_event(obstacle_events.init)
 
         if(this.health){
             this.health.dead=false
@@ -176,7 +183,7 @@ export class Obstacle extends StaticBody{
         }
     }
 
-    on_checkpoint_encode(stream:Stream){
+    on_encode_checkpoint(stream:Stream){
         stream.write_string(this.def.id_string,1)
         stream.write_uint8(this.variation)
         stream.write_float32(this.rotation)
@@ -185,7 +192,7 @@ export class Obstacle extends StaticBody{
         stream.write_boolean_group(this.health!==undefined,this.health?.dead??false)
         if(this.health)stream.write_float32(this.health.value)
     }
-    on_checkpoint_decode(stream:Stream){
+    on_decode_checkpoint(stream:Stream){
         this.set_definition(this.app.definitions.obstacles.getFromString(stream.read_string(1)))
         const variation=stream.read_uint8()
         const rotation=stream.read_float32()

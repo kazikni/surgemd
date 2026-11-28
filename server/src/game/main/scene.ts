@@ -13,6 +13,7 @@ import { SyncedParticle } from "../objects/synced_particle.ts";
 import { gelo_instance_type, Layers, object_instance_type } from "common/scripts/others/constants.ts";
 import { DamageSplash } from "../objects/damage_splash.ts";
 import { Plane } from "../objects/global/plane.ts";
+import { Parachute } from "../objects/parachute.ts";
 import { Obstacle } from "../objects/static_body/obstacle.ts";
 
 export type ServerObject=SimObject
@@ -48,6 +49,7 @@ export const simulation_defs:SimulationDefs={
         [object_instance_type.synced_particle]:()=>new SyncedParticle(),
         [object_instance_type.damage_splash]:()=>new DamageSplash(),
         [object_instance_type.plane]:()=>new Plane(),
+        [object_instance_type.parachute]:()=>new Parachute(),
     },
     gelo:{
         [gelo_instance_type.map]:gelo(si_gamemap),

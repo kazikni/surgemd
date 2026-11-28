@@ -61,6 +61,7 @@ export const object_instance_type={
     damage_splash:9,
     synced_particle:10,
     plane:11,
+    parachute:12,
 }
 export enum DeadzoneState{
     Deenabled,

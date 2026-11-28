@@ -1,4 +1,4 @@
-import { random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CheckpointContext, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { SimObject } from "../../main/base.ts";
 import { object_instance_type, ObjectType } from "common/scripts/others/constants.ts";
 
@@ -41,12 +41,12 @@ export abstract class AirBody extends SimObject {
         stream.write_pos2(this.position)
         .write_rad(this.rotation)
     }
-    on_encode_checkpoint(stream: Stream): void {
+    on_encode_checkpoint(stream: Stream,_ctx?:CheckpointContext): void {
         stream.write_pos2(this.position)
         .write_rad(this.rotation)
         .write_float32(this.speed)
     }
-    on_decode_checkpoint(stream: Stream): void {
+    on_decode_checkpoint(stream: Stream,_ctx?:CheckpointContext): void {
         this.position=stream.read_pos2()
         this.rotation=stream.read_rad()
         this.speed = stream.read_float32()

@@ -1,8 +1,9 @@
-import { Vec2, v2, RotationMode, Angle, Orientation, ColorM, Numeric, GELComponent, Stream, random, GELMethod } from "common/engine/core.ts";
-import { ABParticle2D, Container2D, Shadow2D, Sprite2D } from "common/engine/web.ts";
-import { ObstacleBehaviorTransformInto, ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
+import { v2, RotationMode, Angle, Orientation, ColorM, Numeric, Stream, random } from "common/engine/core.ts";
+import { Container2D, Shadow2D, Sprite2D } from "common/engine/web.ts";
+import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { object_instance_type, zIndexes } from "common/scripts/others/constants.ts";
 import { StaticBody } from "./static_body.ts";
+import { obstacle_behaviors } from "./behaviors.ts";
 
 export function GetObstacleBaseFrame(def:ObstacleDef,variation:number):string{
     let spr=def.assets?.frame?.base??def.id_string
@@ -25,10 +26,6 @@ export class Obstacle extends StaticBody{
     sprite:Sprite2D
     shadow?:Shadow2D
     aditional_sprite:Sprite2D[]
-
-    transform_into_data?:{
-        activated:boolean
-    }
 
     constructor(){
         super()
@@ -72,15 +69,8 @@ export class Obstacle extends StaticBody{
         this.physical.reflect_projectiles=this.def.reflect_bullets??false
         this.physical.passable_by_projectiles=this.def.passable_by_bullets??false
 
-        if(this.def.expanded_behavior){
-            switch(this.def.expanded_behavior.type){
-                case 3:
-                    this.transform_into_data={
-                        activated:false
-                    }
-                    break
-            }
-        }
+        const behavior=this.def.expanded_behavior&&obstacle_behaviors[this.def.expanded_behavior.type]
+        if(behavior)this.add_component(behavior)
         this.assets={
             particles:{images:[]},
             sounds:{}
@@ -150,65 +140,8 @@ export class Obstacle extends StaticBody{
     }
 
 
-    transform_into_update(def:number){
-        if(this.transform_into_data?.activated)return
-        this.transform_into_data!.activated=true
-
-        if((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sound)this.app.sounds.play(this.app.resources.get_sound((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sound!),{
-            max_distance:30,
-            bus:"obstacles"
-        })
-        for(const p of (this.def.expanded_behavior as ObstacleBehaviorTransformInto).first_particles??[]){
-            this.app.clock.add_timeout(()=>{
-                for(let c=0;c<p.count;c++){
-                    this.scene.particles.add_particle(new ABParticle2D({
-                        frame:{layer:this.layer,...p.frame},
-                        position:this.position,
-                        speed:random.float(1,2),
-                        angle:this.rotation,
-                        direction:random.rad(),
-                        life_time:2,
-                        zIndex:zIndexes.Particles,
-                        to:{
-                            speed:random.float(0.1,1),
-                            angle:this.rotation+random.rad(),
-                        }
-                    }))
-                }
-            },p.delay)
-        }
-        if((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites&&(this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites![def]){
-            this.sprite.set_frame((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites![def],this.app.resources)
-        }
-        if((this.def.expanded_behavior as ObstacleBehaviorTransformInto).delay){
-            this.app.clock.add_timeout(()=>{
-                for(const p of (this.def.expanded_behavior as ObstacleBehaviorTransformInto).transform_particles??[]){
-                    this.app.clock.add_timeout(()=>{
-                        for(let c=0;c<p.count;c++){
-                            this.scene.particles.add_particle(new ABParticle2D({
-                                frame:{layer:this.layer,...p.frame},
-                                position:this.collider.random_point(),
-                                speed:random.float(1,4),
-                                angle:this.rotation,
-                                direction:random.rad(),
-                                life_time:3,
-                                zIndex:zIndexes.Particles,
-                                tint:ColorM.default.white,
-                                to:{
-                                    speed:random.float(0.1,1),
-                                    angle:this.rotation+random.rad(),
-                                    tint:ColorM.default.transparent
-                                }
-                            }))
-                        }
-                    },p.delay)
-                }
-            },(this.def.expanded_behavior as ObstacleBehaviorTransformInto).delay!)
-        }
-    }
-
     on_decode_net(stream:Stream,full:boolean){
-        const [dead,physical_dirty_part,physical_dirty,transform_into_active]=stream.read_boolean_group()
+        const [dead,physical_dirty_part,physical_dirty]=stream.read_boolean_group()
 
         if(full){
             this.set_definition(this.app.definitions.obstacles.getFromNumber(stream.read_uint16()))
@@ -238,13 +171,6 @@ export class Obstacle extends StaticBody{
             this.base_collider=this.physical.collider.transform(undefined,this.scale)
         }
 
-        /*if(this.transform_into_data){
-            if(this.transform_into_data.activated&&!transform_into_active){
-                this.transform_into_data.activated=false
-            }else if(transform_into_active){
-                this.transform_into_update(stream.read_uint8())
-            }
-        }*/
         if(this.health){
             if(dead&&!this.health.dead){
                 this.die()

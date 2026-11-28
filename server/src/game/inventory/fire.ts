@@ -3,7 +3,7 @@ import { type Human } from "../objects/human/human.ts";
 import { type Bullet } from "../objects/projectile/bullet.ts";
 import { type Grenade } from "../objects/projectile/grenade.ts";
 import { type SyncedParticle } from "../objects/synced_particle.ts";
-import { type SI_StaticBody } from "../objects/static_body/static_body.ts";
+import { type StaticBody } from "../objects/static_body/static_body.ts";
 import { type InventoryItem } from "./inventory.ts";
 import { object_instance_type, ObjectType } from "common/scripts/others/constants.ts";
 import { ItemFireDefinition } from "common/scripts/definitions/utils.ts";
@@ -19,7 +19,7 @@ export function clip_muzzle(user:Human,muzzle:Vec2):Vec2{
     const objs=user.scene.cells.ray(start,muzzle,user.layer) as SimObject[]
     for(const obj of objs){
         if(obj.object_type!==ObjectType.StaticBody)continue
-        const sb=obj as SI_StaticBody
+        const sb=obj as StaticBody
         if(sb.physical.no_collision||sb.physical.no_projectiles_collision||sb.physical.passable_by_projectiles)continue
         const hit=obj.collider.overlap_line(start,muzzle)
         if(!hit)continue

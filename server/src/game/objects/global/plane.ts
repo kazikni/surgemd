@@ -1,9 +1,9 @@
 import { object_instance_type } from "common/scripts/others/constants.ts";
-import { circle, random, Stream, v2, Vec2 } from "common/engine/core.ts";
+import { CheckpointContext, circle, random, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { AirBody } from "./airbody.ts";
-import { type SimObject } from "../../main/base.ts";
+import { SimObject } from "../../main/base.ts";
 import { si_global_object } from "./base.ts";
 import { type Grenade } from "../projectile/grenade.ts";
 export class Plane extends AirBody {
@@ -44,7 +44,7 @@ export class Plane extends AirBody {
         if(!this.called&&v2.distance(this.position, this.target_pos) <= 4) {
             switch (this.type) {
                 case 0:
-                    //this.scene.add_parachute(this.target_pos,this.obstacle!,)
+                    this.scene.add_object(this.scene.make_object(object_instance_type.parachute),this.layer,undefined,{position:this.target_pos,obstacle:this.obstacle!})
                     break
                 case 1: {
                     for(let c=0;c<this.count;c++){
@@ -72,7 +72,7 @@ export class Plane extends AirBody {
         super.on_encode_net(stream,full)
         if(full)stream.write_uint8(this.type)
     }
-    override on_encode_checkpoint(stream: Stream): void {
+    override on_encode_checkpoint(stream: Stream,ctx:CheckpointContext): void {
         stream.write_pos2(this.position)
         .write_rad(this.rotation)
         .write_pos2(this.target_pos)
@@ -82,7 +82,7 @@ export class Plane extends AirBody {
         .write_float32(this.radius)
         .write_boolean_group(this.called,this.owner !== undefined,this.grenade_def !== undefined,this.obstacle !== undefined)
         if(this.owner){
-            stream.write_id(this.owner.id)
+            stream.write_id(ctx.idco[this.owner.id]??0)
         }
         if(this.grenade_def){
             stream.write_uint16(this.grenade_def.id_number!)
@@ -91,7 +91,7 @@ export class Plane extends AirBody {
             stream.write_uint16(this.obstacle.id_number!)
         }
     }
-    override on_decode_checkpoint(stream: Stream): void {
+    override on_decode_checkpoint(stream: Stream,ctx:CheckpointContext): void {
         this.position=stream.read_pos2()
         this.rotation=stream.read_rad()
         this.target_pos = stream.read_pos2()
@@ -102,11 +102,15 @@ export class Plane extends AirBody {
 
         const [
             called,
+            hasOwner,
             hasGrenade,
             hasObstacle
         ] = stream.read_boolean_group()
 
         this.called = called
+        if(hasOwner){
+            this.owner = this.manager.objects[ctx.coid[stream.read_id()]] as SimObject|undefined
+        }
 
         if(hasGrenade){
             this.grenade_def = this.app.definitions.grenades.valueNumber[stream.read_uint16()]

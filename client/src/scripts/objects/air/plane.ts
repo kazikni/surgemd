@@ -1,6 +1,7 @@
 import {  Stream, v2 } from "common/engine/core.ts";
 import { AirBody } from "./airbody.ts";
 import { Sprite2D } from "common/engine/web.ts";
+import { object_instance_type } from "common/scripts/others/constants.ts";
 
 export class Plane extends AirBody {
     plane_type:number=0
@@ -8,6 +9,7 @@ export class Plane extends AirBody {
 
     constructor() {
         super()
+        this.instance_type=object_instance_type.plane
         this.shadow=new Sprite2D()
     }
     on_initial(): void {
